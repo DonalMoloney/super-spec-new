@@ -179,7 +179,8 @@ When ANY specflow command is invoked, the agent MUST first run the **resume chec
 3. **Run superpowers detection**: Check for all superpowers skills at
    `.agents/skills/` and `~/.agents/skills/`. Update `.specify/superpowers.yml`
    with current detection results.
-4. For each spec directory, read `progress.yml` (or infer progress from existing files)
+4. For each spec directory, read `progress.yml` (or infer progress from existing files).
+   Record which of `.clarified` and `.analyzed` exist beside `spec.md`.
 5. Display a status summary:
 
 ```
@@ -189,20 +190,25 @@ Constitution: Done (2026-04-22)
 Superpowers:  brainstorming (detected), writing-plans (not found)
 
 Features:
-  001-user-auth    [####------] execute (Phase 5/6), T012/T019 tasks done
-  002-photo-upload [##--------] brainstorm (Phase 2/6), 2 open questions
-  003-settings     [#---------] specify (Phase 1/6), draft
+  001-user-auth    [####------] execute (Phase 5/6), gates: clarified, analyzed, T012/T019 tasks done
+  002-photo-upload [##--------] brainstorm (Phase 2/6), gates: none, 2 open questions
+  003-settings     [#---------] specify (Phase 1/6), gates: none, draft
 
 Suggested next step: /speckit.specflow.execute 001
 ```
 
-5. If no `.specify/` exists, suggest: "No specflow project found. Run
+6. Pick the suggested next step from the gates: a feature with `tasks.md` and no
+   `.analyzed` gets `/speckit.analyze NNN`; a feature with `spec.md` and no
+   `.clarified` gets `/speckit.clarify NNN`; otherwise the next workflow command
+   for its phase. Suggest the step for the feature furthest along.
+7. If no `.specify/` exists, suggest: "No specflow project found. Run
    `/speckit.constitution` to get started."
 
 **File inference fallback**: If `progress.yml` does not exist, infer progress from
 which files are present:
 - `spec.md` exists → specify is done
 - `spec.md` has Brainstorm Log entries → brainstorm was run
+- `.clarified` exists beside `spec.md` → clarify is done; `.analyzed` exists → analyze is done
 - `plan.md` exists → plan is done
 - `tasks.md` exists → tasks are done
 - `tasks.md` has `[x]` checkboxes → execute is in progress (count checked vs total)
