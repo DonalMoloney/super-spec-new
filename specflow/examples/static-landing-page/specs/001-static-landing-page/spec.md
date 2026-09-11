@@ -109,6 +109,36 @@ A visitor who wants to try SpecFlow finds a workflow diagram illustrating the ty
 - **SC-004**: The page renders completely with zero JavaScript execution — validated by loading with JavaScript disabled in browser settings
 - **SC-005**: The page is fully readable and navigable on any viewport width from 320px to 1920px
 
+## Traceability
+
+Each criterion maps to the validation reference that confirms it.
+
+| Criterion | Test |
+|---|---|
+| FR-001 | `checklists/review.md::FR-001` |
+| FR-002 | `checklists/review.md::FR-002` |
+| FR-003 | `checklists/review.md::FR-003` |
+| FR-004 | `checklists/review.md::FR-004` |
+| FR-005 | `checklists/review.md::FR-005` |
+| FR-006 | `checklists/review.md::FR-006` |
+| FR-007 | `checklists/review.md::FR-007` |
+| FR-008 | `checklists/review.md::FR-008` |
+| FR-009 | `checklists/review.md::FR-009` |
+| FR-010 | `checklists/review.md::FR-010` |
+| FR-011 | `checklists/review.md::FR-011` |
+| FR-012 | `tasks.md::T027` |
+| FR-013 | `checklists/review.md::FR-013` |
+| FR-014 | `tasks.md::T028` |
+| FR-015 | `tasks.md::T029` |
+| FR-016 | `tasks.md::T023` |
+| FR-017 | `checklists/review.md::FR-017` |
+| FR-018 | `checklists/review.md::FR-018` |
+| SC-001 | `checklists/review.md::AS1.1` |
+| SC-002 | `checklists/review.md::AS2.1` |
+| SC-003 | `checklists/review.md::AS3.4` |
+| SC-004 | `checklists/review.md::FR-010` |
+| SC-005 | `tasks.md::T027` |
+
 ## Assumptions
 
 - The "Get Started" button links to an existing documentation page or external URL; the specific destination will be determined during implementation based on available project resources
