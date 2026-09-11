@@ -42,7 +42,7 @@ effort flags stay unset unless the group says otherwise.
 
 ---
 
-## G-01 — Repair the two known `main` failures
+## G-01 — Repair the two known `main` failures (working on)
 
 Source: `open-questions.md` (both items). Effort: low. Depends on: none.
 Claude: `bdd-orchestrator` (the fix is script behavior; hook tests exist as a pattern).
