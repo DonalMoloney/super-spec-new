@@ -59,7 +59,6 @@ EXCLUDED_PREFIXES = (
 EXCLUDED_MEMBERS = (
     ".gitattributes",
     ".gitignore",
-    "README_zh.md",
 )
 
 failures: list[str] = []

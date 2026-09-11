@@ -63,7 +63,7 @@ and greps the resulting `.specify/extensions.yml` for the registered commands.
   every command/hook name (`speckit.<id>.*`). Drift fails
   `validate-extension-metadata.py` and CI, and breaks catalog install.
 - **`.gitattributes` `export-ignore`**: `assets/`, `examples/`, `scripts/`, `.github/`,
-  `.gitattributes`, `.gitignore`, `README_zh.md` are stripped from the `git archive` ZIP
+  `.gitattributes`, `.gitignore` are stripped from the `git archive` ZIP
   that `specify extension add specflow` actually downloads. An installed extension
   never has these — don't reference them from a command file as if it will.
 - **Archive size limits**: spec-kit's `_download_security.py` enforces 50 MiB total
@@ -103,8 +103,8 @@ Given/When/Then blocks and `bdd-orchestrator`'s checklist items both follow this
 
 - Command files follow the existing Input/Output/Process shape (see any file in
   `specflow/commands/`) — match it exactly when adding or editing a command.
-- Keep the English (`README.md`) and Chinese (`README_zh.md`) docs in sync; the
-  Chinese half is `export-ignore`d but still checked into the repo.
+- Documentation is English only (`standards/documentation.md`). Do not add or
+  maintain a translated copy of `README.md` or any other doc.
 - When a change touches `extension.yml`, `commands/`, or `templates/`, run both
   validate scripts before committing — CI will otherwise fail on the same checks.
 

@@ -38,6 +38,16 @@ descriptions, hand-off reports, and docstrings. The same tone rules govern
 - No triplets written for rhythm ("fast, reliable, and secure"). Name the property
   that matters.
 - No "not only X but also Y". Say X and Y.
+- Natural voice. The test: a senior engineer would say the sentence aloud to a
+  colleague without rephrasing it. If it sounds like a press release or a chatbot,
+  rewrite it.
+- Crisp over wordy. Cut "in order to", "the case where", "a number of", "various",
+  "ensure that", "as needed", "appropriately", "properly", "it is possible to".
+- No self-narration. A sentence never announces what the next sentence does
+  ("Below, the steps are listed").
+- No mirrored structure for its own sake: no sentence that restates the previous
+  one in different words, no paragraph that opens with a definition of a term the
+  reader already knows.
 
 ## Banned words and phrases
 
@@ -45,8 +55,9 @@ Reject any draft containing these. They signal generated filler, not information
 
 | Category | Banned |
 |----------|--------|
-| Verbs | delve, leverage, utilize, streamline, empower, unlock, harness, elevate, foster, navigate (figurative), dive into |
-| Adjectives | robust, seamless, comprehensive, cutting-edge, state-of-the-art, powerful, elegant, holistic, best-in-class, game-changing, crucial, vital, key (as adjective) |
+| Verbs | delve, leverage, utilize, streamline, empower, unlock, harness, elevate, foster, navigate (figurative), dive into, facilitate, showcase, ensure (as filler), handle gracefully |
+| Adjectives | robust, seamless, comprehensive, cutting-edge, state-of-the-art, powerful, elegant, holistic, best-in-class, game-changing, crucial, vital, key (as adjective), intuitive, meticulous, innovative, efficient (without a number) |
+| Phrases | "a wide range of", "plays a role in", "serves as", "is designed to", "aims to", "in a way that", "when it comes to", "at the end of the day", "moving forward", "going forward" |
 | Nouns | journey, landscape, ecosystem (unless literal), synergy, deep dive, testament, tapestry, realm, paradigm |
 | Openers | "In today's", "In the world of", "It's worth noting", "It's important to note", "Note that", "Please note", "As mentioned above", "At its core", "Great question" |
 | Closers | "In conclusion", "In summary", "To sum up", "Hope this helps", "Feel free to", "Let me know if" |
@@ -64,7 +75,12 @@ Reject any draft containing these. They signal generated filler, not information
   command and its result, and what was deliberately left out. Uses the repo template.
 - **Hand-off report**: outcome first, verification evidence second, open items last.
   No narrative of the process.
-- **Docstrings**: see `standards/code.md`.
+- **Docstrings and code comments**: see `standards/code.md`. Comments are a
+  separate register from documentation and do not follow this file's structure rules.
+- **Language**: English only. Do not write or maintain a translated copy of any
+  document (a `_zh`, `_fr`, or similar sibling file). A second-language copy is a
+  second document that drifts from the first the moment either one changes; keep
+  one canonical file per document instead.
 
 ## Before you hand off
 

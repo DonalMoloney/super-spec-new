@@ -13,7 +13,6 @@
 - [ ] `python3 scripts/validate-release-archive.py` passes (if a binary asset was added/changed)
 - [ ] `bash scripts/e2e-smoke.sh` passes
 - [ ] `extension.id` still matches the `speckit.<id>.*` namespace on every touched command/hook
-- [ ] README.md and README_zh.md are still in sync (if docs changed)
 - [ ] Work was independently re-verified (fresh command output, not a self-report — see `work-verifier`)
 
 ## Evidence

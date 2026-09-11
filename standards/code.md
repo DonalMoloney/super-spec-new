@@ -43,6 +43,19 @@ first edit. Reviewers reject against it.
   internal invariants. Do not re-validate the same value at every layer.
 - An error message states what was expected, what was found, and what the caller can
   do about it.
+- An error type says what went wrong, not just that something did. Raise or return a
+  specific type (`ValidationError`, `MissingConstitutionError`) rather than a bare
+  string or the language's generic exception; a caller that needs to react to one
+  failure differently from another cannot do so against a string.
+- A caller three layers down from the boundary does not know about a boundary
+  failure by accident. Propagate the original error (wrapped with the layer's own
+  context, never replaced) until it reaches code that can act on it — log it, retry
+  it, or surface it to the user. Do not let an error stop at a layer that only
+  passes data through.
+- Retry only an operation that is genuinely transient (network call, external CLI
+  invocation) and only when the retry policy is explicit at the call site: what is
+  retried, how many times, and what happens when retries are exhausted. A bare loop
+  around a call with no bound is a hang, not a retry.
 
 ## Comments and docstrings
 
@@ -54,6 +67,50 @@ first edit. Reviewers reject against it.
 - Forbidden: comments that narrate the edit ("added for clarity", "updated to handle
   X"), section banner comments, TODOs without an owner and an issue reference, and
   any comment addressed to a reviewer or user.
+
+Comments and Markdown documentation are different registers. A reviewer must be
+able to tell from wording alone which one a sentence came from.
+
+- A comment addresses the next editor of that line, who can see the code. It names
+  only what the code cannot show. Documentation addresses a reader who has not
+  opened the code and assumes nothing is on screen.
+- A comment is one declarative sentence in present tense stating a constraint or a
+  cause: "The API drops idle connections after 30 s." No headers, lists, tables,
+  or links other than an issue or ADR reference. Anything needing structure is
+  documentation, and the comment cites it.
+- Documentation is imperative and addressed to the reader: "Run the validator
+  before committing." A comment never gives the reader an instruction.
+- A comment uses identifiers verbatim: `extension.id`, not "the extension
+  identifier". Documentation uses prose names and follows the one-identifier-per-
+  sentence rule in `standards/documentation.md`.
+- No pronouns in comments: no "we", "you", "I", "our". Documentation may address
+  "you".
+- Rejected comment openers, checkable with grep: "This", "Here we", "Note",
+  "Basically", "Make sure", "Remember to". Each one either narrates the code or
+  addresses a person.
+
+Wording in comments, docstrings, log messages, and error text is professional and
+natural. The test: a senior engineer would say the sentence aloud to a colleague
+without rephrasing it.
+
+- Crisp over wordy. "Retries once; the API drops idle connections" beats "We
+  retry here in order to handle the case where the API might drop idle
+  connections". Cut "in order to", "the case where", "a number of", "various",
+  "ensure that", "as needed", "appropriately", "properly".
+- No filler that signals generated text: "ensure", "handle gracefully",
+  "robust", "seamless", "leverage", "utilize", "facilitate", "note that",
+  "it is important to". The banned table in `standards/documentation.md`
+  applies to every string a person will read.
+- No hedging in a comment. Either the constraint holds or the comment is wrong.
+  Reject "should", "might", "generally", "typically", "may or may not".
+- No emphasis words. Reject "very", "really", "simply", "just", "clearly",
+  "obviously", "of course".
+- Plain vocabulary. "use" not "utilize", "start" not "initiate", "end" not
+  "terminate", "show" not "surface", "check" not "validate that", unless the
+  code already defines the longer term.
+- Error and log messages state the fact, then the expected value, then the fix.
+  "extension.id is 'flow'; expected 'specflow'. Edit extension.yml." No apology,
+  no "Oops", no "Something went wrong".
 
 ## Tests
 

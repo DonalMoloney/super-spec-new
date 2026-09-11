@@ -176,7 +176,7 @@ cd "$REPO_ROOT"
 check_drift "commands/ uses 'specs/' not '.specify/specs/'"      commands/
 check_drift "templates/ uses 'specs/' not '.specify/specs/'"     templates/
 check_drift "README/SKILL/examples use 'specs/' not '.specify/specs/'" \
-            README.md README_zh.md SKILL.md examples/ references/
+            README.md SKILL.md examples/ references/
 
 # -------------------------------------------------------------------------
 step "5/5" "Generated artifacts (for human review)"

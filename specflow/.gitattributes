@@ -36,6 +36,3 @@ scripts/           export-ignore
 # Git metadata that has no meaning inside an installed extension directory.
 .gitattributes     export-ignore
 .gitignore         export-ignore
-
-# Secondary translation of the README; README.md ships as the required doc.
-README_zh.md       export-ignore

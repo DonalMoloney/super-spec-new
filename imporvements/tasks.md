@@ -92,17 +92,16 @@ Verify: `grep -n '^## Code Review Rules' specflow/templates/constitution-templat
 - [ ] T022 Add the same section to root `AGENTS.md`
 
 1. Add `## Code Review Rules` to `AGENTS.md` after `## Standards`.
-2. Fill it with this repo's real rules: run both validate scripts, hook tests pass, no `[NEEDS CLARIFICATION]` in shipped templates, English and Chinese README in sync.
+2. Fill it with this repo's real rules: run both validate scripts, hook tests pass, no `[NEEDS CLARIFICATION]` in shipped templates.
 3. Reference `standards/code.md` rather than repeating its content.
 
 Verify: `grep -n '^## Code Review Rules' AGENTS.md` prints one line; `python3 specflow/scripts/validate-extension-metadata.py` still exits 0 (it checks docs alignment).
 
-- [ ] T023 Mirror the template change in the README pair
+- [ ] T023 Mirror the template change in the README
 
 1. Update `specflow/README.md` where templates are described.
-2. Make the equivalent edit in `specflow/README_zh.md`.
 
-Verify: both READMEs mention the Code Review Rules section.
+Verify: the README mentions the Code Review Rules section.
 
 ---
 
@@ -357,10 +356,10 @@ Verify: the table header exists with the three columns.
 
 Verify: both items appear in the template.
 
-- [ ] T104 Update the example and READMEs
+- [ ] T104 Update the example and README
 
 1. Add the two sections to `specflow/examples/static-landing-page/` spec so the example stays a golden run.
-2. Mention the sections in `README.md` and `README_zh.md`.
+2. Mention the sections in `README.md`.
 3. Run both validate scripts.
 
 Verify: `cd specflow && python3 scripts/validate-extension-metadata.py && python3 scripts/validate-release-archive.py` exits 0.

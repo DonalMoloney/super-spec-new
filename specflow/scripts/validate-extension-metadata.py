@@ -101,7 +101,6 @@ def main() -> None:
     #    (an old naming we no longer use).
     docs = [
         "README.md",
-        "README_zh.md",
         "SKILL.md",
         "references/superpowers-bridge.md",
         "references/workflow-guide.md",
