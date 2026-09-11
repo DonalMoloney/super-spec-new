@@ -64,6 +64,16 @@ printf '# Tasks\n- [ ] do a without an id\n' > tasks.md
 check "tasks without T-ids blocked"             2 "$(lint tasks.md)"
 printf '# Tasks\n- [ ] T001 do a\n- [ ] [P] do b\n' > tasks.md
 check "malformed [P] line blocked"              2 "$(lint tasks.md)"
+printf '# Checklist\n- [ ] Confirm the requirement.\n' > checklist-quality.md
+check "unchecked checklist passes"              0 "$(lint checklist-quality.md)"
+printf '# Checklist\n- [x] Confirm the requirement.\n' > checklist-quality.md
+check "checked checklist passes"                0 "$(lint checklist-quality.md)"
+printf '# Checklist\n- [X] Confirm the requirement.\n' > checklist-quality.md
+check "uppercase checked checklist passes"      0 "$(lint checklist-quality.md)"
+printf '# Checklist\n' > checklist-quality.md
+check "empty checklist blocked"                 2 "$(lint checklist-quality.md)"
+printf '# Checklist\nThe prose mentions [ ] without a checkbox line.\n' > checklist-quality.md
+check "checklist with only prose blocked"       2 "$(lint checklist-quality.md)"
 printf 'anything\n' > notes.md
 check "unrelated file ignored"                  0 "$(lint notes.md)"
 cd /
