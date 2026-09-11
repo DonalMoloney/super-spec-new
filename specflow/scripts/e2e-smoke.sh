@@ -69,7 +69,7 @@ assert_grep()    {
 step "1/5" "Initialize spec-kit in a fresh project"
 cd "$WORK"
 if ! uvx --from git+https://github.com/github/spec-kit.git specify init \
-        --here --offline --integration codex --ignore-agent-tools --no-git --force \
+        --here --integration codex --ignore-agent-tools --force \
         </dev/null >"$INIT_LOG" 2>&1; then
   fail "specify init exited non-zero (see $INIT_LOG)"
   echo "----- last 30 lines of init log -----"

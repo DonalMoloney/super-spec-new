@@ -108,6 +108,21 @@ Given/When/Then blocks and `bdd-orchestrator`'s checklist items both follow this
 - When a change touches `extension.yml`, `commands/`, or `templates/`, run both
   validate scripts before committing — CI will otherwise fail on the same checks.
 
+## Standards
+
+Every agent, on either target surface, produces work against the three files under
+`standards/`. Read the one that matches the output before starting; reviewers and
+`work-verifier` reject against them.
+
+- [`standards/code.md`](standards/code.md): how code is developed. TDD order, scope
+  discipline, naming, error handling, comments, tests, commits, and a list of
+  patterns rejected on sight.
+- [`standards/documentation.md`](standards/documentation.md): how prose is written.
+  Structure, tone, a banned-phrase table, and per-document rules for README,
+  CHANGELOG, ADR, PR description, and hand-off report.
+- [`standards/presentations.md`](standards/presentations.md): how slide decks are
+  formatted. Marp front matter, per-slide limits, deck shape, and a render check.
+
 ## Agent behavior guidelines
 
 Adapted from [andrej-karpathy-skills CLAUDE.md](https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md).
@@ -125,6 +140,23 @@ this is the one place both surfaces read:
 - **No speculative scope**: this reinforces the [Task decomposition](#task-decomposition)
   rule above — implement exactly the requested item, not adjacent "while we're at it"
   improvements.
+
+## Roadmap execution workflow
+
+**Main branch stays clean:**
+- All roadmap work (G-01 through G-18) runs in background git worktrees.
+- Main branch is always on the latest merge; no feature branches here.
+- Each group = one worktree in `~/PycharmProjects/worktrees/<group-name>` with its own agent run.
+- After completion, worktree is deleted and the PR is merged to main.
+
+**Agent dispatch pattern:**
+- Create worktree: `git worktree add ~/PycharmProjects/worktrees/G-01-<name> -b <branch-name>`
+- Dispatch agent: e.g., `bdd-orchestrator` for groups with script/hook/CI changes
+- Agent runs in background (`--background` flag where applicable)
+- User remains on `main` and can continue to other worktrees or tasks
+- Pull latest when ready; clean up worktree after merge
+
+See `imporvements/tasks.md` for group definitions, executors, and Verify conditions.
 
 ## Claude Code
 
