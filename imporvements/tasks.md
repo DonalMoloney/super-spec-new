@@ -299,7 +299,7 @@ Verify: reviewer output attached to the PR; description mentions "add", "fix", "
 
 ---
 
-## G-09 — Items 10, 15, 17: CI merge-gate workflow
+## G-09 — Items 10, 15, 17: CI merge-gate workflow (working on)
 
 Source: Part 4.11, Part 2 items 10, 15, 17. Effort: medium. Depends on: G-05, G-06.
 Claude: `bdd-orchestrator`; use `claude-code-guide` to verify headless flag names.
@@ -501,7 +501,7 @@ Verify: `E2E_DRY_RUN=1 bash scripts/e2e-agent-claude.sh` exits 0.
 
 ---
 
-## G-15 — Item 14: differential implementation (Claude vs Codex)
+## G-15 — Item 14: differential implementation (Claude vs Codex) (working on)
 
 Source: Part 2 item 14. Effort: medium-high. Depends on: none. This is the one group where both executors run, by design.
 Claude: `bdd-orchestrator` for the script; then `general-purpose` for the protocol doc.

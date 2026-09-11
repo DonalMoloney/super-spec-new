@@ -22,11 +22,11 @@ sets the effort of the session that dispatches it.
 
 | Group | Open tasks | Executor | Model | Effort | Status |
 |---|---|---|---|---|---|
-| G-09 CI merge-gate workflow | T091, T092, T093, T094 | `bdd-orchestrator` | opus | medium | free |
-| G-15 differential implementation | T151, T152, T153 | `bdd-orchestrator` | opus | high | free |
+| G-09 CI merge-gate workflow | T091, T092, T093, T094 | `bdd-orchestrator` | opus | medium | claimed |
+| G-15 differential implementation | T151, T152, T153 | `bdd-orchestrator` | opus | high | claimed |
 
-A free group has no unmet dependency and no worktree. Neither open group is
-part-finished on `main`: both are at task 1.
+A claimed group has a worktree and a `(working on)` marker in `tasks.md`.
+Neither open group is part-finished on `main`: both are at task 1.
 
 ## Merged
 
@@ -43,11 +43,16 @@ part-finished on `main`: both are at task 1.
 
 ## Dispatched now
 
-Nothing is dispatched. Claim a group here and in `tasks.md` before creating its
-worktree, so a second session does not start the same group.
+Claim a group here and in `tasks.md` before creating its worktree, so a second
+session does not start the same group.
 
-G-06 merged in PR #30, so G-09 has no unmet dependency. G-09 and G-15 are both
-free to start.
+- **G-09** runs in `~/PycharmProjects/worktrees/g-09-merge-gate-ci` on branch
+  `g-09-merge-gate-ci`, dispatched 2026-09-11.
+- **G-15** runs in `~/PycharmProjects/worktrees/g-15-differential` on branch
+  `g-15-differential`, dispatched 2026-09-11.
+
+Both edit `.claude/hooks/README.md`, so they merge serially: whichever opens
+second rebases on the first.
 
 ## Why each group sits where it does
 
