@@ -75,7 +75,7 @@ Verify: `open-questions.md` has no unchecked item about these scripts.
 
 ---
 
-## G-02 — Item 1: Code Review Rules in the constitution and AGENTS.md
+## G-02 — Item 1: Code Review Rules in the constitution and AGENTS.md (working on)
 
 Source: Part 2 item 1, Part 8 days 0–30. Effort: low. Depends on: none.
 Claude: `general-purpose`, then `work-verifier`.
@@ -106,7 +106,7 @@ Verify: both READMEs mention the Code Review Rules section.
 
 ---
 
-## G-03 — Item 3: clarify, analyze, and checklist gates
+## G-03 — Item 3: clarify, analyze, and checklist gates (working on)
 
 Source: Part 2 item 3. Effort: low. Depends on: none (artifact-lint already checks `NEEDS CLARIFICATION` after a `.clarified` marker).
 Claude: `bdd-orchestrator` (adds hook-test cases).
@@ -143,7 +143,7 @@ Verify: `bash .claude/hooks/tests/run.sh` reports zero FAIL.
 
 ---
 
-## G-04 — Item 7: model routing on every subagent
+## G-04 — Item 7: model routing on every subagent (working on)
 
 Source: Part 2 item 7, Appendix B. Effort: low. Depends on: none.
 Claude: `general-purpose`; use `claude-code-guide` first to confirm the current `model:` frontmatter aliases.
