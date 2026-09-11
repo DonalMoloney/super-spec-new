@@ -2,6 +2,7 @@
 """Tests for score-artifacts.py, the feature-directory artifact scorer."""
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -81,6 +82,61 @@ def write_feature(directory, spec_text, tasks_text=None):
     return feature_dir
 
 
+HASH_SEEDS = ("0", "1", "2", "3", "4", "5", "6", "7")
+
+SPEC_WITH_FOUR_UNTRACED = """# Feature
+
+## User Scenarios & Testing *(mandatory)*
+
+Scenario text.
+
+## Requirements *(mandatory)*
+
+- **SC-002**: The page prints.
+- **FR-003**: The page caches its assets.
+- **SC-001**: The page loads under one second.
+- **FR-002**: The page paginates.
+- **FR-001**: The page loads.
+
+## Success Criteria *(mandatory)*
+
+Criteria are declared above.
+
+## Traceability
+
+| Criterion | Test |
+|---|---|
+| FR-001 | `checklists/review.md::FR-001` |
+"""
+
+TASKS_WITH_THREE_MISSING_IDS = """# Tasks
+
+- [ ] Write the landing page copy
+- [x] T001 Create the output directory
+- [ ] Archive the previous build
+- [X] Measure the first paint
+"""
+
+
+def score_under_hash_seed(feature_dir, seed):
+    """Run the scorer on feature_dir with PYTHONHASHSEED set to seed."""
+    environment = dict(os.environ)
+    environment["PYTHONHASHSEED"] = seed
+    return subprocess.run(
+        [sys.executable, str(SCRIPT), str(feature_dir)],
+        capture_output=True,
+        text=True,
+        env=environment,
+    )
+
+
+def score_json_under_hash_seed(feature_dir, seed):
+    """Run the scorer under seed, assert success, and return the parsed report."""
+    result = score_under_hash_seed(feature_dir, seed)
+    assert result.returncode == 0, result.stderr
+    return json.loads(result.stdout)
+
+
 def test_golden_run_exits_zero_and_prints_one_json_object():
     result = score(GOLDEN_FEATURE_DIR)
     assert result.returncode == 0, result.stderr
@@ -124,9 +180,13 @@ def test_golden_run_finds_one_needs_clarification_marker():
     ]
 
 
-def test_golden_run_output_is_byte_identical_across_runs():
-    first = score(GOLDEN_FEATURE_DIR)
-    second = score(GOLDEN_FEATURE_DIR)
+def test_output_is_byte_identical_under_different_hash_seeds():
+    with tempfile.TemporaryDirectory() as directory:
+        feature_dir = write_feature(
+            directory, SPEC_WITH_FOUR_UNTRACED, TASKS_WITH_THREE_MISSING_IDS
+        )
+        first = score_under_hash_seed(feature_dir, "0")
+        second = score_under_hash_seed(feature_dir, "12345")
     assert first.returncode == 0, first.stderr
     assert second.returncode == 0, second.stderr
     assert first.stdout == second.stdout
@@ -375,3 +435,112 @@ def test_seeded_bug_matches_the_golden_on_every_other_dimension():
         report["needs_clarification"]["count"]
         == golden["needs_clarification"]["count"]
     )
+
+
+def test_four_untraced_criteria_are_listed_in_sorted_order():
+    with tempfile.TemporaryDirectory() as directory:
+        feature_dir = write_feature(directory, SPEC_WITH_FOUR_UNTRACED)
+        untraced = [
+            score_json_under_hash_seed(feature_dir, seed)["traceability"]["untraced"]
+            for seed in HASH_SEEDS
+        ]
+    assert untraced == [["FR-002", "FR-003", "SC-001", "SC-002"]] * len(HASH_SEEDS)
+
+
+def test_untraced_criteria_count_is_independent_of_declaration_order():
+    with tempfile.TemporaryDirectory() as directory:
+        report = score_json(write_feature(directory, SPEC_WITH_FOUR_UNTRACED))
+    assert report["traceability"]["criteria"] == 5
+    assert report["traceability"]["traced"] == 1
+    assert report["traceability"]["score"] == 20.0
+
+
+def test_traceability_row_with_dash_test_cell_leaves_criterion_untraced():
+    spec = """# Feature
+
+## Requirements
+
+- **FR-001**: The page loads.
+- **FR-002**: The page prints.
+
+## Traceability
+
+| Criterion | Test |
+|---|---|
+| FR-001 | `checklists/review.md::FR-001` |
+| FR-002 | - |
+"""
+    with tempfile.TemporaryDirectory() as directory:
+        report = score_json(write_feature(directory, spec))
+    assert report["traceability"]["traced"] == 1
+    assert report["traceability"]["untraced"] == ["FR-002"]
+    assert report["traceability"]["score"] == 50.0
+
+
+def test_three_tasks_without_ids_are_listed_in_sorted_order():
+    with tempfile.TemporaryDirectory() as directory:
+        report = score_json(
+            write_feature(
+                directory, SPEC_WITH_FOUR_UNTRACED, TASKS_WITH_THREE_MISSING_IDS
+            )
+        )
+    assert report["task_ids"]["tasks"] == 4
+    assert report["task_ids"]["with_id"] == 1
+    assert report["task_ids"]["without_id"] == [
+        "Archive the previous build",
+        "Measure the first paint",
+        "Write the landing page copy",
+    ]
+    assert report["task_ids"]["score"] == 25.0
+
+
+def test_two_missing_sections_are_listed_in_sorted_not_template_order():
+    spec = """# Feature
+
+## Success Criteria *(mandatory)*
+
+- **SC-001**: The page loads under one second.
+"""
+    with tempfile.TemporaryDirectory() as directory:
+        report = score_json(write_feature(directory, spec))
+    assert report["spec_sections"]["present"] == 1
+    assert report["spec_sections"]["missing"] == [
+        "Requirements",
+        "User Scenarios & Testing",
+    ]
+    assert report["spec_sections"]["score"] == 33.3
+
+
+def test_markers_across_files_are_listed_by_file_then_line():
+    nested_marker_file = """Nested notes.
+
+A line holding NEEDS CLARIFICATION about the nested file.
+"""
+    top_marker_file = """A line holding NEEDS CLARIFICATION about the top file.
+
+Another line holding NEEDS CLARIFICATION about the top file.
+"""
+    with tempfile.TemporaryDirectory() as directory:
+        feature_dir = write_feature(directory, SPEC_WITH_FOUR_UNTRACED)
+        (feature_dir / "alpha").mkdir()
+        (feature_dir / "alpha" / "nested.md").write_text(nested_marker_file)
+        (feature_dir / "zz-notes.md").write_text(top_marker_file)
+        report = score_json(feature_dir)
+    assert report["needs_clarification"]["count"] == 3
+    assert report["needs_clarification"]["locations"] == [
+        {"file": "alpha/nested.md", "line": 3},
+        {"file": "zz-notes.md", "line": 1},
+        {"file": "zz-notes.md", "line": 3},
+    ]
+
+
+def test_stdout_is_the_report_indented_by_two_with_sorted_keys():
+    with tempfile.TemporaryDirectory() as directory:
+        result = score(
+            write_feature(
+                directory, SPEC_WITH_FOUR_UNTRACED, TASKS_WITH_THREE_MISSING_IDS
+            )
+        )
+    assert result.returncode == 0, result.stderr
+    expected = json.dumps(json.loads(result.stdout), indent=2, sort_keys=True) + "\n"
+    assert result.stdout == expected
