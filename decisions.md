@@ -80,7 +80,7 @@ model families; alias versions can change. Actual cost savings remain unmeasured
 - Consequences: the script needs only git and bash. A later rule that wants a ratio
   must compare two integer products, such as `a * 100 -gt b * 30`, never a decimal.
 
-## ADR-0005: A finding clears the merge gate only when fixed or rebutted
+## ADR-0006: A finding clears the merge gate only when fixed or rebutted
 
 - Date: 2026-09-11
 - Status: accepted
