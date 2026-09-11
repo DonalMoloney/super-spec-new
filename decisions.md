@@ -44,3 +44,23 @@ Assign `sonnet` to `gherkin-writer`, `step-definition-scaffolder`, `task-decompo
 Assign `haiku` to `red-phase-verifier`, `green-phase-verifier`, `regression-runner`,
 `documentation-scribe`, and `release-reporter`. Consequences: routing uses explicit
 model families; alias versions can change. Actual cost savings remain unmeasured.
+
+## ADR-0004: The main-commit gate evaluates the landing branch, not HEAD
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: `block-main-commit.sh` read `git rev-parse --abbrev-ref HEAD` at
+  PreToolUse time. A PreToolUse hook fires before the command runs, so that
+  reading answers the wrong question. `git switch -c feat && git commit` was
+  blocked on main, and `git switch main && git commit` was allowed from a
+  feature branch.
+- Decision: split the command on `&&`, `||`, `;`, and `|`, walk the segments in
+  execution order, and track the branch each `switch` or `checkout` leaves
+  behind. Evaluate that branch when a segment commits. A segment counts as a
+  command only when it starts with `git <subcommand>`, so prose quoting git does
+  not steer the gate. A segment that moves HEAD somewhere the gate cannot name,
+  such as `git switch -`, blocks.
+- Consequences: the gate now blocks a commit it used to allow. It reads the
+  command text, not the shell's parse, so a switch written inside a conditional
+  or a function body goes unseen and the commit is judged against the branch at
+  hook time. That direction blocks rather than allows.
