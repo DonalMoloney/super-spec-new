@@ -99,6 +99,20 @@ A visitor who wants to try SpecFlow finds a workflow diagram illustrating the ty
 - **FR-017**: The install snippet container MUST be keyboard-focusable (tabindex) so users can select and copy the command without a mouse
 - **FR-018**: The page MUST remain readable and functional under OS-level forced-colors / high-contrast modes — no information conveyed by background-color alone
 
+## Threat Model
+
+The page has no user input, no forms, no cookies, no JavaScript, and no external
+resource loading, so most STRIDE categories are not applicable.
+
+| Threat | Abuse case | Mitigation (or N/A + reason) |
+|--------|------------|-------------------------------|
+| Spoofing | N/A | N/A — the page has no identity or session to spoof. |
+| Tampering | A network attacker on an unencrypted connection alters the served HTML or CSS. | Serve over HTTPS; the page has no server-side state to protect beyond transport. |
+| Repudiation | N/A | N/A — the page records no user action and has no audit trail to dispute. |
+| Information disclosure | N/A | N/A — the page contains no user data, session, or secret to disclose. |
+| Denial of service | N/A | N/A — a static single file has no backend request path to exhaust. |
+| Elevation of privilege | N/A | N/A — the page has no authentication or privilege levels. |
+
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
@@ -113,31 +127,31 @@ A visitor who wants to try SpecFlow finds a workflow diagram illustrating the ty
 
 Each criterion maps to the validation reference that confirms it.
 
-| Criterion | Test |
-|---|---|
-| FR-001 | `checklists/review.md::FR-001` |
-| FR-002 | `checklists/review.md::FR-002` |
-| FR-003 | `checklists/review.md::FR-003` |
-| FR-004 | `checklists/review.md::FR-004` |
-| FR-005 | `checklists/review.md::FR-005` |
-| FR-006 | `checklists/review.md::FR-006` |
-| FR-007 | `checklists/review.md::FR-007` |
-| FR-008 | `checklists/review.md::FR-008` |
-| FR-009 | `checklists/review.md::FR-009` |
-| FR-010 | `checklists/review.md::FR-010` |
-| FR-011 | `checklists/review.md::FR-011` |
-| FR-012 | `tasks.md::T027` |
-| FR-013 | `checklists/review.md::FR-013` |
-| FR-014 | `tasks.md::T028` |
-| FR-015 | `tasks.md::T029` |
-| FR-016 | `tasks.md::T023` |
-| FR-017 | `checklists/review.md::FR-017` |
-| FR-018 | `checklists/review.md::FR-018` |
-| SC-001 | `checklists/review.md::AS1.1` |
-| SC-002 | `checklists/review.md::AS2.1` |
-| SC-003 | `checklists/review.md::AS3.4` |
-| SC-004 | `checklists/review.md::FR-010` |
-| SC-005 | `tasks.md::T027` |
+| Criterion ID | Test name | Status |
+|---------------|-----------|--------|
+| FR-001 | `checklists/review.md::FR-001` | Passing |
+| FR-002 | `checklists/review.md::FR-002` | Passing |
+| FR-003 | `checklists/review.md::FR-003` | Passing |
+| FR-004 | `checklists/review.md::FR-004` | Passing |
+| FR-005 | `checklists/review.md::FR-005` | Passing |
+| FR-006 | `checklists/review.md::FR-006` | Passing |
+| FR-007 | `checklists/review.md::FR-007` | Passing |
+| FR-008 | `checklists/review.md::FR-008` | Passing |
+| FR-009 | `checklists/review.md::FR-009` | Passing |
+| FR-010 | `checklists/review.md::FR-010` | Passing |
+| FR-011 | `checklists/review.md::FR-011` | Passing |
+| FR-012 | `tasks.md::T027` | Pending |
+| FR-013 | `checklists/review.md::FR-013` | Passing |
+| FR-014 | `tasks.md::T028` | Pending |
+| FR-015 | `tasks.md::T029` | Pending |
+| FR-016 | `tasks.md::T023` | Failing |
+| FR-017 | `checklists/review.md::FR-017` | Passing |
+| FR-018 | `checklists/review.md::FR-018` | Failing |
+| SC-001 | `checklists/review.md::AS1.1` | Passing |
+| SC-002 | `checklists/review.md::AS2.1` | Passing |
+| SC-003 | `checklists/review.md::AS3.4` | Passing |
+| SC-004 | `checklists/review.md::FR-010` | Passing |
+| SC-005 | `tasks.md::T027` | Pending |
 
 ## Assumptions
 

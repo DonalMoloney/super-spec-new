@@ -118,7 +118,8 @@ Record human approval of the spec before implementation and human approval of th
 ```
 
 This creates a feature specification at `specs/001-user-authentication/spec.md`
-with user stories, requirements, and success criteria.
+with user stories, requirements, success criteria, an optional STRIDE threat
+model, and a traceability table mapping each requirement to its test.
 
 ### 3. Brainstorm Edge Cases
 
@@ -347,7 +348,8 @@ Superpowers:  brainstorming (已检测), writing-plans (未安装)
 /speckit.specify "用户邮箱密码登录认证"
 ```
 
-在 `specs/001-user-authentication/spec.md` 创建功能规格，包含用户故事、需求和成功标准。
+在 `specs/001-user-authentication/spec.md` 创建功能规格，包含用户故事、需求、成功标准、
+可选的 STRIDE 威胁模型，以及将每条需求映射到其测试的可追溯性表格。
 
 ### 3. 头脑风暴边界情况
 
