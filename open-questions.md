@@ -34,3 +34,16 @@ your usage limit", reset at 15:12.
 Owner: whoever retries T153. Resolve by either running the protocol on a spec
 that meets the trigger, or recording that the dry run deliberately overrides
 the trigger rule, then deleting this entry.
+
+## A CI merge-gate finding has no rebuttal path
+
+ADR-0006 blocks a merge until every Critical and Important finding is `fixed`
+or `rebutted`. G-09's workflow writes the headless reviewer's findings to
+`.claude/review/headless-ci.json`, which `.gitignore` excludes, so the file
+exists only inside the job that wrote it. An author cannot edit a status they
+cannot commit, which leaves a false-positive Important finding with no way to
+clear the gate short of changing the code.
+
+Owner: whoever revisits ADR-0006. Resolve by giving CI findings a rebuttal
+path (a committed rebuttal file the gate reads, or a label the gate honors),
+or by scoping the CI reviewer to Critical only, then deleting this entry.
