@@ -32,9 +32,14 @@ All run from inside `specflow/` (script paths are relative to that directory):
 | `E2E_DRY_RUN=1 bash scripts/e2e-agent-claude.sh` | Full agent-driven e2e test across all 7 workflow stages, in dry-run (no API calls) mode |
 | `ANTHROPIC_API_KEY=... bash scripts/e2e-agent-claude.sh` | Same, but actually drives `claude -p` through each stage (costs money) |
 
-CI (`specflow/.github/workflows/ci.yml`) runs the two validate scripts, then installs
-the extension into a real `specify init` project via `uvx --from git+https://github.com/github/spec-kit.git`
-and greps the resulting `.specify/extensions.yml` for the registered commands.
+CI (`.github/workflows/ci.yml`) runs the two validate scripts, the script, review and
+hook test suites, then installs the extension into a real `specify init` project via
+`uvx --from git+https://github.com/github/spec-kit.git` and greps the resulting
+`.specify/extensions.yml` for the registered commands. Test dependencies are declared
+in `requirements-dev.txt`.
+
+Workflows live at the repository root. GitHub reads `.github/workflows/` only from
+there, so a workflow under `specflow/` never runs.
 
 ## Architecture
 

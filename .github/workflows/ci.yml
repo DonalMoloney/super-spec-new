@@ -6,10 +6,15 @@ on:
       - main
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     name: Validate extension
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -20,14 +25,29 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install test dependencies
+        run: python3 -m pip install --quiet --requirement requirements-dev.txt
+
       - name: Validate metadata and docs
+        working-directory: specflow
         run: python3 scripts/validate-extension-metadata.py
 
       # The catalog installs from GitHub's generated tag ZIP, which spec-kit
       # size-validates before extracting. Rebuild that ZIP and check it here so
       # an oversized asset fails CI instead of failing `specify extension add`.
       - name: Validate release archive
+        working-directory: specflow
         run: python3 scripts/validate-release-archive.py
+
+      - name: Script tests
+        working-directory: specflow
+        run: python3 -m pytest scripts/tests -q
+
+      - name: Review findings validator tests
+        run: python3 -m pytest .claude/review/tests -q
+
+      - name: Hook tests
+        run: bash .claude/hooks/tests/run.sh
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
@@ -37,8 +57,8 @@ jobs:
           set -euo pipefail
           tmpdir="$(mktemp -d)"
           cd "$tmpdir"
-          uvx --from git+https://github.com/github/spec-kit.git specify init --here --offline --integration codex --ignore-agent-tools --no-git --force
-          uvx --from git+https://github.com/github/spec-kit.git specify extension add "$GITHUB_WORKSPACE" --dev
+          uvx --from git+https://github.com/github/spec-kit.git specify init --here --integration claude --ignore-agent-tools --force
+          uvx --from git+https://github.com/github/spec-kit.git specify extension add "$GITHUB_WORKSPACE/specflow" --dev
           uvx --from git+https://github.com/github/spec-kit.git specify extension list | tee extension-list.txt
           grep -q "Commands: 5 | Hooks: 3" extension-list.txt
           test -f .specify/extensions.yml
