@@ -299,7 +299,7 @@ Verify: reviewer output attached to the PR; description mentions "add", "fix", "
 
 ---
 
-## G-09 — Items 10, 15, 17: CI merge-gate workflow (working on)
+## G-09 — Items 10, 15, 17: CI merge-gate workflow (merged: PR #46)
 
 Source: Part 4.11, Part 2 items 10, 15, 17. Effort: medium. Depends on: G-05, G-06.
 Claude: `bdd-orchestrator`; use `claude-code-guide` to verify headless flag names.
