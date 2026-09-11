@@ -150,7 +150,7 @@
 
 ## Traceability
 
-Every FR and SC criterion needs at least one named test before review Stage 1.
+Every FR and SC criterion needs at least one named test before the conformance review runs.
 
 | Criterion ID | Test name | Status |
 |--------------|-----------|--------|
