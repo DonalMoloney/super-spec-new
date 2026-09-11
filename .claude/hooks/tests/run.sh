@@ -247,6 +247,31 @@ tl="$(printf '%s\n' "$out" | grep -n "T002 pending" | head -1 | cut -d: -f1)"
 hd="$(printf '%s\n' "$out" | grep -n "HANDOFF-MARKER" | head -1 | cut -d: -f1)"
 check "section order is open-questions, summary, task, handoff" 0 "$([ -n "$oq" ] && [ -n "$sm" ] && [ -n "$tl" ] && [ -n "$hd" ] && [ "$oq" -lt "$sm" ] && [ "$sm" -lt "$tl" ] && [ "$tl" -lt "$hd" ]; echo $?)"
 
+# --- risk-classifier.sh (run by the review pipeline against a base ref) ---
+check_out() { # name expected actual
+  if [ "$2" = "$3" ]; then pass=$((pass+1)); echo "ok   $1"
+  else fail=$((fail+1)); echo "FAIL $1 (expected '$2', got '$3')"; fi
+}
+branch_with() { # path content -> repo on a feature branch holding that file
+  local d; d="$(fresh_repo main)"
+  git -C "$d" switch -q -c feature
+  mkdir -p "$d/$(dirname "$1")"
+  printf '%s\n' "$2" > "$d/$1"
+  git -C "$d" add -A
+  git -C "$d" -c user.email=t@t -c user.name=t commit -q -m change
+  echo "$d"
+}
+classify() { # repo -> HIGH or STANDARD
+  ( cd "$1" && bash "$HOOKS/risk-classifier.sh" main 2>/dev/null )
+}
+check_out "diff touching auth/ is HIGH"     HIGH     "$(classify "$(branch_with auth/session.sh 'check_token')")"
+check_out "lockfile change is HIGH"         HIGH     "$(classify "$(branch_with package-lock.json '{}')")"
+check_out "two-line doc change is STANDARD" STANDARD "$(classify "$(branch_with docs/notes.md $'line one\nline two')")"
+classify_exit() { # repo base -> exit code
+  ( cd "$1" && bash "$HOOKS/risk-classifier.sh" "$2" >/dev/null 2>&1 ); echo $?
+}
+check "unknown base ref fails closed" 2 "$(classify_exit "$(branch_with docs/notes.md one)" no-such-ref)"
+
 # --- .claude/review/schema.json (findings contract read by the reviewer agents) ---
 cd "$HOOKS/../.."
 python3 -c 'import json;json.load(open(".claude/review/schema.json"))' >/dev/null 2>&1

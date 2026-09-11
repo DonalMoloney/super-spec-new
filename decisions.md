@@ -64,3 +64,18 @@ model families; alias versions can change. Actual cost savings remain unmeasured
   command text, not the shell's parse, so a switch written inside a conditional
   or a function body goes unseen and the commit is judged against the branch at
   hook time. That direction blocks rather than allows.
+
+## ADR-0005: `risk-classifier.sh` scores with integer counts, not `bc`
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: the Part 4.10 draft pipes `git diff --shortstat` through `bc` to add
+  insertions and deletions. macOS ships bash 3.2, which has no floating-point
+  arithmetic, and `bc` is absent from a bare shell.
+- Decision: the classifier reads `git diff --numstat` and sums the per-file counts
+  in `$(( ))`. Changed lines and changed files are both whole numbers, and both
+  thresholds (400 lines, 15 files) are whole numbers, so no fractional score exists
+  to lose precision on. A binary file reports a dash in numstat; it counts as a file
+  and contributes no lines.
+- Consequences: the script needs only git and bash. A later rule that wants a ratio
+  must compare two integer products, such as `a * 100 -gt b * 30`, never a decimal.
