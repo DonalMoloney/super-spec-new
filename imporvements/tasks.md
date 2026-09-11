@@ -465,19 +465,19 @@ Source: Part 2 item 5. Effort: medium. Depends on: none.
 Claude: `general-purpose`; `claude-code-guide` first for the current env flag and limits.
 Codex: `codex:codex-rescue --wait` for the docs edits only (Agent Teams is a Claude Code feature; Codex cannot exercise it). Then `codex review --base main`.
 
-- [ ] T141 Confirm the feature flag
+- [x] T141 Confirm the feature flag
 
 1. Ask `claude-code-guide` whether `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is still the flag and what the one-team-per-session limits are today.
 
 Verify: answer recorded in the PR description.
 
-- [ ] T142 Enable it in settings
+- [x] T142 Enable it in settings
 
 1. Add `"env": {"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"}` to `.claude/settings.json`.
 
 Verify: `jq .env .claude/settings.json` prints the key.
 
-- [ ] T143 Document the `[P]` dispatch protocol
+- [x] T143 Document the `[P]` dispatch protocol
 
 1. Read `specflow/commands/execute.md` and `workflow-guide.md` Phase 5.
 2. Add to Phase 5: for a batch of `[P]` tasks, one teammate per task, each in its own worktree, non-overlapping file scopes stated in the brief, no nested teams, and sequential fallback when the flag is unset.
