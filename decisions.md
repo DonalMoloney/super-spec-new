@@ -128,3 +128,24 @@ model families; alias versions can change. Actual cost savings remain unmeasured
 - Consequences: the common regeneration stays unattended. The destructive case
   needs a human. `artifact-lint.sh` catches the same case after the write, so a
   regeneration that skips the prompt still fails the gate.
+
+## ADR-0009: The `## Traceability` table keeps three columns; `score-artifacts.py` needed no change
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: `open-questions.md` flagged a shape conflict between G-13's scorer
+  (which read a two-column golden table: criterion ID, trace target) and G-10's
+  `spec-template.md`, which specifies three columns: `Criterion ID`, `Test name`,
+  `Status`.
+- Decision: keep three columns. `score-artifacts.py`'s `traced_criteria` reads
+  `cells[0]` as the criterion ID and `cells[1]` as the trace target, and ignores
+  any cell beyond that. In the three-column shape, `cells[1]` is `Test name`,
+  the same trace target the two-column shape held in that position, so the
+  scorer needed no change. The `Status` column lands in `cells[2]`, unread.
+  `specflow/templates/spec-template.md`, `specflow/templates/checklist-template.md`,
+  and the `static-landing-page` golden all now use the three-column shape.
+- Consequences: `score-artifacts.py` measures whether a criterion has a named
+  test, not whether that test currently passes; `Status` is documentation for a
+  human reader, not a scorer input. A future scorer dimension that wants to read
+  `Status` reads `cells[2]` by table position, since the column has no separate
+  parser.

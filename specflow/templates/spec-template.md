@@ -122,6 +122,23 @@
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
+## Threat Model
+
+<!--
+  Optional. Walk each STRIDE category against this feature. Mark a row N/A
+  with a one-clause reason when the category does not apply — do not delete
+  the row.
+-->
+
+| Threat | Abuse case | Mitigation (or N/A + reason) |
+|--------|------------|-------------------------------|
+| Spoofing | [Who could impersonate what, and how?] | [Control, or N/A + reason] |
+| Tampering | [What data or message could be altered in transit or at rest?] | [Control, or N/A + reason] |
+| Repudiation | [What action could a user deny taking?] | [Control, or N/A + reason] |
+| Information disclosure | [What data could leak to an unauthorized party?] | [Control, or N/A + reason] |
+| Denial of service | [What could exhaust a resource or block legitimate use?] | [Control, or N/A + reason] |
+| Elevation of privilege | [How could a user gain access beyond their role?] | [Control, or N/A + reason] |
+
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
@@ -130,6 +147,15 @@
 - **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users"]
 - **SC-003**: [User satisfaction metric]
 - **SC-004**: [Business metric]
+
+## Traceability
+
+Every FR and SC criterion needs at least one named test before review Stage 1.
+
+| Criterion ID | Test name | Status |
+|--------------|-----------|--------|
+| FR-001 | [test file or checklist item that verifies it] | [Pending/Passing/Failing] |
+| SC-001 | [test file or checklist item that verifies it] | [Pending/Passing/Failing] |
 
 ## Assumptions
 

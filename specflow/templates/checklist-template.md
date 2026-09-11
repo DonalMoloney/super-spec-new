@@ -50,6 +50,7 @@
 - [ ] CHK021 Authentication and authorization checks in place
 - [ ] CHK022 Sensitive data is not logged or exposed
 - [ ] CHK023 Input sanitization at all entry points
+- [ ] CHK024 STRIDE table filled or each row marked N/A
 
 ### Performance
 
@@ -86,6 +87,7 @@
 - [ ] CHK061 Integration tests cover user journeys
 - [ ] CHK062 All tests pass in CI environment
 - [ ] CHK063 [TDD] tasks followed RED-GREEN-REFACTOR discipline
+- [ ] CHK064 Every criterion has a test in Traceability
 
 ## [Custom Category]
 
