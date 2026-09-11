@@ -340,7 +340,8 @@ blueprint generation process to enhance the plan's task structure section. See
      Otherwise: write test → verify it fails → implement → verify it passes
    - **`[SUBAGENT]` tasks**: If subagent-driven-development skill found, follow its
      dispatch protocol. Otherwise: implement sequentially in-session
-   - **`[P]` tasks**: Launch parallel tasks where possible using the Task tool
+   - **`[P]` tasks**: On Claude Code, launch the batch in parallel with the Task
+     tool; on the Copilot CLI, run it in order
    - **`[REVIEW]` tasks**: Pause and run review protocol (see `/speckit.specflow.review`)
 5. At each **phase checkpoint**: Summarize completed work, run tests if applicable,
    ask user for approval before proceeding to next phase

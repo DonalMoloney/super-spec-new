@@ -183,7 +183,8 @@ hardening requires review. All tests must pass before this phase is considered c
   subagent. Otherwise: implement sequentially in the current session.
 - **[REVIEW]**: Pause execution. Present completed work to user. Wait for explicit
   approval before continuing.
-- **[P]**: Launch parallel tasks where possible using the Task tool.
+- **[P]**: On Claude Code, launch parallel tasks with the Task tool. On the Copilot
+  CLI, run them in order.
 
 ### Checkpoint Protocol
 
