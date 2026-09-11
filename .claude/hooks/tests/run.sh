@@ -272,6 +272,47 @@ classify_exit() { # repo base -> exit code
 }
 check "unknown base ref fails closed" 2 "$(classify_exit "$(branch_with docs/notes.md one)" no-such-ref)"
 
+# --- merge-gate.sh (run before a merge; reads the reviewer findings documents) ---
+MARKER=".claude/review/.merge-approved"
+review_dir() { # -> project dir holding an empty .claude/review/
+  local d; d="$(mktemp -d)"; mkdir -p "$d/.claude/review"; echo "$d"
+}
+write_findings() { # dir reviewer severity status
+  cat > "$1/.claude/review/$2.json" <<JSON
+{"schema_version":"1.0","reviewer":"$2","verdict":"BLOCK","findings":[{"id":"F1","severity":"$3","location":"a.sh:1","evidence":"failing test","fix":"do the thing","status":"$4"}]}
+JSON
+}
+merge_gate() { # dir -> exit code
+  ( cd "$1" && bash "$HOOKS/merge-gate.sh" >/dev/null 2>&1 ); echo $?
+}
+d="$(review_dir)"; write_findings "$d" claude Critical open
+check "open Critical blocks the merge"           1 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Critical accepted
+check "accepted Critical blocks the merge"       1 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Critical rebutted
+check "rebutted Critical clears the merge"       0 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Important open
+check "open Important blocks the merge"          1 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Important rebutted
+check "rebutted Important clears the merge"      0 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Important fixed
+check "fixed Important clears the merge"         0 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Minor open
+check "open Minor never blocks the merge"        0 "$(merge_gate "$d")"
+d="$(review_dir)"
+printf '%s\n' '{"schema_version":"1.0","reviewer":"claude","verdict":"BLOCK","findings":[{"id":"F1","severity":"Critical","location":"a.sh:1","evidence":"failing test","fix":"do the thing"}]}' > "$d/.claude/review/claude.json"
+check "Critical with no status blocks the merge" 1 "$(merge_gate "$d")"
+d="$(review_dir)"
+check "no findings documents clears the merge"   0 "$(merge_gate "$d")"
+check "cleared merge writes the approval marker" 0 "$([ -f "$d/$MARKER" ]; echo $?)"
+d="$(review_dir)"; cp "$HOOKS/../review/schema.json" "$d/.claude/review/schema.json"
+check "schema.json is not read as findings"      0 "$(merge_gate "$d")"
+d="$(review_dir)"; printf 'not json at all\n' > "$d/.claude/review/claude.json"
+check "unreadable findings document blocks"      1 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Critical open; touch "$d/$MARKER"
+merge_gate "$d" >/dev/null
+check "blocked merge clears a stale marker"      0 "$([ ! -f "$d/$MARKER" ]; echo $?)"
+
 # --- .claude/review/schema.json (findings contract read by the reviewer agents) ---
 cd "$HOOKS/../.."
 python3 -c 'import json;json.load(open(".claude/review/schema.json"))' >/dev/null 2>&1

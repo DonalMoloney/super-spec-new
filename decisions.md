@@ -79,3 +79,20 @@ model families; alias versions can change. Actual cost savings remain unmeasured
   and contributes no lines.
 - Consequences: the script needs only git and bash. A later rule that wants a ratio
   must compare two integer products, such as `a * 100 -gt b * 30`, never a decimal.
+
+## ADR-0005: A finding clears the merge gate only when fixed or rebutted
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: the findings schema allows five statuses across three severities. The
+  Part 4.9 draft blocks only on `open`, so flipping a Critical to `rejected` clears
+  the gate with no code change and no argument on record.
+- Decision: block every Critical and Important finding until its status is `fixed`
+  or `rebutted`. `open`, `accepted`, and `rejected` block, because none of them
+  changes the code or records a counter-argument. A missing status reads as `open`,
+  the schema default. Minor never blocks. A rebuttal clears any severity, Critical
+  included: the gate checks that a finding was handled, and the critic stage judges
+  whether the handling holds, filing its own open finding when it does not.
+- Consequences: the gate stays a mechanical check. Without a critic stage an author
+  can clear a Critical by writing a rebuttal; `risk-classifier.sh` decides when the
+  critic stage runs.
