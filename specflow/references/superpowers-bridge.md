@@ -147,6 +147,7 @@ After the superpowers skill's process completes:
 | Superpowers Output | Specflow Destination |
 |--------------------|-----------------------|
 | Review findings | Reported to user |
+| Findings JSON | `specs/NNN/review-findings.json` |
 | Checklist | Optional: `specs/NNN/checklist-review.md` |
 
 ## Graceful Degradation

@@ -354,7 +354,8 @@ explicit user approval. Never skip a checkpoint.
 ## `/speckit.specflow.review`
 
 **Input**: Optional scope (file paths or "all changes") via `$ARGUMENTS`.
-**Output**: Review findings reported to user, optionally written to a checklist file.
+**Output**: Review findings reported to user and written to
+`specs/NNN-feature-name/review-findings.json`, optionally also written to a checklist file.
 
 **Process**:
 1. Read the spec and plan for the feature being reviewed
@@ -370,6 +371,7 @@ explicit user approval. Never skip a checkpoint.
    - **Test coverage**: Verify tests exist for critical paths
 4. Report findings with confidence scores (0-100, only report issues >= 80)
 5. Group findings by severity: Critical > Important > Suggestion
+6. Write the findings to `specs/NNN-feature-name/review-findings.json`
 
 ---
 
