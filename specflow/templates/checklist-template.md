@@ -25,10 +25,10 @@
   Generated from spec.md user stories and acceptance scenarios.
 -->
 
-- [ ] CHK001 US1 Scenario 1: [Given/When/Then from spec] — implemented and tested
-- [ ] CHK002 US1 Scenario 2: [Given/When/Then from spec] — implemented and tested
-- [ ] CHK003 US2 Scenario 1: [Given/When/Then from spec] — implemented and tested
-- [ ] CHK004 Edge case: [Edge case from spec] — handled correctly
+- [ ] CHK001 US1 Scenario 1: [Given/When/Then from spec], implemented and tested
+- [ ] CHK002 US1 Scenario 2: [Given/When/Then from spec], implemented and tested
+- [ ] CHK003 US2 Scenario 1: [Given/When/Then from spec], implemented and tested
+- [ ] CHK004 Edge case: [Edge case from spec], handled correctly
 
 ## Code Review
 
@@ -41,7 +41,7 @@
 
 - [ ] CHK010 Logic is correct and handles all acceptance scenarios
 - [ ] CHK011 Edge cases from brainstorming are handled
-- [ ] CHK012 Error handling is comprehensive (no silent failures)
+- [ ] CHK012 Error handling covers every failure path (no silent failures)
 - [ ] CHK013 Data validation at system boundaries
 
 ### Security
@@ -84,7 +84,7 @@
 -->
 
 - [ ] CHK060 Unit tests cover core business logic
-- [ ] CHK061 Integration tests cover user journeys
+- [ ] CHK061 Integration tests cover user flows
 - [ ] CHK062 All tests pass in CI environment
 - [ ] CHK063 [TDD] tasks followed RED-GREEN-REFACTOR discipline
 - [ ] CHK064 Every criterion has a test in Traceability

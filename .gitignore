@@ -6,3 +6,6 @@ diff.md
 .claude/.current-phase
 __pycache__/
 .pytest_cache/
+.idea/
+.claude/claude-md-drift.json
+.venv/

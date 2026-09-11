@@ -59,7 +59,7 @@ Before following the skill's process, establish context adaptation rules:
   - Tasks: `specs/NNN/tasks.md` (if exists)
 
 - **Output location**: All outputs go to the `.specify/` structure
-  - Superpowers may default to `docs/superpowers/` — redirect to `.specify/`
+  - Superpowers may default to `docs/superpowers/`; redirect to `.specify/`
   - Brainstorming insights → update spec.md (Edge Cases, Open Questions, Brainstorm Log)
   - Writing-plans output → merge into `specs/NNN/tasks.md`
   - Code review findings → report to user, optionally write to checklist file
@@ -92,7 +92,7 @@ After the superpowers skill's process completes:
 - Record insights in the spec's "Open Questions" section and "Brainstorm Log"
 - Read `decisions.md` at the project root before questioning, if it exists, and do
   not re-ask a decision already recorded there
-- The skill may produce a "design document" — fold its insights back into the
+- The skill may produce a "design document". Fold its insights back into the
   existing spec.md rather than creating a separate file
 
 **Output mapping**:
@@ -123,7 +123,7 @@ After the superpowers skill's process completes:
 - Follow the executing-plans skill's batch processing protocol
 - Respect checkpoint gates defined in tasks.md
 - Apply human checkpoint protocol at every phase boundary
-- Never auto-approve — always wait for user confirmation
+- Never auto-approve. Always wait for user confirmation
 
 **Combined with**:
 - `subagent-driven-development`: For tasks marked `[SUBAGENT]`, follow this skill's

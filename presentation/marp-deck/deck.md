@@ -1,71 +1,112 @@
 ---
 marp: true
-theme: default
+theme: gaia
 paginate: true
+size: 16:9
 ---
 
-<!-- Slides below are appended in order by dedicated subagents. Do not reorder. -->
+<!-- _class: lead -->
 
----
+# Specflow
 
-## Specflow: Bridging Spec-Kit Governance with Superpowers Execution
+Spec-kit governance with superpowers execution skills and adversarial review.
 
-- Specflow (fork of Superspec) wires GitHub Spec Kit's governance artifacts to obra/superpowers' execution skills — hardened with deterministic hooks and cross-model verification
-- v2 refreshes verification across Spec Kit, superpowers (v6.3.0), Claude Code hooks, subagents, and Agent Teams
-- Adds 10 new improvement items: memory/knowledge layer, N-version implementation, security scanning, test amplification, PR automation, and more
-- New adversarial-review research: LLM-as-judge bias catalog, multi-agent debate lineage, reviewer calibration, and risk-classification rules
-- Ships a ready-to-paste implementation kit — settings, hooks, templates, findings schema, and a GitHub Actions workflow
+2026-09-11
 
-<!-- speaker notes: Open by framing Specflow as a thin but useful bridge between Spec Kit's governance workflow and superpowers' execution skills — the goal isn't to fork Spec Kit but to wrap it in stronger guardrails. Emphasize that v2 keeps everything from v1 and layers on ten new improvement items plus fresh adversarial-review research. Mention that this deck's scope is Claude Code and GitHub Copilot CLI only, not Codex. Close by noting the implementation kit is copy-paste ready, so teams can adopt it immediately. -->
+Donal Moloney
 
----
-
-## Where Specflow is Today + the Improvement Roadmap
-
-- Today: 5 commands (`status`, `brainstorm`, `tasks`, `execute`, `review`) bridging Spec Kit governance artifacts to superpowers execution skills, with resumable state in `.specify/memory/` and `specs/NNN-*/`
-- Verified dependencies: Spec Kit's extension mechanism and superpowers v6.3.0, both re-confirmed live on Sept 11, 2026
-- Tier 1 (foundation): rewrite the constitution with real project conventions; enforce phase gates deterministically with hooks instead of prompt-level asks
-- Tier 2 (parallelism, review, routing): parallelize `[P]` tasks with Agent Teams; layer in differential N-version implementation and objective security scanning for adversarial review
-- Tier 3 (scale): close the review loop into a wisdom-accumulating `decisions.md`; add observability via per-phase JSON logging and cost governance
-
-<!-- speaker notes: This slide bridges Part 1 and Part 2 of the roadmap document — ground the audience in what Specflow actually does today before pitching the twenty-two-item improvement backlog. Stress that Tier 1 items are cheap, low-risk foundation work that should land before anything else, while Tier 2 and Tier 3 trade increasing effort for stronger guarantees around parallel execution, adversarial review, and long-term observability. Note that every tier item has documented effort and dependency fields in the source roadmap, so prioritization is already scoped, not guesswork. -->
+<!-- speaker notes: Specflow is a spec-kit extension. Spec-kit owns the governance artifacts and superpowers owns the execution skills; specflow connects the two and adds deterministic gates around them. The deck covers what specflow is, where the roadmap stands, the adversarial-review design, the kit under .claude/, and the adoption path. Scope is Claude Code and the GitHub Copilot CLI only, per AGENTS.md. Source: AGENTS.md, first section. -->
 
 ---
 
-## Supercharging Adversarial Review
+## Specflow adds five commands to a spec-kit project
 
-- Core problem: a single fresh-context LLM reviewer is prone to rubber-stamping, hallucinated issues, and false consensus — self-correction alone doesn't fix this without external signals
-- Recommended stack, ranked by payoff/cost: spec pre-mortem gate, hardened single reviewer, multi-persona panel, and reviewer-writes-failing-tests as the default four layers; critic/debate loop and cross-model review reserved for high-risk changes
-- New: LLM-as-judge bias catalog — self-preference, position/order, and verbosity biases mean the reviewing model should differ from the one that wrote the code
-- New: multi-agent debate lineage (AI Safety via Debate, multiagent debate factuality work) underpins the mandatory-pushback design that prevents sycophantic convergence
-- New: reviewer calibration scorecards track finding precision per persona to catch over-flagging or under-reading reviewers
-- New: risk classification rules escalate to critic loop and cross-model review based on touched paths, diff size, dependency changes, and schema/API changes
+- Spec-kit owns constitution, spec, plan, tasks, and checklist.
+- Superpowers skills run brainstorming, planning, TDD, and code review.
+- Specflow connects the two through five commands.
+- Every command falls back when a skill is missing.
+- State lives in plain YAML, so a run resumes.
 
-<!-- speaker notes: Frame this as the deck's deepest v2 research addition — the core insight is that a single-pass LLM reviewer behaves like a sycophantic rubber stamp unless structurally forced into disagreement. Walk through the ranked stack and stress that layers 1-4 are the sane default for every PR, while the expensive critic/debate and cross-model layers are reserved for high-risk paths via the new risk-classification rules. Close on the two most novel v2 additions — the bias catalog explaining why cross-model review matters, and the calibration scorecards that make reviewer quality measurable over time rather than assumed. -->
-
----
-
-## Implementation Kit — Ready to Paste
-
-- `.claude/settings.json` wiring for SessionStart, PreToolUse, PostToolUse, and Stop hooks
-- PreToolUse/PostToolUse hook scripts: `block-main-commit.sh`, `test-gate.sh`, `artifact-lint.sh`
-- Phase-transition logging (`log-phase.sh`) plus `jq`-driven dashboard queries for cost and reviewer precision
-- Dispatcher `SKILL.md` that routes new/fix/refactor/rules requests to the right pipeline
-- `decisions.md` and `open-questions.md` templates, and the review-findings JSON schema
-- `merge-gate.sh`, `risk-classifier.sh`, a GitHub Actions merge-gate workflow, and full `.claude/agents/*.md` reviewer definitions
-
-<!-- speaker notes: This slide closes the deck by pointing at Part 4 of the roadmap document — everything here is copy-paste ready, not aspirational. Walk through the artifact list quickly and note it spans the full lifecycle: hook wiring and scripts that enforce gates deterministically, the dispatcher skill that routes work, the decision/question logs and findings schema that give review structure, and the CI workflow plus reviewer agent definitions that close the loop. Tell the audience the paths assume a Spec-Kit project root and to verify hook event names, budget flags, and model IDs against their installed versions before adopting. -->
-
+<!-- speaker notes: The five commands are status, brainstorm, tasks, execute, and review, each under the speckit.specflow prefix. extension.yml declares five commands, five templates, and three hooks. The constitution at .specify/memory/constitution.md is a hard gate before any command runs. Fallback protocols live in specflow/references/workflow-guide.md. Resumable state is progress.yml per feature and .specify/superpowers.yml for skill detection. Superpowers current version is v6.3.0. Sources: AGENTS.md Architecture and Gotchas; imporvements/imporvements2.md Part 1. -->
 
 ---
 
-## Get Started — 30-60-90 Roadmap
+## All 18 roadmap groups have merged as of 2026-09-11
 
-- Install path: `specify init` → `/plugin install superpowers` → `specify extension add superspec` → verify with `specify check` and `/speckit.superspec.status`
-- Days 0–30: rewritten constitution, `## Code Review Rules`, deterministic gate hooks, and a hardened single reviewer with mandatory findings
-- Days 30–60: Agent Teams parallelism, multi-persona review panel, STRIDE spec lens, model routing, and a mutation-testing gate on core modules
-- Days 60–90: headless CI merge gate (cross-model + SAST + mutation), critic/AR loop for HIGH-risk changes, and PR automation
-- Anti-pattern to avoid: don't adopt heavy orchestrators or run 5+ reviewers before native primitives (worktrees, Agent Teams, a single hardened reviewer) prove insufficient
-- Anti-pattern to avoid: never skip the two human gates — spec approval and merge approval stay manual even as everything between them is automated
+- Deterministic gate hooks replaced prompt-level asks.
+- Adversarial review agents and a findings schema landed.
+- A CI merge gate reviews every pull request headlessly.
+- Agent Teams run parallel tasks in separate worktrees.
+- Cost governance and per-phase logging record every run.
 
-<!-- speaker notes: Close the deck on the practical path forward — install is three commands plus a verify step, and the 30-60-90 roadmap sequences from cheap foundation work to CI-scale automation so teams don't over-invest before validating the basics. Reiterate the two anti-patterns worth remembering: don't reach for heavy orchestration before native primitives fail, and never let automation absorb the two human gates. Send the audience off with a clear next action — start Day 0 this week with the constitution rewrite and gate hooks, since everything else in the roadmap builds on that foundation. -->
+<!-- speaker notes: The count of 18 is the number of G-NN headers in imporvements/tasks.md. G-02 through G-18 carry a merged PR number in the header. G-01 has every task ticked but names no PR. Gate hooks are G-01 and G-06, review agents G-05, the CI merge gate G-09, Agent Teams G-14, cost governance G-16, and logging G-07. Source: imporvements/tasks.md group headers. -->
+
+---
+
+## A single LLM reviewer approves its own mistakes
+
+- A lone reviewer approves by default and invents findings.
+- Models score their own output higher than others' output.
+- The reviewing model must differ from the writing model.
+- Mandatory findings and a fresh context block empty approvals.
+
+<!-- speaker notes: The default requesting-code-review skill is one fresh-context reviewer with severity buckets, which is prone to rubber-stamping, hallucinated issues, and false consensus. Self-preference bias: Panickssery, Bowman and Feng, NeurIPS 2024, arXiv 2404.13076, found evaluators score their own generations higher while humans rate them equal. Position and verbosity bias: Wang et al. 2024 and Saito et al. 2023. Self-correction without an external verifier does not fix this (Huang 2023). Sources: imporvements/imporvements2.md sections 3.1, 3.3, 3.4. -->
+
+---
+
+## Four review layers run by default and three on risk
+
+- Every change runs the four default layers.
+- A critic loop runs only on high-risk changes.
+- Cross-model review and SAST run in CI before merge.
+- Risk escalates on touched paths, diff size, or dependency changes.
+- Scorecards track finding precision per reviewer persona.
+
+<!-- speaker notes: The four default layers are the spec pre-mortem gate, the hardened single reviewer, the multi-persona panel, and the reviewer-writes-failing-tests step. Layer five is the critic loop at about 4.5 times the tokens. Layers six and seven are cross-model review and test amplification with SAST. Diff-size thresholds are 400 changed lines or 15 changed files, set in .claude/hooks/risk-classifier.sh and recorded in ADR-0005. Precision is accepted findings divided by all findings; a persona below 0.5 is over-flagging. Sources: imporvements/imporvements2.md sections 3.7, 3.9, 3.10; decisions.md ADR-0005. -->
+
+---
+
+## The kit under .claude is ready to copy
+
+- Nine hook scripts gate commits, tests, artifacts, and merges.
+- 28 agent definitions cover the BDD squad and review personas.
+- A findings schema and validator structure every review.
+- A dispatcher skill routes new, fix, refactor, and rules work.
+- Three workflows run CI, the merge gate, and scoring.
+
+<!-- speaker notes: Counts come from the worktree on 2026-09-11: nine shell scripts in .claude/hooks, 28 files in .claude/agents, schema.json and validate-findings.py in .claude/review, the specflow-dispatcher skill in .claude/skills, and ci.yml, merge-gate.yml, and score-artifacts.yml in .github/workflows. Hooks are not part of the spec-kit archive, so a consuming project copies them deliberately (ADR-0001). Check hook event names, budget flags, and model IDs against the installed versions before adopting. Sources: repository listing; decisions.md ADR-0001; imporvements/imporvements2.md Part 4. -->
+
+---
+
+## Install takes three commands and a status check
+
+The status command confirms the constitution and skill detection.
+
+```bash
+specify init . --ai claude
+/plugin install superpowers@claude-plugins-official
+specify extension add specflow
+/speckit.specflow.status
+```
+
+<!-- speaker notes: Install specify-cli first with uv tool install specify-cli from the spec-kit git URL. The extension id is specflow, so the command and status names carry that prefix; the roadmap document still shows an older extension name. Source: imporvements/imporvements2.md Appendix A, with the extension name corrected to match specflow/extension.yml. -->
+
+---
+
+## Adoption runs in three 30-day steps
+
+- The first 30 days land constitution and gate hooks.
+- Days 30 to 60 add Agent Teams and persona reviewers.
+- Days 60 to 90 add CI gating and critic review.
+- Keep the two human gates: spec approval and merge approval.
+- Add heavy orchestrators only after native primitives fail.
+
+<!-- speaker notes: Days 0 to 30 also cover the Code Review Rules section, the clarify, analyze, and checklist gates, and one hardened reviewer with mandatory findings. Days 30 to 60 add the STRIDE spec lens, model routing, and a mutation-testing gate on core modules. Days 60 to 90 add SAST in CI, PR automation, and differential implementation for high-ambiguity specs. Do not run five or more reviewers or unbounded debate, and do not let the model that wrote the code be its sole reviewer. Source: imporvements/imporvements2.md Part 8. -->
+
+---
+
+## Start this week with the constitution rewrite and gate hooks
+
+Everything after day 30 builds on those two changes.
+
+<!-- speaker notes: The constitution rewrite is the first item of the day 0 to 30 step, and the gate hooks are the second. Source: imporvements/imporvements2.md Part 8. -->

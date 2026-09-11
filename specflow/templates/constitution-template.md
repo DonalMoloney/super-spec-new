@@ -69,17 +69,17 @@ This project follows **specification-driven development** using the specflow pip
 
 ### Testing Requirements
 
-- [ ] **Unit tests**: [REQUIRED/OPTIONAL] — [coverage target or "none specified"]
-- [ ] **Integration tests**: [REQUIRED/OPTIONAL] — [scope description]
-- [ ] **Contract tests**: [REQUIRED/OPTIONAL] — [API boundary description]
-- [ ] **TDD discipline**: [REQUIRED/OPTIONAL] — tasks marked `[TDD]` must follow RED-GREEN-REFACTOR
+- [ ] **Unit tests**: [REQUIRED/OPTIONAL], [coverage target or "none specified"]
+- [ ] **Integration tests**: [REQUIRED/OPTIONAL], [scope description]
+- [ ] **Contract tests**: [REQUIRED/OPTIONAL], [API boundary description]
+- [ ] **TDD discipline**: [REQUIRED/OPTIONAL], tasks marked `[TDD]` must follow RED-GREEN-REFACTOR
 
 ### Review Requirements
 
-- [ ] **Code review**: [REQUIRED/OPTIONAL] — [who reviews, what criteria]
-- [ ] **Spec compliance**: [REQUIRED/OPTIONAL] — verify all acceptance scenarios pass
-- [ ] **Security review**: [REQUIRED/OPTIONAL] — [scope description]
-- [ ] **Performance review**: [REQUIRED/OPTIONAL] — [benchmarks or targets]
+- [ ] **Code review**: [REQUIRED/OPTIONAL], [who reviews, what criteria]
+- [ ] **Spec compliance**: [REQUIRED/OPTIONAL], verify all acceptance scenarios pass
+- [ ] **Security review**: [REQUIRED/OPTIONAL], [scope description]
+- [ ] **Performance review**: [REQUIRED/OPTIONAL], [benchmarks or targets]
 
 ### Deployment Gates
 

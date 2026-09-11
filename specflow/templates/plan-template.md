@@ -84,7 +84,7 @@ tests/
   Tasks for these areas will be marked [TDD] in the task breakdown.
 -->
 
-- [ ] [Component/module]: [Why TDD is needed — e.g., "Complex business logic with many edge cases"]
+- [ ] [Component/module]: [Why TDD is needed, e.g., "Complex business logic with many edge cases"]
 - [ ] [Component/module]: [Why TDD is needed]
 
 ### Parallel Execution Opportunities
@@ -104,10 +104,10 @@ tests/
   These become phase boundaries in the task breakdown.
 -->
 
-1. After foundational setup — verify project structure and dependencies are correct
-2. After each user story — verify behavior matches acceptance scenarios
-3. After all stories — run full test suite before polish phase
-4. Before merge — final review against spec
+1. After foundational setup: verify project structure and dependencies are correct
+2. After each user story: verify behavior matches acceptance scenarios
+3. After all stories: run full test suite before polish phase
+4. Before merge: final review against spec
 
 ### Review Gates
 

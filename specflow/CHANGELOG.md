@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `.gitattributes` marks documentation media (`assets/`), samples
   (`examples/`), development tooling (`scripts/`) and CI (`.github/`) as
-  `export-ignore`, so `git archive` — and therefore GitHub's tag ZIP — omits
+  `export-ignore`, so `git archive`, and therefore GitHub's tag ZIP, omits
   them. The repository, the rendered README images and `--dev` installs are
   unchanged; nothing was deleted or recompressed.
 - Documentation now uses spec-kit's real `specs/NNN-*/` feature layout instead

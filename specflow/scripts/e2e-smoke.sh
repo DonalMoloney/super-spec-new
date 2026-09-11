@@ -9,7 +9,7 @@
 #   3. Simulates `/speckit.specify` by directly invoking spec-kit's
 #      `.specify/scripts/bash/create-new-feature.sh` (which is the same script
 #      the agent calls). This proves the file system layout spec-kit really
-#      produces — independent of which LLM is used.
+#      produces, independent of which LLM is used.
 #   4. Asserts everything spec-kit + specflow jointly promise:
 #        - .specify/  contains memory/, templates/, scripts/, integrations/
 #        - .specify/extensions.yml  registers all 5 specflow commands + 3 hooks
@@ -48,8 +48,8 @@ PASS=0
 FAIL=0
 FAILS=()
 
-pass() { printf '  %s✓%s %s\n' "$C_GREEN" "$C_RST" "$1"; PASS=$((PASS+1)); }
-fail() { printf '  %s✗%s %s\n' "$C_RED"   "$C_RST" "$1"; FAIL=$((FAIL+1)); FAILS+=("$1"); }
+pass() { printf '  %sok%s   %s\n' "$C_GREEN" "$C_RST" "$1"; PASS=$((PASS+1)); }
+fail() { printf '  %sFAIL%s %s\n' "$C_RED"   "$C_RST" "$1"; FAIL=$((FAIL+1)); FAILS+=("$1"); }
 step() { printf '\n%s[%s]%s %s\n' "$C_BOLD" "$1" "$C_RST" "$2"; }
 
 # Assertion helpers --------------------------------------------------------
@@ -67,7 +67,7 @@ assert_grep()    {
 
 # -------------------------------------------------------------------------
 step "1/5" "Initialize spec-kit in a fresh project"
-cd "$WORK"
+cd "$WORK" || exit 1
 if ! uvx --from git+https://github.com/github/spec-kit.git specify init \
         --here --integration codex --ignore-agent-tools --force \
         </dev/null >"$INIT_LOG" 2>&1; then
@@ -130,7 +130,7 @@ assert_grep "extension list shows 'Commands: 5 | Hooks: 3'" \
 
 # -------------------------------------------------------------------------
 step "3/5" "Simulate /speckit.specify (calls create-new-feature.sh directly)"
-cd "$WORK"
+cd "$WORK" || exit 1
 bash .specify/scripts/bash/create-new-feature.sh \
      --short-name "smoke-test-feature" \
      "Smoke test feature for end-to-end validation" \
@@ -167,20 +167,34 @@ check_drift() {
   if [ "$hits" -eq 0 ]; then
     pass "$desc"
   else
-    fail "$desc — $hits stale '.specify/specs/' reference(s):"
+    fail "$desc: $hits stale '.specify/specs/' reference(s):"
     grep -rEn --exclude-dir='static-landing-page' '\.specify/specs/' "$@" 2>/dev/null | sed 's|^|        |'
   fi
 }
 
-cd "$REPO_ROOT"
+cd "$REPO_ROOT" || exit 1
 check_drift "commands/ uses 'specs/' not '.specify/specs/'"      commands/
 check_drift "templates/ uses 'specs/' not '.specify/specs/'"     templates/
 check_drift "README/SKILL/examples use 'specs/' not '.specify/specs/'" \
             README.md SKILL.md examples/ references/
 
+# Every marker the Gate markers table names must be one a command file writes
+# or reads; a marker no command mentions is documentation with no behavior.
+GATE_MARKERS="$(grep -oE '`specs/[^`]*/\.[a-z]+`' references/workflow-guide.md | grep -oE '/\.[a-z]+`' | tr -d '/`' | sort -u)"
+if [ -z "$GATE_MARKERS" ]; then
+  fail "Gate markers table in references/workflow-guide.md names no marker"
+fi
+for marker in $GATE_MARKERS; do
+  if grep -rqF -- "$marker" commands/; then
+    pass "gate marker $marker is named by a command file"
+  else
+    fail "gate marker $marker is in the Gate markers table but no file under commands/ names it"
+  fi
+done
+
 # -------------------------------------------------------------------------
 step "5/5" "Generated artifacts (for human review)"
-cd "$WORK"
+cd "$WORK" || exit 1
 echo "  ${C_DIM}workdir:${C_RST} $WORK"
 echo
 find . -type f \
@@ -199,6 +213,6 @@ if [ "$FAIL" -gt 0 ]; then
   printf '\nWorkdir kept at: %s\n' "$WORK"
   exit 1
 fi
-printf ' %s✓%s\n' "$C_GREEN" "$C_RST"
+printf '\n'
 printf 'Workdir kept at: %s\n' "$WORK"
 exit 0

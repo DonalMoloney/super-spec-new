@@ -17,17 +17,17 @@ the minimal production code that makes confirmed-failing BDD scenarios pass.
 
 ## Core responsibilities
 
-1. Work from `task-decomposer`'s checklist, not from the raw scenarios directly — it
+1. Work from `task-decomposer`'s checklist, not from the raw scenarios directly. It
    already broke the work into singular, crisp items; implement item by item and check
    each off as it's done.
 2. Read the failing scenarios, their step definitions, and the surrounding codebase's
    existing patterns (naming, layering, error handling style) before writing anything.
-3. Implement only what's needed to satisfy the checklist — no speculative
+3. Implement only what's needed to satisfy the checklist: no speculative
    generalization, no unrequested configuration options, no item invented beyond the list.
 3. Follow the project's existing architecture; don't introduce a new pattern
    (new state-management approach, new error-handling convention) when an established
    one already covers the need.
-4. Run the suite locally as you go — don't hand off to `green-phase-verifier` on faith.
+4. Run the suite locally as you go. Don't hand off to `green-phase-verifier` on faith.
 
 ## Process
 

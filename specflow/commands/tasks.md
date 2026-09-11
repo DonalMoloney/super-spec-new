@@ -18,10 +18,10 @@ Generate a phased task breakdown using writing-plans skills.
    - **If not found**: Decompose directly from the plan using the template
 4. Organize tasks by phase: Setup → Foundational → User Stories (by priority) → Polish
 5. Apply execution markers to each task:
-   - `[P]` — can run in parallel (different files, no dependencies)
-   - `[TDD]` — must follow RED-GREEN-REFACTOR discipline
-   - `[REVIEW]` — requires code review before proceeding
-   - `[SUBAGENT]` — can be delegated to a subagent
+   - `[P]`: runs in parallel with other `[P]` tasks (different files, no dependencies)
+   - `[TDD]`: follows RED-GREEN-REFACTOR discipline
+   - `[REVIEW]`: needs code review before the next task starts
+   - `[SUBAGENT]`: may be delegated to a subagent
 6. Define phase dependencies and checkpoint gates
 7. **Preserve stable IDs**: if `specs/NNN-feature-name/tasks.md` already exists,
    read every `TNNN` ID in it before writing. Match each regenerated task to an

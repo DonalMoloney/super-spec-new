@@ -110,7 +110,7 @@ model families; alias versions can change. Actual cost savings remain unmeasured
   position. IDs are append-only: a new task takes the next ID above the highest
   ever used, and a retired ID is never handed to a different task.
 - Consequences: matching is a judgment the command makes, so the diff summary
-  in ADR-0005 is what makes it reviewable. Append-only allocation leaves gaps in
+  in ADR-0008 is what makes it reviewable. Append-only allocation leaves gaps in
   the numbering, which is the cost of never invalidating `progress.yml`.
 
 ## ADR-0008: The tasks diff summary always prints and blocks only on a completed ID
@@ -220,3 +220,40 @@ model families; alias versions can change. Actual cost savings remain unmeasured
 - Consequences: a rewrite can never add or remove a step; that stays a roadmap
   move with its own item. The measurer lives under `.claude/divergence/`, so it
   is not part of the archive and its tests run in CI beside the review tests.
+
+## ADR-0014: Panel personas run one model class below the judgment agents
+
+- Date: 2026-09-11
+- Status: accepted, amends ADR-0003
+- Context: ADR-0003 routes reviewers to the strongest model and names 17
+  agents. The eight adversarial reviewers landed after it, and four of them
+  (`conformance-reviewer`, `correctness-reviewer`, `maintainability-reviewer`,
+  `performance-reviewer`) run below opus, one of them on haiku.
+- Decision: three classes. Agents whose verdict is final run on opus:
+  `critic`, `security-reviewer`, `threat-model-reviewer`,
+  `spec-red-team-reviewer`, `code-reviewer`, `work-verifier`, and the ADR-0003
+  list. The Stage 2 panel personas run on sonnet, because `critic` reviews
+  their review and ADR-0006 lets the critic file its own finding when a
+  persona's handling does not hold. Mechanical runners and the divergence
+  measurer stay on haiku. `maintainability-reviewer` moves from haiku to
+  sonnet to match its panel.
+- Consequences: a new reviewer picks its class by whether another agent
+  checks its output. Cost per panel run stays below an all-opus panel; the
+  saving is still unmeasured.
+
+## ADR-0015: A template placeholder is not an unresolved marker
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: the Code Review Rules in `AGENTS.md` reject unresolved
+  `[NEEDS CLARIFICATION]` markers in shipped templates. `spec-template.md`
+  carries one on its FR-006 example line to show the syntax, and the
+  golden-run scorer test expects exactly one marker in the example spec.
+- Decision: the rule applies to a marker an author left in a filled artifact,
+  which `artifact-lint.sh` blocks once `.clarified` exists beside the spec. A
+  placeholder on an example line of a template under `specflow/templates/` is
+  the syntax the template teaches and stays. The rule text names the
+  exemption.
+- Consequences: the scorer test keeps its expectation. A reviewer who sees a
+  marker in a template checks whether the line is an example; a marker on any
+  other template line is still rejected.

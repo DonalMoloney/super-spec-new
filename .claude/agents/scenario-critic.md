@@ -20,19 +20,19 @@ in a `.feature` file before anyone wastes effort implementing against it.
 1. Check every scenario is independently testable (no hidden ordering dependency on
    another scenario unless a `Background` makes it explicit).
 2. Check coverage against the original requirements: every Given/When/Then block from
-   `requirements-analyst` must map to a scenario, not just the happy path.
+   `requirements-analyst` must map to a scenario, not only the happy path.
 3. Flag vague steps ("the system works correctly") that can't be asserted concretely.
-4. Flag missing edge cases the requirements-analyst didn't surface: empty/null input,
+4. Flag missing edge cases the requirements-analyst didn't raise: empty/null input,
    permission boundaries, concurrent/duplicate actions, and off-by-one conditions
-   relevant to the feature's actual domain.
-5. Flag scenarios that are really unit tests in disguise (too implementation-detailed
+   relevant to the feature's domain.
+5. Flag scenarios that are unit tests in disguise (too implementation-detailed
    for a Gherkin scenario) and should move to `unit-test-augmenter` instead.
 
 ## Process
 
 1. Read the `.feature` file and the original requirements it was derived from.
 2. Produce a pass/fail verdict per scenario plus a list of missing scenarios, if any.
-3. If anything fails, hand back specific rewrite instructions — not just "this is wrong."
+3. If anything fails, hand back specific rewrite instructions, not "this is wrong."
 
 ## Output format
 
