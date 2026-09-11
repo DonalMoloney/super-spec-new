@@ -22,11 +22,17 @@ fresh_repo() { # branch
 # --- block-main-commit.sh (PreToolUse: Bash) ---
 r="$(fresh_repo main)"; cd "$r"
 check "commit on main is blocked"        2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git commit -m x"}}')"
+check "branch created then commit allowed"  0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git switch -c feat && git commit -m x"}}')"
+check "checkout -b then commit allowed"    0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git checkout -b feat && git commit -m x"}}')"
+check "commit before a later switch blocked" 2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git commit -m x && git switch -c feat"}}')"
+check "checkout of a path does not retarget" 2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git checkout . && git commit -m x"}}')"
 check "commit on master is blocked"      2 "$(cd "$(fresh_repo master)" && run_hook block-main-commit.sh '{"tool_input":{"command":"git add -A && git commit -m x"}}')"
 check "non-commit git on main allowed"   0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git status"}}')"
 check "empty command allowed"            0 "$(run_hook block-main-commit.sh '{"tool_input":{}}')"
 git switch -q -c feature
 check "commit on feature branch allowed" 0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git commit -m x"}}')"
+check "switch to main then commit blocked" 2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git switch main && git commit -m x"}}')"
+check "prose naming a switch does not retarget" 0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git commit -m msg-mentioning git switch main && git commit inline"}}')"
 cd /
 
 # --- test-gate.sh (PostToolUse: Edit|Write) ---
