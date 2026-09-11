@@ -2,6 +2,55 @@
 """Tests for validate-extension-metadata.py."""
 
 import re
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+SCRIPT = Path(__file__).resolve().parents[1] / "validate-extension-metadata.py"
+EXTENSION_DIR = Path(__file__).resolve().parents[2]
+
+CATALOG_INSTALL_LINE = "specify extension add specflow"
+DEV_INSTALL_LINE = "specify extension add ./specflow --dev"
+
+# The validator reads examples/sample-workflow.md, so only the snapshot
+# subdirectories under examples/ are left out of the copy.
+SKIPPED_DIRECTORIES = {
+    EXTENSION_DIR / "assets",
+    EXTENSION_DIR / "examples" / "static-landing-page",
+    EXTENSION_DIR / "examples" / "seeded-bug",
+    EXTENSION_DIR / "scripts" / "tests",
+}
+
+
+def skip_heavy_directories(directory: str, names: list[str]) -> set[str]:
+    return {
+        name
+        for name in names
+        if Path(directory) / name in SKIPPED_DIRECTORIES or name == "__pycache__"
+    }
+
+
+def copy_extension(tmp: str) -> Path:
+    """Copy the extension tree minus media and snapshots and return the copy root."""
+    root = Path(tmp) / "specflow"
+    shutil.copytree(EXTENSION_DIR, root, ignore=skip_heavy_directories)
+    return root
+
+
+def validate(root: Path) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, str(root / "scripts" / SCRIPT.name)],
+        capture_output=True,
+        text=True,
+    )
+
+
+def replace_in(path: Path, old: str, new: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    assert old in text, f"{path} does not contain {old!r}"
+    path.write_text(text.replace(old, new), encoding="utf-8")
 
 
 def test_fixed_regex_only_matches_commands():
@@ -47,8 +96,6 @@ hooks:
         r"- name:[ \t]*[\"']?([^\"'\n]+)[\"']?",
         commands_section,
     )
-    print(f"Fixed regex matches: {fixed_command_names}")
-
     # After fix, should match all commands
     assert "speckit.specflow.status" in fixed_command_names
     assert "speckit.specflow.brainstorm" in fixed_command_names
@@ -57,12 +104,86 @@ hooks:
     assert "spec-template" not in fixed_command_names
 
 
-if __name__ == "__main__":
-    try:
-        test_regex_only_matches_commands_not_templates()
-        print("FAIL: Expected test to fail with current regex")
-    except AssertionError as e:
-        print(f"OK: Buggy regex test fails as expected: {e}")
+def test_unmodified_copy_exits_zero_with_ok_line():
+    with tempfile.TemporaryDirectory() as tmp:
+        result = validate(copy_extension(tmp))
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "OK: extension metadata and docs are aligned (id='specflow')" in result.stdout
 
-    test_fixed_regex_only_matches_commands()
-    print("OK: Fixed regex passes validation")
+
+def test_extension_id_drift_fails_naming_the_command():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = copy_extension(tmp)
+        replace_in(root / "extension.yml", 'id: "specflow"', 'id: "flow"')
+        result = validate(root)
+    assert result.returncode == 1
+    assert (
+        "FAIL: command 'speckit.specflow.status' must use namespace 'speckit.flow.*'"
+        in result.stdout
+    )
+
+
+def test_command_outside_namespace_fails_naming_the_command():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = copy_extension(tmp)
+        replace_in(
+            root / "extension.yml",
+            'name: "speckit.specflow.status"',
+            'name: "speckit.other.status"',
+        )
+        result = validate(root)
+    assert result.returncode == 1
+    assert (
+        "FAIL: command 'speckit.other.status' must use namespace 'speckit.specflow.*'"
+        in result.stdout
+    )
+
+
+def test_hook_outside_namespace_fails_naming_the_hook():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = copy_extension(tmp)
+        replace_in(
+            root / "extension.yml",
+            'command: "speckit.specflow.tasks"',
+            'command: "speckit.other.tasks"',
+        )
+        result = validate(root)
+    assert result.returncode == 1
+    assert (
+        "FAIL: extension.yml hook 'after_tasks' must map to a 'speckit.specflow.*' command"
+        in result.stdout
+    )
+
+
+def test_readme_catalog_slug_drift_fails_naming_the_slug():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = copy_extension(tmp)
+        replace_in(root / "README.md", CATALOG_INSTALL_LINE, "specify extension add other")
+        result = validate(root)
+    assert result.returncode == 1
+    assert (
+        "FAIL: README.md install command 'specify extension add other' "
+        "must match extension.id='specflow'"
+    ) in result.stdout
+
+
+def test_readme_stale_command_reference_fails():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = copy_extension(tmp)
+        readme = root / "README.md"
+        readme.write_text(
+            readme.read_text(encoding="utf-8") + "\nRun /specflow.status first.\n",
+            encoding="utf-8",
+        )
+        result = validate(root)
+    assert result.returncode == 1
+    assert "FAIL: found 1 stale command reference(s)" in result.stdout
+
+
+def test_readme_without_dev_install_line_fails():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = copy_extension(tmp)
+        replace_in(root / "README.md", DEV_INSTALL_LINE, "")
+        result = validate(root)
+    assert result.returncode == 1
+    assert "FAIL: README.md must document local --dev install command" in result.stdout
