@@ -216,7 +216,7 @@ Verify: the section exists and names the four stages.
 
 ---
 
-## G-06 — Part 4.9 / 4.10: merge gate and risk classifier scripts
+## G-06 — Part 4.9 / 4.10: merge gate and risk classifier scripts (working on)
 
 Source: Part 4.9, Part 4.10, Part 3.10. Effort: low-medium. Depends on: G-05 (schema path).
 Claude: `bdd-orchestrator`.
@@ -376,7 +376,7 @@ Verify: `cd specflow && python3 scripts/validate-extension-metadata.py && python
 
 ---
 
-## G-11 — Item 18: spec change management
+## G-11 — Item 18: spec change management (working on)
 
 Source: Part 2 item 18. Effort: medium. Depends on: none.
 Claude: `bdd-orchestrator` (for the tasks diff check) then `documentation-scribe`.
