@@ -566,28 +566,32 @@ Verify: both command sections mention the new step.
 
 ---
 
-## G-18 — Playbook scope cleanup (decide first)
+## G-18 — Playbook scope cleanup (working on)
 
-Source: the scope note at the top of `imporvements2.md`. Effort: low. Depends on: a decision.
+Source: the scope note at the top of `imporvements2.md`. Effort: low. Depends on: none.
 Claude: `documentation-scribe`.
 Codex: not applicable.
 
-The note says every Codex reference should be removed. This file assigns Codex as an
-executor for every group. Decide one of:
+Decided 2026-09-11: keep Codex as an executor. Codex is not a runtime target for
+`specflow/` and is not part of the shipped extension; it stays an allowed
+implementer and cross-model reviewer for this repo's own development. The Codex
+executor lines in this file and the G-15 differential group stand unchanged.
 
-- **Keep Codex as executor** (recommended): rewrite the scope note to say "Codex is
-  not a runtime target for `specflow/`; it is an allowed executor and cross-model
-  reviewer for this repo's own development". Remove only the Codex install steps
-  and CI step from Parts 4.11, 5.3, 5.10, and Appendix A.
-- **Remove entirely**: delete every Codex reference from `imporvements2.md` and the
-  Codex column from this file.
+- [ ] T181 Rewrite the scope note
 
-- [ ] T181 Apply the chosen option
+1. Replace the scope note at the top of `imporvements2.md` with the decision above.
+2. Drop the "pending cleanup" framing; the question is settled.
 
-1. Edit the scope note.
-2. Edit the sections named above.
+Verify: the note states that Codex is not a runtime target and is an allowed executor.
 
-Verify: `grep -ci codex imporvements/imporvements2.md` matches the expectation of the chosen option (small nonzero, or 0).
+- [ ] T182 Remove the Codex install steps and CI step
+
+1. Remove the Codex install steps from Parts 5.3, 5.10, and Appendix A.
+2. Remove the Codex CI step from Part 4.11, matching the note already in G-09.
+3. Leave every `codex review` and `codex:codex-rescue` executor reference in place.
+
+Verify: `grep -ci codex imporvements/imporvements2.md` prints a nonzero count and
+`grep -n 'OPENAI_API_KEY' imporvements/imporvements2.md` prints nothing.
 
 ---
 
