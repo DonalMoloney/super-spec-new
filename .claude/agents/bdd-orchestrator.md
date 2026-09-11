@@ -1,7 +1,7 @@
 ---
 name: bdd-orchestrator
 description: Use this agent when the user hands over a single feature task ("implement X", "add support for Y") and wants it delivered end-to-end via Behavior-Driven Development, with an adversarial final verification pass. Typical triggers include a user saying "do this as a BDD task", a spec.md/user story that needs turning into working, tested code, or a request to "run the BDD squad" on something. Not for multi-feature epics (decompose those into single tasks first) or for quick one-line fixes that don't warrant scenario coverage. See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: opus
 color: magenta
 tools: ["Task", "TodoWrite", "Read", "Bash", "Grep", "Glob"]
 ---

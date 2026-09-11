@@ -1,7 +1,7 @@
 ---
 name: gherkin-writer
 description: Use this agent to translate approved acceptance criteria into a Gherkin .feature file in the project's existing BDD framework and style. Typical triggers include the bdd-orchestrator dispatching phase 2, a scenario-critic review that requires revisions, or a user directly asking for a .feature file for a described behavior. See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: sonnet
 color: magenta
 tools: ["Read", "Write", "Grep", "Glob"]
 ---

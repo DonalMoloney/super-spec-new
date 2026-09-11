@@ -1,7 +1,7 @@
 ---
 name: spec-alignment-auditor
 description: Use this agent to cross-check the finished implementation and scenarios against the original task description or spec, confirming nothing was missed, changed, or silently scoped out. Typical triggers include the bdd-orchestrator dispatching phase 12 after code-reviewer, or a user asking "did we actually build what was asked?" once a BDD task looks complete. See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: opus
 color: cyan
 tools: ["Read", "Grep", "Glob"]
 ---

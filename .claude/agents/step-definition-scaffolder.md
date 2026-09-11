@@ -1,7 +1,7 @@
 ---
 name: step-definition-scaffolder
 description: Use this agent to generate step-definition stubs (glue code) for an approved .feature file, wiring each Given/When/Then step to an unimplemented function in the project's BDD framework. Typical triggers include the bdd-orchestrator dispatching phase 4 after scenario-critic approval, or a user asking to "wire up" a feature file that has no step definitions yet. See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: sonnet
 color: magenta
 tools: ["Read", "Write", "Edit", "Grep", "Glob"]
 ---

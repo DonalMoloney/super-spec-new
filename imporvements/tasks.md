@@ -148,14 +148,14 @@ Source: Part 2 item 7, Appendix B. Effort: low. Depends on: none.
 Claude: `general-purpose`; use `claude-code-guide` first to confirm the current `model:` frontmatter aliases.
 Codex: `codex:codex-rescue --wait` (frontmatter-only edit); then `codex review --base main`.
 
-- [ ] T041 Confirm the alias set
+- [x] T041 Confirm the alias set
 
 1. Ask `claude-code-guide`: which values does the `model:` field in `.claude/agents/*.md` accept today, and does it accept `inherit`?
 2. Write the answer as a comment block at the top of this task's PR description.
 
 Verify: the PR description names the source page.
 
-- [ ] T042 Assign a model to all 17 agents
+- [x] T042 Assign a model to all 17 agents
 
 1. Apply this mapping by editing only the `model:` line of each file's frontmatter:
    - `opus`: `bdd-orchestrator`, `requirements-analyst`, `scenario-critic`, `spec-alignment-auditor`, `work-verifier`, `code-reviewer`
@@ -165,7 +165,7 @@ Verify: the PR description names the source page.
 
 Verify: `grep -L '^model:' .claude/agents/*.md` prints nothing; `grep -h '^model:' .claude/agents/*.md | sort | uniq -c` shows only the three aliases.
 
-- [ ] T043 Record the routing table
+- [x] T043 Record the routing table
 
 1. Append ADR-0003 (or next number) to `decisions.md`: one paragraph, the mapping above, and the rule "reviewers and verifiers get the strongest model; mechanical runners get the cheapest".
 

@@ -1,7 +1,7 @@
 ---
 name: work-verifier
 description: Use this agent to adversarially re-verify a completion claim about previous work — treat "done", "fixed", "tests pass", or "implemented" as unproven until independently checked. Typical triggers include the bdd-orchestrator dispatching phase 15 before release-reporter, any agent or teammate reporting a task complete without attaching fresh command output, or a user asking "is this actually done?" / "double-check that claim." See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: opus
 color: red
 tools: ["Read", "Bash", "Grep", "Glob"]
 ---

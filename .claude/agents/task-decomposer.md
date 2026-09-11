@@ -1,7 +1,7 @@
 ---
 name: task-decomposer
 description: Use this agent to break approved BDD scenarios and step definitions into a checklist of singular, crisp, independently verifiable implementation tasks before any production code is written. Typical triggers include the bdd-orchestrator dispatching phase 6 after red-phase-verifier confirms RED, or a user asking to "break this down into tasks" for work that's about to start. See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: sonnet
 color: yellow
 tools: ["Read", "Grep", "Glob", "TodoWrite"]
 ---

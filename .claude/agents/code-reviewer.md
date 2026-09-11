@@ -1,7 +1,7 @@
 ---
 name: code-reviewer
 description: Use this agent to review the full diff produced by a BDD task for bugs, security issues, and code quality before it's considered done. Typical triggers include the bdd-orchestrator dispatching phase 11 after unit-test-augmenter, or a user asking for a review of BDD-squad-produced changes before merge. See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: opus
 color: red
 tools: ["Read", "Grep", "Glob", "Bash"]
 ---

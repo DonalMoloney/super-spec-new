@@ -1,7 +1,7 @@
 ---
 name: release-reporter
 description: Use this agent to compile the final summary of a completed BDD task — scenarios added, files changed, test results, and open risks — for the user or the bdd-orchestrator. Typical triggers include the bdd-orchestrator dispatching the final phase 16 after work-verifier, or a user asking for a wrap-up summary of everything the BDD squad did. See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: haiku
 color: cyan
 tools: ["Read", "Bash", "Grep"]
 ---

@@ -1,7 +1,7 @@
 ---
 name: green-phase-verifier
 description: Use this agent to independently rerun the full BDD suite after implementation and confirm every target scenario passes with no unrelated regressions. Typical triggers include the bdd-orchestrator dispatching phase 8 after implementation-engineer, or a user asking to double-check that "it actually passes" before moving to refactoring. See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: haiku
 color: green
 tools: ["Read", "Bash", "Grep"]
 ---

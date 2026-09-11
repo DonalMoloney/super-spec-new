@@ -28,3 +28,19 @@ deleting them; prune anything older than a quarter that no longer guides work.
   the Copilot CLI; `bdd-orchestrator` passes the relevant path on each dispatch.
 - Consequences: a rule change is one edit. `standards/` is documentation for this
   repo, not runtime payload, so it is not part of the spec-kit archive.
+
+## ADR-0003: Route subagents by judgment and execution cost
+
+- Date: 2026-09-11
+- Status: accepted
+
+Context: all 17 agents inherit the session model despite different responsibilities.
+Decision: reviewers and verifiers get the strongest model; mechanical runners get
+the cheapest. This rule applies to final judgment; red/green phase checks are
+mechanical. Assign `opus` to `bdd-orchestrator`, `requirements-analyst`,
+`scenario-critic`, `spec-alignment-auditor`, `work-verifier`, and `code-reviewer`.
+Assign `sonnet` to `gherkin-writer`, `step-definition-scaffolder`, `task-decomposer`,
+`implementation-engineer`, `refactor-specialist`, and `unit-test-augmenter`.
+Assign `haiku` to `red-phase-verifier`, `green-phase-verifier`, `regression-runner`,
+`documentation-scribe`, and `release-reporter`. Consequences: routing uses explicit
+model families; alias versions can change. Actual cost savings remain unmeasured.
