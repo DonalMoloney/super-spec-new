@@ -19,15 +19,27 @@ Run code review against spec requirements using review skills.
    - **If found**: Read the skill and follow its pre-evaluation checklist and review
      dispatch protocol
    - **If not found**: Use the built-in review protocol below
-3. Built-in review protocol:
+3. **Risk tier**: Classify the change before reviewing. Run
+   `git diff --numstat main...HEAD` and sum the lines and count the files. The
+   tier is HIGH when more than 400 lines or more than 15 files changed, when
+   any changed path has a directory named `auth`, `payments`, `billing`,
+   `migrations`, `infra`, `secrets`, or `crypto`, or when any changed file is a
+   dependency lock file (`package-lock.json`, `yarn.lock`, `Cargo.lock`,
+   `poetry.lock`, `go.sum`, or a `requirements*.txt`). Otherwise the tier is
+   STANDARD. When `.claude/hooks/risk-classifier.sh` exists in the repository,
+   run it and take its answer instead. A HIGH tier runs every dimension in
+   step 4 and then a second pass that audits each finding for a `file:line`
+   reference and evidence, dropping any finding without both. A STANDARD tier
+   runs step 4 once.
+4. Built-in review protocol:
    - **Spec compliance**: Verify each acceptance scenario from the spec is implemented
    - **Edge case coverage**: Verify brainstormed edge cases are handled
    - **Constitution compliance**: Check all governance principles are respected
    - **Code quality**: Check for bugs, security issues, error handling
    - **Test coverage**: Verify tests exist for critical paths
-4. Report findings with confidence scores (0-100, only report issues >= 80)
-5. Group findings by severity: Critical > Important > Suggestion
-6. Append spec gaps back to the spec: for each Critical or Important finding that
+5. Report findings with confidence scores (0-100, only report issues >= 80)
+6. Group findings by severity: Critical > Important > Suggestion
+7. Append spec gaps back to the spec: for each Critical or Important finding that
    reports a missing, ambiguous, or contradicted requirement, add a row to the
    `## Open Questions` table in `specs/NNN-feature-name/spec.md` whose Question
    column opens with the finding ID

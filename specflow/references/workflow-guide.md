@@ -373,7 +373,16 @@ The agent MUST:
 2. **Superpowers detection**: If `requesting-code-review` skill is available,
    follow its review protocol.
 
-3. **Review dimensions** (built-in protocol):
+3. **Risk tier**: Sum the lines and count the files in
+   `git diff --numstat main...HEAD`. HIGH when more than 400 lines or more than
+   15 files changed, when a changed path has a directory named `auth`,
+   `payments`, `billing`, `migrations`, `infra`, `secrets`, or `crypto`, or
+   when a dependency lock file changed. Otherwise STANDARD. Take the answer of
+   `.claude/hooks/risk-classifier.sh` instead when the repository has it. HIGH
+   runs step 4 and then audits each finding for a `file:line` reference and
+   evidence; STANDARD runs step 4 once.
+
+4. **Review dimensions** (built-in protocol):
 
    a. **Spec compliance**: For each acceptance scenario in the spec, verify it
       is implemented and can be demonstrated.
@@ -388,13 +397,13 @@ The agent MUST:
 
    e. **Test coverage**: Verify tests exist for critical paths.
 
-4. **Report findings** with:
+5. **Report findings** with:
    - Confidence score (0-100, only report issues >= 80)
    - Severity (Critical / Important / Suggestion)
    - File path and line reference
    - Specific recommendation
 
-5. **Group** by severity, highest first.
+6. **Group** by severity, highest first.
 
 6. **Write** the findings to `specs/NNN-feature-name/review-findings.json` in
    the shape `commands/review.md` documents under Findings File.
