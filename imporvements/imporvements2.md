@@ -1,11 +1,12 @@
 # Superspec Supercharged v2: The Complete Playbook
 
-> **⚠️ Scope note (pending cleanup):** this document's target surface is **Claude
-> Code (Claude CLI) and the GitHub Copilot CLI only** — the Codex CLI is not in
-> scope for this project (see root `AGENTS.md`). Every reference to Codex/`codex`
-> below (install steps, cross-model review examples, the CI workflow, the cheat
-> sheet, the plugin comparison table, etc.) should be removed wherever found. Not
-> yet done — flagging for a follow-up pass rather than rewriting inline.
+> **Scope note (decided 2026-09-11):** this playbook targets Claude Code (Claude
+> CLI) and the GitHub Copilot CLI. The Codex CLI is not a runtime target for
+> `specflow/` and is not part of the shipped extension, so this playbook carries
+> no Codex install steps and no Codex CI step. Codex stays an allowed implementer
+> and cross-model reviewer for this repo's own development: the `codex review` and
+> `codex:codex-rescue` references below are current, as are the Codex executor
+> lines in `imporvements/tasks.md`.
 
 ## Part 0 — Executive Summary + What's New in v2
 
@@ -413,7 +414,7 @@ if [ "${changed_lines:-0}" -gt 400 ] || [ "$n_files" -gt 15 ]; then echo HIGH; e
 echo STANDARD
 ```
 
-### 4.11 GitHub Actions workflow (headless review + Codex + mutation + SAST)
+### 4.11 GitHub Actions workflow (headless review + mutation + SAST)
 ```yaml
 name: superspec-merge-gate
 on:
@@ -443,12 +444,6 @@ jobs:
             --output-format json --allowedTools "Read,Bash(git diff:*),Grep" \
             --permission-mode acceptEdits --max-turns 6 > .specify/review/claude.json || true
           jq -e '[.result[]? // .findings[]? | select(.severity=="Critical" and .status=="open")] | length == 0' .specify/review/claude.json
-      - name: Cross-model Codex review (high-risk only)
-        if: steps.risk.outputs.level == 'HIGH'
-        env: { OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} }
-        run: |
-          npm install -g @openai/codex
-          timeout 300 codex review --base origin/main --json > .specify/review/codex.json || true
       - name: SAST - Anthropic security review action
         uses: anthropics/claude-code-security-review@main   # pin a release tag in production
         with:
@@ -464,7 +459,7 @@ jobs:
       - name: Merge gate
         run: .specify/scripts/hooks/merge-gate.sh ".specify/review/*.json"
 ```
-> **Verify:** `anthropics/claude-code-security-review` pin (use a release tag, not `@main`, in production), Codex CLI package name, and the exact Claude budget flag.
+> **Verify:** `anthropics/claude-code-security-review` pin (use a release tag, not `@main`, in production) and the exact Claude budget flag.
 
 ### 4.12 PR template — `.github/pull_request_template.md`
 ```markdown
@@ -588,7 +583,6 @@ Pin `@vX.Y.Z` for reproducibility (**verify the tag**). Non-interactive/CI defau
 /plugin install superpowers@claude-plugins-official          # Claude Code (official)
 /plugin marketplace add obra/superpowers-marketplace         # or Obra's marketplace
 /plugin install superpowers@superpowers-marketplace
-# Codex CLI: /plugins -> search superpowers -> Install
 export SUPERPOWERS_DISABLE_TELEMETRY=1
 ```
 Skills auto-trigger. **Gemini CLI is no longer supported** (Google EOLed it 2026-06-18).
@@ -660,7 +654,7 @@ flowchart TD
 - **Codex as primary harness end-to-end:** put rules in `AGENTS.md` (Codex reads the nearest one; keep it **stable during a session** to preserve prompt caching); use `codex exec "..."` for phases and `codex review --base main --json` for review; symlink Superspec into `~/.codex/skills/`; use Claude as the *cross-model* reviewer via headless `claude -p`.
 
 ### 5.10 Codex CLI notes (v1 + refreshed)
-Skill symlink into `~/.codex/skills/`; `/plugins` to install superpowers; **`codex exec "<task>"`** is the headless entry point (prompt in, result out; streams progress to stderr, final message to stdout, clean exit); **`codex review --base main --json`** for review; `openai/codex-action` for CI; `## Code Review Rules` in `AGENTS.md`. Keep `.specify/` neutral; Codex config under `.codex/` (`config.toml`). Sandboxing: `-s read-only|workspace-write`, `--full-auto`, `--yolo` (dangerous). **`--output-schema` requires a gpt-5-family model and can't be combined with `codex exec resume`** (verify). Codex hooks/teams equivalents differ from Claude — **verify in your version**.
+**`codex exec "<task>"`** is the headless entry point: prompt in, result out, progress on stderr, final message on stdout, clean exit. **`codex review --base main --json`** runs a review. Codex reads `## Code Review Rules` from the nearest `AGENTS.md`. Keep `.specify/` neutral; Codex config lives under `.codex/` (`config.toml`). Sandboxing: `-s read-only|workspace-write`, `--full-auto`, `--yolo` (dangerous). **`--output-schema` requires a gpt-5-family model and can't be combined with `codex exec resume`** (verify). Codex hooks and teams equivalents differ from Claude: **verify in your version**.
 
 ### 5.11 Troubleshooting / FAQ (v1 + refreshed)
 - **Slash commands missing:** wrong folder; extension commands land in `.claude/commands/`; re-run `specify extension add`.
