@@ -4,7 +4,10 @@
       {
         "matcher": "Bash",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/block-main-commit.sh" }
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/block-main-commit.sh"
+          }
         ]
       }
     ],
@@ -12,7 +15,14 @@
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "type": "command", "command": "bash .claude/hooks/test-gate.sh" }
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/artifact-lint.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/test-gate.sh"
+          }
         ]
       }
     ]

@@ -43,5 +43,34 @@ printf -- '- [ ] T001 first\n- [ ] T002 second\n' > tasks.md
 check "task added but not ticked -> allow" 0 "$(SPECFLOW_TEST_CMD=false run_hook test-gate.sh "$J")"
 cd /
 
+# --- artifact-lint.sh (PostToolUse: Edit|Write) ---
+r="$(fresh_repo feature)"; mkdir -p "$r/specs/001-x"; cd "$r/specs/001-x"
+lint() { run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$PWD/$1\"}}"; }
+printf '# Spec\n## User Scenarios & Testing\n## Requirements\n## Success Criteria\n' > spec.md
+check "spec with mandatory sections passes"     0 "$(lint spec.md)"
+printf '# Spec\n## Requirements\n' > spec.md
+check "spec missing mandatory section blocked"  2 "$(lint spec.md)"
+printf '# Spec\n## User Scenarios & Testing\n## Requirements\n## Success Criteria\n[NEEDS CLARIFICATION: x]\n' > spec.md
+check "unclarified marker allowed before clarify" 0 "$(lint spec.md)"
+touch .clarified
+check "unclarified marker blocked after clarify" 2 "$(lint spec.md)"
+printf '# Plan\n## Summary\n## Technical Context\n## Constitution Check\n' > plan.md
+check "plan with mandatory sections passes"     0 "$(lint plan.md)"
+printf '# Plan\n## Summary\n' > plan.md
+check "plan missing section blocked"            2 "$(lint plan.md)"
+printf '# Tasks\n- [ ] T001 do a\n- [x] T002 [P] do b\n' > tasks.md
+check "tasks with stable IDs and [P] passes"    0 "$(lint tasks.md)"
+printf '# Tasks\n- [ ] do a without an id\n' > tasks.md
+check "tasks without T-ids blocked"             2 "$(lint tasks.md)"
+printf '# Tasks\n- [ ] T001 do a\n- [ ] [P] do b\n' > tasks.md
+check "malformed [P] line blocked"              2 "$(lint tasks.md)"
+printf 'anything\n' > notes.md
+check "unrelated file ignored"                  0 "$(lint notes.md)"
+cd /
+EX="$HOOKS/../../specflow/examples/static-landing-page/specs"
+for f in "$EX"/*/spec.md "$EX"/*/plan.md "$EX"/*/tasks.md; do
+  check "shipped example passes: $(basename "$(dirname "$f")")/$(basename "$f")" 0 "$(run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$f\"}}")"
+done
+
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
