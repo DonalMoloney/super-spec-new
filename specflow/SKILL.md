@@ -74,7 +74,7 @@ your-project/
 
 ## Session Resumability
 
-Specflow is designed to be **fully resumable across sessions**. All state is persisted
+Specflow is **fully resumable across sessions**. All state is persisted
 in the `.specify/` directory as markdown files. When a session is interrupted (agent
 timeout, user leaves, CLI crash), no progress is lost.
 
@@ -105,7 +105,7 @@ Every command updates `progress.yml` when it starts (`in_progress`) and finishes
 
 A project-level file `.specify/superpowers.yml` records which superpowers skills
 are available. This makes the superpowers integration **visible in the project docs**
-and **persistent across sessions** — no need to re-detect on every command.
+and **persistent across sessions**, so no command re-detects them.
 
 ```yaml
 # .specify/superpowers.yml
@@ -189,9 +189,9 @@ Constitution: Done (2026-04-22)
 Superpowers:  brainstorming (detected), writing-plans (not found)
 
 Features:
-  001-user-auth    [####------] execute (Phase 5/6) — T012/T019 tasks done
-  002-photo-upload [##--------] brainstorm (Phase 2/6) — 2 open questions
-  003-settings     [#---------] specify (Phase 1/6) — draft
+  001-user-auth    [####------] execute (Phase 5/6), T012/T019 tasks done
+  002-photo-upload [##--------] brainstorm (Phase 2/6), 2 open questions
+  003-settings     [#---------] specify (Phase 1/6), draft
 
 Suggested next step: /speckit.specflow.execute 001
 ```
@@ -281,7 +281,7 @@ appends to the brainstorm log.
 **Process**:
 1. Read the target spec file and constitution
 2. Read the template at `.specify/templates/plan-template.md`
-3. Perform a **constitution check** — verify the plan aligns with all governance principles
+3. Perform a **constitution check**: confirm the plan follows every governance principle
 4. Research the codebase to determine technical context (language, dependencies, storage,
    testing framework, project type)
 5. Design the project structure and identify files to create or modify
@@ -310,10 +310,10 @@ blueprint generation process to enhance the plan's task structure section. See
    - **If not found**: Decompose directly from the plan using the template
 4. Organize tasks by phase: Setup → Foundational → User Stories (by priority) → Polish
 5. Apply execution markers to each task:
-   - `[P]` — can run in parallel (different files, no dependencies)
-   - `[TDD]` — must follow RED-GREEN-REFACTOR discipline
-   - `[REVIEW]` — requires code review before proceeding
-   - `[SUBAGENT]` — can be delegated to a subagent
+   - `[P]`: can run in parallel (different files, no dependencies)
+   - `[TDD]`: must follow RED-GREEN-REFACTOR discipline
+   - `[REVIEW]`: needs code review before proceeding
+   - `[SUBAGENT]`: can be delegated to a subagent
 6. Define phase dependencies and checkpoint gates
 7. Write to `specs/NNN-feature-name/tasks.md`
 
@@ -395,7 +395,7 @@ Phase 5: /speckit.specflow.execute          → Implement with TDD + subagents
 Phase 6: /speckit.specflow.review           → Verify against spec
 ```
 
-Each phase has an explicit **gate** — the agent verifies prerequisites before proceeding.
+Each phase has an explicit **gate**: the agent checks prerequisites before proceeding.
 Run `/speckit.specflow.brainstorm` multiple times until the spec is solid. The user controls
 when to advance to the next phase.
 

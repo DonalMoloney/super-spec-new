@@ -70,8 +70,8 @@ description: "Task list template for feature implementation"
 - [ ] T006 [P] [REVIEW] Setup API routing and middleware
 - [ ] T007 Configure error handling and logging infrastructure
 
-**Execution notes**: Tasks marked [TDD] — write tests first, verify they fail, then implement.
-Tasks marked [REVIEW] — pause for human review of API contracts before consumers are built.
+**Execution notes**: For tasks marked [TDD], write tests first, verify they fail, then implement.
+For tasks marked [REVIEW], pause for human review of API contracts before consumers are built.
 
 **Checkpoint**: Foundation ready. Get human approval before starting user stories.
 
@@ -87,7 +87,7 @@ Tasks marked [REVIEW] — pause for human review of API contracts before consume
 > Write these tests FIRST. Verify they FAIL before implementation.
 
 - [ ] T008 [P] [TDD] [US1] Contract test for [endpoint] in tests/contract/
-- [ ] T009 [P] [TDD] [US1] Integration test for [user journey] in tests/integration/
+- [ ] T009 [P] [TDD] [US1] Integration test for [user flow] in tests/integration/
 
 ### Implementation for User Story 1
 
@@ -132,7 +132,7 @@ dispatched as parallel subagents. T014 requires review before proceeding.
 - [ ] TXXX Code cleanup and refactoring
 - [ ] TXXX [P] Performance optimization
 - [ ] TXXX [REVIEW] Security hardening
-- [ ] TXXX Run full test suite — all tests must pass
+- [ ] TXXX Run full test suite: all tests must pass
 
 **Execution notes**: Polish phase tasks can largely run in parallel. Final security
 hardening requires review. All tests must pass before this phase is considered complete.
@@ -143,8 +143,8 @@ hardening requires review. All tests must pass before this phase is considered c
 
 ### Phase Dependencies
 
-- **Setup (Phase 1)**: No dependencies — start immediately
-- **Foundational (Phase 2)**: Depends on Setup — BLOCKS all user stories
+- **Setup (Phase 1)**: No dependencies: start immediately
+- **Foundational (Phase 2)**: Depends on Setup: BLOCKS all user stories
 - **User Stories (Phase 3+)**: All depend on Foundational completion
   - Stories can proceed in parallel (if using subagents) or sequentially by priority
 - **Polish (Final Phase)**: Depends on all desired user stories being complete

@@ -1,13 +1,13 @@
 # Specflow Workflow Guide
 
 This guide provides detailed phase-by-phase instructions for the specflow development
-workflow. The SKILL.md file references this document for progressive disclosure —
-the agent reads relevant sections as needed during command execution.
+workflow. The SKILL.md file references this document for progressive disclosure:
+the agent reads the relevant section while it runs a command.
 
 ## Phase 0: Project Initialization
 
 **Command**: `/speckit.constitution`
-**Gate**: None — this is the entry point.
+**Gate**: None. This is the entry point.
 **Output**: `.specify/` directory structure + `memory/constitution.md`
 
 ### Steps
@@ -204,7 +204,7 @@ This phase can be run multiple times. Each session:
 
 ### Verification
 
-- Constitution check table completed — no unresolved violations
+- Constitution check table completed, with no unresolved violations
 - Technical context filled (no remaining NEEDS CLARIFICATION without good reason)
 - Project structure documented with real file paths
 - Execution strategy populated with at least TDD and checkpoint decisions
@@ -307,9 +307,9 @@ when Superpowers skills are unavailable.
 
    **For `[TDD]` tasks**:
    - Write the test first
-   - Run it — verify it FAILS
+   - Run it and confirm it FAILS
    - Implement the minimum code to pass
-   - Run it — verify it PASSES
+   - Run it and confirm it PASSES
    - Refactor if needed
    - If TDD skill available: follow its full process
 
@@ -328,7 +328,7 @@ when Superpowers skills are unavailable.
      `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is set: dispatch one teammate per
      `[P]` task in the batch, each in its own worktree, with the task's file
      scope (from `task-decomposer`'s existing output) stated in the teammate's
-     brief so no two teammates touch the same file. Do not nest teams — a
+     brief so no two teammates touch the same file. Do not nest teams: a
      teammate never dispatches its own team.
    - Otherwise: launch parallel tasks using the Task tool where possible
    - If neither is available: fall back to sequential execution, identical to
@@ -424,7 +424,7 @@ Each phase has a recommended token ceiling and suggested model class. Headless r
 
 **Headless gating:** In CI workflows, pass `--max-turns 6` and the budget-cap flag to the `claude -p` invocation. Example: `claude -p "..." --output-format json --max-turns 6 [budget-flag-TBD]`. Phase overages are reported in the JSON output as `total_cost_usd`; gates can reject runs exceeding the ceiling.
 
-**Tuning:** Track actual spend per phase (`.specify/telemetry.jsonl` + `jq` rollup); adjust ceilings weekly based on feature complexity and harness speed. HIGH-risk features (auth, payments, migrations) typically exceed standard ceilings by 20–50%; allocate accordingly or extend the critic loop allowance.
+**Tuning:** Track actual spend per phase (`.specify/telemetry.jsonl` + `jq` rollup); adjust ceilings weekly based on feature complexity and CLI speed. HIGH-risk features (auth, payments, migrations) typically exceed standard ceilings by 20–50%; allocate accordingly or extend the critic loop allowance.
 
 ---
 
@@ -487,9 +487,9 @@ Run it only when one of these holds. Otherwise take the normal Phase 5 path.
 
 ## Session Resumability
 
-Specflow is designed to survive session interruptions. All state lives in plain-text
-files under `.specify/memory/` (governance — `constitution.md`) and `specs/NNN-*/`
-(per-feature — `spec.md`, `plan.md`, `tasks.md`, `progress.yml`). This section
+Specflow survives session interruptions. All state lives in plain-text
+files under `.specify/memory/` (governance: `constitution.md`) and `specs/NNN-*/`
+(per-feature: `spec.md`, `plan.md`, `tasks.md`, `progress.yml`). This section
 documents how the agent detects and resumes work.
 
 ### Progress File: `progress.yml`
@@ -512,10 +512,10 @@ phases:
 
 Every specflow command begins with:
 
-1. **Scan `.specify/`** — does it exist? Are there spec directories?
-2. **Read `superpowers.yml`** — which superpowers skills are available?
+1. **Scan `.specify/`**: does it exist? Are there spec directories?
+2. **Read `superpowers.yml`**: which superpowers skills are available?
    If the file does not exist, run detection and create it.
-3. **Read `progress.yml`** — what phase is each feature in?
+3. **Read `progress.yml`**: what phase is each feature in?
 4. **If no `progress.yml`**: Infer progress from file existence:
    - `constitution.md` → constitution done
    - `spec.md` → specify done
@@ -545,7 +545,7 @@ file at each phase checkpoint.
 
 **Brainstorm** (`in_progress`):
 - Re-read `spec.md` Brainstorm Log to see which sessions have been completed
-- Re-read Open Questions table — count `Open` vs `Resolved`
+- Re-read Open Questions table and count `Open` vs `Resolved`
 - Skip categories already covered in previous sessions
 - Resume from the first unexplored category or open question
 
@@ -560,7 +560,7 @@ file at each phase checkpoint.
 - Add missing tasks without disrupting existing task numbering
 
 **Execute** (`in_progress`):
-- Re-read `tasks.md` — parse checkboxes
+- Re-read `tasks.md` and parse checkboxes
 - Count `[x]` (completed) vs `[ ]` (remaining)
 - Identify the **current phase** (first phase with unchecked tasks)
 - Skip all completed tasks; resume from the first `[ ]` task in that phase
@@ -619,7 +619,7 @@ skills:
 | `/speckit.constitution` (first run) | Create the file with full detection results |
 | `/speckit.specflow.status` | Re-run detection, update the file |
 | Any command that needs a superpowers skill | If the skill was previously `detected: false`, re-check once (user may have installed it) |
-| User manually edits the file | Respect the manual override — do not overwrite |
+| User manually edits the file | Respect the manual override, do not overwrite |
 
 **Why persist this**:
 
@@ -634,7 +634,7 @@ When the resume check runs, it reads `superpowers.yml` instead of re-detecting.
 This means a command like `/speckit.specflow.brainstorm` will use the cached detection
 result to decide between enhanced mode (superpowers) and fallback mode (built-in).
 If a skill was `detected: false` last time, the command does a single re-check
-before falling back — in case the user installed it since the last session.
+before falling back, in case the user installed it since the last session.
 
 ---
 

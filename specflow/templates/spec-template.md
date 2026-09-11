@@ -8,8 +8,8 @@
 ## User Scenarios & Testing *(mandatory)*
 
 <!--
-  IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
-  Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
+  IMPORTANT: User stories should be PRIORITIZED as user flows ordered by importance.
+  Each user story must be INDEPENDENTLY TESTABLE - meaning if you implement only ONE of them,
   you should still have a viable MVP (Minimum Viable Product) that delivers value.
 
   Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
@@ -22,7 +22,7 @@
 
 ### User Story 1 - [Brief Title] (Priority: P1)
 
-[Describe this user journey in plain language]
+[Describe this user flow in plain language]
 
 **Why this priority**: [Explain the value and why it has this priority level]
 
@@ -37,7 +37,7 @@
 
 ### User Story 2 - [Brief Title] (Priority: P2)
 
-[Describe this user journey in plain language]
+[Describe this user flow in plain language]
 
 **Why this priority**: [Explain the value and why it has this priority level]
 
@@ -51,7 +51,7 @@
 
 ### User Story 3 - [Brief Title] (Priority: P3)
 
-[Describe this user journey in plain language]
+[Describe this user flow in plain language]
 
 **Why this priority**: [Explain the value and why it has this priority level]
 
@@ -100,7 +100,7 @@
 
 | # | Question | Status | Resolution |
 |---|----------|--------|------------|
-| Q1 | [Question discovered during brainstorming] | Open | — |
+| Q1 | [Question discovered during brainstorming] | Open | |
 | Q2 | [Another question] | Resolved | [How it was resolved] |
 
 ## Requirements *(mandatory)*
@@ -126,7 +126,7 @@
 
 <!--
   Optional. Walk each STRIDE category against this feature. Mark a row N/A
-  with a one-clause reason when the category does not apply — do not delete
+  with a one-clause reason when the category does not apply. Do not delete
   the row.
 -->
 
@@ -169,7 +169,7 @@ Every FR and SC criterion needs at least one named test before the conformance r
 <!--
   This section records insights from /speckit.specflow.brainstorm sessions.
   Each entry is dated and summarizes what was discovered and decided.
-  Do not edit manually — this is maintained by the brainstorm command.
+  Do not edit manually. The brainstorm command maintains this section.
 -->
 
 <!-- Example entry:

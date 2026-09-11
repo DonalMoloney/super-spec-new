@@ -25,9 +25,9 @@ Constitution: Done (2026-04-22)
 Superpowers:  brainstorming (detected), writing-plans (not found)
 
 Features:
-  001-user-auth    [####------] execute (Phase 5/6) — T012/T019 tasks done
-  002-photo-upload [##--------] brainstorm (Phase 2/6) — 2 open questions
-  003-settings     [#---------] specify (Phase 1/6) — draft
+  001-user-auth    [####------] execute (Phase 5/6), T012/T019 tasks done
+  002-photo-upload [##--------] brainstorm (Phase 2/6), 2 open questions
+  003-settings     [#---------] specify (Phase 1/6), draft
 
 Suggested next step: /speckit.specflow.execute 001
 ```
@@ -40,6 +40,7 @@ Suggested next step: /speckit.specflow.execute 001
 If `progress.yml` is missing, infer the phase from the files present:
 - If `spec.md` exists, specify is done.
 - If `spec.md` has Brainstorm Log entries, brainstorm ran.
+- If `.clarified` exists beside `spec.md`, clarify is done; if `.analyzed` exists, analyze is done.
 - If `plan.md` exists, plan is done.
 - If `tasks.md` exists, tasks is done.
 - If `tasks.md` has `[x]` checkboxes, execute is in progress. Count the checked boxes against the total.
