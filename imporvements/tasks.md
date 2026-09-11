@@ -81,7 +81,7 @@ Source: Part 2 item 1, Part 8 days 0–30. Effort: low. Depends on: none.
 Claude: `general-purpose`, then `work-verifier`.
 Codex: `codex:codex-rescue`; then `codex review --base main`.
 
-- [ ] T021 Add `## Code Review Rules` to the constitution template
+- [x] T021 Add `## Code Review Rules` to the constitution template
 
 1. Read `specflow/templates/constitution-template.md` in full.
 2. Append a `## Code Review Rules` section with placeholder bullets for: error-handling convention, test command, forbidden dependencies, security rules, and the two human gates (spec approved, merge approved).
@@ -89,7 +89,7 @@ Codex: `codex:codex-rescue`; then `codex review --base main`.
 
 Verify: `grep -n '^## Code Review Rules' specflow/templates/constitution-template.md` prints one line.
 
-- [ ] T022 Add the same section to root `AGENTS.md`
+- [x] T022 Add the same section to root `AGENTS.md`
 
 1. Add `## Code Review Rules` to `AGENTS.md` after `## Standards`.
 2. Fill it with this repo's real rules: run both validate scripts, hook tests pass, no `[NEEDS CLARIFICATION]` in shipped templates.
@@ -97,7 +97,7 @@ Verify: `grep -n '^## Code Review Rules' specflow/templates/constitution-templat
 
 Verify: `grep -n '^## Code Review Rules' AGENTS.md` prints one line; `python3 specflow/scripts/validate-extension-metadata.py` still exits 0 (it checks docs alignment).
 
-- [ ] T023 Mirror the template change in the README
+- [x] T023 Mirror the template change in the README
 
 1. Update `specflow/README.md` where templates are described.
 

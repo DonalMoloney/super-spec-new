@@ -107,6 +107,10 @@ or unchecked tasks.
 This creates the `.specify/` directory structure and interviews you about core principles,
 technology stack, and quality gates.
 
+The [constitution template](templates/constitution-template.md) includes a **Code Review Rules** section.
+Fill its placeholders with the error-handling convention, test command, forbidden dependencies, and security rules.
+Record human approval of the spec before implementation and human approval of the merge before merging.
+
 ### 2. Write Your First Spec
 
 ```
@@ -332,6 +336,10 @@ Superpowers:  brainstorming (已检测), writing-plans (未安装)
 ```
 
 创建 `.specify/` 目录结构，并引导你定义核心原则、技术栈和质量门禁。
+
+[宪章模板](templates/constitution-template.md) 包含 **Code Review Rules（代码审查规则）** 一节。
+填写错误处理约定、测试命令、禁止引入的依赖和安全规则。
+实施前记录人工对规格的批准，合并前记录人工对合并的批准。
 
 ### 2. 编写第一个功能规格
 
