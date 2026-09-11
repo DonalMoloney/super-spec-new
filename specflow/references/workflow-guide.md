@@ -547,3 +547,28 @@ This means a command like `/speckit.specflow.brainstorm` will use the cached det
 result to decide between enhanced mode (superpowers) and fallback mode (built-in).
 If a skill was `detected: false` last time, the command does a single re-check
 before falling back — in case the user installed it since the last session.
+
+---
+
+## Review stack
+
+Four review stages run against a feature. Each stage writes findings JSON that
+conforms to `.claude/review/schema.json`.
+
+- **Stage 0: spec red-team.** `spec-red-team-reviewer` and `threat-model-reviewer`
+  attack `spec.md` before any code exists. The gate is no unresolved
+  `[NEEDS CLARIFICATION]` marker and no Critical inconsistency.
+- **Stage 1: conformance.** `conformance-reviewer` sees only `spec.md` and the diff,
+  and derives one test per acceptance criterion. The gate is a passing test for
+  every criterion.
+- **Stage 2: panel.** `correctness-reviewer`, `security-reviewer`, and
+  `maintainability-reviewer` review in parallel fresh contexts. Add
+  `performance-reviewer` for a performance-sensitive diff. A finding raised by two
+  or more personas is promoted one severity level.
+- **Stage 3: critic.** For a HIGH risk change only, `critic` audits the panel's
+  findings rather than the code, and rejects any finding without a `file:line`
+  reference or a failing test. The loop stops after three rounds.
+
+The agents live in `.claude/agents/` and are not part of the extension archive a
+consuming project installs. When they are absent, `/speckit.specflow.review` and
+its built-in protocol above are the fallback for all four stages.

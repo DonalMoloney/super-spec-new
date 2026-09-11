@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SuperspecReviewFindings",
+  "type": "object",
+  "required": ["schema_version", "reviewer", "verdict", "findings"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "reviewer": { "type": "string" },
+    "model": { "type": "string" },
+    "stage": { "enum": ["spec-red-team","conformance","correctness","security","maintainability","performance","critic"] },
+    "verdict": { "enum": ["BLOCK","CONCERNS","CLEAN"] },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id","severity","location","evidence","fix"],
+        "properties": {
+          "id": { "type": "string" },
+          "severity": { "enum": ["Critical","Important","Minor"] },
+          "category": { "type": "string" },
+          "location": { "type": "string", "description": "file:line" },
+          "evidence": { "type": "string", "description": "failing test, constitution rule, or OWASP ref" },
+          "fix": { "type": "string" },
+          "status": { "enum": ["open","accepted","rejected","rebutted","fixed"], "default": "open" }
+        }
+      }
+    }
+  }
+}
