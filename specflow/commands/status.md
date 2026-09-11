@@ -15,7 +15,8 @@ Print the project's progress, each feature's phase, and the superpowers detectio
 3. **Run superpowers detection**: Check for all superpowers skills at
    `.agents/skills/` and `~/.agents/skills/`. Write the result to
    `.specify/superpowers.yml`.
-4. Read `progress.yml` in each spec directory, or infer the phase from the files present.
+4. Read `progress.yml` in each spec directory, or infer the phase from the files
+   present. Record which of `.clarified` and `.analyzed` exist beside `spec.md`.
 5. Print a status summary:
 
 ```
@@ -25,14 +26,18 @@ Constitution: Done (2026-04-22)
 Superpowers:  brainstorming (detected), writing-plans (not found)
 
 Features:
-  001-user-auth    [####------] execute (Phase 5/6), T012/T019 tasks done
-  002-photo-upload [##--------] brainstorm (Phase 2/6), 2 open questions
-  003-settings     [#---------] specify (Phase 1/6), draft
+  001-user-auth    [####------] execute (Phase 5/6), gates: clarified, analyzed, T012/T019 tasks done
+  002-photo-upload [##--------] brainstorm (Phase 2/6), gates: none, 2 open questions
+  003-settings     [#---------] specify (Phase 1/6), gates: none, draft
 
 Suggested next step: /speckit.specflow.execute 001
 ```
 
-6. If no `.specify/` directory exists, print: "No specflow project found. Run
+6. Pick the suggested next step from the gates: a feature with `tasks.md` and no
+   `.analyzed` gets `/speckit.analyze NNN`; a feature with `spec.md` and no
+   `.clarified` gets `/speckit.clarify NNN`; otherwise the next workflow command
+   for its phase. Suggest the step for the feature furthest along.
+7. If no `.specify/` directory exists, print: "No specflow project found. Run
    `/speckit.constitution` to get started."
 
 ## File Inference Fallback
