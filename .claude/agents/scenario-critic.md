@@ -1,7 +1,7 @@
 ---
 name: scenario-critic
 description: Use this agent to review a freshly written .feature file for coverage gaps, ambiguity, and testability before any step definitions or code exist. Typical triggers include the bdd-orchestrator dispatching phase 3 right after gherkin-writer, or a user asking "are these scenarios good enough?" before implementation starts. See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: opus
 color: yellow
 tools: ["Read", "Grep", "Glob"]
 ---

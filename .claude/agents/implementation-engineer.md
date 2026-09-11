@@ -1,7 +1,7 @@
 ---
 name: implementation-engineer
 description: Use this agent to write the minimal production code needed to make a confirmed set of RED BDD scenarios pass, without over-building beyond what the scenarios require. Typical triggers include the bdd-orchestrator dispatching phase 7 after task-decomposer produces the implementation checklist, or a user asking to "implement" a feature that already has failing scenarios and step definitions in place. See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: sonnet
 color: green
 tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob"]
 ---

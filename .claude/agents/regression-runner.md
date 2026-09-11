@@ -1,7 +1,7 @@
 ---
 name: regression-runner
 description: Use this agent to run the project's full existing test and feature suite — not just the new scenarios — to catch collateral damage from a BDD task before it's reported done. Typical triggers include the bdd-orchestrator dispatching phase 13 after spec-alignment-auditor, or a user asking to confirm nothing else broke after a change. See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: haiku
 color: yellow
 tools: ["Read", "Bash", "Grep"]
 ---

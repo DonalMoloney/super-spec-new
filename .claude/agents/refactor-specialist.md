@@ -1,7 +1,7 @@
 ---
 name: refactor-specialist
 description: Use this agent to clean up implementation code and step definitions once scenarios are confirmed green, without changing observable behavior. Typical triggers include the bdd-orchestrator dispatching phase 9 after green-phase-verifier, or a user asking to tidy up code that already passes its tests. See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: sonnet
 color: green
 tools: ["Read", "Edit", "Bash", "Grep", "Glob"]
 ---

@@ -1,7 +1,7 @@
 ---
 name: red-phase-verifier
 description: Use this agent to run the BDD suite after step definitions are scaffolded and confirm new scenarios fail for the expected reason, not due to a scaffolding mistake. Typical triggers include the bdd-orchestrator dispatching phase 5, right after step-definition-scaffolder, or a user asking "does RED actually work here?" before implementation begins. See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: haiku
 color: yellow
 tools: ["Read", "Bash", "Grep"]
 ---

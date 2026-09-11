@@ -1,7 +1,7 @@
 ---
 name: unit-test-augmenter
 description: Use this agent to add focused unit tests for internal logic that BDD scenarios exercise only indirectly (edge cases, error branches, pure functions). Typical triggers include the bdd-orchestrator dispatching phase 10 after refactor-specialist, or a scenario-critic finding that flagged a scenario as "really a unit test in disguise". See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: sonnet
 color: magenta
 tools: ["Read", "Write", "Edit", "Bash", "Grep"]
 ---

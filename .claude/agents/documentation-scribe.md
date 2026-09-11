@@ -1,7 +1,7 @@
 ---
 name: documentation-scribe
 description: Use this agent to update README, CHANGELOG, and other relevant docs to describe a newly delivered BDD feature. Typical triggers include the bdd-orchestrator dispatching phase 14 after regression-runner confirms no regressions, or a user asking for docs to be updated after a feature lands. See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: haiku
 color: blue
 tools: ["Read", "Write", "Edit", "Grep"]
 ---

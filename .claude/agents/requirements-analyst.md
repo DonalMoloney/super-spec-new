@@ -1,7 +1,7 @@
 ---
 name: requirements-analyst
 description: Use this agent when a feature task's acceptance criteria are implicit or missing and need to become explicit Given/When/Then statements before any scenario is written. Typical triggers include the bdd-orchestrator dispatching phase 1 of the BDD pipeline, a task description that only states a goal ("add CSV export") without conditions or edge cases, or a user asking "what should this feature actually do?" See "When to invoke" in the agent body for worked scenarios.
-model: inherit
+model: opus
 color: blue
 tools: ["Read", "Grep", "Glob"]
 ---

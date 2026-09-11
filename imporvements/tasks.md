@@ -156,7 +156,7 @@ Codex: `codex:codex-rescue --wait` (frontmatter-only edit); then `codex review -
 
 Verify: the PR description names the source page.
 
-- [ ] T042 Assign a model to all 17 agents
+- [x] T042 Assign a model to all 17 agents
 
 1. Apply this mapping by editing only the `model:` line of each file's frontmatter:
    - `opus`: `bdd-orchestrator`, `requirements-analyst`, `scenario-critic`, `spec-alignment-auditor`, `work-verifier`, `code-reviewer`
@@ -166,7 +166,7 @@ Verify: the PR description names the source page.
 
 Verify: `grep -L '^model:' .claude/agents/*.md` prints nothing; `grep -h '^model:' .claude/agents/*.md | sort | uniq -c` shows only the three aliases.
 
-- [ ] T043 Record the routing table
+- [x] T043 Record the routing table
 
 1. Append ADR-0003 (or next number) to `decisions.md`: one paragraph, the mapping above, and the rule "reviewers and verifiers get the strongest model; mechanical runners get the cheapest".
 
