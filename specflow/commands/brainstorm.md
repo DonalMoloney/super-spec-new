@@ -14,7 +14,9 @@ Deep-dive edge cases and refine a spec document using brainstorming skills.
 
 1. Read the target spec file
 2. Read the constitution for project constraints
-3. **Superpowers detection**: Check for `brainstorming` skill
+3. Read `decisions.md` at the project root if it exists. Treat every decision
+   recorded there as settled and do not raise it as a question again
+4. **Superpowers detection**: Check for `brainstorming` skill
    - **If found**: Read the brainstorming SKILL.md and follow its questioning protocol,
      adapting all outputs to the target spec file
    - **If not found**: Use the built-in 5-category questioning protocol:
@@ -23,12 +25,12 @@ Deep-dive edge cases and refine a spec document using brainstorming skills.
      - Scale & performance (load, concurrency, rate limits)
      - Security & privacy (injection, authorization, data exposure)
      - User experience (confusion points, accessibility, unintended usage)
-4. Ask questions **one at a time**, preferring multiple choice format
-5. After each answer, update the spec:
+5. Ask questions **one at a time**, preferring multiple choice format
+6. After each answer, update the spec:
    - New requirements → add to Functional Requirements
    - Resolved questions → update Open Questions table
    - New edge cases → add to Edge Cases section
-6. When the user confirms the spec is ready, update the "Brainstorm Log" with a
+7. When the user confirms the spec is ready, update the "Brainstorm Log" with a
    dated summary of insights discovered
 
 ## Output
