@@ -1,11 +1,11 @@
-# speckit.superspec.execute
+# speckit.specflow.execute
 
 Orchestrate implementation with TDD, subagents, and review gates.
 
 ## Usage
 
 ```
-/speckit.superspec.execute [spec-number|spec-path]
+/speckit.specflow.execute [spec-number|spec-path]
 ```
 
 ## Process

@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # scripts/e2e-agent-claude.sh
 #
-# End-to-end AI-generation test for the superspec extension, driven by Claude
+# End-to-end AI-generation test for the specflow extension, driven by Claude
 # Code in headless (-p) mode. This is the second of two e2e tests in this repo:
 #
 #   1. scripts/e2e-smoke.sh         — structural assertions, no LLM, ~60s
 #   2. scripts/e2e-agent-claude.sh  — full agent-driven workflow, this file
 #
 # Goal
-#   Drive a deterministic feature ("a static landing page for the superspec
-#   project") through every stage of superspec's workflow, and assert at each
+#   Drive a deterministic feature ("a static landing page for the specflow
+#   project") through every stage of specflow's workflow, and assert at each
 #   stage that the expected artifact + section structure was produced. This
 #   tells us per-stage whether brainstorm / tasks / execute / review actually
 #   work end-to-end (not just that they're registered).
@@ -17,12 +17,12 @@
 # Pipeline
 #   Stage 0  /speckit.constitution  → .specify/memory/constitution.md
 #   Stage 1  /speckit.specify       → specs/001-.../spec.md
-#   Stage 2  /speckit.superspec.brainstorm  (mutates spec.md, adds Edge Cases)
+#   Stage 2  /speckit.specflow.brainstorm  (mutates spec.md, adds Edge Cases)
 #   Stage 3  /speckit.plan          → specs/001-.../plan.md
 #   Stage 4  /speckit.tasks         → specs/001-.../tasks.md
-#                                     (after_tasks hook may invoke .superspec.tasks)
-#   Stage 5  /speckit.superspec.execute   → web/index.html + progress updates
-#   Stage 6  /speckit.superspec.review    → checklists/review.md
+#                                     (after_tasks hook may invoke .specflow.tasks)
+#   Stage 5  /speckit.specflow.execute   → web/index.html + progress updates
+#   Stage 6  /speckit.specflow.review    → checklists/review.md
 #
 # Each stage is a separate `claude -p` invocation. After each, we assert
 # (a) expected file exists, (b) certain section headings exist (contract
@@ -85,7 +85,7 @@ if [ -n "$RESUME_WORKDIR" ]; then
   fi
   WORK="$RESUME_WORKDIR"
 else
-  WORK="$(mktemp -d -t superspec-agent.XXXXXX)"
+  WORK="$(mktemp -d -t specflow-agent.XXXXXX)"
 fi
 LOGS="$WORK/.logs"; mkdir -p "$LOGS"
 
@@ -141,7 +141,7 @@ run_claude() {
   # --max-budget-usd               → cap per-stage spend
   # --output-format text           → human-readable response (we don't parse it)
   # We rely on claude reading the project dir (.claude/, .specify/, AGENTS.md
-  # auto-discovery) so it knows about the spec-kit + superspec slash commands.
+  # auto-discovery) so it knows about the spec-kit + specflow slash commands.
   # Note: claude exits non-zero on max-turns or budget, but artifacts may have
   # already been written. We log a warning but don't abort here — the on-disk
   # assertions after this call are the source of truth for whether the stage
@@ -161,7 +161,7 @@ run_claude() {
 }
 
 # ========================================================================
-#  PREP: spec-kit init + install superspec from local checkout
+#  PREP: spec-kit init + install specflow from local checkout
 # ========================================================================
 if [ -n "$RESUME_WORKDIR" ]; then
   title 0 "prep — RESUMING from existing workdir"
@@ -169,7 +169,7 @@ if [ -n "$RESUME_WORKDIR" ]; then
   pass "reusing workdir: $WORK"
   note "skipping init/install (will reuse existing .specify/, .claude/, specs/)"
 else
-  title 0 "prep — init spec-kit + install superspec (--dev)"
+  title 0 "prep — init spec-kit + install specflow (--dev)"
   cd "$WORK"
 
   uvx --from git+https://github.com/github/spec-kit.git specify init \
@@ -181,7 +181,7 @@ else
   uvx --from git+https://github.com/github/spec-kit.git specify extension add "$REPO_ROOT" --dev \
       </dev/null >"$LOGS/add.log" 2>&1 \
     || { miss "specify extension add failed (see $LOGS/add.log)"; tail -n 20 "$LOGS/add.log"; exit 1; }
-  pass "superspec installed --dev"
+  pass "specflow installed --dev"
 fi
 
 assert_file ".specify/extensions.yml present" "$WORK/.specify/extensions.yml" || exit 1
@@ -193,23 +193,23 @@ note "slash commands visible to claude (.claude/skills/):"
 find "$WORK/.claude" -type f \( -name '*.md' -o -name 'SKILL.md' \) 2>/dev/null \
   | sed "s|^$WORK/.claude/|        |" | sort | head -n 30 || true
 
-# Critical: assert all 5 superspec commands are actually visible to claude.
+# Critical: assert all 5 specflow commands are actually visible to claude.
 # spec-kit compiles commands/X.md into SKILL.md with frontmatter, but in some
 # install modes the compiled artifacts land under
 #   .specify/extensions/<slug>/.specify-dev/agent-commands/claude/...
 # instead of .claude/skills/, leaving them invisible to the agent.
 DISTRIB_FAIL=0
 for c in status brainstorm tasks execute review; do
-  if [ -f "$WORK/.claude/skills/speckit-superspec-$c/SKILL.md" ]; then
-    pass "  /speckit.superspec.$c is visible to claude"
+  if [ -f "$WORK/.claude/skills/speckit-specflow-$c/SKILL.md" ]; then
+    pass "  /speckit.specflow.$c is visible to claude"
   else
-    miss "  /speckit.superspec.$c NOT in .claude/skills/ — agent cannot see it"
+    miss "  /speckit.specflow.$c NOT in .claude/skills/ — agent cannot see it"
     DISTRIB_FAIL=1
   fi
 done
 if [ "$DISTRIB_FAIL" = "1" ]; then
-  printf '\n%sDistribution gap detected.%s superspec SKILLs were compiled here:\n' "$C_YELLOW" "$C_RST"
-  find "$WORK/.specify/extensions/superspec" -name 'SKILL.md' 2>/dev/null \
+  printf '\n%sDistribution gap detected.%s specflow SKILLs were compiled here:\n' "$C_YELLOW" "$C_RST"
+  find "$WORK/.specify/extensions/specflow" -name 'SKILL.md' 2>/dev/null \
     | sed "s|^$WORK/|    |"
   printf '%sBut not symlinked/copied into .claude/skills/.%s\n' "$C_YELLOW" "$C_RST"
   printf 'Skipping agent stages — would yield meaningless results.\n'
@@ -220,7 +220,7 @@ fi
 #  STAGE 1: /speckit.constitution
 # ========================================================================
 title 1 "/speckit.constitution — establish project principles"
-LANDING_VISION='Static landing page for the superspec project.
+LANDING_VISION='Static landing page for the specflow project.
 Audience: developers evaluating spec-kit extensions.
 Constraints: pure HTML+CSS, no build tooling, output goes to web/index.html.
 Quality bars: semantic HTML, mobile-friendly, no external network deps at runtime.'
@@ -251,7 +251,7 @@ title 2 "/speckit.specify — write the feature spec"
 run_claude 2 "$(cat <<EOF
 Use the slash command /speckit.specify with this feature description:
 
-"Static landing page for superspec. Three priorities:
+"Static landing page for specflow. Three priorities:
  P1: Hero section with project name, tagline, and a 'Get Started' button.
  P2: Features grid showing the 5 core commands (status, brainstorm, tasks, execute, review).
  P3: Workflow diagram and an install command snippet.
@@ -286,9 +286,9 @@ fi
 [ -n "$FAILED_STAGE" ] && { printf '\n%sStopped at Stage %s%s\n' "$C_RED" "$FAILED_STAGE" "$C_RST"; exit 1; }
 
 # ========================================================================
-#  STAGE 3: /speckit.superspec.brainstorm — superspec-specific
+#  STAGE 3: /speckit.specflow.brainstorm — specflow-specific
 # ========================================================================
-title 3 "/speckit.superspec.brainstorm — deep-dive edge cases"
+title 3 "/speckit.specflow.brainstorm — deep-dive edge cases"
 SPEC_REL="${SPEC_DIR#$WORK/}/spec.md"
 if [ "$DRY_RUN" = "1" ]; then
   SPEC_BEFORE_HASH="placeholder"
@@ -297,15 +297,15 @@ else
 fi
 
 run_claude 3 "$(cat <<EOF
-Use the superspec slash command /speckit.superspec.brainstorm against the
+Use the specflow slash command /speckit.specflow.brainstorm against the
 existing spec at $SPEC_REL.
 
-Per the superspec contract, brainstorm should mutate the spec file IN PLACE
+Per the specflow contract, brainstorm should mutate the spec file IN PLACE
 and add (or expand) at minimum:
   - an "## Edge Cases" section
   - an "## Open Questions" or "## Assumptions" section
 
-Run /speckit.superspec.brainstorm $SPEC_REL and stop when the spec file has
+Run /speckit.specflow.brainstorm $SPEC_REL and stop when the spec file has
 been updated.
 EOF
 )" || FAILED_STAGE=3
@@ -344,7 +344,7 @@ fi
 [ -n "$FAILED_STAGE" ] && { printf '\n%sStopped at Stage %s%s\n' "$C_RED" "$FAILED_STAGE" "$C_RST"; exit 1; }
 
 # ========================================================================
-#  STAGE 5: /speckit.tasks (may trigger superspec.tasks via after_tasks hook)
+#  STAGE 5: /speckit.tasks (may trigger specflow.tasks via after_tasks hook)
 # ========================================================================
 title 5 "/speckit.tasks — phased task breakdown"
 run_claude 5 "$(cat <<EOF
@@ -352,7 +352,7 @@ Run /speckit.tasks to produce a phased task breakdown for the plan at
 ${SPEC_DIR#$WORK/}/plan.md. Tasks should be written to
 ${SPEC_DIR#$WORK/}/tasks.md with phase markers and ID-style task numbers
 (e.g. T001, T002, ...). If the after_tasks hook prompts you to also run
-/speckit.superspec.tasks, accept and run it.
+/speckit.specflow.tasks, accept and run it.
 EOF
 )" || FAILED_STAGE=5
 
@@ -363,13 +363,13 @@ fi
 [ -n "$FAILED_STAGE" ] && { printf '\n%sStopped at Stage %s%s\n' "$C_RED" "$FAILED_STAGE" "$C_RST"; exit 1; }
 
 # ========================================================================
-#  STAGE 6: /speckit.superspec.execute — actually build web/index.html
+#  STAGE 6: /speckit.specflow.execute — actually build web/index.html
 # ========================================================================
-title 6 "/speckit.superspec.execute — implement"
+title 6 "/speckit.specflow.execute — implement"
 run_claude 6 "$(cat <<EOF
-Run /speckit.superspec.execute to implement the tasks in
+Run /speckit.specflow.execute to implement the tasks in
 ${SPEC_DIR#$WORK/}/tasks.md. The deliverable is a static landing page at
-web/index.html (pure HTML+CSS, no JS build tooling). Per the superspec
+web/index.html (pure HTML+CSS, no JS build tooling). Per the specflow
 contract, also keep ${SPEC_DIR#$WORK/}/progress.yml updated as tasks complete.
 EOF
 )" || FAILED_STAGE=6
@@ -377,22 +377,22 @@ EOF
 if [ -z "$FAILED_STAGE" ]; then
   assert_file "web/index.html generated"        "$WORK/web/index.html"      || FAILED_STAGE=6
   assert_grep "  index.html has <html>"        '<html'                     "$WORK/web/index.html" || FAILED_STAGE=6
-  assert_grep "  index.html mentions superspec" 'superspec'                "$WORK/web/index.html" || FAILED_STAGE=6
+  assert_grep "  index.html mentions specflow" 'specflow'                "$WORK/web/index.html" || FAILED_STAGE=6
   if [ -f "$SPEC_DIR/progress.yml" ]; then
     pass "progress.yml exists at ${SPEC_DIR#$WORK/}/progress.yml"
   else
-    note "progress.yml not produced (soft signal — superspec contract suggests it)"
+    note "progress.yml not produced (soft signal — specflow contract suggests it)"
   fi
 fi
 [ -n "$FAILED_STAGE" ] && { printf '\n%sStopped at Stage %s%s\n' "$C_RED" "$FAILED_STAGE" "$C_RST"; exit 1; }
 
 # ========================================================================
-#  STAGE 7: /speckit.superspec.review
+#  STAGE 7: /speckit.specflow.review
 # ========================================================================
-title 7 "/speckit.superspec.review — review against spec"
+title 7 "/speckit.specflow.review — review against spec"
 run_claude 7 "$(cat <<EOF
-Run /speckit.superspec.review to review the implementation under web/ against
-the spec/plan/tasks at ${SPEC_DIR#$WORK/}. Per the superspec contract, write
+Run /speckit.specflow.review to review the implementation under web/ against
+the spec/plan/tasks at ${SPEC_DIR#$WORK/}. Per the specflow contract, write
 the review output to ${SPEC_DIR#$WORK/}/checklists/review.md as a checklist.
 EOF
 )" || FAILED_STAGE=7

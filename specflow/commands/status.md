@@ -1,11 +1,11 @@
-# speckit.superspec.status
+# speckit.specflow.status
 
 Show current project progress, feature status, and superpowers detection results.
 
 ## Usage
 
 ```
-/speckit.superspec.status [spec-number|all]
+/speckit.specflow.status [spec-number|all]
 ```
 
 ## Process
@@ -19,7 +19,7 @@ Show current project progress, feature status, and superpowers detection results
 5. Display a status summary:
 
 ```
-Superspec Project Status
+Specflow Project Status
 ========================
 Constitution: Done (2026-04-22)
 Superpowers:  brainstorming (detected), writing-plans (not found)
@@ -29,10 +29,10 @@ Features:
   002-photo-upload [##--------] brainstorm (Phase 2/6) — 2 open questions
   003-settings     [#---------] specify (Phase 1/6) — draft
 
-Suggested next step: /speckit.superspec.execute 001
+Suggested next step: /speckit.specflow.execute 001
 ```
 
-6. If no `.specify/` exists, suggest: "No superspec project found. Run
+6. If no `.specify/` exists, suggest: "No specflow project found. Run
    `/speckit.constitution` to get started."
 
 ## File Inference Fallback

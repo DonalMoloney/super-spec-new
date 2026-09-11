@@ -20,7 +20,7 @@ Templates requiring updates:
 Follow-up TODOs: None
 -->
 
-# Superspec Landing Page Constitution
+# Specflow Landing Page Constitution
 
 ## Core Principles
 
@@ -73,7 +73,7 @@ static host), eliminates CDN outages, and guarantees offline rendering.
 ### V. Developer-Audience Clarity
 
 Content and visual hierarchy MUST prioritize what a developer evaluating
-spec-kit extensions needs: what superspec does, how to get started, and
+spec-kit extensions needs: what specflow does, how to get started, and
 where to find deeper documentation. Marketing language MUST be avoided
 in favor of concrete, technical descriptions. Code snippets and CLI
 examples SHOULD appear where they reduce ambiguity.
@@ -119,7 +119,7 @@ builds trust.
 ## Governance
 
 This constitution is the authoritative reference for all design and
-implementation decisions on the Superspec Landing Page. When a conflict
+implementation decisions on the Specflow Landing Page. When a conflict
 arises between this document and any other artifact (spec, plan, tasks),
 the constitution prevails.
 

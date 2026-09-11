@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate the ZIP that spec-kit's catalog will actually download.
 
-`specify extension add superspec` resolves to GitHub's generated tag archive
+`specify extension add specflow` resolves to GitHub's generated tag archive
 (https://github.com/DonalMoloney/super-spec-new/archive/refs/tags/vX.Y.Z.zip), which is
 produced by `git archive` and therefore honours the `export-ignore` rules in
 .gitattributes. This script rebuilds that archive locally and checks it against
@@ -87,7 +87,7 @@ def declared_payload_files(manifest: str) -> list[str]:
 
 def build_archive(ref: str, destination: Path) -> None:
     subprocess.run(
-        ["git", "archive", "--format=zip", f"--prefix=superspec/", "-o", str(destination), ref],
+        ["git", "archive", "--format=zip", f"--prefix=specflow/", "-o", str(destination), ref],
         cwd=REPO_ROOT,
         check=True,
     )
@@ -98,7 +98,7 @@ def main() -> int:
     print(f"Validating release archive for ref '{ref}'\n")
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        archive_path = Path(tmpdir) / "superspec.zip"
+        archive_path = Path(tmpdir) / "specflow.zip"
         build_archive(ref, archive_path)
 
         download_size = archive_path.stat().st_size

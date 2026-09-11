@@ -1,12 +1,12 @@
 # Superpowers Bridge Reference
 
-This document describes how superspec detects, invokes, and adapts obra/superpowers
+This document describes how specflow detects, invokes, and adapts obra/superpowers
 skills. The SKILL.md references this document when a command needs superpowers
 integration details.
 
 ## Detection Logic
 
-Superspec checks for superpowers skills at these paths, in order of precedence:
+Specflow checks for superpowers skills at these paths, in order of precedence:
 
 1. **Project-local**: `$PROJECT_DIR/.agents/skills/{skill-name}/SKILL.md`
 2. **User-global**: `~/.agents/skills/{skill-name}/SKILL.md`
@@ -16,7 +16,7 @@ Project-local skills take precedence over user-global.
 
 ### Detection Steps
 
-When a superspec command needs a superpowers skill:
+When a specflow command needs a superpowers skill:
 
 1. Determine the skill name from the mapping table below
 2. Check project-local path first (use Glob or Read tool)
@@ -27,14 +27,14 @@ When a superspec command needs a superpowers skill:
 
 ## Skill Mapping
 
-| Superspec Command | Superpowers Skill Name | Skill Directory |
+| Specflow Command | Superpowers Skill Name | Skill Directory |
 |-------------------|------------------------|-----------------|
-| `/speckit.superspec.brainstorm` | `brainstorming` | `brainstorming/` |
-| `/speckit.superspec.tasks` | `writing-plans` | `writing-plans/` |
-| `/speckit.superspec.execute` | `executing-plans` | `executing-plans/` |
-| `/speckit.superspec.execute` | `subagent-driven-development` | `subagent-driven-development/` |
-| `/speckit.superspec.execute` | `test-driven-development` | `test-driven-development/` |
-| `/speckit.superspec.review` | `requesting-code-review` | `requesting-code-review/` |
+| `/speckit.specflow.brainstorm` | `brainstorming` | `brainstorming/` |
+| `/speckit.specflow.tasks` | `writing-plans` | `writing-plans/` |
+| `/speckit.specflow.execute` | `executing-plans` | `executing-plans/` |
+| `/speckit.specflow.execute` | `subagent-driven-development` | `subagent-driven-development/` |
+| `/speckit.specflow.execute` | `test-driven-development` | `test-driven-development/` |
+| `/speckit.specflow.review` | `requesting-code-review` | `requesting-code-review/` |
 
 ## Invocation Pattern
 
@@ -83,7 +83,7 @@ After the superpowers skill's process completes:
 
 ## Skill-Specific Adaptation Rules
 
-### brainstorming → `/speckit.superspec.brainstorm`
+### brainstorming → `/speckit.specflow.brainstorm`
 
 **Process adaptation**:
 - Follow the brainstorming skill's questioning protocol (one question at a time,
@@ -94,28 +94,28 @@ After the superpowers skill's process completes:
   existing spec.md rather than creating a separate file
 
 **Output mapping**:
-| Superpowers Output | Superspec Destination |
+| Superpowers Output | Specflow Destination |
 |--------------------|-----------------------|
 | Design document | Update spec.md Edge Cases + Open Questions |
 | Clarified requirements | Update spec.md Functional Requirements |
 | Resolved questions | Update spec.md Open Questions table (mark Resolved) |
 
-### writing-plans → `/speckit.superspec.tasks`
+### writing-plans → `/speckit.specflow.tasks`
 
 **Process adaptation**:
 - Follow the writing-plans skill's task decomposition methodology
-- Structure the output using superspec's `tasks-template.md` format
+- Structure the output using specflow's `tasks-template.md` format
 - Apply execution markers (`[TDD]`, `[REVIEW]`, `[SUBAGENT]`, `[P]`) based on
   the plan's execution strategy section
 
 **Output mapping**:
-| Superpowers Output | Superspec Destination |
+| Superpowers Output | Specflow Destination |
 |--------------------|-----------------------|
 | Implementation blueprint | `specs/NNN/tasks.md` |
 | Task dependencies | Tasks Dependencies section |
 | Parallel opportunities | Tasks marked with `[P]` and `[SUBAGENT]` |
 
-### executing-plans → `/speckit.superspec.execute`
+### executing-plans → `/speckit.specflow.execute`
 
 **Process adaptation**:
 - Follow the executing-plans skill's batch processing protocol
@@ -129,18 +129,18 @@ After the superpowers skill's process completes:
 - `test-driven-development`: For tasks marked `[TDD]`, follow this skill's
   RED-GREEN-REFACTOR discipline
 
-### requesting-code-review → `/speckit.superspec.review`
+### requesting-code-review → `/speckit.specflow.review`
 
 **Process adaptation**:
 - Follow the requesting-code-review skill's pre-evaluation checklist
-- Add superspec-specific review dimensions:
+- Add specflow-specific review dimensions:
   - Spec compliance (acceptance scenarios from spec.md)
   - Constitution compliance (principles from constitution.md)
   - Brainstorm coverage (edge cases from brainstorming sessions)
 - Report findings with confidence scores (0-100, threshold >= 80)
 
 **Output mapping**:
-| Superpowers Output | Superspec Destination |
+| Superpowers Output | Specflow Destination |
 |--------------------|-----------------------|
 | Review findings | Reported to user |
 | Checklist | Optional: `specs/NNN/checklist-review.md` |
@@ -194,9 +194,9 @@ If superpowers skills are installed but not detected:
 
 ### Skill Process Conflicts
 
-If the superpowers skill's process conflicts with superspec conventions:
+If the superpowers skill's process conflicts with specflow conventions:
 
-1. Superspec output locations always take precedence (write to `.specify/`)
-2. Superspec naming conventions always take precedence (spec.md, plan.md, tasks.md)
+1. Specflow output locations always take precedence (write to `.specify/`)
+2. Specflow naming conventions always take precedence (spec.md, plan.md, tasks.md)
 3. The skill's methodology and questioning approach take precedence over fallback
 4. When in doubt: follow the superpowers process, adapt only the outputs

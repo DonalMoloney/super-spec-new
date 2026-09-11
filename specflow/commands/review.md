@@ -1,11 +1,11 @@
-# speckit.superspec.review
+# speckit.specflow.review
 
 Run code review against spec requirements using review skills.
 
 ## Usage
 
 ```
-/speckit.superspec.review [scope]
+/speckit.specflow.review [scope]
 ```
 
 **Scope**: Optional file paths, spec number, or "all changes". Defaults to the latest feature.
@@ -43,7 +43,7 @@ Findings below 80 confidence are suppressed to reduce noise.
 ## Superpowers Adaptation
 
 When using the `requesting-code-review` skill, adapt its outputs:
-- Add superspec-specific review dimensions: spec compliance, constitution compliance,
+- Add specflow-specific review dimensions: spec compliance, constitution compliance,
   brainstorm coverage
 - Output location → report to user, optionally write to checklist file
 

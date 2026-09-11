@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 # scripts/e2e-smoke.sh
 #
-# End-to-end smoke test for the superspec extension.
+# End-to-end smoke test for the specflow extension.
 #
 # What it does (no LLM/agent required):
 #   1. Initializes a fresh spec-kit project in a temp dir (offline + --no-git).
-#   2. Installs THIS local checkout of superspec via `specify extension add --dev`.
+#   2. Installs THIS local checkout of specflow via `specify extension add --dev`.
 #   3. Simulates `/speckit.specify` by directly invoking spec-kit's
 #      `.specify/scripts/bash/create-new-feature.sh` (which is the same script
 #      the agent calls). This proves the file system layout spec-kit really
 #      produces — independent of which LLM is used.
-#   4. Asserts everything spec-kit + superspec jointly promise:
+#   4. Asserts everything spec-kit + specflow jointly promise:
 #        - .specify/  contains memory/, templates/, scripts/, integrations/
-#        - .specify/extensions.yml  registers all 5 superspec commands + 3 hooks
+#        - .specify/extensions.yml  registers all 5 specflow commands + 3 hooks
 #        - specs/NNN-...  is at the project ROOT (NOT under .specify/)
 #        - .specify/specs/  does NOT exist (catches the path drift in issue #4)
-#        - superspec's own command/hook docs do not contradict the actual
+#        - specflow's own command/hook docs do not contradict the actual
 #          spec-kit layout (i.e. they shouldn't reference `.specify/specs/`).
 #   5. Prints a PASS/FAIL summary and a tree of artifacts that were generated,
 #      so a human can eyeball the workdir and decide whether the repo is OK.
@@ -33,7 +33,7 @@
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-WORK="$(mktemp -d -t superspec-e2e.XXXXXX)"
+WORK="$(mktemp -d -t specflow-e2e.XXXXXX)"
 INIT_LOG="$WORK/.init.log"
 ADD_LOG="$WORK/.add.log"
 FEAT_LOG="$WORK/.feat.log"
@@ -85,7 +85,7 @@ assert_file ".specify/templates/tasks-template.md present"   "$WORK/.specify/tem
 assert_file "create-new-feature.sh present"                  "$WORK/.specify/scripts/bash/create-new-feature.sh"
 
 # -------------------------------------------------------------------------
-step "2/5" "Install superspec from local checkout (--dev)"
+step "2/5" "Install specflow from local checkout (--dev)"
 if ! uvx --from git+https://github.com/github/spec-kit.git specify extension add "$REPO_ROOT" --dev \
         </dev/null >"$ADD_LOG" 2>&1; then
   fail "specify extension add exited non-zero (see $ADD_LOG)"
@@ -97,8 +97,8 @@ assert_file ".specify/extensions.yml created" "$WORK/.specify/extensions.yml"
 
 # All 5 slash commands are advertised in the install output (spec-kit prints them).
 for c in status brainstorm tasks execute review; do
-  assert_grep "command speckit.superspec.$c advertised on install" \
-              "speckit.superspec.$c" \
+  assert_grep "command speckit.specflow.$c advertised on install" \
+              "speckit.specflow.$c" \
               "$ADD_LOG"
 done
 
@@ -106,18 +106,18 @@ done
 # Format (real):
 #   hooks:
 #     after_tasks:
-#     - extension: superspec
-#       command: speckit.superspec.tasks
+#     - extension: specflow
+#       command: speckit.specflow.tasks
 HOOK_COUNT=0
 if [ -f "$WORK/.specify/extensions.yml" ]; then
-  HOOK_COUNT=$(grep -cE "^[[:space:]]+command:[[:space:]]*speckit\.superspec\." \
+  HOOK_COUNT=$(grep -cE "^[[:space:]]+command:[[:space:]]*speckit\.specflow\." \
                "$WORK/.specify/extensions.yml" 2>/dev/null || true)
   HOOK_COUNT=${HOOK_COUNT:-0}
 fi
 if [ "$HOOK_COUNT" = "3" ]; then
-  pass "3 hooks reference speckit.superspec.* in extensions.yml"
+  pass "3 hooks reference speckit.specflow.* in extensions.yml"
 else
-  fail "expected 3 hooks referencing speckit.superspec.*, got $HOOK_COUNT"
+  fail "expected 3 hooks referencing speckit.specflow.*, got $HOOK_COUNT"
 fi
 
 # Cross-check via `specify extension list` (the same assertion the CI uses).
@@ -151,8 +151,8 @@ else
 fi
 
 # -------------------------------------------------------------------------
-step "4/5" "Verify superspec docs match spec-kit's real layout"
-# Catches the bug from issue #4: superspec docs say `.specify/specs/...` but
+step "4/5" "Verify specflow docs match spec-kit's real layout"
+# Catches the bug from issue #4: specflow docs say `.specify/specs/...` but
 # spec-kit really puts files under `specs/...`. We check three doc tiers:
 #   - commands/*.md and commands/hooks/*.md  (agent-facing instructions)
 #   - templates/*.md                          (templates that get installed)

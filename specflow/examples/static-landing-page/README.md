@@ -3,14 +3,14 @@
 This directory is a **verbatim snapshot** of an end-to-end run produced by
 [`scripts/e2e-agent-claude.sh`](../../scripts/e2e-agent-claude.sh).
 
-A real Claude Code session was driven through the full SuperSpec workflow
-(7 stages, all spec-kit + superspec slash commands), and every artifact
+A real Claude Code session was driven through the full SpecFlow workflow
+(7 stages, all spec-kit + specflow slash commands), and every artifact
 written to disk by the agent was copied here unchanged. Nothing in this
-folder is hand-edited — it shows you exactly what spec-kit + superspec
+folder is hand-edited — it shows you exactly what spec-kit + specflow
 look like after a full run.
 
 The end product (`web/index.html`) is a standalone, dependency-free
-landing page for the SuperSpec project itself — open it in any browser:
+landing page for the SpecFlow project itself — open it in any browser:
 
 ```bash
 open examples/static-landing-page/web/index.html
@@ -22,11 +22,11 @@ open examples/static-landing-page/web/index.html
 | :---- | :----------------------------- | :------------------------------------------------------------------------ |
 | 1     | `/speckit.constitution`        | `.specify/memory/constitution.md`                                         |
 | 2     | `/speckit.specify`             | `specs/001-static-landing-page/spec.md` + `checklists/requirements.md`    |
-| 3     | `/speckit.superspec.brainstorm`| (in-place edits to `spec.md` — Edge Cases, Open Questions, Brainstorm Log)|
+| 3     | `/speckit.specflow.brainstorm`| (in-place edits to `spec.md` — Edge Cases, Open Questions, Brainstorm Log)|
 | 4     | `/speckit.plan`                | `plan.md`, `data-model.md`, `research.md`, `quickstart.md`                |
 | 5     | `/speckit.tasks`               | `tasks.md` (29 tasks, 6 phases)                                           |
-| 6     | `/speckit.superspec.execute`   | `web/index.html` + `progress.yml` (every task marked complete)            |
-| 7     | `/speckit.superspec.review`    | `checklists/review.md` (P1/P2/P3 readiness verdicts)                      |
+| 6     | `/speckit.specflow.execute`   | `web/index.html` + `progress.yml` (every task marked complete)            |
+| 7     | `/speckit.specflow.review`    | `checklists/review.md` (P1/P2/P3 readiness verdicts)                      |
 
 ## Directory layout — and why it matters
 

@@ -19,13 +19,13 @@
 
 ### R-002: Exact Install Command
 
-**Decision**: Display `npm install -g superspec` as the install snippet.
+**Decision**: Display `npm install -g specflow` as the install snippet.
 
-**Rationale**: The project name is "SuperSpec" and npm is the most common global-install mechanism for developer tools of this type. The spec assumes this command (OQ-002). The exact package name and registry must be confirmed before production deployment, but this is the correct default for a working implementation.
+**Rationale**: The project name is "SpecFlow" and npm is the most common global-install mechanism for developer tools of this type. The spec assumes this command (OQ-002). The exact package name and registry must be confirmed before production deployment, but this is the correct default for a working implementation.
 
 **Alternatives considered**:
-- `npx superspec`: Avoids global install but implies a run-once workflow; SuperSpec is a persistent CLI tool.
-- `brew install superspec`: Platform-specific; not available to all developers.
+- `npx specflow`: Avoids global install but implies a run-once workflow; SpecFlow is a persistent CLI tool.
+- `brew install specflow`: Platform-specific; not available to all developers.
 - `curl | sh`: Security-conscious developers avoid pipe-to-shell installs.
 
 ---

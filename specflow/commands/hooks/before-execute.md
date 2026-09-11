@@ -1,6 +1,6 @@
 # Hook: before_implement
 
-Runs before `/speckit.implement` starts. Suggests `/speckit.superspec.execute`
+Runs before `/speckit.implement` starts. Suggests `/speckit.specflow.execute`
 for TDD discipline and prerequisite verification.
 
 ## Checks

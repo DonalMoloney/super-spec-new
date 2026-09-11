@@ -6,7 +6,7 @@
 
 ## Summary
 
-Build a single-file static landing page (`web/index.html`) for SuperSpec using pure HTML5 + CSS3 with zero build tooling, zero JavaScript, and zero external dependencies. The page comprises three sections: a full-viewport hero with project name/tagline/CTA, a features grid showcasing the five core commands, and a workflow diagram with install snippet. All styles are inlined; all content is semantic and mobile-first responsive.
+Build a single-file static landing page (`web/index.html`) for SpecFlow using pure HTML5 + CSS3 with zero build tooling, zero JavaScript, and zero external dependencies. The page comprises three sections: a full-viewport hero with project name/tagline/CTA, a features grid showcasing the five core commands, and a workflow diagram with install snippet. All styles are inlined; all content is semantic and mobile-first responsive.
 
 ## Technical Context
 
@@ -89,7 +89,7 @@ web/
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SuperSpec — Specification-Driven Development</title>
+  <title>SpecFlow — Specification-Driven Development</title>
   <style>/* All CSS inlined here */</style>
 </head>
 <body>
@@ -132,7 +132,7 @@ web/
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | "Get Started" destination | `#install` | Scrolls to install section; no external URL available yet (OQ-001) |
-| Install command | `npm install -g superspec` | Standard for developer CLI tools; confirm before production (OQ-002) |
+| Install command | `npm install -g specflow` | Standard for developer CLI tools; confirm before production (OQ-002) |
 | Workflow diagram style | Step indicator (numbered circles + connecting lines) | Lightweight, consistent rendering, accessible (OQ-003) |
 | Font strategy | System font stack | No external deps per Constitution I & IV |
 | Layout mechanism | Flexbox + CSS Grid | Baseline-supported in all target browsers |
@@ -145,7 +145,7 @@ web/
 | Page weight exceeds 64 KB | Low | High | Step indicator pattern chosen over CSS arrows for weight efficiency; monitor with `wc -c` during development; simplify typography/layout rules if needed |
 | CSS rendering inconsistencies across browsers | Low | Medium | Use only baseline CSS features (flexbox, grid, `clamp()`); test in all 4 target browsers |
 | "Get Started" link points to placeholder | Medium | Low | `#install` provides functional in-page navigation; destination URL is trivially updatable |
-| Install command incorrect | Medium | Low | `npm install -g superspec` is the assumed default; must be confirmed before deployment |
+| Install command incorrect | Medium | Low | `npm install -g specflow` is the assumed default; must be confirmed before deployment |
 | Print stylesheet breaks layout | Low | Medium | Dedicated `@media print` block with explicit overrides; verify with Print Preview in all target browsers |
 | Forced-colors mode removes visual distinction | Low | Medium | Use `forced-colors` media query to add explicit borders; never rely on `background-color` alone per FR-018 |
 

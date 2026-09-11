@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- v1.0.1 could not be installed via `specify extension add superspec`. The
+- v1.0.1 could not be installed via `specify extension add specflow`. The
   catalog downloads GitHub's generated tag ZIP, and spec-kit validates it
   before extracting (`_download_security.py`: 10 MiB per member, 50 MiB total,
   512 entries). `assets/workflow-overview-en.png` is ~12 MiB, so the install
@@ -40,14 +40,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Catalog namespace alignment** (BREAKING for command names):
-  - `extension.id` renamed from `superpowers` to `superspec` (matches repository
+  - `extension.id` renamed from `superpowers` to `specflow` (matches repository
     name and the catalog id required by spec-kit's registry validator).
   - All command names migrated:
     `/speckit.superpowers.{status,brainstorm,tasks,execute,review}` →
-    `/speckit.superspec.{status,brainstorm,tasks,execute,review}`.
+    `/speckit.specflow.{status,brainstorm,tasks,execute,review}`.
   - All three lifecycle hooks (`after_tasks`, `before_implement`, `after_implement`)
-    now point to the new `speckit.superspec.*` commands.
-  - README catalog install command updated to `specify extension add superspec`.
+    now point to the new `speckit.specflow.*` commands.
+  - README catalog install command updated to `specify extension add specflow`.
 
 ### Fixed
 

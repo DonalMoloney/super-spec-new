@@ -15,7 +15,7 @@
 #   MAX_ZIP_TOTAL_BYTES    50 MiB   sum of uncompressed members
 #
 # assets/workflow-overview-en.png alone is ~12 MiB, which tripped the per-member
-# limit and made `specify extension add superspec` fail (issue #6).
+# limit and made `specify extension add specflow` fail (issue #6).
 #
 # Keep this list in sync with scripts/validate-release-archive.py, which fails
 # CI if the archive regains excluded paths, loses runtime files, or approaches

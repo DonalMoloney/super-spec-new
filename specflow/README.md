@@ -23,7 +23,7 @@ The workflow orchestrates 6 phases — from project definition through engineeri
 ### Via Spec-Kit CLI (Recommended)
 
 ```bash
-specify extension add superspec
+specify extension add specflow
 ```
 
 ### From Source
@@ -33,7 +33,7 @@ specify extension add superspec
 git clone https://github.com/DonalMoloney/super-spec-new.git
 
 # Install via spec-kit from local path
-specify extension add ./superspec --dev
+specify extension add ./specflow --dev
 ```
 
 ### As an Agent Skill
@@ -43,11 +43,11 @@ this as a skill rather than a spec-kit extension, symlink it:
 
 ```bash
 # Claude Code
-ln -sf "$(pwd)/superspec" ~/.claude/skills/superspec
+ln -sf "$(pwd)/specflow" ~/.claude/skills/specflow
 # Codex CLI
-ln -sf "$(pwd)/superspec" ~/.codex/skills/superspec
+ln -sf "$(pwd)/specflow" ~/.codex/skills/specflow
 # Other agents (common convention)
-ln -sf "$(pwd)/superspec" ~/.agents/skills/superspec
+ln -sf "$(pwd)/specflow" ~/.agents/skills/specflow
 ```
 
 ### Optional: Install Superpowers
@@ -63,11 +63,11 @@ Superpowers Bridge works standalone, but for enhanced capabilities install super
 
 | Command | Description |
 |---------|-------------|
-| `/speckit.superspec.status` | Show current progress and suggest next step |
-| `/speckit.superspec.brainstorm` | Deep-dive edge cases and refine a spec document |
-| `/speckit.superspec.tasks` | Generate phased task breakdown with execution markers |
-| `/speckit.superspec.execute` | Orchestrate implementation with TDD + subagents |
-| `/speckit.superspec.review` | Run code review against spec requirements |
+| `/speckit.specflow.status` | Show current progress and suggest next step |
+| `/speckit.specflow.brainstorm` | Deep-dive edge cases and refine a spec document |
+| `/speckit.specflow.tasks` | Generate phased task breakdown with execution markers |
+| `/speckit.specflow.execute` | Orchestrate implementation with TDD + subagents |
+| `/speckit.specflow.review` | Run code review against spec requirements |
 
 > **Note**: This extension adds 5 commands on top of the core spec-kit commands
 > (`/speckit.constitution`, `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`,
@@ -79,17 +79,17 @@ All project state is persisted as plain-text markdown and YAML files — under
 `.specify/memory/` for governance (`constitution.md`) and under `specs/NNN-*/`
 for per-feature state (`spec.md`, `plan.md`, `tasks.md`, `progress.yml`).
 When a session is interrupted — agent timeout, user leaves, CLI crash — no progress
-is lost. Run `/speckit.superspec.status` in a new session to see exactly where you left off:
+is lost. Run `/speckit.specflow.status` in a new session to see exactly where you left off:
 
 ```
-Superspec Project Status
+Specflow Project Status
 ========================
 Constitution: Done
 Features:
   001-user-auth    [####------] execute (Phase 5/6) — 11/19 tasks done
   002-photo-upload [##--------] brainstorm (Phase 2/6) — 2 open questions
 
-Suggested next step: /speckit.superspec.execute 001
+Suggested next step: /speckit.specflow.execute 001
 ```
 
 Each command automatically detects previous progress and resumes from the
@@ -119,7 +119,7 @@ with user stories, requirements, and success criteria.
 ### 3. Brainstorm Edge Cases
 
 ```
-/speckit.superspec.brainstorm specs/001-user-authentication/spec.md
+/speckit.specflow.brainstorm specs/001-user-authentication/spec.md
 ```
 
 The agent asks probing questions one at a time to discover boundary conditions, error
@@ -129,14 +129,14 @@ scenarios, security concerns, and UX pitfalls you may not have considered.
 
 ```
 /speckit.plan                            # Create technical implementation plan
-/speckit.superspec.tasks               # Generate task breakdown with execution markers
-/speckit.superspec.execute             # Implement with TDD discipline and checkpoints
-/speckit.superspec.review              # Verify implementation against spec
+/speckit.specflow.tasks               # Generate task breakdown with execution markers
+/speckit.specflow.execute             # Implement with TDD discipline and checkpoints
+/speckit.specflow.review              # Verify implementation against spec
 ```
 
 ## Real-World Example
 
-To see what spec-kit + superspec actually produces after a complete run,
+To see what spec-kit + specflow actually produces after a complete run,
 browse the [`examples/static-landing-page/`](examples/static-landing-page/)
 snapshot — the verbatim disk output from a real Claude Code session driven
 through all 7 stages (constitution → specify → brainstorm → plan → tasks →
@@ -185,9 +185,9 @@ Human checkpoints ensure you control when to advance.
 
 ## Superpowers Integration
 
-When obra/superpowers skills are installed, superspec automatically detects and uses them:
+When obra/superpowers skills are installed, specflow automatically detects and uses them:
 
-| Superspec Command | Enhanced By | Fallback |
+| Specflow Command | Enhanced By | Fallback |
 |-------------------|-------------|----------|
 | `brainstorm` | `brainstorming` skill | Built-in questioning protocol |
 | `tasks` | `writing-plans` skill | Template-based decomposition |
@@ -209,7 +209,7 @@ To submit this extension to the [spec-kit community catalog](https://github.com/
   "name": "Superpowers Bridge",
   "version": "1.0.0",
   "description": "Bridges spec-kit with obra/superpowers capabilities (brainstorming, writing-plans, TDD, subagent-driven-development, code-review)",
-  "author": "Superspec Contributors",
+  "author": "Specflow Contributors",
   "repository": "https://github.com/DonalMoloney/super-spec-new",
   "verified": false,
   "tags": ["superpowers", "brainstorming", "tdd", "code-review", "subagent", "workflow"]
@@ -252,7 +252,7 @@ Superpowers 提供深度澄清（头脑风暴）、智能任务拆解（计划�
 ### 通过 Spec-Kit CLI（推荐）
 
 ```bash
-specify extension add superspec
+specify extension add specflow
 ```
 
 ### 从源码安装
@@ -262,7 +262,7 @@ specify extension add superspec
 git clone https://github.com/DonalMoloney/super-spec-new.git
 
 # 从本地路径安装
-specify extension add ./superspec --dev
+specify extension add ./specflow --dev
 ```
 
 ### 作为代理技能安装
@@ -271,11 +271,11 @@ specify extension add ./superspec --dev
 
 ```bash
 # Claude Code
-ln -sf "$(pwd)/superspec" ~/.claude/skills/superspec
+ln -sf "$(pwd)/specflow" ~/.claude/skills/specflow
 # Codex CLI
-ln -sf "$(pwd)/superspec" ~/.codex/skills/superspec
+ln -sf "$(pwd)/specflow" ~/.codex/skills/specflow
 # 其他代理（通用约定）
-ln -sf "$(pwd)/superspec" ~/.agents/skills/superspec
+ln -sf "$(pwd)/specflow" ~/.agents/skills/specflow
 ```
 
 ### 可选：安装 Superpowers
@@ -291,11 +291,11 @@ Superpowers Bridge 可以独立工作，但安装 superpowers 技能可获得增
 
 | 命令 | 说明 |
 |------|------|
-| `/speckit.superspec.status` | 显示当前进度并建议下一步操作 |
-| `/speckit.superspec.brainstorm` | 深入探索边界情况，完善规格文档 |
-| `/speckit.superspec.tasks` | 生成分阶段任务清单（含执行标记） |
-| `/speckit.superspec.execute` | 以 TDD + 子代理编排方式执行实现 |
-| `/speckit.superspec.review` | 对照规格进行代码审查 |
+| `/speckit.specflow.status` | 显示当前进度并建议下一步操作 |
+| `/speckit.specflow.brainstorm` | 深入探索边界情况，完善规格文档 |
+| `/speckit.specflow.tasks` | 生成分阶段任务清单（含执行标记） |
+| `/speckit.specflow.execute` | 以 TDD + 子代理编排方式执行实现 |
+| `/speckit.specflow.review` | 对照规格进行代码审查 |
 
 > **注意**：此扩展在 spec-kit 核心命令（`/speckit.constitution`、`/speckit.specify`、
 > `/speckit.plan`、`/speckit.tasks`、`/speckit.checklist`）基础上增加 5 个命令。
@@ -306,10 +306,10 @@ Superpowers Bridge 可以独立工作，但安装 superpowers 技能可获得增
 所有项目状态以纯文本（Markdown + YAML）持久化——治理资产（宪章）在 `.specify/memory/` 下，
 每个功能的状态（规格、计划、任务、进度）在 `specs/NNN-*/` 下。
 会话中断时——代理超时、用户离开、CLI 崩溃——不会丢失任何进度。
-在新会话中运行 `/speckit.superspec.status` 即可查看中断点：
+在新会话中运行 `/speckit.specflow.status` 即可查看中断点：
 
 ```
-Superspec 项目状态
+Specflow 项目状态
 ==================
 宪章: 已完成
 Superpowers:  brainstorming (已检测), writing-plans (未安装)
@@ -318,7 +318,7 @@ Superpowers:  brainstorming (已检测), writing-plans (未安装)
   001-user-auth    [####------] 执行中 (阶段 5/6) — 11/19 任务完成
   002-photo-upload [##--------] 头脑风暴 (阶段 2/6) — 2 个待解决问题
 
-建议下一步: /speckit.superspec.execute 001
+建议下一步: /speckit.specflow.execute 001
 ```
 
 每个命令会自动检测之前的进度并从中断点恢复——跳过已完成的工作，从未解决的问题或未完成的任务继续。
@@ -344,7 +344,7 @@ Superpowers:  brainstorming (已检测), writing-plans (未安装)
 ### 3. 头脑风暴边界情况
 
 ```
-/speckit.superspec.brainstorm specs/001-user-authentication/spec.md
+/speckit.specflow.brainstorm specs/001-user-authentication/spec.md
 ```
 
 代理逐个提出探索性问题，发现你可能没有想到的边界条件、错误场景、安全隐患和用户体验陷阱。
@@ -353,14 +353,14 @@ Superpowers:  brainstorming (已检测), writing-plans (未安装)
 
 ```
 /speckit.plan                            # 创建技术实现方案
-/speckit.superspec.tasks               # 生成任务拆解（含执行标记）
-/speckit.superspec.execute             # 以 TDD 纪律和检查点方式实现
-/speckit.superspec.review              # 对照规格验证实现
+/speckit.specflow.tasks               # 生成任务拆解（含执行标记）
+/speckit.specflow.execute             # 以 TDD 纪律和检查点方式实现
+/speckit.specflow.review              # 对照规格验证实现
 ```
 
 ## 真实样例
 
-想看 spec-kit + superspec 实际跑完一遍的成果？查看
+想看 spec-kit + specflow 实际跑完一遍的成果？查看
 [`examples/static-landing-page/`](examples/static-landing-page/) ——
 这是一次真实 Claude Code 会话完整走完 7 阶段（宪章 → 规格 → 头脑风暴 →
 计划 → 任务 → 执行 → 审查）后落到磁盘上的所有产物原样副本。

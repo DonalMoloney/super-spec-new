@@ -1,5 +1,5 @@
 ---
-name: superspec
+name: specflow
 description: >-
   Orchestrates specification-driven development by combining spec-kit project
   governance (constitution, specs, plans, tasks) with obra/superpowers
@@ -15,9 +15,9 @@ description_zh: >-
   拆解任务、以 TDD 纪律执行开发或请求代码审查时使用。
 ---
 
-# Superspec
+# Specflow
 
-Superspec unifies [spec-kit](https://github.com/github/spec-kit) specification-driven
+Specflow unifies [spec-kit](https://github.com/github/spec-kit) specification-driven
 development with [obra/superpowers](https://github.com/obra/superpowers) agent
 capabilities into a single workflow. Spec-kit provides the document structure and
 governance; superpowers provides deep clarification, task decomposition, and
@@ -27,7 +27,7 @@ engineering execution discipline.
 
 ## Prerequisites
 
-**Required**: None. Superspec works standalone with built-in fallback protocols.
+**Required**: None. Specflow works standalone with built-in fallback protocols.
 
 **Optional (enhanced)**: Install [obra/superpowers](https://github.com/obra/superpowers)
 skills to `~/.agents/skills/` or `.agents/skills/` for richer brainstorming,
@@ -36,7 +36,7 @@ for detection and integration details.
 
 ## Project Structure
 
-When initialized, superspec relies on spec-kit's two top-level directories
+When initialized, specflow relies on spec-kit's two top-level directories
 at the project root: `.specify/` for tool metadata and `specs/` for feature
 artifacts.
 
@@ -60,21 +60,21 @@ your-project/
 
 | Command | Purpose |
 |---------|---------|
-| `/speckit.superspec.status` | Show current progress and suggest next step (resumable) |
+| `/speckit.specflow.status` | Show current progress and suggest next step (resumable) |
 | `/speckit.constitution` | Create or update project governance principles |
 | `/speckit.specify` | Create a feature specification with user stories |
-| `/speckit.superspec.brainstorm` | Deep-dive edge cases and refine a spec document |
+| `/speckit.specflow.brainstorm` | Deep-dive edge cases and refine a spec document |
 | `/speckit.plan` | Create a technical implementation plan |
-| `/speckit.superspec.tasks` | Generate a phased task breakdown |
-| `/speckit.superspec.execute` | Orchestrate implementation with TDD + subagents |
-| `/speckit.superspec.review` | Run code review against spec requirements |
+| `/speckit.specflow.tasks` | Generate a phased task breakdown |
+| `/speckit.specflow.execute` | Orchestrate implementation with TDD + subagents |
+| `/speckit.specflow.review` | Run code review against spec requirements |
 | `/speckit.checklist` | Generate a contextual checklist |
 
 ---
 
 ## Session Resumability
 
-Superspec is designed to be **fully resumable across sessions**. All state is persisted
+Specflow is designed to be **fully resumable across sessions**. All state is persisted
 in the `.specify/` directory as markdown files. When a session is interrupted (agent
 timeout, user leaves, CLI crash), no progress is lost.
 
@@ -130,7 +130,7 @@ skills:
 
 **When this file is updated**:
 - On `/speckit.constitution` (initial creation)
-- On `/speckit.superspec.status` (re-check)
+- On `/speckit.specflow.status` (re-check)
 - On any command that needs a superpowers skill (lazy re-check if missing)
 - User can manually edit this file to override detection results
 
@@ -140,7 +140,7 @@ enhanced capabilities without running any command.
 
 ### Resume Protocol
 
-When ANY superspec command is invoked, the agent MUST first run the **resume check**:
+When ANY specflow command is invoked, the agent MUST first run the **resume check**:
 
 1. Check if `.specify/` directory exists
 2. If yes, scan for `progress.yml` files in each spec directory
@@ -168,7 +168,7 @@ When ANY superspec command is invoked, the agent MUST first run the **resume che
 
 ---
 
-## `/speckit.superspec.status`
+## `/speckit.specflow.status`
 
 **Input**: Optional spec number or "all" via `$ARGUMENTS`. Defaults to showing all features.
 **Output**: Progress report printed to user.
@@ -183,7 +183,7 @@ When ANY superspec command is invoked, the agent MUST first run the **resume che
 5. Display a status summary:
 
 ```
-Superspec Project Status
+Specflow Project Status
 ========================
 Constitution: Done (2026-04-22)
 Superpowers:  brainstorming (detected), writing-plans (not found)
@@ -193,10 +193,10 @@ Features:
   002-photo-upload [##--------] brainstorm (Phase 2/6) — 2 open questions
   003-settings     [#---------] specify (Phase 1/6) — draft
 
-Suggested next step: /speckit.superspec.execute 001
+Suggested next step: /speckit.specflow.execute 001
 ```
 
-5. If no `.specify/` exists, suggest: "No superspec project found. Run
+5. If no `.specify/` exists, suggest: "No specflow project found. Run
    `/speckit.constitution` to get started."
 
 **File inference fallback**: If `progress.yml` does not exist, infer progress from
@@ -240,11 +240,11 @@ which files are present:
 6. Generate `spec.md` from template with user responses
 7. Write to `specs/NNN-feature-name/spec.md`
 
-**Next step suggestion**: Run `/speckit.superspec.brainstorm` on the new spec to discover edge cases.
+**Next step suggestion**: Run `/speckit.specflow.brainstorm` on the new spec to discover edge cases.
 
 ---
 
-## `/speckit.superspec.brainstorm`
+## `/speckit.specflow.brainstorm`
 
 **Input**: Path to a spec file (e.g., `specs/001-auth/spec.md`) and an optional
 focus topic via `$ARGUMENTS`.
@@ -296,7 +296,7 @@ blueprint generation process to enhance the plan's task structure section. See
 
 ---
 
-## `/speckit.superspec.tasks`
+## `/speckit.specflow.tasks`
 
 **Input**: Optional spec number or path via `$ARGUMENTS`. Defaults to the latest spec.
 **Output**: `specs/NNN-feature-name/tasks.md`
@@ -319,7 +319,7 @@ blueprint generation process to enhance the plan's task structure section. See
 
 ---
 
-## `/speckit.superspec.execute`
+## `/speckit.specflow.execute`
 
 **Input**: Optional spec number or path via `$ARGUMENTS`. Defaults to the latest spec.
 **Output**: Code changes in the project, updated task checkboxes.
@@ -335,7 +335,7 @@ blueprint generation process to enhance the plan's task structure section. See
    - **`[SUBAGENT]` tasks**: If subagent-driven-development skill found, follow its
      dispatch protocol. Otherwise: implement sequentially in-session
    - **`[P]` tasks**: Launch parallel tasks where possible using the Task tool
-   - **`[REVIEW]` tasks**: Pause and run review protocol (see `/speckit.superspec.review`)
+   - **`[REVIEW]` tasks**: Pause and run review protocol (see `/speckit.specflow.review`)
 5. At each **phase checkpoint**: Summarize completed work, run tests if applicable,
    ask user for approval before proceeding to next phase
 6. Update task checkboxes in `tasks.md` as each task completes
@@ -345,7 +345,7 @@ explicit user approval. Never skip a checkpoint.
 
 ---
 
-## `/speckit.superspec.review`
+## `/speckit.specflow.review`
 
 **Input**: Optional scope (file paths or "all changes") via `$ARGUMENTS`.
 **Output**: Review findings reported to user, optionally written to a checklist file.
@@ -388,15 +388,15 @@ The recommended end-to-end workflow:
 ```
 Phase 0: /speckit.constitution     → Establish project governance
 Phase 1: /speckit.specify          → Define feature requirements
-Phase 2: /speckit.superspec.brainstorm       → Clarify edge cases (iterate)
+Phase 2: /speckit.specflow.brainstorm       → Clarify edge cases (iterate)
 Phase 3: /speckit.plan             → Design technical approach
-Phase 4: /speckit.superspec.tasks            → Decompose into executable tasks
-Phase 5: /speckit.superspec.execute          → Implement with TDD + subagents
-Phase 6: /speckit.superspec.review           → Verify against spec
+Phase 4: /speckit.specflow.tasks            → Decompose into executable tasks
+Phase 5: /speckit.specflow.execute          → Implement with TDD + subagents
+Phase 6: /speckit.specflow.review           → Verify against spec
 ```
 
 Each phase has an explicit **gate** — the agent verifies prerequisites before proceeding.
-Run `/speckit.superspec.brainstorm` multiple times until the spec is solid. The user controls
+Run `/speckit.specflow.brainstorm` multiple times until the spec is solid. The user controls
 when to advance to the next phase.
 
 ## Additional Resources

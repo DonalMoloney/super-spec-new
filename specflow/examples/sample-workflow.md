@@ -1,6 +1,6 @@
 # Sample Workflow: User Authentication Feature
 
-This example walks through a complete superspec workflow for a "User Authentication"
+This example walks through a complete specflow workflow for a "User Authentication"
 feature in a web application. It demonstrates each command, shows abbreviated outputs,
 and illustrates superpowers integration with fallback behavior.
 
@@ -45,7 +45,7 @@ Authentication and authorization on every endpoint. Input validation at boundari
 | Testing | Vitest + Supertest | Unit + integration |
 
 ## Development Workflow
-(superspec pipeline: constitution → specify → brainstorm → plan → tasks → execute → review)
+(specflow pipeline: constitution → specify → brainstorm → plan → tasks → execute → review)
 
 ## Quality Gates
 - Unit tests: REQUIRED (80% coverage)
@@ -111,7 +111,7 @@ As a user who forgot my password, I want to reset it via email.
 ## Phase 2: Brainstorm Edge Cases
 
 ```
-User: /speckit.superspec.brainstorm specs/001-user-authentication/spec.md
+User: /speckit.specflow.brainstorm specs/001-user-authentication/spec.md
 ```
 
 The agent checks for superpowers:
@@ -230,7 +230,7 @@ and rate limiting. JWT-based session management.
 ## Phase 4: Decompose Tasks
 
 ```
-User: /speckit.superspec.tasks
+User: /speckit.specflow.tasks
 ```
 
 The agent checks for superpowers:
@@ -288,7 +288,7 @@ Creates **`specs/001-user-authentication/tasks.md`** (abbreviated):
 ## Phase 5: Execute Implementation
 
 ```
-User: /speckit.superspec.execute
+User: /speckit.specflow.execute
 ```
 
 The agent walks through tasks phase by phase:
@@ -333,7 +333,7 @@ Agent: Phase 2 complete. Proceeding to Phase 3: Registration...
 ## Phase 6: Code Review
 
 ```
-User: /speckit.superspec.review
+User: /speckit.specflow.review
 ```
 
 ```

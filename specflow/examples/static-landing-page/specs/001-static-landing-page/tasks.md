@@ -25,7 +25,7 @@
 **Purpose**: Create output directory and HTML5 boilerplate file
 
 - [x] T001 Create `web/` output directory per project structure in plan.md
-- [x] T002 Create `web/index.html` with HTML5 boilerplate — DOCTYPE, `<html lang="en">`, `<head>` with charset UTF-8, viewport meta, title "SuperSpec — Specification-Driven Development", and empty `<style>` tag in `web/index.html`
+- [x] T002 Create `web/index.html` with HTML5 boilerplate — DOCTYPE, `<html lang="en">`, `<head>` with charset UTF-8, viewport meta, title "SpecFlow — Specification-Driven Development", and empty `<style>` tag in `web/index.html`
 
 **Checkpoint**: Directory and empty HTML shell exist
 
@@ -52,11 +52,11 @@
 
 **Goal**: A first-time visitor sees the project name, tagline, and "Get Started" CTA button filling the viewport on load
 
-**Independent Test**: Load `web/index.html` in a browser — verify (1) "SuperSpec" is the most prominent text, (2) a tagline appears beneath it, (3) a "Get Started" button is present and links to `#install`, (4) hero occupies full viewport height on desktop (≥1024px)
+**Independent Test**: Load `web/index.html` in a browser — verify (1) "SpecFlow" is the most prominent text, (2) a tagline appears beneath it, (3) a "Get Started" button is present and links to `#install`, (4) hero occupies full viewport height on desktop (≥1024px)
 
 ### Implementation for User Story 1
 
-- [x] T009 [US1] Add hero section HTML inside `<header>` — `<h1>` with "SuperSpec", `<p>` tagline "Specification-driven development for modern teams", `<a>` CTA button "Get Started" with `href="#install"` — in `web/index.html`
+- [x] T009 [US1] Add hero section HTML inside `<header>` — `<h1>` with "SpecFlow", `<p>` tagline "Specification-driven development for modern teams", `<a>` CTA button "Get Started" with `href="#install"` — in `web/index.html`
 - [x] T010 [US1] Add hero section CSS — full viewport height (`min-height: 100vh`), flexbox centering (horizontal + vertical), CTA button styling (padding, background, color, border-radius, no underline, hover/focus states) — in `web/index.html`
 - [x] T011 [US1] Add hero responsive adjustments — 768px: larger heading size; 1024px: max heading size with comfortable spacing — in `@media` blocks in `web/index.html`
 
@@ -84,13 +84,13 @@
 
 **Goal**: A visitor finds a step-indicator workflow diagram and a copyable install command snippet, providing an actionable next step
 
-**Independent Test**: Scroll to the workflow section — verify (1) a visual diagram shows the five commands in sequential flow with numbered circles and connecting lines, (2) directional progression is clear, (3) an install command `npm install -g superspec` appears in a monospaced code block, (4) the snippet is keyboard-focusable and text-selectable
+**Independent Test**: Scroll to the workflow section — verify (1) a visual diagram shows the five commands in sequential flow with numbered circles and connecting lines, (2) directional progression is clear, (3) an install command `npm install -g specflow` appears in a monospaced code block, (4) the snippet is keyboard-focusable and text-selectable
 
 ### Implementation for User Story 3
 
 - [x] T015 [US3] Add workflow section HTML inside `<section id="workflow">` — `<h2>` heading, semantic `<ol>` with five `<li>` items for the command sequence (status → brainstorm → tasks → execute → review) per research R-003 — in `web/index.html`
 - [x] T016 [US3] Add workflow step indicator CSS — `<ol>` as flex container, `<li>` items with `::before` counter-based numbered circles, `::after` connecting lines between steps (last step no line) — in `web/index.html`
-- [x] T017 [US3] Add install snippet HTML — `<div id="install">` with `<code>` element containing `npm install -g superspec`, `tabindex="0"` for keyboard focusability per FR-017 — in `web/index.html`
+- [x] T017 [US3] Add install snippet HTML — `<div id="install">` with `<code>` element containing `npm install -g specflow`, `tabindex="0"` for keyboard focusability per FR-017 — in `web/index.html`
 - [x] T018 [US3] Add install snippet CSS — monospace font stack (`var(--font-mono)`), distinct background, padding, border, overflow-x for long text — in `web/index.html`
 - [x] T019 [US3] Add workflow and install responsive adjustments — mobile: vertical step indicator stack; 768px: horizontal step indicator, wider code block; 1024px: full-width layout — in `@media` blocks in `web/index.html`
 

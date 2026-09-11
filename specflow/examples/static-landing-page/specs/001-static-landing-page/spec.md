@@ -6,13 +6,13 @@
 
 **Status**: Draft
 
-**Input**: User description: "Static landing page for superspec. Three priorities: P1: Hero section with project name, tagline, and a 'Get Started' button. P2: Features grid showing the 5 core commands (status, brainstorm, tasks, execute, review). P3: Workflow diagram and an install command snippet. Output target: web/index.html, pure HTML+CSS, no JavaScript build."
+**Input**: User description: "Static landing page for specflow. Three priorities: P1: Hero section with project name, tagline, and a 'Get Started' button. P2: Features grid showing the 5 core commands (status, brainstorm, tasks, execute, review). P3: Workflow diagram and an install command snippet. Output target: web/index.html, pure HTML+CSS, no JavaScript build."
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Hero Section (Priority: P1)
 
-A first-time visitor arrives at the landing page and immediately sees the project name ("SuperSpec"), a concise tagline describing what the project does, and a prominent "Get Started" call-to-action button. The visitor can click the button to navigate to documentation or a quick-start guide. The hero section fills the viewport on load, delivering an instant understanding of the project's purpose.
+A first-time visitor arrives at the landing page and immediately sees the project name ("SpecFlow"), a concise tagline describing what the project does, and a prominent "Get Started" call-to-action button. The visitor can click the button to navigate to documentation or a quick-start guide. The hero section fills the viewport on load, delivering an instant understanding of the project's purpose.
 
 **Why this priority**: The hero section is the single most important element — it communicates the project's identity and value proposition within seconds. Without it, the page has no focal point and visitors bounce.
 
@@ -20,7 +20,7 @@ A first-time visitor arrives at the landing page and immediately sees the projec
 
 **Acceptance Scenarios**:
 
-1. **Given** a visitor loads the landing page in a browser, **When** the page renders, **Then** the project name "SuperSpec" is displayed as the most prominent text element in the hero section
+1. **Given** a visitor loads the landing page in a browser, **When** the page renders, **Then** the project name "SpecFlow" is displayed as the most prominent text element in the hero section
 2. **Given** a visitor loads the landing page, **When** the page renders, **Then** a tagline summarizing the project's purpose is visible directly beneath the project name
 3. **Given** a visitor views the hero section, **When** they click the "Get Started" button, **Then** they are navigated to the project documentation or quick-start destination
 4. **Given** a visitor loads the page on a desktop viewport (≥1024px wide), **When** the hero section renders, **Then** it occupies the full viewport height and centers content both horizontally and vertically
@@ -29,7 +29,7 @@ A first-time visitor arrives at the landing page and immediately sees the projec
 
 ### User Story 2 - Features Grid (Priority: P2)
 
-A visitor exploring the page scrolls past the hero and encounters a features grid that showcases the five core SuperSpec commands: **status**, **brainstorm**, **tasks**, **execute**, and **review**. Each command is presented as a card with its name and a brief description of what it does. The grid arranges the cards in a visually balanced layout that is easy to scan.
+A visitor exploring the page scrolls past the hero and encounters a features grid that showcases the five core SpecFlow commands: **status**, **brainstorm**, **tasks**, **execute**, and **review**. Each command is presented as a card with its name and a brief description of what it does. The grid arranges the cards in a visually balanced layout that is easy to scan.
 
 **Why this priority**: The features grid educates visitors about the core capabilities, turning curiosity into understanding. It directly supports the decision to adopt the tool but is secondary to the hero's identity-establishing role.
 
@@ -46,7 +46,7 @@ A visitor exploring the page scrolls past the hero and encounters a features gri
 
 ### User Story 3 - Workflow Diagram & Install Snippet (Priority: P3)
 
-A visitor who wants to try SuperSpec finds a workflow diagram illustrating the typical command sequence (status → brainstorm → tasks → execute → review) and a copyable install command snippet. The diagram shows the flow between commands, helping the visitor understand the intended workflow. The install snippet provides the exact command needed to get started.
+A visitor who wants to try SpecFlow finds a workflow diagram illustrating the typical command sequence (status → brainstorm → tasks → execute → review) and a copyable install command snippet. The diagram shows the flow between commands, helping the visitor understand the intended workflow. The install snippet provides the exact command needed to get started.
 
 **Why this priority**: This section converts interested visitors into users by showing them both how the tool works (diagram) and how to get it (install command). It supports adoption but depends on the hero and features sections having already established interest.
 
@@ -80,7 +80,7 @@ A visitor who wants to try SuperSpec finds a workflow diagram illustrating the t
 
 ### Functional Requirements
 
-- **FR-001**: The page MUST display a hero section containing the project name "SuperSpec", a tagline, and a "Get Started" button
+- **FR-001**: The page MUST display a hero section containing the project name "SpecFlow", a tagline, and a "Get Started" button
 - **FR-002**: The "Get Started" button MUST link to the project documentation or quick-start guide
 - **FR-003**: The hero section MUST center its content vertically and horizontally within the viewport
 - **FR-004**: The page MUST display a features grid with five cards, one for each core command: status, brainstorm, tasks, execute, review
@@ -114,7 +114,7 @@ A visitor who wants to try SuperSpec finds a workflow diagram illustrating the t
 - The "Get Started" button links to an existing documentation page or external URL; the specific destination will be determined during implementation based on available project resources
 - The workflow diagram can be implemented using pure CSS (e.g., flexbox/grid with CSS-drawn arrows) rather than an image file, keeping the page self-contained
 - The tagline content will be defined during implementation; a reasonable default such as "Specification-driven development for modern teams" may be used
-- The install command will be a standard package manager command (e.g., `npm install -g superspec` or similar); the exact command will be confirmed during implementation
+- The install command will be a standard package manager command (e.g., `npm install -g specflow` or similar); the exact command will be confirmed during implementation
 - No external font CDN or asset loading is required — system fonts or web-safe fonts are acceptable
 - The page is a standalone marketing/landing page and does not need to integrate with an existing site template
 
@@ -123,7 +123,7 @@ A visitor who wants to try SuperSpec finds a workflow diagram illustrating the t
 | # | Question | Status | Notes |
 |---|----------|--------|-------|
 | OQ-001 | What is the final destination URL for the "Get Started" button? | Open | Placeholder anchor (`#`) or scroll-to-install used until a documentation URL is confirmed. Must be resolved before production deployment. |
-| OQ-002 | What is the exact install command to display in the snippet? | Open | Assumed `npm install -g superspec` but must be confirmed against actual package publish name and registry. |
+| OQ-002 | What is the exact install command to display in the snippet? | Open | Assumed `npm install -g specflow` but must be confirmed against actual package publish name and registry. |
 | OQ-003 | Should the workflow diagram use CSS-drawn arrows or a CSS-only step indicator (numbered circles with connecting lines)? | Open | CSS-drawn arrows may have rendering differences across browsers. A simpler step-indicator pattern (numbered circles + horizontal rule) is more robust but less visually expressive. |
 
 ## Brainstorm Log

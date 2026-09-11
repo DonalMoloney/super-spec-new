@@ -1,6 +1,6 @@
-# Superspec Workflow Guide
+# Specflow Workflow Guide
 
-This guide provides detailed phase-by-phase instructions for the superspec development
+This guide provides detailed phase-by-phase instructions for the specflow development
 workflow. The SKILL.md file references this document for progressive disclosure —
 the agent reads relevant sections as needed during command execution.
 
@@ -20,7 +20,7 @@ the agent reads relevant sections as needed during command execution.
    └── templates/
    ```
 
-2. **Copy templates** from the superspec skill's `templates/` directory into
+2. **Copy templates** from the specflow skill's `templates/` directory into
    `.specify/templates/`. This gives the project its own copy of templates
    that can be customized.
 
@@ -78,7 +78,7 @@ the agent reads relevant sections as needed during command execution.
 
 6. **Write** to `specs/NNN-feature-name/spec.md`
 
-7. **Suggest next step**: "Run `/speckit.superspec.brainstorm specs/NNN-feature-name/spec.md`
+7. **Suggest next step**: "Run `/speckit.specflow.brainstorm specs/NNN-feature-name/spec.md`
    to discover edge cases before planning."
 
 ### Verification
@@ -93,7 +93,7 @@ the agent reads relevant sections as needed during command execution.
 
 ## Phase 2: Brainstorming
 
-**Command**: `/speckit.superspec.brainstorm`
+**Command**: `/speckit.specflow.brainstorm`
 **Gate**: Target spec file must exist.
 **Output**: Updated spec file (edge cases, open questions, brainstorm log).
 
@@ -213,7 +213,7 @@ This phase can be run multiple times. Each session:
 
 ## Phase 4: Task Decomposition
 
-**Command**: `/speckit.superspec.tasks`
+**Command**: `/speckit.specflow.tasks`
 **Gate**: Plan must exist for the target feature.
 **Output**: `specs/NNN-feature-name/tasks.md`
 
@@ -255,7 +255,7 @@ This phase can be run multiple times. Each session:
 
 ## Phase 5: Execution
 
-**Command**: `/speckit.superspec.execute`
+**Command**: `/speckit.specflow.execute`
 **Gate**: Tasks file must exist for the target feature.
 **Output**: Code changes, updated task checkboxes.
 
@@ -312,7 +312,7 @@ The agent MUST:
 
 ## Phase 6: Review
 
-**Command**: `/speckit.superspec.review`
+**Command**: `/speckit.specflow.review`
 **Gate**: Implementation must exist (at least some tasks completed).
 **Output**: Review findings reported to user.
 
@@ -355,17 +355,17 @@ The agent MUST:
 |-------|---------|------|--------|
 | 0 | `/speckit.constitution` | None | `.specify/memory/constitution.md` |
 | 1 | `/speckit.specify` | Constitution exists | `specs/NNN/spec.md` |
-| 2 | `/speckit.superspec.brainstorm` | Spec exists | Updated spec.md |
+| 2 | `/speckit.specflow.brainstorm` | Spec exists | Updated spec.md |
 | 3 | `/speckit.plan` | Spec exists | `specs/NNN/plan.md` |
-| 4 | `/speckit.superspec.tasks` | Plan exists | `specs/NNN/tasks.md` |
-| 5 | `/speckit.superspec.execute` | Tasks exist | Code + updated tasks.md |
-| 6 | `/speckit.superspec.review` | Implementation exists | Review report |
+| 4 | `/speckit.specflow.tasks` | Plan exists | `specs/NNN/tasks.md` |
+| 5 | `/speckit.specflow.execute` | Tasks exist | Code + updated tasks.md |
+| 6 | `/speckit.specflow.review` | Implementation exists | Review report |
 
 ---
 
 ## Session Resumability
 
-Superspec is designed to survive session interruptions. All state lives in plain-text
+Specflow is designed to survive session interruptions. All state lives in plain-text
 files under `.specify/memory/` (governance — `constitution.md`) and `specs/NNN-*/`
 (per-feature — `spec.md`, `plan.md`, `tasks.md`, `progress.yml`). This section
 documents how the agent detects and resumes work.
@@ -390,7 +390,7 @@ phases:
 
 ### Resume Check Protocol
 
-Every superspec command begins with:
+Every specflow command begins with:
 
 1. **Scan `.specify/`** — does it exist? Are there spec directories?
 2. **Read `superpowers.yml`** — which superpowers skills are available?
@@ -492,7 +492,7 @@ skills:
 | Event | Action |
 |-------|--------|
 | `/speckit.constitution` (first run) | Create the file with full detection results |
-| `/speckit.superspec.status` | Re-run detection, update the file |
+| `/speckit.specflow.status` | Re-run detection, update the file |
 | Any command that needs a superpowers skill | If the skill was previously `detected: false`, re-check once (user may have installed it) |
 | User manually edits the file | Respect the manual override — do not overwrite |
 
@@ -506,7 +506,7 @@ skills:
 **Reading superpowers status during resume**:
 
 When the resume check runs, it reads `superpowers.yml` instead of re-detecting.
-This means a command like `/speckit.superspec.brainstorm` will use the cached detection
+This means a command like `/speckit.specflow.brainstorm` will use the cached detection
 result to decide between enhanced mode (superpowers) and fallback mode (built-in).
 If a skill was `detected: false` last time, the command does a single re-check
 before falling back — in case the user installed it since the last session.

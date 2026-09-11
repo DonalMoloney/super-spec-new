@@ -23,7 +23,7 @@ The implementation is structurally sound and covers the majority of spec require
 
 ### User Story 1 — Hero Section (P1)
 
-- [x] **AS1.1**: Project name "SuperSpec" displayed as most prominent text — ✅ `<h1>SuperSpec</h1>` in hero, `clamp(2rem, 5vw, 3.5rem)` sizing
+- [x] **AS1.1**: Project name "SpecFlow" displayed as most prominent text — ✅ `<h1>SpecFlow</h1>` in hero, `clamp(2rem, 5vw, 3.5rem)` sizing
 - [x] **AS1.2**: Tagline visible beneath project name — ✅ `<p class="tagline">Specification-driven development for modern teams</p>`
 - [x] **AS1.3**: "Get Started" button links to valid destination — ✅ `<a href="#install" class="cta-button">Get Started</a>` links to `#install` section
 - [x] **AS1.4**: Hero occupies full viewport height on desktop (≥1024px) — ✅ `min-height: 100vh` with flexbox centering
@@ -39,7 +39,7 @@ The implementation is structurally sound and covers the majority of spec require
 
 - [x] **AS3.1**: Visual diagram displays five commands in sequential flow — ✅ `<ol class="step-list">` with five `<li>` items
 - [x] **AS3.2**: Directional relationship between steps is clear — ✅ Connecting lines via `::after` pseudo-elements; horizontal at 768px+, vertical on mobile
-- [x] **AS3.3**: Install command in monospaced code block — ✅ `<code class="code-snippet">npm install -g superspec</code>` with `var(--font-mono)`
+- [x] **AS3.3**: Install command in monospaced code block — ✅ `<code class="code-snippet">npm install -g specflow</code>` with `var(--font-mono)`
 - [x] **AS3.4**: Install command is selectable and copyable — ✅ Text content is selectable; `tabindex="0"` for keyboard focus
 
 ---

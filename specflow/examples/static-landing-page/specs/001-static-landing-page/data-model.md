@@ -12,7 +12,7 @@ This is a static content page with no persistent data, no database, and no dynam
 
 | Field | Type | Validation | Notes |
 |-------|------|------------|-------|
-| project_name | text | Required, non-empty | "SuperSpec" |
+| project_name | text | Required, non-empty | "SpecFlow" |
 | tagline | text | Required, non-empty | "Specification-driven development for modern teams" |
 | cta_label | text | Required, non-empty | "Get Started" |
 | cta_href | URL/anchor | Required, valid href | `#install` (placeholder) |
@@ -37,7 +37,7 @@ This is a static content page with no persistent data, no database, and no dynam
 
 | Field | Type | Validation | Notes |
 |-------|------|------------|-------|
-| command | text | Required, valid shell command | `npm install -g superspec` |
+| command | text | Required, valid shell command | `npm install -g specflow` |
 | label | text | Optional | "Install" or similar heading text |
 
 ## Relationships

@@ -88,7 +88,7 @@ def main() -> None:
                 f"(matching extension.id='{ext_id}')"
             )
 
-    # 3. Public docs must not contain stale '/superspec.' command references
+    # 3. Public docs must not contain stale '/specflow.' command references
     #    (an old naming we no longer use).
     docs = [
         "README.md",
@@ -108,11 +108,11 @@ def main() -> None:
     for path in docs:
         text = read(path)
         for line_no, line in enumerate(text.splitlines(), start=1):
-            if re.search(r"(^|[^A-Za-z0-9_-])/superspec\.", line):
+            if re.search(r"(^|[^A-Za-z0-9_-])/specflow\.", line):
                 stale_command_refs.append(f"{path}:{line_no}: {line.strip()}")
 
     if stale_command_refs:
-        print("Stale /superspec.* references:")
+        print("Stale /specflow.* references:")
         print("\n".join(stale_command_refs[:50]))
         fail(f"found {len(stale_command_refs)} stale command reference(s)")
 
@@ -136,16 +136,16 @@ def main() -> None:
 
     # 5. README catalog install command's slug must equal extension.id.
     readme = read("README.md")
-    if "specify extension add superpowers-bridge --from ./superspec" in readme:
+    if "specify extension add superpowers-bridge --from ./specflow" in readme:
         fail("README.md still documents obsolete local --from install command")
-    if "specify extension add ./superspec --dev" not in readme:
+    if "specify extension add ./specflow --dev" not in readme:
         fail("README.md must document local --dev install command")
 
     catalog_install_slugs = re.findall(
         r"specify extension add ([A-Za-z0-9_-]+)(?!\S)",
         readme,
     )
-    # Filter out the local-path install (./superspec) and --dev variants.
+    # Filter out the local-path install (./specflow) and --dev variants.
     real_slugs = [s for s in catalog_install_slugs if not s.startswith(".")]
     if not real_slugs:
         fail("README.md must document a catalog install command "
