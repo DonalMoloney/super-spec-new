@@ -38,6 +38,10 @@ hook test suites, then installs the extension into a real `specify init` project
 `.specify/extensions.yml` for the registered commands. Test dependencies are declared
 in `requirements-dev.txt`.
 
+`.github/workflows/score-artifacts.yml` is the second workflow: it replays
+`score-artifacts.py` over both goldens and fails when a score drops. It is
+path-filtered to `specflow/commands/`, `templates/`, `scripts/`, and `examples/`.
+
 Workflows live at the repository root. GitHub reads `.github/workflows/` only from
 there, so a workflow under `specflow/` never runs.
 
