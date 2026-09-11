@@ -364,7 +364,8 @@ The agent MUST:
 ### Steps
 
 1. **Read inputs**: spec (acceptance scenarios), plan (constitution check),
-   constitution (principles).
+   constitution (principles), and `specs/NNN-feature-name/review-scope.md`
+   when the `after_implement` hook wrote one.
 
 2. **Superpowers detection**: If `requesting-code-review` skill is available,
    follow its review protocol.
@@ -391,6 +392,9 @@ The agent MUST:
    - Specific recommendation
 
 5. **Group** by severity, highest first.
+
+6. **Write** the findings to `specs/NNN-feature-name/review-findings.json` in
+   the shape `commands/review.md` documents under Findings File.
 
 ---
 
@@ -659,4 +663,7 @@ conforms to `.claude/review/schema.json`.
 
 The agents live in `.claude/agents/` and are not part of the extension archive a
 consuming project installs. When they are absent, `/speckit.specflow.review` and
-its built-in protocol above are the fallback for all four stages.
+its built-in protocol above are the fallback for all four stages, and the
+command writes the same findings shape to `specs/NNN-feature-name/review-findings.json`.
+This repository's gate reads that file with
+`bash .claude/hooks/merge-gate.sh 'specs/*/review-findings.json'`.

@@ -194,6 +194,11 @@ done
 
 # The status sample prints the gate markers per feature.
 assert_grep "status.md sample output reports gate markers" 'gates: clarified, analyzed' "$REPO_ROOT/commands/status.md"
+# The after_implement hook hands review a scope file, and review hands the
+# merge gate a findings file. Both names are part of the command contract.
+assert_grep "after-execute.md writes review-scope.md"  'review-scope\.md'     "$REPO_ROOT/commands/hooks/after-execute.md"
+assert_grep "review.md reads review-scope.md"          'review-scope\.md'     "$REPO_ROOT/commands/review.md"
+assert_grep "review.md writes review-findings.json"    'review-findings\.json' "$REPO_ROOT/commands/review.md"
 
 # -------------------------------------------------------------------------
 step "5/5" "Generated artifacts (for human review)"

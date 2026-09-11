@@ -359,6 +359,19 @@ check "unreadable findings document blocks"      1 "$(merge_gate "$d")"
 d="$(review_dir)"; write_findings "$d" claude Critical open; touch "$d/$MARKER"
 merge_gate "$d" >/dev/null
 check "blocked merge clears a stale marker"      0 "$(status_of [ ! -f "$d/$MARKER" ])"
+merge_gate_glob() { # dir glob -> exit code
+  ( cd "$1" && bash "$HOOKS/merge-gate.sh" "$2" >/dev/null 2>&1 ); echo $?
+}
+write_review_findings() { # dir severity status -> writes the file the review command produces
+  mkdir -p "$1/specs/001-x"
+  cat > "$1/specs/001-x/review-findings.json" <<JSON
+{"schema_version":"1.0","reviewer":"speckit.specflow.review","verdict":"BLOCK","findings":[{"id":"R-001","severity":"$2","location":"a.sh:1","evidence":"failing test","fix":"do the thing","status":"$3"}]}
+JSON
+}
+d="$(review_dir)"; write_review_findings "$d" Critical open
+check "review command findings under specs/ block the merge" 1 "$(merge_gate_glob "$d" 'specs/*/review-findings.json')"
+d="$(review_dir)"; write_review_findings "$d" Critical fixed
+check "fixed review command findings clear the merge"        0 "$(merge_gate_glob "$d" 'specs/*/review-findings.json')"
 
 # --- rebut-findings.sh (CI; marks a findings document rebutted when the PR carries the label) ---
 rebut() { # dir file reason -> exit code
