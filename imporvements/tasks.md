@@ -245,7 +245,7 @@ Verify: `git check-ignore .claude/review/claude.json` prints the path; `git chec
 
 ---
 
-## G-07 — Item 9: observability Stop hook
+## G-07 — Item 9: observability Stop hook (working on)
 
 Source: Part 2 item 9, Part 4.5. Effort: low. Depends on: none.
 Claude: `bdd-orchestrator`.
@@ -338,7 +338,7 @@ Verify: both commands run from a clean feature branch.
 
 ---
 
-## G-10 — Item 21: STRIDE lens and traceability matrix in the spec template
+## G-10 — Item 21: STRIDE lens and traceability matrix in the spec template (working on)
 
 Source: Part 2 item 21, Part 3.10. Effort: low-medium. Depends on: none.
 Claude: `general-purpose`, then `work-verifier`.
@@ -531,7 +531,7 @@ Verify: PR description contains the divergence list.
 
 ---
 
-## G-16 — Item 22: cost governance
+## G-16 — Item 22: cost governance (working on)
 
 Source: Part 2 item 22, Part 6, Appendix B. Effort: low. Depends on: G-04 (routing table exists).
 Claude: `documentation-scribe`.
