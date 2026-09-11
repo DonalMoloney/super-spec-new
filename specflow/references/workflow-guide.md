@@ -237,11 +237,13 @@ This phase can be run multiple times. Each session:
    - `[SUBAGENT]` for independent work streams
    - `[P]` for tasks within the same phase that can run in parallel
 
-5. **Define checkpoints** at each phase boundary.
+5. **Keep each task singular**: one outcome per line; split a description that needs "and".
 
-6. **Document dependencies** and execution order.
+6. **Define checkpoints** at each phase boundary.
 
-7. **Write** to `specs/NNN-feature-name/tasks.md`
+7. **Document dependencies** and execution order.
+
+8. **Write** to `specs/NNN-feature-name/tasks.md`
 
 ### Verification
 
