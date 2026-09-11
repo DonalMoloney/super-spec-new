@@ -66,6 +66,13 @@ def score_from(working_directory, argument):
     )
 
 
+def scored_content(stdout):
+    """Parse stdout as a report and return it without the unscored feature_dir."""
+    report = json.loads(stdout)
+    del report["feature_dir"]
+    return report
+
+
 def score_json(feature_dir):
     """Run the scorer on feature_dir, assert success, and return the parsed report."""
     result = score(feature_dir)
@@ -192,22 +199,29 @@ def test_output_is_byte_identical_under_different_hash_seeds():
     assert first.stdout == second.stdout
 
 
-def test_relative_and_absolute_arguments_produce_identical_output():
+def test_relative_and_absolute_arguments_score_identical_content():
     relative = score_from(REPO_ROOT, GOLDEN_FEATURE_DIR.relative_to(REPO_ROOT))
     absolute = score_from(REPO_ROOT, GOLDEN_FEATURE_DIR)
     assert relative.returncode == 0, relative.stderr
     assert absolute.returncode == 0, absolute.stderr
-    assert relative.stdout == absolute.stdout
+    assert scored_content(relative.stdout) == scored_content(absolute.stdout)
 
 
-def test_two_working_directories_produce_identical_output():
+def test_two_working_directories_score_identical_content():
     from_root = score_from(REPO_ROOT, GOLDEN_FEATURE_DIR.relative_to(REPO_ROOT))
     from_specflow = score_from(
         SPECFLOW_DIR, GOLDEN_FEATURE_DIR.relative_to(SPECFLOW_DIR)
     )
     assert from_root.returncode == 0, from_root.stderr
     assert from_specflow.returncode == 0, from_specflow.stderr
-    assert from_root.stdout == from_specflow.stdout
+    assert scored_content(from_root.stdout) == scored_content(from_specflow.stdout)
+
+
+def test_feature_dir_echoes_the_relative_argument_as_given():
+    argument = GOLDEN_FEATURE_DIR.relative_to(REPO_ROOT)
+    result = score_from(REPO_ROOT, argument)
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["feature_dir"] == str(argument)
 
 
 def test_missing_success_criteria_section_scores_sixty_six_point_seven():
