@@ -23,7 +23,7 @@ sets the effort of the session that dispatches it.
 | Group | Open tasks | Executor | Model | Effort | Status |
 |---|---|---|---|---|---|
 | G-09 CI merge-gate workflow | T091, T092, T093, T094 | `bdd-orchestrator` | opus | medium | claimed |
-| G-15 differential implementation | T151, T152, T153 | `bdd-orchestrator` | opus | high | claimed |
+| G-15 differential implementation | T153 only | `bdd-orchestrator` | opus | high | blocked |
 
 A claimed group has a worktree and a `(working on)` marker in `tasks.md`.
 Neither open group is part-finished on `main`: both are at task 1.
@@ -48,19 +48,16 @@ session does not start the same group.
 
 - **G-09** runs in `~/PycharmProjects/worktrees/g-09-merge-gate-ci` on branch
   `g-09-merge-gate-ci`, dispatched 2026-09-11.
-- **G-15** runs in `~/PycharmProjects/worktrees/g-15-differential` on branch
-  `g-15-differential`, dispatched 2026-09-11.
-
-Both edit `.claude/hooks/README.md`, so they merge serially: whichever opens
-second rebases on the first.
+- **G-15** merged its script and protocol in PR #44. T153 is blocked on a Codex
+  account usage limit, so the group has no worktree now.
 
 ## Why each group sits where it does
 
 - **G-09, medium.** The workflow composes G-05 and G-06, and T092 depends on
   flag names that must come from `claude-code-guide` rather than from memory.
   Two conditionals must gate the right steps.
-- **G-15, high.** Two worktrees, a cross-test step, and a trigger rule that no
-  source states. The least specified group in `tasks.md`.
+- **G-15, high.** The script and the protocol merged in PR #44. T153 needs a
+  live Codex run, so it waits on the account limit, not on effort.
 
 ## Applying it
 
