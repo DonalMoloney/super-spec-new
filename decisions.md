@@ -149,3 +149,20 @@ model families; alias versions can change. Actual cost savings remain unmeasured
   human reader, not a scorer input. A future scorer dimension that wants to read
   `Status` reads `cells[2]` by table position, since the column has no separate
   parser.
+
+## ADR-0010: `specflow/README.md` drops its Chinese translation
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: `AGENTS.md`'s Code Review Rules said "keep the English and Chinese
+  README changes in sync," while `standards/documentation.md`'s Language rule
+  forbids maintaining a translated copy of any document. `specflow/README_zh.md`
+  and an inline Chinese section appended to `specflow/README.md` both existed,
+  and `.gitattributes` did not export-ignore either, so the archive shipped both.
+- Decision: delete `specflow/README_zh.md` and the inline Chinese section.
+  `specflow/README.md` is the one canonical file. `standards/documentation.md`'s
+  Language rule wins over the narrower Code Review Rule, which now points to it
+  instead of restating a conflicting instruction.
+- Consequences: a future README edit touches one file, not two, and cannot drift
+  out of sync. Chinese-reading users lose a translated copy; none is planned as
+  a replacement.

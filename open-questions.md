@@ -17,15 +17,3 @@ archive` a consuming project installs.
 Owner: whoever gives `specflow/commands/review.md` numbered stages, or
 rewords the guidance line to not depend on a stage number. Resolve by picking
 one and deleting this entry.
-
-## Should `specflow/README.md`'s Chinese section stay in sync with English?
-
-`AGENTS.md`'s Code Review Rules say "Keep the English and Chinese README
-changes in sync." `standards/documentation.md`'s Language rule says English
-only, no translated copy of any document. G-10 kept both README sections in
-sync (per the Code Review Rule) without resolving which rule governs.
-
-Owner: whoever settles this contradiction — either drop the Code Review Rule
-and let the Chinese section go stale, or add an explicit exception to
-`standards/documentation.md`'s Language rule for this one file. Resolve by
-picking one and deleting this entry.

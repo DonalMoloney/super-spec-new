@@ -198,7 +198,7 @@ install for every user (upstream issue #6).
   `README.md`, and the sync rule in `AGENTS.md`. The documentation standard
   forbids translated copies, and `.gitattributes` stopped export-ignoring the
   file, so the archive ships it now. Verify: `git archive HEAD:specflow` lists
-  no `README_zh.md` and README has one language. Claimed by: none.
+  no `README_zh.md` and README has one language. Claimed by: `fix-readme-language-policy`, done.
 - **Remove** the `~/.codex/skills/` install instructions from `README.md`.
   `AGENTS.md` forbids Codex paths; upstream targets Codex. G-18 records the
   scope decision but edits only the playbook, not `specflow/`. Verify: grep
