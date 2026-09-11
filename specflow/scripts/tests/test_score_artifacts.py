@@ -20,6 +20,9 @@ SEEDED_BUG_FEATURE_DIR = (
     Path(__file__).resolve().parents[2] / "examples" / "seeded-bug"
 )
 
+SPECFLOW_DIR = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
+
 SPEC_WITH_MARKERS = """# Feature
 
 ## User Scenarios & Testing *(mandatory)*
@@ -49,6 +52,16 @@ def score(feature_dir):
         [sys.executable, str(SCRIPT), str(feature_dir)],
         capture_output=True,
         text=True,
+    )
+
+
+def score_from(working_directory, argument):
+    """Run the scorer on argument from working_directory and return the subprocess."""
+    return subprocess.run(
+        [sys.executable, str(SCRIPT), str(argument)],
+        capture_output=True,
+        text=True,
+        cwd=str(working_directory),
     )
 
 
@@ -117,6 +130,24 @@ def test_golden_run_output_is_byte_identical_across_runs():
     assert first.returncode == 0, first.stderr
     assert second.returncode == 0, second.stderr
     assert first.stdout == second.stdout
+
+
+def test_relative_and_absolute_arguments_produce_identical_output():
+    relative = score_from(REPO_ROOT, GOLDEN_FEATURE_DIR.relative_to(REPO_ROOT))
+    absolute = score_from(REPO_ROOT, GOLDEN_FEATURE_DIR)
+    assert relative.returncode == 0, relative.stderr
+    assert absolute.returncode == 0, absolute.stderr
+    assert relative.stdout == absolute.stdout
+
+
+def test_two_working_directories_produce_identical_output():
+    from_root = score_from(REPO_ROOT, GOLDEN_FEATURE_DIR.relative_to(REPO_ROOT))
+    from_specflow = score_from(
+        SPECFLOW_DIR, GOLDEN_FEATURE_DIR.relative_to(SPECFLOW_DIR)
+    )
+    assert from_root.returncode == 0, from_root.stderr
+    assert from_specflow.returncode == 0, from_specflow.stderr
+    assert from_root.stdout == from_specflow.stdout
 
 
 def test_missing_success_criteria_section_scores_sixty_six_point_seven():

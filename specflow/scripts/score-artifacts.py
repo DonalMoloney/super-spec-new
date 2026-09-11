@@ -6,6 +6,8 @@ this script grades four dimensions a reviewer would otherwise check by hand:
 mandatory spec sections, criterion traceability, stable task ids, and leftover
 clarification markers. The report goes to stdout as a single JSON object; every
 failure path writes a ``FAIL:`` line to stderr and exits 1 with stdout empty.
+The reported ``feature_dir`` is resolved, so the same directory scores to the
+same bytes from any working directory.
 """
 
 from __future__ import annotations
@@ -183,15 +185,16 @@ def main() -> None:
     if len(sys.argv) != 2:
         fail("usage: score-artifacts.py <specs/NNN-slug feature directory>")
 
-    feature_dir = Path(sys.argv[1])
+    given_path = sys.argv[1]
+    feature_dir = Path(given_path)
     if not feature_dir.exists():
-        fail(f"feature directory not found: {feature_dir}")
+        fail(f"feature directory not found: {given_path}")
     if not feature_dir.is_dir():
-        fail(f"expected a feature directory, found a file: {feature_dir}")
+        fail(f"expected a feature directory, found a file: {given_path}")
     if not (feature_dir / SPEC_FILENAME).is_file():
-        fail(f"feature directory has no {SPEC_FILENAME}: {feature_dir}")
+        fail(f"feature directory has no {SPEC_FILENAME}: {given_path}")
 
-    report = build_report(feature_dir)
+    report = build_report(feature_dir.resolve())
     print(json.dumps(report, indent=2, sort_keys=True))
 
 
