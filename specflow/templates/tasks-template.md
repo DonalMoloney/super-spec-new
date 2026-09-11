@@ -131,7 +131,7 @@ dispatched as parallel subagents. T014 requires review before proceeding.
 **Purpose**: Improvements that affect multiple user stories
 
 - [ ] TXXX [P] [SUBAGENT] Documentation updates
-- [ ] TXXX Code cleanup and refactoring
+- [ ] TXXX Code cleanup
 - [ ] TXXX [P] Performance optimization
 - [ ] TXXX [REVIEW] Security hardening
 - [ ] TXXX Run full test suite: all tests must pass
