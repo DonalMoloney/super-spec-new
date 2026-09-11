@@ -38,7 +38,7 @@ A deck earns "professional" from restraint, not decoration; it earns memorable f
 one deliberate visual choice held consistently, not from variety.
 
 - Pick one accent color and one neutral scale for the whole deck. Use the accent
-  only on the thing the slide is about — the one number, the one highlighted node,
+  only on the thing the slide is about: the one number, the one highlighted node,
   the current step in a sequence. An accent used more than once per slide is
   decoration, not emphasis.
 - Two type sizes per slide: title and body. One weight change (regular to bold) is
@@ -50,7 +50,7 @@ one deliberate visual choice held consistently, not from variety.
   is distinguishable from the neutral scale under a colorblind simulation
   (protanopia, deuteranopia, tritanopia). Verify both before handing off.
 - A theme is chosen once for the deck and named in the front matter; do not leave
-  `theme: default` unmodified — either use a built-in Marp theme deliberately suited
+  `theme: default` unmodified: either use a built-in Marp theme deliberately suited
   to the content (`gaia`, `uncover`) or a custom theme file checked in beside the
   deck.
 
