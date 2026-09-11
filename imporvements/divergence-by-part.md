@@ -285,11 +285,11 @@ two worktrees never edit one file.
 
 | File | Real | Agent | Claimed by |
 |------|------|-------|------------|
-| `commands/status.md` | 20% | `prose-rephraser` | done, first dry run |
+| `commands/status.md` | 33% | `prose-rephraser` | done, two passes |
 | `SKILL.md` | 0% | `prose-rephraser` | none |
 | `templates/plan-template.md` | 0% | `prose-rephraser` | none |
 | `templates/tasks-template.md` | 0% | `prose-rephraser` | none |
-| `scripts/validate-release-archive.py` | 0% | `script-refactorer` | none |
+| `scripts/validate-release-archive.py` | 29% | `script-refactorer` | done |
 | `commands/hooks/after-execute.md` | 0% | `prose-rephraser` | D-02 first |
 | `commands/hooks/after-tasks.md` | 0% | `prose-rephraser` | D-01 first |
 | `CHANGELOG.md`, `extension.yml` | 0% | `prose-rephraser` | D-05 first |
