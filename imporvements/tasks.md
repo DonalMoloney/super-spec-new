@@ -149,7 +149,7 @@ Source: Part 2 item 7, Appendix B. Effort: low. Depends on: none.
 Claude: `general-purpose`; use `claude-code-guide` first to confirm the current `model:` frontmatter aliases.
 Codex: `codex:codex-rescue --wait` (frontmatter-only edit); then `codex review --base main`.
 
-- [ ] T041 Confirm the alias set
+- [x] T041 Confirm the alias set
 
 1. Ask `claude-code-guide`: which values does the `model:` field in `.claude/agents/*.md` accept today, and does it accept `inherit`?
 2. Write the answer as a comment block at the top of this task's PR description.
