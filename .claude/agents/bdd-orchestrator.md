@@ -32,6 +32,11 @@ gate each phase on the previous one's output.
    follow-up question, no bundled fix+refactor+test lumped into one item.
 3. Dispatch each phase agent via `Task`, one at a time, passing it the task description
    plus the concrete artifacts the previous phase produced (file paths, not summaries).
+   Also pass the path of the standards file its output is judged against:
+   `standards/code.md` for phases that write code or tests (4, 7, 9, 10),
+   `standards/documentation.md` for phases that write prose (1, 2, 14, 16), and both
+   for review and verification phases (3, 11, 12, 15). `work-verifier` treats a
+   standards violation as a failed completion claim.
 4. Gate on each phase's result: don't dispatch phase N+1 if phase N reports failure —
    surface the failure to the user and ask how to proceed.
 5. Never skip a phase silently. If a phase is genuinely not applicable (e.g. no unit

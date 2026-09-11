@@ -57,3 +57,15 @@ paginate: true
 <!-- speaker notes: This slide closes the deck by pointing at Part 4 of the roadmap document — everything here is copy-paste ready, not aspirational. Walk through the artifact list quickly and note it spans the full lifecycle: hook wiring and scripts that enforce gates deterministically, the dispatcher skill that routes work, the decision/question logs and findings schema that give review structure, and the CI workflow plus reviewer agent definitions that close the loop. Tell the audience the paths assume a Spec-Kit project root and to verify hook event names, budget flags, and model IDs against their installed versions before adopting. -->
 
 
+---
+
+## Get Started — 30-60-90 Roadmap
+
+- Install path: `specify init` → `/plugin install superpowers` → `specify extension add superspec` → verify with `specify check` and `/speckit.superspec.status`
+- Days 0–30: rewritten constitution, `## Code Review Rules`, deterministic gate hooks, and a hardened single reviewer with mandatory findings
+- Days 30–60: Agent Teams parallelism, multi-persona review panel, STRIDE spec lens, model routing, and a mutation-testing gate on core modules
+- Days 60–90: headless CI merge gate (cross-model + SAST + mutation), critic/AR loop for HIGH-risk changes, and PR automation
+- Anti-pattern to avoid: don't adopt heavy orchestrators or run 5+ reviewers before native primitives (worktrees, Agent Teams, a single hardened reviewer) prove insufficient
+- Anti-pattern to avoid: never skip the two human gates — spec approval and merge approval stay manual even as everything between them is automated
+
+<!-- speaker notes: Close the deck on the practical path forward — install is three commands plus a verify step, and the 30-60-90 roadmap sequences from cheap foundation work to CI-scale automation so teams don't over-invest before validating the basics. Reiterate the two anti-patterns worth remembering: don't reach for heavy orchestration before native primitives fail, and never let automation absorb the two human gates. Send the audience off with a clear next action — start Day 0 this week with the constitution rewrite and gate hooks, since everything else in the roadmap builds on that foundation. -->
