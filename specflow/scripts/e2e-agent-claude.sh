@@ -173,7 +173,7 @@ else
   cd "$WORK"
 
   uvx --from git+https://github.com/github/spec-kit.git specify init \
-      --here --offline --integration claude --ignore-agent-tools --no-git --force \
+      --here --offline --integration claude --ignore-agent-tools --force \
       </dev/null >"$LOGS/init.log" 2>&1 \
     || { miss "specify init failed (see $LOGS/init.log)"; tail -n 20 "$LOGS/init.log"; exit 1; }
   pass "specify init (--integration claude) succeeded"
@@ -367,7 +367,13 @@ fi
 # ========================================================================
 title 6 "/speckit.specflow.execute — implement"
 run_claude 6 "$(cat <<EOF
-Run /speckit.specflow.execute to implement the tasks in
+Before implementation, run /speckit.analyze for ${SPEC_DIR#$WORK/}.
+Follow the Gate markers protocol in the installed specflow workflow guide:
+remove any previous ${SPEC_DIR#$WORK/}/.analyzed marker before analysis,
+then write that marker only if the report has zero critical inconsistencies.
+If critical inconsistencies remain, stop and report them without implementing.
+
+Once the analyze gate passes, run /speckit.specflow.execute to implement the tasks in
 ${SPEC_DIR#$WORK/}/tasks.md. The deliverable is a static landing page at
 web/index.html (pure HTML+CSS, no JS build tooling). Per the specflow
 contract, also keep ${SPEC_DIR#$WORK/}/progress.yml updated as tasks complete.
@@ -375,6 +381,7 @@ EOF
 )" || FAILED_STAGE=6
 
 if [ -z "$FAILED_STAGE" ]; then
+  assert_file "analyze gate marker exists" "$SPEC_DIR/.analyzed" || FAILED_STAGE=6
   assert_file "web/index.html generated"        "$WORK/web/index.html"      || FAILED_STAGE=6
   assert_grep "  index.html has <html>"        '<html'                     "$WORK/web/index.html" || FAILED_STAGE=6
   assert_grep "  index.html mentions specflow" 'specflow'                "$WORK/web/index.html" || FAILED_STAGE=6
