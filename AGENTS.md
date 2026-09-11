@@ -141,6 +141,23 @@ this is the one place both surfaces read:
   rule above — implement exactly the requested item, not adjacent "while we're at it"
   improvements.
 
+## Roadmap execution workflow
+
+**Main branch stays clean:**
+- All roadmap work (G-01 through G-18) runs in background git worktrees.
+- Main branch is always on the latest merge; no feature branches here.
+- Each group = one worktree in `~/PycharmProjects/worktrees/<group-name>` with its own agent run.
+- After completion, worktree is deleted and the PR is merged to main.
+
+**Agent dispatch pattern:**
+- Create worktree: `git worktree add ~/PycharmProjects/worktrees/G-01-<name> -b <branch-name>`
+- Dispatch agent: e.g., `bdd-orchestrator` for groups with script/hook/CI changes
+- Agent runs in background (`--background` flag where applicable)
+- User remains on `main` and can continue to other worktrees or tasks
+- Pull latest when ready; clean up worktree after merge
+
+See `imporvements/tasks.md` for group definitions, executors, and Verify conditions.
+
 ## Claude Code
 
 @specflow/references/superpowers-bridge.md is the map between this project's
