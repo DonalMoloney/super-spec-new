@@ -145,7 +145,8 @@ Every agent, on either target surface, produces work against the three files und
   ```
 
 - Reject unresolved `[NEEDS CLARIFICATION]` markers in shipped templates.
-- Keep the English and Chinese README changes in sync.
+- Reject a translated copy of any document, per the Language rule in
+  [standards/documentation.md](standards/documentation.md).
 
 ## Agent behavior guidelines
 
