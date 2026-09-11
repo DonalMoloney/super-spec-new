@@ -70,10 +70,10 @@ update.
 
 - **Tighten** `status.md` to report `.clarified` and `.analyzed` per feature.
   It infers phase from file presence and has zero real change today. Verify:
-  `e2e-smoke.sh` asserts the marker column in status output. Claimed by: none.
+  `e2e-smoke.sh` asserts the marker column in status output. Claimed by: D-07 (working on).
 - **Tighten** `tasks.md` to reject a generated task line containing " and ",
   enforcing the singular-task rule from `AGENTS.md` at generation time. Verify:
-  a fixture with a compound task fails the command. Claimed by: none.
+  a fixture with a compound task fails the command. Claimed by: D-06 (working on).
 - **Extend** `review.md` with a risk tier (LOW, MEDIUM, HIGH) that selects which
   review dimensions run. Constraint 3 applies: G-06 builds its classifier under
   `.claude/hooks/`, so the shipped command needs a prose rule (file count, path
@@ -100,7 +100,7 @@ The largest single behavior contract in the extension and the file a
   names in both files match by grep. Claimed by: none.
 - **Extend** with a "Target surface" section stating which steps are Claude
   Code only and what Copilot does instead. Verify: every step marked Claude-only
-  has a named fallback. Claimed by: none.
+  has a named fallback. Claimed by: D-03 (working on).
 - **Replace**: not warranted. Spec-kit's skill loader expects the upstream
   section shape.
 
