@@ -314,9 +314,12 @@ when Superpowers skills are unavailable.
    - If TDD skill available: follow its full process
 
    **For `[SUBAGENT]` tasks**:
-   - If subagent skill available: follow its dispatch protocol
-   - Otherwise: implement sequentially
-   - If marked `[P]` as well: use the Task tool for parallel execution
+   - On Claude Code with the subagent-driven-development skill found, follow
+     its dispatch protocol
+   - On Claude Code without the skill, dispatch one subagent per task with the
+     Task tool and review each result before the next dispatch
+   - On the Copilot CLI, implement sequentially in-session
+   - If marked `[P]` as well, the `[P]` rule below decides the surface
 
    **For `[REVIEW]` tasks**:
    - Complete the implementation
@@ -324,16 +327,16 @@ when Superpowers skills are unavailable.
    - Wait for explicit approval before continuing
 
    **For `[P]` tasks**:
-   - If the Agent Teams feature is available and
-     `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is set: dispatch one teammate per
-     `[P]` task in the batch, each in its own worktree, with the task's file
-     scope (from `task-decomposer`'s existing output) stated in the teammate's
-     brief so no two teammates touch the same file. Do not nest teams: a
-     teammate never dispatches its own team.
-   - Otherwise: launch parallel tasks using the Task tool where possible
-   - If neither is available: fall back to sequential execution, identical to
-     the non-parallel task path
-   - Ensure no dependency conflicts between parallel tasks
+   - On Claude Code with Agent Teams available and
+     `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` set: dispatch one teammate per
+     `[P]` task in the batch, each in its own worktree, with the file paths the
+     task line names stated in the teammate's brief so no two teammates touch
+     the same file. Do not nest teams. A teammate never dispatches its own team.
+   - On Claude Code without Agent Teams: launch the batch in parallel with the
+     Task tool
+   - On the Copilot CLI: run the batch in order, identical to the non-parallel
+     task path
+   - Check that no two parallel tasks name the same file
 
 4. **At each checkpoint**:
    - Summarize completed work
@@ -370,7 +373,16 @@ The agent MUST:
 2. **Superpowers detection**: If `requesting-code-review` skill is available,
    follow its review protocol.
 
-3. **Review dimensions** (built-in protocol):
+3. **Risk tier**: Sum the lines and count the files in
+   `git diff --numstat main...HEAD`. HIGH when more than 400 lines or more than
+   15 files changed, when a changed path has a directory named `auth`,
+   `payments`, `billing`, `migrations`, `infra`, `secrets`, or `crypto`, or
+   when a dependency lock file changed. Otherwise STANDARD. Take the answer of
+   `.claude/hooks/risk-classifier.sh` instead when the repository has it. HIGH
+   runs step 4 and then audits each finding for a `file:line` reference and
+   evidence; STANDARD runs step 4 once.
+
+4. **Review dimensions** (built-in protocol):
 
    a. **Spec compliance**: For each acceptance scenario in the spec, verify it
       is implemented and can be demonstrated.
@@ -385,15 +397,15 @@ The agent MUST:
 
    e. **Test coverage**: Verify tests exist for critical paths.
 
-4. **Report findings** with:
+5. **Report findings** with:
    - Confidence score (0-100, only report issues >= 80)
    - Severity (Critical / Important / Suggestion)
    - File path and line reference
    - Specific recommendation
 
-5. **Group** by severity, highest first.
+6. **Group** by severity, highest first.
 
-6. **Write** the findings to `specs/NNN-feature-name/review-findings.json` in
+7. **Write** the findings to `specs/NNN-feature-name/review-findings.json` in
    the shape `commands/review.md` documents under Findings File.
 
 ---
