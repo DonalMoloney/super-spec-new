@@ -135,7 +135,6 @@ Each criterion maps to the validation reference that confirms it.
 | FR-018 | `checklists/review.md::FR-018` |
 | SC-001 | `checklists/review.md::AS1.1` |
 | SC-002 | `checklists/review.md::AS2.1` |
-| SC-003 | `checklists/review.md::AS3.4` |
 | SC-004 | `checklists/review.md::FR-010` |
 | SC-005 | `tasks.md::T027` |
 

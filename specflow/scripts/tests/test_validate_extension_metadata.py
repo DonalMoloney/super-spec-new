@@ -4,46 +4,6 @@
 import re
 
 
-def test_regex_only_matches_commands_not_templates():
-    """Verify that the command-name regex only matches commands, not templates.
-
-    This test demonstrates the bug: the current regex matches both
-    'provides.commands[*].name' and 'provides.templates[*].name' entries.
-    After the fix, it should only match commands.
-    """
-    manifest = """schema_version: "1.0"
-extension:
-  id: "specflow"
-  name: "Superpowers Bridge"
-  version: "1.0.0"
-provides:
-  commands:
-    - name: "speckit.specflow.status"
-      file: "commands/status.md"
-      description: "Show status"
-  templates:
-    - name: "constitution-template"
-      file: "templates/constitution-template.md"
-      description: "Constitution template"
-hooks:
-  after_tasks:
-    command: "speckit.specflow.status"
-    optional: true
-    description: "Test hook"
-"""
-
-    # Current (buggy) regex - matches both commands and templates
-    buggy_command_names = re.findall(
-        r"^    - name:[ \t]*[\"']?([^\"'\n]+)[\"']?",
-        manifest,
-        re.MULTILINE,
-    )
-    print(f"Buggy regex matches: {buggy_command_names}")
-    # This assertion will FAIL with the current code because it catches templates too
-    assert "constitution-template" not in buggy_command_names, \
-        "FAIL: Buggy regex matches template names (this is the bug we're fixing)"
-
-
 def test_fixed_regex_only_matches_commands():
     """After the fix, the regex should only match commands in provides.commands."""
     manifest = """schema_version: "1.0"

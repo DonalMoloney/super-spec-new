@@ -8,7 +8,8 @@ description: This skill should be used at the start of a new work item, before a
 Classify the request, then follow the matching route.
 
 - A new capability ("add feature X") runs the full pipeline:
-  `/speckit.specify`, `/speckit.clarify`, `/speckit.specflow.review`,
+  `/speckit.specify`, `/speckit.clarify`, review stage 0 with
+  `spec-red-team-reviewer` and `threat-model-reviewer`,
   `/speckit.specflow.brainstorm`, `/speckit.plan`, `/speckit.specflow.tasks`,
   `/speckit.analyze`, `/speckit.specflow.execute`, then `/speckit.specflow.review`.
 - A defect ("fix bug Y") runs `systematic-debugging`, then

@@ -36,7 +36,15 @@ Orchestrate implementation with TDD, subagents, and review gates.
    - Otherwise: implement sequentially in-session
 
    **For `[P]` tasks**:
-   - Launch parallel tasks where possible using the Task tool
+   - If the Agent Teams feature is available and
+     `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is set: dispatch one teammate per
+     `[P]` task in the batch, each in its own worktree, with the task's file
+     scope (from `task-decomposer`'s existing output) stated in the teammate's
+     brief so no two teammates touch the same file. Do not nest teams — a
+     teammate never dispatches its own team.
+   - Otherwise: launch parallel tasks where possible using the Task tool
+   - If neither is available: fall back to sequential execution, identical to
+     the non-parallel task path
 
    **For `[REVIEW]` tasks**:
    - Pause and run review protocol (see `commands/review.md`)

@@ -46,6 +46,7 @@ effort flags stay unset unless the group says otherwise.
 
 Source: `open-questions.md` (both items). Effort: low. Depends on: none.
 Claude: `bdd-orchestrator` (the fix is script behavior; hook tests exist as a pattern).
+Model: `bdd-orchestrator` runs `opus`.
 Codex: `codex:codex-rescue --wait` with the two tasks below; then `codex review --base main`.
 
 - [x] T011 Scope the namespace regex to the `commands:` block
@@ -75,10 +76,11 @@ Verify: `open-questions.md` has no unchecked item about these scripts.
 
 ---
 
-## G-02 — Item 1: Code Review Rules in the constitution and AGENTS.md (working on)
+## G-02 — Item 1: Code Review Rules in the constitution and AGENTS.md (merged: PR #10)
 
 Source: Part 2 item 1, Part 8 days 0–30. Effort: low. Depends on: none.
 Claude: `general-purpose`, then `work-verifier`.
+Model: `general-purpose` inherits the session model (not routed by ADR-0003); `work-verifier` runs `opus`.
 Codex: `codex:codex-rescue`; then `codex review --base main`.
 
 - [x] T021 Add `## Code Review Rules` to the constitution template
@@ -105,10 +107,11 @@ Verify: the README mentions the Code Review Rules section.
 
 ---
 
-## G-03 — Item 3: clarify, analyze, and checklist gates (working on)
+## G-03 — Item 3: clarify, analyze, and checklist gates (merged: PR #11)
 
 Source: Part 2 item 3. Effort: low. Depends on: none (artifact-lint already checks `NEEDS CLARIFICATION` after a `.clarified` marker).
 Claude: `bdd-orchestrator` (adds hook-test cases).
+Model: `bdd-orchestrator` runs `opus`.
 Codex: `codex:codex-rescue --background`; then `codex review --base main`.
 
 - [x] T031 Define the gate markers
@@ -142,10 +145,11 @@ Verify: `bash .claude/hooks/tests/run.sh` reports zero FAIL.
 
 ---
 
-## G-04 — Item 7: model routing on every subagent (working on)
+## G-04 — Item 7: model routing on every subagent (merged: PR #9)
 
 Source: Part 2 item 7, Appendix B. Effort: low. Depends on: none.
 Claude: `general-purpose`; use `claude-code-guide` first to confirm the current `model:` frontmatter aliases.
+Model: `general-purpose` and `claude-code-guide` both inherit the session model (neither is routed by ADR-0003 — the ADR they wrote routes only `.claude/agents/*.md`).
 Codex: `codex:codex-rescue --wait` (frontmatter-only edit); then `codex review --base main`.
 
 - [x] T041 Confirm the alias set
@@ -173,20 +177,21 @@ Verify: the ADR exists and `decisions.md` stays under 60 lines.
 
 ---
 
-## G-05 — Item 6 / Part 4.13: adversarial review agents and findings schema (working on)
+## G-05 — Item 6 / Part 4.13: adversarial review agents and findings schema (merged: PR #13)
 
 Source: Part 3, Part 4.8, Part 4.13. Effort: medium. Depends on: none (G-04 aliases help but are not required).
 Claude: `general-purpose` for the agent files, `bdd-orchestrator` for the schema validator.
+Model: `general-purpose` inherits the session model; `bdd-orchestrator` runs `opus`; the eight reviewer agents T052 adds are routed by ADR-0003's extension — `opus` (`spec-red-team-reviewer`, `security-reviewer`, `threat-model-reviewer`, `critic`), `sonnet` (`conformance-reviewer`, `correctness-reviewer`, `performance-reviewer`), `haiku` (`maintainability-reviewer`).
 Codex: `codex:codex-rescue --background`; then `codex review --base main`.
 
-- [ ] T051 Add the findings JSON schema
+- [x] T051 Add the findings JSON schema
 
 1. Create `.claude/review/schema.json` with the Part 4.8 schema verbatim.
 2. Add `python3 -c 'import json;json.load(open(".claude/review/schema.json"))'` to `.claude/hooks/tests/run.sh` as a check.
 
 Verify: the hook test suite passes and includes the schema parse check.
 
-- [ ] T052 Add the eight reviewer agents
+- [x] T052 Add the eight reviewer agents
 
 1. Create one file per Part 4.13 definition under `.claude/agents/`: `spec-red-team-reviewer`, `conformance-reviewer`, `correctness-reviewer`, `security-reviewer`, `maintainability-reviewer`, `performance-reviewer`, `threat-model-reviewer`, `critic`.
 2. Keep the `tools:` lists exactly as written (read-only reviewers have no `Edit`/`Write`).
@@ -195,14 +200,14 @@ Verify: the hook test suite passes and includes the schema parse check.
 
 Verify: `ls .claude/agents | wc -l` is 25; `grep -l 'specify/review' .claude/agents/*.md` prints nothing.
 
-- [ ] T053 Add a schema validator script
+- [x] T053 Add a schema validator script
 
 1. Write `.claude/review/validate-findings.py`: takes a findings JSON path, validates against the schema with stdlib only (no `jsonschema` dependency), exits 1 on failure with the failing key.
 2. Write a failing test first in `.claude/review/tests/test_validate_findings.py` covering: valid file, missing `verdict`, bad `severity`.
 
 Verify: `python3 -m pytest .claude/review/tests -q` passes.
 
-- [ ] T054 Document the review stack
+- [x] T054 Document the review stack
 
 1. Add a "Review stack" section to `specflow/references/workflow-guide.md`: Stage 0 spec red-team, Stage 1 conformance, Stage 2 panel, Stage 3 critic (HIGH risk only), max 3 rounds.
 2. Note that `/speckit.specflow.review` remains the fallback when the agents are not installed.
@@ -215,6 +220,7 @@ Verify: the section exists and names the four stages.
 
 Source: Part 4.9, Part 4.10, Part 3.10. Effort: low-medium. Depends on: G-05 (schema path).
 Claude: `bdd-orchestrator`.
+Model: `bdd-orchestrator` runs `opus`.
 Codex: `codex:codex-rescue --background`; then `codex review --base main`.
 
 - [ ] T061 Add `risk-classifier.sh`
@@ -243,6 +249,7 @@ Verify: `git check-ignore .claude/review/claude.json` prints the path; `git chec
 
 Source: Part 2 item 9, Part 4.5. Effort: low. Depends on: none.
 Claude: `bdd-orchestrator`.
+Model: `bdd-orchestrator` runs `opus`.
 Codex: `codex:codex-rescue --wait`; then `codex review --base main`.
 
 - [ ] T071 Add `log-phase.sh`
@@ -267,10 +274,11 @@ Verify: each query runs without error against the test line from T071.
 
 ---
 
-## G-08 — Intent dispatcher skill (working on)
+## G-08 — Intent dispatcher skill (merged: PR #14)
 
 Source: Part 2 "Intent dispatcher", Part 4.6. Effort: low. Depends on: none.
 Claude: `general-purpose`; run `plugin-dev:skill-reviewer` on the result.
+Model: `general-purpose` inherits the session model; `plugin-dev:skill-reviewer` is a plugin agent, model set by the plugin, not ADR-0003.
 Codex: `codex:codex-rescue --wait`; then `codex review --base main`.
 
 - [x] T081 Write the skill
@@ -295,6 +303,7 @@ Verify: reviewer output attached to the PR; description mentions "add", "fix", "
 
 Source: Part 4.11, Part 2 items 10, 15, 17. Effort: medium. Depends on: G-05, G-06.
 Claude: `bdd-orchestrator`; use `claude-code-guide` to verify headless flag names.
+Model: `bdd-orchestrator` runs `opus`; `claude-code-guide` inherits the session model.
 Codex: `codex:codex-rescue --background`; then `codex review --base main`.
 Note: the Codex CI step from Part 4.11 is omitted; cross-model review runs locally with `codex review` (see G-15). This keeps `OPENAI_API_KEY` out of repo secrets and honors the AGENTS.md target surface.
 
@@ -333,6 +342,7 @@ Verify: both commands run from a clean feature branch.
 
 Source: Part 2 item 21, Part 3.10. Effort: low-medium. Depends on: none.
 Claude: `general-purpose`, then `work-verifier`.
+Model: `general-purpose` inherits the session model; `work-verifier` runs `opus`.
 Codex: `codex:codex-rescue --wait`; then `codex review --base main`.
 
 - [ ] T101 Add a `## Threat Model` section to `spec-template.md`
@@ -370,6 +380,7 @@ Verify: `cd specflow && python3 scripts/validate-extension-metadata.py && python
 
 Source: Part 2 item 18. Effort: medium. Depends on: none.
 Claude: `bdd-orchestrator` (for the tasks diff check) then `documentation-scribe`.
+Model: `bdd-orchestrator` runs `opus`; `documentation-scribe` runs `haiku`.
 Codex: `codex:codex-rescue --background`; then `codex review --base main`.
 
 - [ ] T111 Add `## Changelog` to `spec-template.md`
@@ -405,6 +416,7 @@ Verify: `bash .claude/hooks/tests/run.sh` reports zero FAIL.
 
 Source: Part 2 item 20. Effort: medium. Depends on: none.
 Claude: `bdd-orchestrator`; use `claude-code-guide` for the `SessionStart` matcher values.
+Model: `bdd-orchestrator` runs `opus`; `claude-code-guide` inherits the session model.
 Codex: `codex:codex-rescue --background`; then `codex review --base main`.
 
 - [ ] T121 Add `session-start.sh`
@@ -430,27 +442,28 @@ Verify: `grep -n 'handoff.md' specflow/commands/execute.md specflow/references/w
 
 ---
 
-## G-13 — Items 12 and 19: golden-run scorer and eval replay (working on)
+## G-13 — Items 12 and 19: golden-run scorer and eval replay (merged: PR #20)
 
 Source: Part 2 items 12, 19. Effort: medium-high. Depends on: G-01 (smoke test must pass).
 Claude: `bdd-orchestrator`.
+Model: `bdd-orchestrator` runs `opus`.
 Codex: `codex:codex-rescue --background`; then `codex review --base main`.
 
-- [ ] T131 Write `score-artifacts.py`
+- [x] T131 Write `score-artifacts.py`
 
 1. Create `specflow/scripts/score-artifacts.py`: takes a `specs/NNN/` dir; scores spec sections present, criteria with a traceability row, tasks with stable IDs, `NEEDS CLARIFICATION` count; prints JSON.
 2. Write tests first in `specflow/scripts/tests/test_score_artifacts.py` using `examples/static-landing-page/` as the fixture.
 
 Verify: `python3 -m pytest specflow/scripts/tests -q` passes; the example scores 100 on sections.
 
-- [ ] T132 Seed one known-bad golden
+- [x] T132 Seed one known-bad golden
 
 1. Add `specflow/examples/seeded-bug/` copied from the landing page with one deliberate spec gap (a criterion with no test).
 2. The scorer must report that gap.
 
 Verify: `python3 specflow/scripts/score-artifacts.py specflow/examples/seeded-bug` shows one untraced criterion.
 
-- [ ] T133 Replay in CI on relevant changes
+- [x] T133 Replay in CI on relevant changes
 
 1. Add a job to `specflow/.github/workflows/ci.yml` that runs the scorer on both examples when `commands/`, `templates/`, or `.claude/` change.
 2. Fail if the landing page score drops or the seeded gap goes unreported.
@@ -459,25 +472,26 @@ Verify: workflow YAML parses; `paths:` filter lists the three dirs.
 
 ---
 
-## G-14 — Item 5: Agent Teams for `[P]` tasks (working on)
+## G-14 — Item 5: Agent Teams for `[P]` tasks (merged: PR #17)
 
 Source: Part 2 item 5. Effort: medium. Depends on: none.
 Claude: `general-purpose`; `claude-code-guide` first for the current env flag and limits.
+Model: `general-purpose` and `claude-code-guide` both inherit the session model.
 Codex: `codex:codex-rescue --wait` for the docs edits only (Agent Teams is a Claude Code feature; Codex cannot exercise it). Then `codex review --base main`.
 
-- [ ] T141 Confirm the feature flag
+- [x] T141 Confirm the feature flag
 
 1. Ask `claude-code-guide` whether `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is still the flag and what the one-team-per-session limits are today.
 
 Verify: answer recorded in the PR description.
 
-- [ ] T142 Enable it in settings
+- [x] T142 Enable it in settings
 
 1. Add `"env": {"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"}` to `.claude/settings.json`.
 
 Verify: `jq .env .claude/settings.json` prints the key.
 
-- [ ] T143 Document the `[P]` dispatch protocol
+- [x] T143 Document the `[P]` dispatch protocol
 
 1. Read `specflow/commands/execute.md` and `workflow-guide.md` Phase 5.
 2. Add to Phase 5: for a batch of `[P]` tasks, one teammate per task, each in its own worktree, non-overlapping file scopes stated in the brief, no nested teams, and sequential fallback when the flag is unset.
@@ -491,6 +505,7 @@ Verify: `E2E_DRY_RUN=1 bash scripts/e2e-agent-claude.sh` exits 0.
 
 Source: Part 2 item 14. Effort: medium-high. Depends on: none. This is the one group where both executors run, by design.
 Claude: `bdd-orchestrator` for the script; then `general-purpose` for the protocol doc.
+Model: `bdd-orchestrator` runs `opus`; `general-purpose` inherits the session model.
 Codex: implementation counterpart in the protocol; `codex:codex-rescue --background` for the second worktree.
 
 - [ ] T151 Write `diff-impl.sh`
@@ -520,6 +535,7 @@ Verify: PR description contains the divergence list.
 
 Source: Part 2 item 22, Part 6, Appendix B. Effort: low. Depends on: G-04 (routing table exists).
 Claude: `documentation-scribe`.
+Model: `documentation-scribe` runs `haiku`.
 Codex: `codex:codex-rescue --wait`; then `codex review --base main`.
 
 - [ ] T161 Add the per-phase budget table
@@ -537,10 +553,11 @@ Verify: `grep -n 'Budgets' .claude/agents/bdd-orchestrator.md` prints a line.
 
 ---
 
-## G-17 — Item 8: close the review loop (working on)
+## G-17 — Item 8: close the review loop (merged: PR #12)
 
 Source: Part 2 item 8. Effort: low. Depends on: none.
 Claude: `general-purpose`, then `work-verifier`.
+Model: `general-purpose` inherits the session model; `work-verifier` runs `opus`.
 Codex: `codex:codex-rescue --wait`; then `codex review --base main`.
 
 - [x] T171 Review writes findings back to the spec
@@ -565,10 +582,11 @@ Verify: both command sections mention the new step.
 
 ---
 
-## G-18 — Playbook scope cleanup (working on)
+## G-18 — Playbook scope cleanup (merged: PR #15)
 
 Source: the scope note at the top of `imporvements2.md`. Effort: low. Depends on: none.
 Claude: `documentation-scribe`.
+Model: `documentation-scribe` runs `haiku`.
 Codex: not applicable.
 
 Decided 2026-09-11: keep Codex as an executor. Codex is not a runtime target for
