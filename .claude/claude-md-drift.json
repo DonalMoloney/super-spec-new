@@ -4,6 +4,16 @@
       "file": "/Users/donalmoloney/PycharmProjects/super-spec-new/.github",
       "rule_matched": "new-top-level-dir",
       "ts": "2026-09-11T13:31:41Z"
+    },
+    {
+      "file": "~/PycharmProjects/worktrees",
+      "rule_matched": "new-top-level-dir",
+      "ts": "2026-09-11T14:12:26Z"
+    },
+    {
+      "file": "/Users/donalmoloney/PycharmProjects/worktrees/g-01-fix-main-failures/specflow/scripts/tests",
+      "rule_matched": "new-top-level-dir",
+      "ts": "2026-09-11T14:12:54Z"
     }
   ]
 }

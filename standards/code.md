@@ -111,6 +111,16 @@ without rephrasing it.
 - Error and log messages state the fact, then the expected value, then the fix.
   "extension.id is 'flow'; expected 'specflow'. Edit extension.yml." No apology,
   no "Oops", no "Something went wrong".
+- Docstring first line: an imperative verb, then the object, one line, full stop.
+  "Return the archive size in bytes." Not "This function returns", not "Returns",
+  not "Gets the size".
+- Docstring body, when present: one sentence per parameter that needs one, then
+  one sentence per raised error, each in the form "Raises `NameError` when X".
+  No restatement of the signature, no usage example unless the call shape is
+  not obvious from the types.
+- Sentence structure in every string follows the Sentence structure section of
+  `standards/documentation.md`: actor first, one clause, specific verb,
+  concrete noun.
 
 ## Tests
 
