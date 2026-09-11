@@ -1,4 +1,6 @@
-# Telemetry queries
+# Hooks
+
+## Telemetry queries
 
 `log-phase.sh` runs on `Stop` and appends one JSON line per turn to
 `.claude/telemetry.jsonl`. That file is gitignored, so every checkout builds its
@@ -28,3 +30,18 @@ jq -s 'map(select(.event=="finding")) | group_by(.reviewer)
 ```
 
 A query whose filter matches no line prints an empty result instead of failing.
+
+## Run the gate locally
+
+The `Merge gate` workflow runs two of these hooks on every pull request. Run the
+same two from a feature branch before you push:
+
+```bash
+.claude/hooks/risk-classifier.sh main
+.claude/hooks/merge-gate.sh
+```
+
+The classifier prints `HIGH` or `STANDARD` for the diff between `main` and
+`HEAD`. `HIGH` turns on the security review and the mutation score in CI. The gate reads `.claude/review/*.json` and exits 1 when a Critical or
+Important finding is neither fixed nor rebutted. A branch carrying no findings
+file passes and leaves `.claude/review/.merge-approved` behind.

@@ -307,7 +307,7 @@ Model: `bdd-orchestrator` runs `opus`; `claude-code-guide` inherits the session 
 Codex: `codex:codex-rescue --background`; then `codex review --base main`.
 Note: the Codex CI step from Part 4.11 is omitted; cross-model review runs locally with `codex review` (see G-15). This keeps `OPENAI_API_KEY` out of repo secrets and honors the AGENTS.md target surface.
 
-- [ ] T091 Add the workflow file
+- [x] T091 Add the workflow file
 
 1. Create `.github/workflows/merge-gate.yml` from Part 4.11 minus the Codex step; paths changed to `.claude/hooks/` and `.claude/review/`.
 2. Wrap the `claude -p` call in `timeout 300`; pass `--max-turns 6`, `--output-format json`, `--allowedTools "Read,Grep,Bash(git diff:*)"`.
@@ -316,21 +316,21 @@ Note: the Codex CI step from Part 4.11 is omitted; cross-model review runs local
 
 Verify: `python3 -c 'import yaml,sys;yaml.safe_load(open(".github/workflows/merge-gate.yml"))'` exits 0.
 
-- [ ] T092 Confirm the headless flags
+- [x] T092 Confirm the headless flags
 
 1. Ask `claude-code-guide` for the current names of the budget-cap flag, `--permission-mode` values, and `--json-schema`.
 2. Correct the workflow if any flag differs.
 
 Verify: the PR description lists each flag and its source.
 
-- [ ] T093 Gate expensive steps on risk
+- [x] T093 Gate expensive steps on risk
 
 1. Make the security-review action and mutation step conditional on `steps.risk.outputs.level == 'HIGH'`.
 2. Make the merge gate step always run.
 
 Verify: `grep -c "level == 'HIGH'" .github/workflows/merge-gate.yml` prints 2.
 
-- [ ] T094 Document the local equivalent
+- [x] T094 Document the local equivalent
 
 1. Add a "Run the gate locally" subsection to `.claude/hooks/README.md`: `risk-classifier.sh main`, then `merge-gate.sh`.
 
