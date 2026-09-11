@@ -16,6 +16,10 @@ GOLDEN_FEATURE_DIR = (
     / "001-static-landing-page"
 )
 
+SEEDED_BUG_FEATURE_DIR = (
+    Path(__file__).resolve().parents[2] / "examples" / "seeded-bug"
+)
+
 SPEC_WITH_MARKERS = """# Feature
 
 ## User Scenarios & Testing *(mandatory)*
@@ -283,3 +287,21 @@ def test_two_arguments_fails_with_empty_stdout():
     assert result.returncode == 1
     assert result.stdout == ""
     assert result.stderr.strip() != ""
+
+
+def test_seeded_bug_leaves_sc_003_untraced():
+    report = score_json(SEEDED_BUG_FEATURE_DIR)
+    assert report["traceability"]["criteria"] == 23
+    assert report["traceability"]["traced"] == 22
+    assert report["traceability"]["untraced"] == ["SC-003"]
+
+
+def test_seeded_bug_matches_the_golden_on_every_other_dimension():
+    golden = score_json(GOLDEN_FEATURE_DIR)
+    report = score_json(SEEDED_BUG_FEATURE_DIR)
+    assert report["spec_sections"]["score"] == 100.0
+    assert report["task_ids"]["score"] == 100.0
+    assert (
+        report["needs_clarification"]["count"]
+        == golden["needs_clarification"]["count"]
+    )
