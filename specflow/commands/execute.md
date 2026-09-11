@@ -53,6 +53,8 @@ Orchestrate implementation with TDD, subagents, and review gates.
    - Summarize completed work
    - Run tests if applicable
    - Ask user for approval before proceeding to next phase
+   - Write `specs/NNN/handoff.md`, capped at 5 lines, so a resumed session can
+     pick up the checkpoint state without re-reading the full task history
 
 8. Update task checkboxes in `tasks.md` as each task completes
 9. Update the target feature's `progress.yml` with current execution state

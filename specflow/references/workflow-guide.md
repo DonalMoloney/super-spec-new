@@ -420,17 +420,15 @@ documents how the agent detects and resumes work.
 Each feature spec directory may contain a `progress.yml` file:
 
 ```yaml
-feature: user-authentication
-created: 2026-04-22
-current_phase: execute
+spec: 001-static-landing-page
+status: complete
+current_phase: 6
 phases:
-  constitution: { status: done, updated: 2026-04-22 }
-  specify:      { status: done, updated: 2026-04-22 }
-  brainstorm:   { status: done, updated: 2026-04-22, sessions: 2 }
-  plan:         { status: done, updated: 2026-04-22 }
-  tasks:        { status: done, updated: 2026-04-22 }
-  execute:      { status: in_progress, updated: 2026-04-22, current_task: T012, completed_tasks: 11, total_tasks: 19 }
-  review:       { status: pending }
+  - phase: 1
+    name: Setup
+    status: complete
+    tasks:
+      T001: complete
 ```
 
 ### Resume Check Protocol
@@ -450,6 +448,11 @@ Every specflow command begins with:
    - `tasks.md` has `[x]` checkboxes → execute in progress
 5. **Report** current state to the user (including superpowers status) before proceeding
 6. **Resume** from the detected point (see phase-specific rules below)
+
+`.claude/hooks/session-start.sh` prints `specs/NNN/handoff.md` at session start if the
+feature has one, ahead of any command-driven resume check. `handoff.md` stays at 5
+lines or fewer, the convention `/speckit.specflow.execute` follows when it writes the
+file at each phase checkpoint.
 
 ### Phase-Specific Resume Rules
 
