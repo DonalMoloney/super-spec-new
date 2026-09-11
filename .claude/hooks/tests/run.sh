@@ -406,6 +406,45 @@ out="$(cd "$r25" && SPECFLOW_TEST_CMD='marker-test-cmd' bash "$HOOKS/diff-impl.s
 check_has "SPECFLOW_TEST_CMD overrides the shared test command" "$out" "test-command: marker-test-cmd"
 diff_impl_clean "$r25" 001-x
 
+write_plan() { # dir line... -> writes specs/001-x/plan.md
+  local d="$1"; shift
+  printf '%s\n' "# Plan" "$@" > "$d/specs/001-x/plan.md"
+}
+diff_impl_out() { # dir -> stdout of a successful run
+  ( cd "$1" && bash "$HOOKS/diff-impl.sh" specs/001-x 2>/dev/null )
+}
+
+r27="$(diff_impl_repo)"
+write_plan "$r27" '**Test command**: `marker-from-plan`'
+out="$(diff_impl_out "$r27")"
+check_has "plan.md names the shared test command" "$out" "test-command: marker-from-plan"
+diff_impl_clean "$r27" 001-x
+
+r28="$(diff_impl_repo)"
+write_plan "$r28" '**Testing**: manual browser checks at three viewports'
+out="$(diff_impl_out "$r28")"
+check_has "plan.md naming no command falls back to the default" "$out" "test-command: cd specflow && python3"
+diff_impl_clean "$r28" 001-x
+
+r29="$(diff_impl_repo)"
+write_plan "$r29" '**Test command**: `marker-from-plan`'
+out="$(cd "$r29" && SPECFLOW_TEST_CMD='marker-from-env' bash "$HOOKS/diff-impl.sh" specs/001-x 2>/dev/null)"
+check_has "SPECFLOW_TEST_CMD outranks the plan.md line" "$out" "test-command: marker-from-env"
+diff_impl_clean "$r29" 001-x
+
+r30="$(diff_impl_repo)"
+write_plan "$r30" '**Test command**: `marker-first`' '**Test command**: `marker-second`'
+out="$(diff_impl_out "$r30")"
+check_has "the first plan.md line wins"          "$out" "test-command: marker-first"
+check_lacks "a later plan.md line is ignored"    "$out" "marker-second"
+diff_impl_clean "$r30" 001-x
+
+r31="$(diff_impl_repo)"
+write_plan "$r31" '**Test command**: no backticks here'
+out="$(diff_impl_out "$r31")"
+check_has "a plan.md line without backticks falls back to the default" "$out" "test-command: cd specflow && python3"
+diff_impl_clean "$r31" 001-x
+
 r26="$(diff_impl_repo)"
 git -C "$r26" branch 001-x-a
 check "an existing branch name fails"     2 "$(diff_impl_exit "$r26" specs/001-x)"

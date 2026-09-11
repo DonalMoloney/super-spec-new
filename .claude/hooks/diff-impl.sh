@@ -4,8 +4,15 @@
 # protocol that consumes them is "Differential implementation" in
 # specflow/references/workflow-guide.md.
 #   bash .claude/hooks/diff-impl.sh <spec-dir>
+# The shared test command comes from SPECFLOW_TEST_CMD, then from the first
+# line of <spec-dir>/plan.md shaped "**Test command**: `<command>`", then from
+# DEFAULT_TEST_CMD.
 set -euo pipefail
 DEFAULT_TEST_CMD='cd specflow && python3 scripts/validate-extension-metadata.py'
+plan_test_cmd() { # plan-path -> the command the plan names, or nothing
+  [ -f "$1" ] || return 0
+  sed -n 's/^\*\*Test command\*\*: `\(.*\)`[[:space:]]*$/\1/p' "$1" | head -1
+}
 spec_dir="${1:-}"
 if [ -z "$spec_dir" ]; then
   echo "diff-impl: no spec directory given; expected one argument such as specs/001-user-login. Pass the feature's spec directory." >&2
@@ -20,7 +27,9 @@ if ! root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
   exit 2
 fi
 feature="$(basename "$spec_dir")"
-test_cmd="${SPECFLOW_TEST_CMD:-$DEFAULT_TEST_CMD}"
+test_cmd="${SPECFLOW_TEST_CMD:-}"
+if [ -z "$test_cmd" ]; then test_cmd="$(plan_test_cmd "$spec_dir/plan.md")"; fi
+if [ -z "$test_cmd" ]; then test_cmd="$DEFAULT_TEST_CMD"; fi
 for side in a b; do
   path="$root/worktrees/$feature-$side"
   branch="$feature-$side"
