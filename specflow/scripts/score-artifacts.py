@@ -36,7 +36,7 @@ CRITERION_DECLARATION = re.compile(r"^- \*\*((?:FR|SC)-\d+)\*\*:")
 CRITERION_ID = re.compile(r"\b(?:FR|SC)-\d+\b")
 TABLE_ROW = re.compile(r"^\|(.+)\|\s*$")
 TABLE_SEPARATOR = re.compile(r"^[\s:|-]+$")
-TASK_LINE = re.compile(r"^- \[[ x]\]\s*(.*?)\s*$")
+TASK_LINE = re.compile(r"^\s*- \[[ xX]\]\s*(.*?)\s*$")
 STABLE_TASK_ID = re.compile(r"^T\d+")
 
 

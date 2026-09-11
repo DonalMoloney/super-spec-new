@@ -230,6 +230,45 @@ def test_task_line_without_id_prefix_is_listed_in_without_id():
     assert report["task_ids"]["score"] == 50.0
 
 
+def test_uppercase_ticked_task_line_without_id_is_listed_in_without_id():
+    tasks = """# Tasks
+
+- [X] Uppercase check with no id
+"""
+    with tempfile.TemporaryDirectory() as directory:
+        report = score_json(write_feature(directory, SPEC_WITH_MARKERS, tasks))
+    assert report["task_ids"]["tasks"] == 1
+    assert report["task_ids"]["with_id"] == 0
+    assert report["task_ids"]["without_id"] == ["Uppercase check with no id"]
+    assert report["task_ids"]["score"] == 0.0
+
+
+def test_indented_task_line_without_id_is_listed_in_without_id():
+    tasks = """# Tasks
+
+  - [ ] Indented check with no id
+"""
+    with tempfile.TemporaryDirectory() as directory:
+        report = score_json(write_feature(directory, SPEC_WITH_MARKERS, tasks))
+    assert report["task_ids"]["tasks"] == 1
+    assert report["task_ids"]["with_id"] == 0
+    assert report["task_ids"]["without_id"] == ["Indented check with no id"]
+    assert report["task_ids"]["score"] == 0.0
+
+
+def test_uppercase_ticked_task_line_with_id_counts_toward_with_id():
+    tasks = """# Tasks
+
+- [X] T001 Create the output directory
+"""
+    with tempfile.TemporaryDirectory() as directory:
+        report = score_json(write_feature(directory, SPEC_WITH_MARKERS, tasks))
+    assert report["task_ids"]["tasks"] == 1
+    assert report["task_ids"]["with_id"] == 1
+    assert report["task_ids"]["without_id"] == []
+    assert report["task_ids"]["score"] == 100.0
+
+
 def test_feature_dir_without_tasks_file_scores_task_ids_as_null():
     with tempfile.TemporaryDirectory() as directory:
         result = score(write_feature(directory, SPEC_WITH_MARKERS))
