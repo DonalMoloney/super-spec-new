@@ -1,7 +1,8 @@
 name: Score artifacts
 
-# The goldens under examples/ only drift when a command, a template, or the
-# agent squad that drives them changes, so this replay is path-filtered. The
+# This replay is path-filtered to the inputs that can change a golden score: the
+# commands and templates the goldens were produced from, the scorer and its
+# tests, the goldens themselves, and this workflow's own expectations. The
 # filter lives in its own workflow because `paths:` is workflow-level: putting
 # it in ci.yml would also gate the metadata and archive validation jobs, which
 # must run on every change.
@@ -12,12 +13,16 @@ on:
     paths:
       - "commands/**"
       - "templates/**"
-      - ".claude/**"
+      - "scripts/**"
+      - "examples/**"
+      - ".github/workflows/score-artifacts.yml"
   pull_request:
     paths:
       - "commands/**"
       - "templates/**"
-      - ".claude/**"
+      - "scripts/**"
+      - "examples/**"
+      - ".github/workflows/score-artifacts.yml"
 
 jobs:
   score:
