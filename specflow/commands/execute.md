@@ -10,11 +10,22 @@ Orchestrate implementation with TDD, subagents, and review gates.
 
 ## Process
 
-1. Read the tasks file for the target feature
-2. Read the plan and constitution for context
-3. **Superpowers detection**: Check for `executing-plans`, `subagent-driven-development`,
+1. **Constitution gate**: Verify `.specify/memory/constitution.md` exists. If
+   missing, stop with `CONSTITUTION_REQUIRED` and instruct the user to run
+   `/speckit.constitution`.
+2. **Analyze gate**: Resolve the target feature under the project root's
+   `specs/NNN-feature-name/` using the supplied spec number or path. If the target
+   is ambiguous, ask the user to select it. Require a regular file named
+   `.analyzed` in that directory. If missing, stop with `ANALYZE_REQUIRED`, name
+   the missing path, and direct the user to run `/speckit.analyze` for this feature.
+   Follow the Gate markers protocol in `references/workflow-guide.md` to record
+   zero critical inconsistencies before retrying. Check this gate on resumed runs
+   too, before implementation or progress updates.
+3. Read the tasks file for the target feature
+4. Read the plan and constitution for context
+5. **Superpowers detection**: Check for `executing-plans`, `subagent-driven-development`,
    and `test-driven-development` skills
-4. Walk through tasks phase by phase:
+6. Walk through tasks phase by phase:
 
    **For `[TDD]` tasks**:
    - If TDD skill found, follow its RED-GREEN-REFACTOR process
@@ -30,13 +41,13 @@ Orchestrate implementation with TDD, subagents, and review gates.
    **For `[REVIEW]` tasks**:
    - Pause and run review protocol (see `commands/review.md`)
 
-5. At each **phase checkpoint**:
+7. At each **phase checkpoint**:
    - Summarize completed work
    - Run tests if applicable
    - Ask user for approval before proceeding to next phase
 
-6. Update task checkboxes in `tasks.md` as each task completes
-7. Update `specs/NNN/progress.yml` with current execution state
+8. Update task checkboxes in `tasks.md` as each task completes
+9. Update the target feature's `progress.yml` with current execution state
 
 ## Output
 

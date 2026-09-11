@@ -256,12 +256,49 @@ This phase can be run multiple times. Each session:
 ## Phase 5: Execution
 
 **Command**: `/speckit.specflow.execute`
-**Gate**: Tasks file must exist for the target feature.
+**Gate**: Constitution exists. The target feature has tasks and an `.analyzed` marker.
 **Output**: Code changes, updated task checkboxes.
+
+### Gate markers
+
+The agent following this Specflow workflow owns these markers around core
+spec-kit commands. Do not assume an upstream command creates them automatically.
+Resolve one feature directory under the consuming project's root first.
+`specs/NNN/` is shorthand for its actual directory, such as
+`specs/001-user-login/`. Keep feature artifacts outside `.specify/`.
+
+| Command | Artifact | Completion rule |
+|---------|----------|-----------------|
+| `/speckit.clarify` | `specs/NNN-feature-name/.clarified` | After specify, resolve every `NEEDS CLARIFICATION` in the spec before writing the marker. |
+| `/speckit.analyze` | `specs/NNN-feature-name/.analyzed` | After tasks, write the marker only when the analysis reports zero critical inconsistencies. |
+| `/speckit.checklist` | `specs/NNN-feature-name/checklist-*.md` | Write the requested checklist with at least one checked or unchecked checkbox line. |
+
+After each successful clarify or analyze result, the agent writes the matching
+empty marker file. Remove that marker before rerunning its command. An interrupted
+run or a report with critical inconsistencies must leave `.analyzed` absent.
+Resolve critical findings, rerun analysis, then retry execution. Never create an
+analyze marker from artifact existence or inferred progress alone.
+
+Remove `.clarified` when the spec changes. Remove `.analyzed` when the spec, plan,
+tasks, or constitution changes. Changes to task completion checkboxes during
+execution do not invalidate analysis. After a constitution change, invalidate
+analysis markers for all features governed by it.
+
+When invoking `/speckit.checklist`, direct its output to the feature's
+`checklist-*.md` path. If the core command emits a checklist elsewhere, copy its
+completed output to that path. Unchecked items are valid; an empty checklist fails
+artifact linting.
+
+Both execution entry points check `.analyzed` before implementation starts,
+including resumed runs. A missing marker produces `ANALYZE_REQUIRED` with the
+feature path and instructions to run `/speckit.analyze`. This gate applies even
+when Superpowers skills are unavailable.
 
 ### Steps
 
-1. **Read inputs**: tasks, plan, spec, constitution.
+1. **Verify gates**: Require the constitution, then the target feature's
+   `.analyzed` marker. Stop with `ANALYZE_REQUIRED` if the marker is absent.
+   Read tasks, plan, spec, and constitution after these checks pass.
 
 2. **Superpowers detection**: Check for `executing-plans`,
    `subagent-driven-development`, and `test-driven-development` skills.
@@ -358,7 +395,7 @@ The agent MUST:
 | 2 | `/speckit.specflow.brainstorm` | Spec exists | Updated spec.md |
 | 3 | `/speckit.plan` | Spec exists | `specs/NNN/plan.md` |
 | 4 | `/speckit.specflow.tasks` | Plan exists | `specs/NNN/tasks.md` |
-| 5 | `/speckit.specflow.execute` | Tasks exist | Code + updated tasks.md |
+| 5 | `/speckit.specflow.execute` | Constitution, tasks, and `.analyzed` exist | Code + updated tasks.md |
 | 6 | `/speckit.specflow.review` | Implementation exists | Review report |
 
 ---
