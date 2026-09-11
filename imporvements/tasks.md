@@ -216,28 +216,28 @@ Verify: the section exists and names the four stages.
 
 ---
 
-## G-06 — Part 4.9 / 4.10: merge gate and risk classifier scripts (working on)
+## G-06 — Part 4.9 / 4.10: merge gate and risk classifier scripts (merged: PR #30)
 
 Source: Part 4.9, Part 4.10, Part 3.10. Effort: low-medium. Depends on: G-05 (schema path).
 Claude: `bdd-orchestrator`.
 Model: `bdd-orchestrator` runs `opus`.
 Codex: `codex:codex-rescue --background`; then `codex review --base main`.
 
-- [ ] T061 Add `risk-classifier.sh`
+- [x] T061 Add `risk-classifier.sh`
 
 1. Create `.claude/hooks/risk-classifier.sh` from Part 4.10; replace `bc` with pure-bash arithmetic so it runs on a bare macOS shell.
 2. Add three cases to `.claude/hooks/tests/run.sh`: a diff touching `auth/` prints `HIGH`; a lockfile change prints `HIGH`; a 2-line doc change prints `STANDARD`.
 
 Verify: `bash .claude/hooks/tests/run.sh` reports zero FAIL.
 
-- [ ] T062 Add `merge-gate.sh`
+- [x] T062 Add `merge-gate.sh`
 
 1. Create `.claude/hooks/merge-gate.sh` from Part 4.9; default glob `.claude/review/*.json`; write the approval marker to `.claude/review/.merge-approved`.
 2. Add cases: one open Critical exits 1; one rebutted Important exits 0; no files exits 0.
 
 Verify: `bash .claude/hooks/tests/run.sh` reports zero FAIL.
 
-- [ ] T063 Add `.claude/review/*.json` and the marker to `.gitignore`
+- [x] T063 Add `.claude/review/*.json` and the marker to `.gitignore`
 
 1. Append `.claude/review/*.json` and `.claude/review/.merge-approved` to `.gitignore`; keep `schema.json` tracked with a negation line.
 
@@ -376,20 +376,20 @@ Verify: `cd specflow && python3 scripts/validate-extension-metadata.py && python
 
 ---
 
-## G-11 — Item 18: spec change management (working on)
+## G-11 — Item 18: spec change management (merged: PR #32)
 
 Source: Part 2 item 18. Effort: medium. Depends on: none.
 Claude: `bdd-orchestrator` (for the tasks diff check) then `documentation-scribe`.
 Model: `bdd-orchestrator` runs `opus`; `documentation-scribe` runs `haiku`.
 Codex: `codex:codex-rescue --background`; then `codex review --base main`.
 
-- [ ] T111 Add `## Changelog` to `spec-template.md`
+- [x] T111 Add `## Changelog` to `spec-template.md`
 
 1. Append `## Changelog` with one row template: version, date, summary.
 
 Verify: the section exists at the end of the template.
 
-- [ ] T112 Make `tasks.md` regeneration preserve stable IDs
+- [x] T112 Make `tasks.md` regeneration preserve stable IDs
 
 1. Read `specflow/commands/tasks.md` Process steps in full.
 2. Add a Process step: when `tasks.md` exists, read existing `TNNN` IDs and reuse them for unchanged tasks; only new tasks get new IDs.
@@ -397,13 +397,13 @@ Verify: the section exists at the end of the template.
 
 Verify: `E2E_DRY_RUN=1 bash scripts/e2e-agent-claude.sh` exits 0.
 
-- [ ] T113 Add the hotfix path to `workflow-guide.md`
+- [x] T113 Add the hotfix path to `workflow-guide.md`
 
 1. Add a "Hotfix path" subsection: skips brainstorm, still runs `/speckit.analyze`, still runs the merge gate, appends a Changelog row.
 
 Verify: the subsection names the merge gate as non-skippable.
 
-- [ ] T114 Lint stable IDs across regeneration
+- [x] T114 Lint stable IDs across regeneration
 
 1. Extend `artifact-lint.sh`: if `tasks.md` and `progress.yml` both exist, every completed ID in `progress.yml` must still appear in `tasks.md`; exit 2 otherwise.
 2. Add a passing and a failing case to the hook tests.
