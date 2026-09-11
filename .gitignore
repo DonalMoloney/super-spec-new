@@ -4,3 +4,5 @@ diff.md
 .claude/review/.merge-approved
 .claude/telemetry.jsonl
 .claude/.current-phase
+__pycache__/
+.pytest_cache/
