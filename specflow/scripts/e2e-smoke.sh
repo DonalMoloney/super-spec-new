@@ -225,6 +225,8 @@ assert_grep "status.md sample output reports gate markers" 'gates: clarified, an
 assert_grep "after-execute.md writes review-scope.md"  'review-scope\.md'     "$REPO_ROOT/commands/hooks/after-execute.md"
 assert_grep "review.md reads review-scope.md"          'review-scope\.md'     "$REPO_ROOT/commands/review.md"
 assert_grep "review.md writes review-findings.json"    'review-findings\.json' "$REPO_ROOT/commands/review.md"
+# The tasks command carries the singular-task rule from AGENTS.md.
+assert_grep "tasks.md states the one-outcome-per-task rule" 'one outcome per task' "$REPO_ROOT/commands/tasks.md"
 
 # -------------------------------------------------------------------------
 step "5/5" "Generated artifacts (for human review)"
