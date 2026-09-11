@@ -357,6 +357,63 @@ r22="$(mktemp -d)"
 check "missing .claude directory exits 0" 0 "$(log_phase "$r22" '{"session_id":"abc"}')"
 check "missing .claude directory is not created" 0 "$([ ! -e "$r22/.claude" ]; echo $?)"
 
+# --- diff-impl.sh (sets up the two worktrees a differential run implements in) ---
+diff_impl_repo() { # -> temp repo holding a committed spec directory
+  local d; d="$(fresh_repo main)"
+  mkdir -p "$d/specs/001-x"
+  printf '# Spec\n' > "$d/specs/001-x/spec.md"
+  git -C "$d" add -A
+  git -C "$d" -c user.email=t@t -c user.name=t commit -q -m spec
+  echo "$d"
+}
+diff_impl_exit() { # dir args... -> exit code
+  local d="$1"; shift
+  ( cd "$d" && bash "$HOOKS/diff-impl.sh" "$@" >/dev/null 2>&1 ); echo $?
+}
+diff_impl_clean() { # dir feature -> removes every worktree and branch the run created
+  local d="$1" f="$2" side
+  for side in a b; do
+    git -C "$d" worktree remove --force "worktrees/$f-$side" >/dev/null 2>&1
+    git -C "$d" branch -D "$f-$side" >/dev/null 2>&1
+  done
+  git -C "$d" worktree prune >/dev/null 2>&1
+}
+
+r23="$(diff_impl_repo)"
+check "missing spec-dir argument fails"   2 "$(diff_impl_exit "$r23")"
+check "nonexistent spec-dir fails"        2 "$(diff_impl_exit "$r23" specs/999-none)"
+check "a rejected run creates no worktrees" 0 "$([ ! -e "$r23/worktrees" ]; echo $?)"
+
+r24="$(diff_impl_repo)"; real24="$(cd "$r24" && pwd -P)"
+out="$(cd "$r24" && bash "$HOOKS/diff-impl.sh" specs/001-x 2>/dev/null)"; st=$?
+check "successful run exits 0"            0 "$st"
+check "worktree a is created"             0 "$([ -d "$r24/worktrees/001-x-a" ]; echo $?)"
+check "worktree b is created"             0 "$([ -d "$r24/worktrees/001-x-b" ]; echo $?)"
+branch_a="$(git -C "$r24/worktrees/001-x-a" rev-parse --abbrev-ref HEAD)"
+branch_b="$(git -C "$r24/worktrees/001-x-b" rev-parse --abbrev-ref HEAD)"
+check_out "worktree a sits on the -a branch" 001-x-a "$branch_a"
+check_out "worktree b sits on the -b branch" 001-x-b "$branch_b"
+check "the two worktrees are on distinct branches" 0 "$([ "$branch_a" != "$branch_b" ]; echo $?)"
+check_has "run prints worktree a's path"  "$out" "worktree-a: $real24/worktrees/001-x-a"
+check_has "run prints worktree b's path"  "$out" "worktree-b: $real24/worktrees/001-x-b"
+check_has "run prints the shared test command" "$out" "test-command: cd specflow && python3"
+check "a second run on the same spec fails" 2 "$(diff_impl_exit "$r24" specs/001-x)"
+diff_impl_clean "$r24" 001-x
+check "cleanup leaves the repo with no extra worktree" 0 "$([ "$(git -C "$r24" worktree list | wc -l)" -eq 1 ]; echo $?)"
+
+r25="$(diff_impl_repo)"
+out="$(cd "$r25" && SPECFLOW_TEST_CMD='marker-test-cmd' bash "$HOOKS/diff-impl.sh" specs/001-x 2>/dev/null)"
+check_has "SPECFLOW_TEST_CMD overrides the shared test command" "$out" "test-command: marker-test-cmd"
+diff_impl_clean "$r25" 001-x
+
+r26="$(diff_impl_repo)"
+git -C "$r26" branch 001-x-a
+check "an existing branch name fails"     2 "$(diff_impl_exit "$r26" specs/001-x)"
+check "a name collision creates no worktrees" 0 "$([ ! -e "$r26/worktrees" ]; echo $?)"
+git -C "$r26" branch -D 001-x-a >/dev/null
+
+cd /
+
 # --- .claude/review/schema.json (findings contract read by the reviewer agents) ---
 cd "$HOOKS/../.."
 python3 -c 'import json;json.load(open(".claude/review/schema.json"))' >/dev/null 2>&1
