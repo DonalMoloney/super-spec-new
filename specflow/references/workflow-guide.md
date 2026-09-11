@@ -405,7 +405,7 @@ The agent MUST:
 
 6. **Group** by severity, highest first.
 
-6. **Write** the findings to `specs/NNN-feature-name/review-findings.json` in
+7. **Write** the findings to `specs/NNN-feature-name/review-findings.json` in
    the shape `commands/review.md` documents under Findings File.
 
 ---

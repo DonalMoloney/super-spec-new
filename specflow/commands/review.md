@@ -43,7 +43,7 @@ Run code review against spec requirements using review skills.
    reports a missing, ambiguous, or contradicted requirement, add a row to the
    `## Open Questions` table in `specs/NNN-feature-name/spec.md` whose Question
    column opens with the finding ID
-7. **Write the findings file**: Write every reported finding to
+8. **Write the findings file**: Write every reported finding to
    `specs/NNN-feature-name/review-findings.json` in the shape under Findings
    File below. Overwrite the file on each run. A run with no findings writes
    the file with an empty `findings` array and the verdict `CLEAN`
