@@ -543,21 +543,21 @@ Source: Part 2 item 8. Effort: low. Depends on: none.
 Claude: `general-purpose`, then `work-verifier`.
 Codex: `codex:codex-rescue --wait`; then `codex review --base main`.
 
-- [ ] T171 Review writes findings back to the spec
+- [x] T171 Review writes findings back to the spec
 
 1. Read `specflow/commands/review.md` Process steps in full.
 2. Add a Process step after step 5: each Critical or Important finding that is a spec gap is appended to `spec.md` `## Open Questions` with the finding ID.
 
 Verify: `E2E_DRY_RUN=1 bash scripts/e2e-agent-claude.sh` exits 0.
 
-- [ ] T172 Brainstorm reads `decisions.md`
+- [x] T172 Brainstorm reads `decisions.md`
 
 1. Read `specflow/commands/brainstorm.md` Process steps in full.
 2. Add a Process step before questioning: if `decisions.md` exists at the project root, read it and do not re-ask settled decisions.
 
 Verify: `grep -n 'decisions.md' specflow/commands/brainstorm.md` prints a line.
 
-- [ ] T173 Update the bridge doc
+- [x] T173 Update the bridge doc
 
 1. Add both steps to `specflow/references/superpowers-bridge.md` under the matching command sections.
 
