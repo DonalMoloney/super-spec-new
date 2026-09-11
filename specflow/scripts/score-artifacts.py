@@ -50,8 +50,12 @@ def fail(message: str) -> None:
 
 
 def read_lines(path: Path) -> list[str]:
-    """Read path as UTF-8 text and return its lines without line endings."""
-    return path.read_text(encoding="utf-8").splitlines()
+    """Read path as UTF-8 text and return its lines without line endings.
+
+    Undecodable bytes become the replacement character, so a stray byte costs
+    the file nothing beyond the characters it sits on.
+    """
+    return path.read_text(encoding="utf-8", errors="replace").splitlines()
 
 
 def percentage(part: int, whole: int) -> float | None:

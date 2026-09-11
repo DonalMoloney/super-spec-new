@@ -621,3 +621,32 @@ def test_h3_subheading_inside_traceability_keeps_the_rows_below_it_traced():
         report = score_json(write_feature(directory, spec))
     assert report["traceability"]["untraced"] == []
     assert report["traceability"]["traced"] == 2
+
+
+def test_non_utf8_markdown_file_still_scores_every_dimension():
+    with tempfile.TemporaryDirectory() as directory:
+        feature_dir = write_feature(
+            directory, SPEC_WITH_FOUR_UNTRACED, TASKS_WITH_THREE_MISSING_IDS
+        )
+        (feature_dir / "notes.md").write_bytes("Caf\xe9 notes".encode("latin-1"))
+        result = score(feature_dir)
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    assert report["spec_sections"]["score"] == 100.0
+    assert report["traceability"]["score"] == 20.0
+    assert report["task_ids"]["score"] == 25.0
+    assert report["needs_clarification"]["count"] == 0
+
+
+def test_marker_in_a_non_utf8_file_is_still_located():
+    notes = "Caf\xe9 notes\nA line holding NEEDS CLARIFICATION about the beans.\n"
+    with tempfile.TemporaryDirectory() as directory:
+        feature_dir = write_feature(directory, SPEC_WITH_FOUR_UNTRACED)
+        (feature_dir / "notes.md").write_bytes(notes.encode("latin-1"))
+        result = score(feature_dir)
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    assert report["needs_clarification"]["count"] == 1
+    assert report["needs_clarification"]["locations"] == [
+        {"file": "notes.md", "line": 2}
+    ]
