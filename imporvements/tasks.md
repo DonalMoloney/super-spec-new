@@ -245,28 +245,28 @@ Verify: `git check-ignore .claude/review/claude.json` prints the path; `git chec
 
 ---
 
-## G-07 — Item 9: observability Stop hook (working on)
+## G-07 — Item 9: observability Stop hook (merged: PR #31)
 
 Source: Part 2 item 9, Part 4.5. Effort: low. Depends on: none.
 Claude: `bdd-orchestrator`.
 Model: `bdd-orchestrator` runs `opus`.
 Codex: `codex:codex-rescue --wait`; then `codex review --base main`.
 
-- [ ] T071 Add `log-phase.sh`
+- [x] T071 Add `log-phase.sh`
 
 1. Create `.claude/hooks/log-phase.sh` from Part 4.5; read the phase from `.claude/.current-phase`; append to `.claude/telemetry.jsonl`; always exit 0.
 2. Add a test case: given `{"session_id":"abc"}` on stdin, one JSON line is appended and it parses.
 
 Verify: hook tests pass; `jq . .claude/telemetry.jsonl` parses the test line.
 
-- [ ] T072 Register the hook
+- [x] T072 Register the hook
 
 1. Add a `Stop` entry to `.claude/settings.json` calling `bash .claude/hooks/log-phase.sh`.
 2. Ignore `.claude/telemetry.jsonl` and `.claude/.current-phase` in `.gitignore`.
 
 Verify: `jq .hooks.Stop .claude/settings.json` prints the entry.
 
-- [ ] T073 Add the `jq` dashboard doc
+- [x] T073 Add the `jq` dashboard doc
 
 1. Create `.claude/hooks/README.md` (or extend it) with the three `jq` queries from Part 4.5, paths corrected to `.claude/`.
 
@@ -338,14 +338,14 @@ Verify: both commands run from a clean feature branch.
 
 ---
 
-## G-10 — Item 21: STRIDE lens and traceability matrix in the spec template (working on)
+## G-10 — Item 21: STRIDE lens and traceability matrix in the spec template (merged: PR #33)
 
 Source: Part 2 item 21, Part 3.10. Effort: low-medium. Depends on: none.
 Claude: `general-purpose`, then `work-verifier`.
 Model: `general-purpose` inherits the session model; `work-verifier` runs `opus`.
 Codex: `codex:codex-rescue --wait`; then `codex review --base main`.
 
-- [ ] T101 Add a `## Threat Model` section to `spec-template.md`
+- [x] T101 Add a `## Threat Model` section to `spec-template.md`
 
 1. Read `specflow/templates/spec-template.md` in full.
 2. Insert `## Threat Model` after `## Requirements`: a six-row STRIDE table (threat, abuse case, mitigation, or `N/A + reason`).
@@ -353,20 +353,20 @@ Codex: `codex:codex-rescue --wait`; then `codex review --base main`.
 
 Verify: `grep -n '^## Threat Model' specflow/templates/spec-template.md` prints one line.
 
-- [ ] T102 Add a `## Traceability` table
+- [x] T102 Add a `## Traceability` table
 
 1. Insert `## Traceability` after `## Success Criteria`: columns `Criterion ID`, `Test name`, `Status`.
 2. Add one guidance line: every criterion needs at least one named test before review Stage 1.
 
 Verify: the table header exists with the three columns.
 
-- [ ] T103 Update `checklist-template.md`
+- [x] T103 Update `checklist-template.md`
 
 1. Add two items: "STRIDE table filled or each row marked N/A" and "every criterion has a test in Traceability".
 
 Verify: both items appear in the template.
 
-- [ ] T104 Update the example and README
+- [x] T104 Update the example and README
 
 1. Add the two sections to `specflow/examples/static-landing-page/` spec so the example stays a golden run.
 2. Mention the sections in `README.md`.
