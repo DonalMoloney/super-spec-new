@@ -25,7 +25,7 @@
 **Purpose**: Create output directory and HTML5 boilerplate file
 
 - [x] T001 Create `web/` output directory per project structure in plan.md
-- [x] T002 Create `web/index.html` with HTML5 boilerplate — DOCTYPE, `<html lang="en">`, `<head>` with charset UTF-8, viewport meta, title "SpecFlow — Specification-Driven Development", and empty `<style>` tag in `web/index.html`
+- [x] T002 Create `web/index.html` with HTML5 boilerplate — DOCTYPE, `<html lang="en">`, `<head>` with charset UTF-8, viewport meta, title "SpecFlow — Specification-Driven Development", empty `<style>` tag in `web/index.html`
 
 **Checkpoint**: Directory and empty HTML shell exist
 
@@ -38,11 +38,11 @@
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
 - [x] T003 Add CSS reset/base styles — universal `box-sizing: border-box`, margin/padding normalization, body defaults — in `<style>` tag in `web/index.html`
-- [x] T004 Add CSS custom properties for color palette, spacing scale, and system font stacks (body: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`; code: `"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace`) per research R-004 in `web/index.html`
-- [x] T005 Add responsive typography using `clamp()` for headings and body text in `web/index.html`
-- [x] T006 Add max-width container utility class (`.container`) with centered layout and horizontal padding in `web/index.html`
-- [x] T007 Add semantic HTML skeleton — `<header>`, `<main>` with two `<section>` elements (id="features", id="workflow"), and `<footer>` — in `<body>` of `web/index.html`
-- [x] T008 Add base responsive breakpoints — `@media (min-width: 768px)` and `@media (min-width: 1024px)` — as empty media query blocks in `web/index.html`
+- [x] T004 Add CSS custom properties for color palette, spacing scale, system font stacks (body: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif`; code: `"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace`) per research R-004 in `web/index.html`
+- [x] T005 Add responsive typography using `clamp()` for headings, body text in `web/index.html`
+- [x] T006 Add max-width container utility class (`.container`) with centered layout, horizontal padding in `web/index.html`
+- [x] T007 Add semantic HTML skeleton — `<header>`, `<main>` with two `<section>` elements (id="features", id="workflow"), `<footer>` — in `<body>` of `web/index.html`
+- [x] T008 Add base responsive breakpoints — `@media (min-width: 768px)`, `@media (min-width: 1024px)` — as empty media query blocks in `web/index.html`
 
 **Checkpoint**: Foundation ready — semantic skeleton with reset, typography, and container exists; user story content can now be added
 
@@ -72,7 +72,7 @@
 
 ### Implementation for User Story 2
 
-- [x] T012 [US2] Add features section HTML inside `<section id="features">` — `<h2>` heading "Core Commands", five `<article class="card">` elements each with `<h3>` command name and `<p>` description per data-model.md static data instances — in `web/index.html`
+- [x] T012 [US2] Add features section HTML inside `<section id="features">` — `<h2>` heading "Core Commands", five `<article class="card">` elements each with `<h3>` command name, `<p>` description per data-model.md static data instances — in `web/index.html`
 - [x] T013 [US2] Add features grid CSS — `.card` styles (padding, background, border-radius, subtle shadow/border), section heading styles — in `web/index.html`
 - [x] T014 [US2] Add features grid responsive layout — mobile: `grid-template-columns: 1fr` (stacked); 768px: `repeat(2, 1fr)`; 1024px: `repeat(3, 1fr)` with second-row 2 cards centered — in `@media` blocks in `web/index.html`
 
@@ -92,7 +92,7 @@
 - [x] T016 [US3] Add workflow step indicator CSS — `<ol>` as flex container, `<li>` items with `::before` counter-based numbered circles, `::after` connecting lines between steps (last step no line) — in `web/index.html`
 - [x] T017 [US3] Add install snippet HTML — `<div id="install">` with `<code>` element containing `npm install -g specflow`, `tabindex="0"` for keyboard focusability per FR-017 — in `web/index.html`
 - [x] T018 [US3] Add install snippet CSS — monospace font stack (`var(--font-mono)`), distinct background, padding, border, overflow-x for long text — in `web/index.html`
-- [x] T019 [US3] Add workflow and install responsive adjustments — mobile: vertical step indicator stack; 768px: horizontal step indicator, wider code block; 1024px: full-width layout — in `@media` blocks in `web/index.html`
+- [x] T019 [US3] Add responsive adjustments for the workflow, install sections — mobile: vertical step indicator stack; 768px: horizontal step indicator, wider code block; 1024px: full-width layout — in `@media` blocks in `web/index.html`
 
 **Checkpoint**: Workflow diagram shows 5-step flow with visual connectors; install snippet is displayed, keyboard-accessible, and copyable
 
@@ -102,16 +102,16 @@
 
 **Purpose**: Footer, print stylesheet, accessibility, and validation — improvements that span all user stories
 
-- [x] T020 Add footer HTML with minimal content (project name, "Specification-driven development") and footer CSS in `web/index.html`
-- [x] T021 Add `@media print` stylesheet — hide decorative backgrounds/borders/shadows, set `body` to serif font, remove max-width constraint, force single-column layout, preserve install snippet with visible border, show content in document order per FR-014 and research R-007 — in `web/index.html`
+- [x] T020 Add footer HTML with minimal content (project name, "Specification-driven development"), footer CSS in `web/index.html`
+- [x] T021 Add `@media print` stylesheet — hide decorative backgrounds/borders/shadows, set `body` to serif font, remove max-width constraint, force single-column layout, preserve install snippet with visible border, show content in document order per FR-014, research R-007 — in `web/index.html`
 - [x] T022 Add accessibility CSS — `:focus-visible` outlines on interactive elements (CTA button, install snippet), `forced-colors` media query adjustments (explicit borders, no background-only information) per FR-016, FR-017, FR-018 — in `web/index.html`
-- [ ] T023 Verify keyboard navigation — Tab reaches "Get Started" button and install snippet; Enter/Space activates button; focus indicators visible and meet WCAG AA contrast — manual test in `web/index.html` *(requires browser — cannot automate)*
+- [ ] T023 Verify keyboard navigation — Tab reaches "Get Started" button, install snippet; Enter/Space activates button; focus indicators visible with WCAG AA contrast — manual test in `web/index.html` *(requires browser — cannot automate)*
 - [ ] T024 Validate HTML with W3C Markup Validation Service — zero errors required per quickstart.md — submit `web/index.html` *(requires browser — cannot automate)*
 - [ ] T025 Validate accessibility with axe-core browser extension — zero violations required per quickstart.md — run against `web/index.html` *(requires browser — cannot automate)*
 - [x] T026 Check page weight — `wc -c web/index.html` must return ≤65536 bytes (64 KB) per Constitution quality standard
-- [ ] T027 Validate responsive rendering at 320px, 768px, and 1280px viewport widths per quickstart.md — verify legibility, layout, and no horizontal overflow in `web/index.html` *(requires browser)*
+- [ ] T027 Validate responsive rendering at 320px, 768px, 1280px viewport widths per quickstart.md — verify legibility, layout, no horizontal overflow in `web/index.html` *(requires browser)*
 - [ ] T028 Validate print output — browser Print Preview shows linear, ink-friendly flow with decorative elements hidden per FR-014 — test `web/index.html` *(requires browser)*
-- [ ] T029 Validate `file://` protocol rendering — open `web/index.html` directly from filesystem (no HTTP server) and verify identical rendering per FR-015 *(verified: no external resources, no protocol-relative URLs, no JS — rendering will be identical)*
+- [ ] T029 Validate `file://` protocol rendering — open `web/index.html` directly from filesystem (no HTTP server) to verify identical rendering per FR-015 *(verified: no external resources, no protocol-relative URLs, no JS — rendering will be identical)*
 
 **Checkpoint**: Page is production-ready — accessible, printable, under 64 KB, valid HTML, zero axe violations
 

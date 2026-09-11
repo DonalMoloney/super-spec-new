@@ -19,6 +19,8 @@ description: "Task list template for feature implementation"
 - **[REVIEW]**: Requires code review before proceeding to next task
 - **[SUBAGENT]**: Can be delegated to a subagent for parallel execution
 
+**One outcome per task**: a description that needs "and" is two tasks. Split it.
+
 **Story labels**: `[US1]`, `[US2]`, etc. map tasks to user stories for traceability.
 
 ## Path Conventions
@@ -53,7 +55,7 @@ description: "Task list template for feature implementation"
 
 - [ ] T001 Create project structure per implementation plan
 - [ ] T002 Initialize project with dependencies
-- [ ] T003 [P] Configure linting and formatting tools
+- [ ] T003 [P] Configure the linter
 
 **Execution notes**: No special discipline required. Verify project builds before proceeding.
 
@@ -67,8 +69,8 @@ description: "Task list template for feature implementation"
 
 - [ ] T004 [TDD] Setup core data models/entities
 - [ ] T005 [P] Implement shared utilities
-- [ ] T006 [P] [REVIEW] Setup API routing and middleware
-- [ ] T007 Configure error handling and logging infrastructure
+- [ ] T006 [P] [REVIEW] Set up API routing
+- [ ] T007 Configure error handling
 
 **Execution notes**: For tasks marked [TDD], write tests first, verify they fail, then implement.
 For tasks marked [REVIEW], pause for human review of API contracts before consumers are built.
@@ -95,7 +97,7 @@ For tasks marked [REVIEW], pause for human review of API contracts before consum
 - [ ] T011 [P] [US1] Create [Entity2] model in src/models/
 - [ ] T012 [US1] Implement [Service] in src/services/ (depends on T010, T011)
 - [ ] T013 [US1] Implement [endpoint/feature] in src/
-- [ ] T014 [US1] [REVIEW] Add validation and error handling
+- [ ] T014 [US1] [REVIEW] Add input validation
 
 **Execution notes**: If `subagent-driven-development` is available, T010 and T011 can be
 dispatched as parallel subagents. T014 requires review before proceeding.
@@ -129,7 +131,7 @@ dispatched as parallel subagents. T014 requires review before proceeding.
 **Purpose**: Improvements that affect multiple user stories
 
 - [ ] TXXX [P] [SUBAGENT] Documentation updates
-- [ ] TXXX Code cleanup and refactoring
+- [ ] TXXX Code cleanup
 - [ ] TXXX [P] Performance optimization
 - [ ] TXXX [REVIEW] Security hardening
 - [ ] TXXX Run full test suite: all tests must pass

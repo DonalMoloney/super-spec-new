@@ -82,6 +82,14 @@ printf '# Tasks\n- [ ] T002 do b\n' > tasks.md
 check "completed id dropped from tasks.md blocked" 2 "$(lint tasks.md)"
 rm -f progress.yml
 check "dropped id allowed with no progress.yml" 0 "$(lint tasks.md)"
+printf -- '- [ ] T001 Add the login form and validate its fields\n' > tasks.md
+check "compound task line joined by and fails"   2 "$(lint tasks.md)"
+printf -- '- [ ] T001 Add the login form\n- [ ] T002 Validate the login form fields\n' > tasks.md
+check "singular task lines pass"                  0 "$(lint tasks.md)"
+printf -- '- [ ] T001 Add `and` to the reserved-word list in `lexer.py`\n' > tasks.md
+check "and inside backticks is not a compound"   0 "$(lint tasks.md)"
+printf -- '- [ ] T001 Wire the handler\nRun the linter and the tests before the checkpoint.\n' > tasks.md
+check "and in prose outside a task line passes"  0 "$(lint tasks.md)"
 printf '# Checklist\n- [ ] Confirm the requirement.\n' > checklist-quality.md
 check "unchecked checklist passes"              0 "$(lint checklist-quality.md)"
 printf '# Checklist\n- [x] Confirm the requirement.\n' > checklist-quality.md

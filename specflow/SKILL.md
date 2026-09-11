@@ -333,8 +333,9 @@ blueprint generation process to enhance the plan's task structure section. See
    - `[TDD]`: must follow RED-GREEN-REFACTOR discipline
    - `[REVIEW]`: needs code review before proceeding
    - `[SUBAGENT]`: can be delegated to a subagent
-6. Define phase dependencies and checkpoint gates
-7. Write to `specs/NNN-feature-name/tasks.md`
+6. Keep each task singular: one outcome per line; split a description that needs "and"
+7. Define phase dependencies and checkpoint gates
+8. Write to `specs/NNN-feature-name/tasks.md`
 
 ---
 
