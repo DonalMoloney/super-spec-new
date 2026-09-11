@@ -108,6 +108,21 @@ Given/When/Then blocks and `bdd-orchestrator`'s checklist items both follow this
 - When a change touches `extension.yml`, `commands/`, or `templates/`, run both
   validate scripts before committing — CI will otherwise fail on the same checks.
 
+## Standards
+
+Every agent, on either target surface, produces work against the three files under
+`standards/`. Read the one that matches the output before starting; reviewers and
+`work-verifier` reject against them.
+
+- [`standards/code.md`](standards/code.md): how code is developed. TDD order, scope
+  discipline, naming, error handling, comments, tests, commits, and a list of
+  patterns rejected on sight.
+- [`standards/documentation.md`](standards/documentation.md): how prose is written.
+  Structure, tone, a banned-phrase table, and per-document rules for README,
+  CHANGELOG, ADR, PR description, and hand-off report.
+- [`standards/presentations.md`](standards/presentations.md): how slide decks are
+  formatted. Marp front matter, per-slide limits, deck shape, and a render check.
+
 ## Agent behavior guidelines
 
 Adapted from [andrej-karpathy-skills CLAUDE.md](https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md).
