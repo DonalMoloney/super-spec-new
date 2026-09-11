@@ -96,3 +96,35 @@ model families; alias versions can change. Actual cost savings remain unmeasured
 - Consequences: the gate stays a mechanical check. Without a critic stage an author
   can clear a Critical by writing a rebuttal; `risk-classifier.sh` decides when the
   critic stage runs.
+
+## ADR-0007: A task keeps its ID when the outcome matches, not the text or the position
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: regenerating `tasks.md` after a spec change has to decide which
+  regenerated task is the old one. Matching on task text loses the ID on any
+  reword. Matching on list position renumbers every task after an insertion,
+  which is the failure the stable IDs exist to prevent.
+- Decision: identity is the outcome a task names. A regenerated task keeps the
+  ID of the existing task with the same outcome, whatever the wording or the
+  position. IDs are append-only: a new task takes the next ID above the highest
+  ever used, and a retired ID is never handed to a different task.
+- Consequences: matching is a judgment the command makes, so the diff summary
+  in ADR-0005 is what makes it reviewable. Append-only allocation leaves gaps in
+  the numbering, which is the cost of never invalidating `progress.yml`.
+
+## ADR-0008: The tasks diff summary always prints and blocks only on a completed ID
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: `/speckit.specflow.tasks` prints added, removed, and renumbered IDs
+  before writing. Blocking every regeneration on a confirmation prompt stalls
+  the automated pipeline; blocking on nothing lets a destructive regeneration
+  through unseen.
+- Decision: print the summary on every regeneration. Stop for confirmation only
+  when a removed or renumbered ID is one that `progress.yml` records as
+  complete, because that is the only change that destroys recorded work.
+  Additions, removals of unstarted tasks, and reordering write without a prompt.
+- Consequences: the common regeneration stays unattended. The destructive case
+  needs a human. `artifact-lint.sh` catches the same case after the write, so a
+  regeneration that skips the prompt still fails the gate.

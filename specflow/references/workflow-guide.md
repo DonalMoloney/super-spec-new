@@ -428,6 +428,29 @@ Each phase has a recommended token ceiling and suggested model class. Headless r
 
 ---
 
+## Hotfix path
+
+A defect in a released feature takes the hotfix path. The hotfix path skips
+Phase 2 brainstorming and keeps every gate.
+
+1. Branch from the release tag that carries the defect.
+2. Write a failing test that reproduces the defect before changing any code.
+3. Write the smallest fix that turns the test green.
+4. Add tasks for the fix to the feature's `tasks.md` with new IDs. Completed
+   IDs keep their numbers.
+5. Remove `.clarified` and `.analyzed`, then run `/speckit.clarify` and
+   `/speckit.analyze` again. A hotfix changes the spec, so the analysis that
+   preceded it no longer holds.
+6. Run the merge gate. The merge gate is the one step the hotfix path cannot
+   skip, whatever the severity of the defect.
+7. Append a row to the spec's `## Changelog`: the new version, the date, and
+   one line naming the defect and the fix.
+
+Phase 2 drops out because a hotfix has one known outcome and nothing left to
+explore. Every other phase runs in its usual order.
+
+---
+
 ## Session Resumability
 
 Specflow is designed to survive session interruptions. All state lives in plain-text

@@ -29,6 +29,15 @@ case "$(basename "$path")" in
     if grep -E '^- \[[ xX]\].*\[P\]' "$path" | grep -vqE '^- \[[ xX]\] T[0-9]{3}'; then
       err "malformed [P] marker: a checkbox line with [P] must start with '- [ ] TNNN'"
     fi
+    # A regenerated tasks.md that drops a completed id orphans its progress.yml entry.
+    progress="$(dirname "$path")/progress.yml"
+    if [ -f "$progress" ]; then
+      done_ids="$(grep -E '^[[:space:]]*T[0-9]{3}:[[:space:]]*complete[[:space:]]*$' "$progress" | tr -d '[:space:]' | cut -d: -f1 || true)"
+      for id in $done_ids; do
+        grep -Eq "(^|[^[:alnum:]])$id([^[:digit:]]|$)" "$path" \
+          || err "progress.yml records $id complete, but $id is absent from tasks.md. Restore the id or clear its progress.yml entry."
+      done
+    fi
     ;;
 esac
 [ "$fail" -eq 0 ] || exit 2

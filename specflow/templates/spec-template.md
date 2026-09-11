@@ -155,3 +155,15 @@
 - Identified missing requirement: account lockout after 5 failed attempts
 **Spec updates**: Added FR-006 (rate limiting), updated US1 acceptance scenarios
 -->
+
+## Changelog
+
+<!--
+  One row per spec version, newest last. Add a row whenever the spec changes
+  after its first approval, then remove `.clarified` and `.analyzed` and rerun
+  /speckit.clarify and /speckit.analyze.
+-->
+
+| Version | Date | Summary |
+|---------|------|---------|
+| 0.1.0 | [DATE] | Initial draft. |
