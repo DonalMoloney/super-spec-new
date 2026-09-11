@@ -508,14 +508,14 @@ Claude: `bdd-orchestrator` for the script; then `general-purpose` for the protoc
 Model: `bdd-orchestrator` runs `opus`; `general-purpose` inherits the session model.
 Codex: implementation counterpart in the protocol; `codex:codex-rescue --background` for the second worktree.
 
-- [ ] T151 Write `diff-impl.sh`
+- [x] T151 Write `diff-impl.sh`
 
 1. Create `.claude/hooks/diff-impl.sh <spec-dir>`: creates `worktrees/<feature>-a` and `-b`, prints the two paths and the shared test command.
 2. Test: on a temp repo it creates two worktrees on distinct branches.
 
 Verify: hook tests pass.
 
-- [ ] T152 Write the protocol
+- [x] T152 Write the protocol
 
 1. Add "Differential implementation" to `workflow-guide.md`: worktree A via `implementation-engineer`, worktree B via `codex:codex-rescue`, run A's tests on B and B's tests on A, list every divergence as an Open Question in `spec.md`.
 2. State the trigger rule: only when `risk-classifier.sh` prints `HIGH` or the spec has more than three open questions.

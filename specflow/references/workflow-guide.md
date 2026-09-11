@@ -451,6 +451,40 @@ explore. Every other phase runs in its usual order.
 
 ---
 
+## Differential implementation
+
+Two executors implement the same spec in separate worktrees, then each side runs
+the other's tests. Where the two implementations disagree, the spec is ambiguous.
+The run pays for two implementations, so it is not the default Phase 5 path.
+
+### Trigger
+
+Run it only when one of these holds. Otherwise take the normal Phase 5 path.
+
+- `.claude/hooks/risk-classifier.sh` prints `HIGH` for the change. Its other
+  value is `STANDARD`.
+- The feature's `spec.md` lists more than three open questions.
+
+### Steps
+
+1. Create the worktrees: `bash .claude/hooks/diff-impl.sh specs/NNN-feature-name`.
+   It prints the two paths and the test command both sides run. The script is not
+   part of the extension archive a consuming project installs; without it, run
+   `git worktree add -b <feature>-a worktrees/<feature>-a HEAD` and the same for
+   `-b`.
+2. Implement worktree A with `implementation-engineer`, working from `spec.md`.
+3. Implement worktree B with `codex:codex-rescue`, working from the same
+   `spec.md`. Neither executor sees the other's diff.
+4. Run A's tests in worktree B, then B's tests in worktree A.
+5. Collect the divergences: every test that passes in its own worktree and fails
+   in the other, plus every observable behavior difference the tests miss.
+6. Append one row per divergence to the spec's `## Open Questions` table, with
+   the failing test name opening the Question column. A divergence names a gap in
+   the spec, not a bug in one worktree, until the question is answered.
+7. Answer the questions, keep one worktree, and delete the other with its branch.
+
+---
+
 ## Session Resumability
 
 Specflow is designed to survive session interruptions. All state lives in plain-text
