@@ -70,6 +70,13 @@ printf '# Tasks\n- [ ] do a without an id\n' > tasks.md
 check "tasks without T-ids blocked"             2 "$(lint tasks.md)"
 printf '# Tasks\n- [ ] T001 do a\n- [ ] [P] do b\n' > tasks.md
 check "malformed [P] line blocked"              2 "$(lint tasks.md)"
+printf '# Tasks\n- [x] T001 do a\n- [ ] T002 do b\n' > tasks.md
+printf 'spec: 001-x\nphases:\n  - phase: 1\n    tasks:\n      T001: complete\n' > progress.yml
+check "completed id still in tasks.md passes"   0 "$(lint tasks.md)"
+printf '# Tasks\n- [ ] T002 do b\n' > tasks.md
+check "completed id dropped from tasks.md blocked" 2 "$(lint tasks.md)"
+rm -f progress.yml
+check "dropped id allowed with no progress.yml" 0 "$(lint tasks.md)"
 printf '# Checklist\n- [ ] Confirm the requirement.\n' > checklist-quality.md
 check "unchecked checklist passes"              0 "$(lint checklist-quality.md)"
 printf '# Checklist\n- [x] Confirm the requirement.\n' > checklist-quality.md
