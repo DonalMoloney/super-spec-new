@@ -42,13 +42,13 @@ effort flags stay unset unless the group says otherwise.
 
 ---
 
-## G-01 — Repair the two known `main` failures (working on)
+## G-01 — Repair the two known `main` failures
 
 Source: `open-questions.md` (both items). Effort: low. Depends on: none.
 Claude: `bdd-orchestrator` (the fix is script behavior; hook tests exist as a pattern).
 Codex: `codex:codex-rescue --wait` with the two tasks below; then `codex review --base main`.
 
-- [ ] T011 Scope the namespace regex to the `commands:` block
+- [x] T011 Scope the namespace regex to the `commands:` block
 
 1. Read `specflow/scripts/validate-extension-metadata.py` and find the `^    - name:` regex.
 2. Write a failing test: a minimal `extension.yml` with a `provides.templates` entry named `constitution-template` must pass validation. Put it in `specflow/scripts/tests/test_validate_extension_metadata.py` (create the dir).
@@ -57,7 +57,7 @@ Codex: `codex:codex-rescue --wait` with the two tasks below; then `codex review 
 
 Verify: `cd specflow && python3 scripts/validate-extension-metadata.py` exits 0 and the new test passes.
 
-- [ ] T012 Make `e2e-smoke.sh` work with current spec-kit
+- [x] T012 Make `e2e-smoke.sh` work with current spec-kit
 
 1. Read `specflow/scripts/e2e-smoke.sh` and locate the `specify init ... --no-git` call.
 2. Run `uvx --from git+https://github.com/github/spec-kit.git specify init --help` and confirm which git flag exists today.
@@ -66,7 +66,7 @@ Verify: `cd specflow && python3 scripts/validate-extension-metadata.py` exits 0 
 
 Verify: `cd specflow && bash scripts/e2e-smoke.sh` exits 0.
 
-- [ ] T013 Close the open questions
+- [x] T013 Close the open questions
 
 1. Delete both resolved items from `open-questions.md`.
 2. If T012 pinned a ref, append ADR-0003 to `decisions.md`.
