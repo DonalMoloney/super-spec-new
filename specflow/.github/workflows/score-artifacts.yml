@@ -1,0 +1,96 @@
+name: Score artifacts
+
+# The goldens under examples/ only drift when a command, a template, or the
+# agent squad that drives them changes, so this replay is path-filtered. The
+# filter lives in its own workflow because `paths:` is workflow-level: putting
+# it in ci.yml would also gate the metadata and archive validation jobs, which
+# must run on every change.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "commands/**"
+      - "templates/**"
+      - ".claude/**"
+  pull_request:
+    paths:
+      - "commands/**"
+      - "templates/**"
+      - ".claude/**"
+
+jobs:
+  score:
+    name: Score golden artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run scorer unit tests
+        run: |
+          set -euo pipefail
+          pip install pytest
+          python3 -m pytest scripts/tests/test_score_artifacts.py -q
+
+      - name: Score both goldens
+        run: |
+          set -euo pipefail
+          python3 scripts/score-artifacts.py examples/static-landing-page/specs/001-static-landing-page > landing-page.json
+          python3 scripts/score-artifacts.py examples/seeded-bug > seeded-bug.json
+
+      - name: Assert golden scores held
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          # The landing page is the clean golden and must stay perfect; the
+          # seeded-bug golden carries one deliberate untraced criterion, so an
+          # empty `untraced` there means the scorer stopped reporting the gap.
+          EXPECTATIONS = (
+              ("landing-page.json", "spec_sections.score", 100.0),
+              ("landing-page.json", "traceability.score", 100.0),
+              ("landing-page.json", "task_ids.score", 100.0),
+              ("landing-page.json", "traceability.untraced", []),
+              ("landing-page.json", "needs_clarification.count", 1),
+              ("seeded-bug.json", "traceability.untraced", ["SC-003"]),
+          )
+
+
+          def lookup(report, dotted_key):
+              value = report
+              for key in dotted_key.split("."):
+                  value = value[key]
+              return value
+
+
+          reports = {
+              name: json.loads(Path(name).read_text(encoding="utf-8"))
+              for name in {name for name, _, _ in EXPECTATIONS}
+          }
+
+          failures = 0
+          for name, dotted_key, expected in EXPECTATIONS:
+              found = lookup(reports[name], dotted_key)
+              if found == expected:
+                  continue
+              failures += 1
+              print(f"FAIL: {name} {dotted_key}: expected {expected!r}, found {found!r}")
+
+          if failures:
+              raise SystemExit(
+                  f"{failures} golden score assertion(s) failed. Re-run "
+                  "scripts/score-artifacts.py on the named golden and either fix "
+                  "the artifact or update the expectation in this workflow."
+              )
+
+          print("All golden score assertions passed.")
+          PY

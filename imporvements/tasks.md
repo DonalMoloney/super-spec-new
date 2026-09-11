@@ -430,27 +430,27 @@ Verify: `grep -n 'handoff.md' specflow/commands/execute.md specflow/references/w
 
 ---
 
-## G-13 — Items 12 and 19: golden-run scorer and eval replay (working on)
+## G-13 — Items 12 and 19: golden-run scorer and eval replay (merged: PR #18)
 
 Source: Part 2 items 12, 19. Effort: medium-high. Depends on: G-01 (smoke test must pass).
 Claude: `bdd-orchestrator`.
 Codex: `codex:codex-rescue --background`; then `codex review --base main`.
 
-- [ ] T131 Write `score-artifacts.py`
+- [x] T131 Write `score-artifacts.py`
 
 1. Create `specflow/scripts/score-artifacts.py`: takes a `specs/NNN/` dir; scores spec sections present, criteria with a traceability row, tasks with stable IDs, `NEEDS CLARIFICATION` count; prints JSON.
 2. Write tests first in `specflow/scripts/tests/test_score_artifacts.py` using `examples/static-landing-page/` as the fixture.
 
 Verify: `python3 -m pytest specflow/scripts/tests -q` passes; the example scores 100 on sections.
 
-- [ ] T132 Seed one known-bad golden
+- [x] T132 Seed one known-bad golden
 
 1. Add `specflow/examples/seeded-bug/` copied from the landing page with one deliberate spec gap (a criterion with no test).
 2. The scorer must report that gap.
 
 Verify: `python3 specflow/scripts/score-artifacts.py specflow/examples/seeded-bug` shows one untraced criterion.
 
-- [ ] T133 Replay in CI on relevant changes
+- [x] T133 Replay in CI on relevant changes
 
 1. Add a job to `specflow/.github/workflows/ci.yml` that runs the scorer on both examples when `commands/`, `templates/`, or `.claude/` change.
 2. Fail if the landing page score drops or the seeded gap goes unreported.
