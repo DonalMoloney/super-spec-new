@@ -4,8 +4,9 @@ This file lists, for each part of the extension measured in `diff.md`, the ways
 it can diverge from upstream superspec without breaking spec-kit's install
 contract. Read it when choosing where the next roadmap item lands. `tasks.md`
 holds the committed work; this file holds the option space. Percentages are the
-real (rebrand-normalized) change from the table in `diff.md`, measured
-2026-09-11 against upstream `c20ac6c`.
+real (rebrand-normalized) change measured 2026-09-11 against the vendored
+upstream at the root commit (`bda4ef0`, upstream `c20ac6c`). No `diff.md`
+exists; the Measured state section below holds the per-file numbers.
 
 Three constraints apply to every part. A move that violates one is not an
 option.
@@ -46,11 +47,11 @@ today because `before-execute.md` gained two gates.
 - **Tighten** `after-tasks.md` to read `progress.yml` before writing, as
   `before-execute.md` already does at its step 6. It is the one hook that
   assumes a fresh run. Verify: the hook's Process lists a progress-state read
-  step. Claimed by: none.
+  step. Claimed by: D-01 (working on).
 - **Extend** `after-execute.md` to write a findings file the review command
   reads, closing implement to review. Today it only suggests running review.
-  Verify: `review.md` names the file as an input. Claimed by: none. G-17 closes
-  the other direction, review to spec.
+  Verify: `review.md` names the file as an input. Claimed by: D-02 (working on).
+  G-17 closes the other direction, review to spec.
 - **Add** a `before_tasks` hook that stops when the spec's Open Questions table
   has unresolved rows. Spec-kit fires `hooks.before_tasks`, and upstream never
   registered one. Not cheap: it changes the hook count that
@@ -78,7 +79,7 @@ update.
   `.claude/hooks/`, so the shipped command needs a prose rule (file count, path
   patterns) it can apply on Copilot, and may use the script only when present.
   Verify: the fallback tier rule is in the command file. Claimed by: G-06
-  builds the script; the command change is unclaimed.
+  built the script; D-03 (working on) adds the command rule.
 - **Extend** `brainstorm.md` to write resolved questions to `decisions.md` as
   ADR-lite entries, not only read them. Verify: a resolved question appears in
   `decisions.md` after a run. Claimed by: none. G-17 T172 covers the read.
@@ -120,7 +121,7 @@ against them structurally.
   (no hooks, no subagents, no `model:` frontmatter) and which fallback each
   command uses there. `.github/copilot-instructions.md` covers this repo's
   contributors; nothing in `specflow/references/` covers the runtime. Upstream
-  has no Copilot reference. Verify: one row per command. Claimed by: none.
+  has no Copilot reference. Verify: one row per command. Claimed by: D-03 (working on).
 
 ## templates/ (1.3% real)
 
@@ -157,10 +158,10 @@ reaches an installed extension. G-06's merge gate and risk classifier live under
 - **Add** a golden-run scorer that replays `examples/static-landing-page/` and
   diffs the output. Verify: G-13's Verify condition. Claimed by: G-13.
 - **Tighten** `e2e-smoke.sh` to assert the Process-step count of each command
-  file (today: status 8, brainstorm 7, tasks 7, execute 9, review 6) and every
+  file (on 2026-09-11: status 8, brainstorm 7, tasks 9, execute 9, review 6) and every
   marker in the Gate markers table, so a dropped step fails before merge.
   Verify: deleting one step from any command fails the smoke test. Claimed by:
-  none.
+  D-04 (working on, after D-01 to D-03 merge).
 
 ## examples/ (0.9% real)
 
@@ -202,15 +203,72 @@ install for every user (upstream issue #6).
 - **Remove** the `~/.codex/skills/` install instructions from `README.md`.
   `AGENTS.md` forbids Codex paths; upstream targets Codex. G-18 records the
   scope decision but edits only the playbook, not `specflow/`. Verify: grep
-  for `codex` in `specflow/README.md` is empty. Claimed by: none.
+  for `codex` in `specflow/README.md` is empty. Claimed by: D-05 (working on).
 - **Tighten** CI to run `e2e-smoke.sh`. CI validates metadata, the archive, and
   a live install, and never runs the smoke test, which is the only check that
   catches a Process-step regression. Verify: a CI run shows the smoke step.
-  Claimed by: none.
+  Claimed by: D-04 (working on).
 - **Extend** `CHANGELOG.md` with an Unreleased section every merged group
   appends to. The file opens at 1.0.2 and records nothing since. Verify: the
-  section exists and each merged PR adds a line. Claimed by: none.
+  section exists and each merged PR adds a line. Claimed by: D-05 (working on).
 - **Replace** `extension.yml`: not an option. Its schema belongs to spec-kit.
+
+## Measured state, 2026-09-11
+
+Every roadmap group G-01 to G-18 is merged, so every `Claimed by` bullet above
+is done and every `Claimed by: none` bullet is still open. Diffing the vendored
+upstream against `specflow/` with the rename normalized gives these per-file
+change rates. Files not listed are byte-identical after the rename: `SKILL.md`,
+`extension.yml`, `CHANGELOG.md`, `status.md`, both `after-*` hooks,
+`plan-template.md`, and `tasks-template.md`.
+
+| File | Changed lines |
+|------|---------------|
+| `commands/hooks/before-execute.md` | 51% |
+| `commands/execute.md` | 31% |
+| `README.md` | 23%, nearly all the removed Chinese section |
+| `references/workflow-guide.md` | 17% |
+| `commands/tasks.md`, `templates/spec-template.md` | 12% |
+| `commands/brainstorm.md`, `commands/review.md` | 10%, 7% |
+
+The installable payload stays close to upstream. The fork's divergence lives
+in `.claude/`, `standards/`, `scripts/`, and CI, which the archive strips.
+
+Open bullets with the smallest blast radius, in order: the `after-tasks.md`
+progress read, the `after-execute.md` findings file, the `review.md` prose
+risk tier, the CI smoke step, the CHANGELOG Unreleased section, and the Codex
+lines in `specflow/README.md` (lines 9, 41, 47, 48).
+
+## Renames
+
+D-05 (working on) renames the manifest display name and rewrites the manifest
+strings listed in the table below.
+
+Names are asserted in more files than behavior is. Each row states where a
+rename lands, so the cost is known before the move.
+
+| Name | Asserted in | Cost |
+|------|-------------|------|
+| Extension id `specflow` | 27 files: manifest, 5 commands, 3 hooks, `SKILL.md`, 4 templates, both e2e scripts, `ci.yml`, validator test, dispatcher skill, repo docs | Not an option |
+| `name: "Superpowers Bridge"` and the manifest description | `extension.yml`, `README.md`, `CHANGELOG.md`, `superpowers-bridge.md`, validator test, `AGENTS.md`, `copilot-instructions.md` | Cheap; "bridges" is a banned metaphor |
+| Manifest strings "Enhanced" (6), "Deep-dive" (2), "Intelligent" (1) | Nothing greps them | Free Tighten |
+| `references/superpowers-bridge.md` | 10 citations in commands, `SKILL.md`, README; both validators; the `CLAUDE.md` import | About 8 files |
+| `commands/hooks/*.md` file names | Nothing; the manifest maps hooks to commands | Free |
+| `commands/*.md` file names | The `file:` field in `extension.yml` | Cheap |
+| `templates/*.md` file names | Spec-kit reads `.specify/templates/<name>`; `e2e-smoke.sh` lines 82 to 84 | Not an option |
+
+Stale upstream names to fix regardless of any rename:
+
+- `presentation/marp-deck/deck.md` line 64 says `specify extension add superspec`
+  and `/speckit.superspec.status`. Verify: grep for `superspec` in the deck is
+  empty. Claimed by: D-05 (working on).
+- `.claude/review/schema.json` line 3 titles the schema `SuperspecReviewFindings`.
+  Verify: the hook tests pass after the rename. Claimed by: D-05 (working on).
+- `validate-extension-metadata.py` line 147 checks the README for a
+  `superpowers-bridge --from` string that no README has carried since the
+  rename. Verify: the check is deleted and the validator passes. Claimed by: D-05 (working on).
+- `specflow/LICENSE` keeps "Superspec Contributors". Keep it; MIT requires the
+  original notice.
 
 ## Choosing
 
