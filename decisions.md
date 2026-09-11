@@ -257,3 +257,22 @@ model families; alias versions can change. Actual cost savings remain unmeasured
 - Consequences: the scorer test keeps its expectation. A reviewer who sees a
   marker in a template checks whether the line is an example; a marker on any
   other template line is still rejected.
+
+## ADR-0016: The compound-task lint is blunt by design
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: `AGENTS.md` requires one outcome per task and says a description
+  that needs "and" is two tasks. `artifact-lint.sh` now rejects a `tasks.md`
+  line with a whole-word "and" outside backticks. The golden example tripped
+  on 13 of its 30 task lines, most of them enumerations such as "charset,
+  viewport meta, and title" that name one outcome.
+- Decision: keep the blunt rule and reword the lines. An allowlist or a
+  grammar heuristic would need judgment bash cannot make, and a false positive
+  costs one reword while a false negative lets a bundled task through. The
+  golden example and `tasks-template.md` model the rule; `seeded-bug/`
+  stays a byte copy of the golden.
+- Consequences: an enumeration in a task line is written as a comma list
+  without "and". A task that needs "and" to make sense is split, which is
+  the rule's intent.
+

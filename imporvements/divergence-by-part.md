@@ -50,7 +50,7 @@ today because `before-execute.md` gained two gates.
   step. Claimed by: D-01 (working on).
 - **Extend** `after-execute.md` to write a findings file the review command
   reads, closing implement to review. Today it only suggests running review.
-  Verify: `review.md` names the file as an input. Claimed by: D-02 (working on).
+  Verify: `review.md` names the file as an input. Claimed by: D-02 (done, PR #57).
   G-17 closes the other direction, review to spec.
 - **Add** a `before_tasks` hook that stops when the spec's Open Questions table
   has unresolved rows. Spec-kit fires `hooks.before_tasks`, and upstream never
@@ -70,16 +70,16 @@ update.
 
 - **Tighten** `status.md` to report `.clarified` and `.analyzed` per feature.
   It infers phase from file presence and has zero real change today. Verify:
-  `e2e-smoke.sh` asserts the marker column in status output. Claimed by: D-07 (working on).
+  `e2e-smoke.sh` asserts the marker column in status output. Claimed by: D-07 (done, PR #55).
 - **Tighten** `tasks.md` to reject a generated task line containing " and ",
   enforcing the singular-task rule from `AGENTS.md` at generation time. Verify:
-  a fixture with a compound task fails the command. Claimed by: D-06 (working on).
+  a fixture with a compound task fails the command. Claimed by: D-06 (done, PR #58).
 - **Extend** `review.md` with a risk tier (LOW, MEDIUM, HIGH) that selects which
   review dimensions run. Constraint 3 applies: G-06 builds its classifier under
   `.claude/hooks/`, so the shipped command needs a prose rule (file count, path
   patterns) it can apply on Copilot, and may use the script only when present.
   Verify: the fallback tier rule is in the command file. Claimed by: G-06
-  built the script; D-03 (working on) adds the command rule.
+  built the script; D-03 (done, PR #59) added the command rule.
 - **Extend** `brainstorm.md` to write resolved questions to `decisions.md` as
   ADR-lite entries, not only read them. Verify: a resolved question appears in
   `decisions.md` after a run. Claimed by: none. G-17 T172 covers the read.
@@ -100,7 +100,7 @@ The largest single behavior contract in the extension and the file a
   names in both files match by grep. Claimed by: none.
 - **Extend** with a "Target surface" section stating which steps are Claude
   Code only and what Copilot does instead. Verify: every step marked Claude-only
-  has a named fallback. Claimed by: D-03 (working on).
+  has a named fallback. Claimed by: D-03 (done, PR #59).
 - **Replace**: not warranted. Spec-kit's skill loader expects the upstream
   section shape.
 
@@ -121,7 +121,7 @@ against them structurally.
   (no hooks, no subagents, no `model:` frontmatter) and which fallback each
   command uses there. `.github/copilot-instructions.md` covers this repo's
   contributors; nothing in `specflow/references/` covers the runtime. Upstream
-  has no Copilot reference. Verify: one row per command. Claimed by: D-03 (working on).
+  has no Copilot reference. Verify: one row per command. Claimed by: D-03 (done, PR #59).
 
 ## templates/ (1.3% real)
 
@@ -290,7 +290,7 @@ two worktrees never edit one file.
 | `templates/plan-template.md` | 0% | `prose-rephraser` | none |
 | `templates/tasks-template.md` | 0% | `prose-rephraser` | none |
 | `scripts/validate-release-archive.py` | 29% | `script-refactorer` | done |
-| `commands/hooks/after-execute.md` | 0% | `prose-rephraser` | D-02 first |
+| `commands/hooks/after-execute.md` | 0% | `prose-rephraser` | none |
 | `commands/hooks/after-tasks.md` | 0% | `prose-rephraser` | D-01 first |
 | `CHANGELOG.md`, `extension.yml` | 0% | `prose-rephraser` | D-05 first |
 | `scripts/e2e-smoke.sh` | 1% | `script-refactorer` | none |
@@ -300,7 +300,7 @@ two worktrees never edit one file.
 | `scripts/validate-extension-metadata.py` | 7% | `script-refactorer` | D-05 first |
 | `templates/constitution-template.md` | 8% | `prose-rephraser` | none |
 | `commands/brainstorm.md` | 12% | `prose-rephraser` | none |
-| `commands/review.md` | 14% | `prose-rephraser` | D-03 first |
+| `commands/review.md` | 14% | `prose-rephraser` | none |
 | `commands/tasks.md`, `templates/spec-template.md` | 19% | `prose-rephraser` | none |
 | `references/workflow-guide.md` | 25% | `prose-rephraser` | none |
 | `commands/execute.md` | 36% | `prose-rephraser` | none |
