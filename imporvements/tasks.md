@@ -245,7 +245,7 @@ Verify: `git check-ignore .claude/review/claude.json` prints the path; `git chec
 
 ---
 
-## G-07 — Item 9: observability Stop hook (working on)
+## G-07 — Item 9: observability Stop hook (merged: PR #31)
 
 Source: Part 2 item 9, Part 4.5. Effort: low. Depends on: none.
 Claude: `bdd-orchestrator`.
