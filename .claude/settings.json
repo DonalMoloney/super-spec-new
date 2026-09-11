@@ -29,6 +29,16 @@
         ]
       }
     ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/log-phase.sh"
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "resume",
