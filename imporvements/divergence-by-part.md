@@ -1,12 +1,12 @@
 # How specflow/ can diverge from upstream, by part
 
-This file lists, for each part of the extension measured in `diff.md`, the ways
-it can diverge from upstream superspec without breaking spec-kit's install
-contract. Read it when choosing where the next roadmap item lands. `tasks.md`
-holds the committed work; this file holds the option space. Percentages are the
-real (rebrand-normalized) change measured 2026-09-11 against the vendored
-upstream at the root commit (`bda4ef0`, upstream `c20ac6c`). No `diff.md`
-exists; the Measured state section below holds the per-file numbers.
+This file lists, for each part of the extension, the ways it can diverge from
+upstream superspec without breaking spec-kit's install contract. Read it when
+choosing where the next roadmap item lands. `tasks.md` holds the committed
+work; this file holds the option space. Percentages are the real
+(rebrand-normalized) change measured 2026-09-11 against the vendored upstream
+at the root commit (`bda4ef0`, upstream `c20ac6c`). Upstream `HEAD` was still
+`c20ac6c` on that date.
 
 Three constraints apply to every part. A move that violates one is not an
 option.
@@ -21,9 +21,6 @@ option.
 
 ## Five moves
 
-The same five moves apply to every part. Each bullet below is tagged with its
-move, whether it is reversible, and whether it breaks a later upstream resync.
-
 | Move | Meaning | Reversible | Breaks resync |
 |------|---------|------------|---------------|
 | Tighten | Same steps, stricter gate or stricter output shape | yes | rarely |
@@ -34,283 +31,43 @@ move, whether it is reversible, and whether it breaks a later upstream resync.
 
 Tighten and Add are the cheap moves. Replace and Remove are where the fork
 stops being a fork; take them only when the upstream shape is wrong for the two
-targets.
+targets. Every bullet ends with a `Verify:` line naming the check that proves
+it done and a `Claimed by:` line naming a D-item with a live worktree, a
+`tasks.md` group, or "none".
 
-Each bullet ends with a `Verify:` line naming the check that proves it done, and
-a `Claimed by:` line naming the roadmap group or "none".
+## Claimed now
 
-## commands/hooks/ (21.9% real)
+A D-item is a single divergence bullet with its own worktree under
+`~/PycharmProjects/worktrees/D-0N-*` and its own PR. Mark a bullet
+`(working on)` and commit that to `main` before creating the worktree.
 
-Three hook prompts spec-kit runs around its own commands. Most divergent part
-today because `before-execute.md` gained two gates.
+| Item | Bullet | Worktree |
+|------|--------|----------|
+| D-01 | `after-tasks.md` reads `progress.yml` | `D-01-after-tasks-progress` |
+| D-05 | manifest name and strings, CHANGELOG Unreleased, stale validator check | `D-05-stale-names-manifest` |
 
-- **Tighten** `after-tasks.md` to read `progress.yml` before writing, as
-  `before-execute.md` already does at its step 6. It is the one hook that
-  assumes a fresh run. Verify: the hook's Process lists a progress-state read
-  step. Claimed by: D-01 (working on).
-- **Extend** `after-execute.md` to write a findings file the review command
-  reads, closing implement to review. Today it only suggests running review.
-  Verify: `review.md` names the file as an input. Claimed by: D-02 (done, PR #57).
-  G-17 closes the other direction, review to spec.
-- **Add** a `before_tasks` hook that stops when the spec's Open Questions table
-  has unresolved rows. Spec-kit fires `hooks.before_tasks`, and upstream never
-  registered one. Not cheap: it changes the hook count that
-  `e2e-smoke.sh` (lines 118 and 127), `ci.yml` (line 43), and the hard-coded
-  hook tuple in `validate-extension-metadata.py` (line 86) all assert. Same
-  cost class as a sixth command. Verify: all three assertions updated and
-  green. Claimed by: none.
-- **Replace**: not warranted. The hooks are thin and spec-kit fixes their order.
-
-## commands/ (11.4% real)
-
-The five behavior contracts. Command names are asserted in `e2e-smoke.sh`,
-`e2e-agent-claude.sh`, and `ci.yml`, and the namespace is derived in
-`validate-extension-metadata.py`. Every Process-step change needs a smoke-test
-update.
-
-- **Tighten** `status.md` to report `.clarified` and `.analyzed` per feature.
-  It infers phase from file presence and has zero real change today. Verify:
-  `e2e-smoke.sh` asserts the marker column in status output. Claimed by: D-07 (done, PR #55).
-- **Tighten** `tasks.md` to reject a generated task line containing " and ",
-  enforcing the singular-task rule from `AGENTS.md` at generation time. Verify:
-  a fixture with a compound task fails the command. Claimed by: D-06 (done, PR #58).
-- **Extend** `review.md` with a risk tier (LOW, MEDIUM, HIGH) that selects which
-  review dimensions run. Constraint 3 applies: G-06 builds its classifier under
-  `.claude/hooks/`, so the shipped command needs a prose rule (file count, path
-  patterns) it can apply on Copilot, and may use the script only when present.
-  Verify: the fallback tier rule is in the command file. Claimed by: G-06
-  built the script; D-03 (done, PR #59) added the command rule.
-- **Extend** `brainstorm.md` to write resolved questions to `decisions.md` as
-  ADR-lite entries, not only read them. Verify: a resolved question appears in
-  `decisions.md` after a run. Claimed by: none. G-17 T172 covers the read.
-- **Replace** `execute.md` with a dispatcher over the `.claude/agents/` squad on
-  Claude Code, keeping the sequential walk as the Copilot fallback. The one
-  Replace worth considering, and only after G-14. Verify: both paths pass the
-  agent e2e in dry-run. Claimed by: G-14, partially.
-- **Add** a sixth command: not an option. It changes `extension.yml`, README,
-  and command-name assertions in four files.
-
-## SKILL.md (part of root files, 1.2% real)
-
-The largest single behavior contract in the extension and the file a
-`~/.agents/skills/` install reads first. It has no moves in the roadmap.
-
-- **Tighten** the skill's phase list to name the gate markers each phase
-  produces, so it and `workflow-guide.md` cannot drift. Verify: the marker
-  names in both files match by grep. Claimed by: none.
-- **Extend** with a "Target surface" section stating which steps are Claude
-  Code only and what Copilot does instead. Verify: every step marked Claude-only
-  has a named fallback. Claimed by: D-03 (done, PR #59).
-- **Replace**: not warranted. Spec-kit's skill loader expects the upstream
-  section shape.
-
-## references/ (5.8% real)
-
-Two prose files the commands cite. Cheap to diverge because nothing asserts
-against them structurally.
-
-- **Extend** `workflow-guide.md` with one section per new gate or marker, as it
-  did for `.analyzed`. The Gate markers table stays the single source for
-  marker names. Verify: every marker named in a command appears in the table.
-  Claimed by: G-03 (done), continuing.
-- **Extend** `superpowers-bridge.md` to map the review personas under
-  `.claude/agents/` to the `requesting-code-review` skill, so Claude Code
-  prefers the squad and Copilot the skill. Verify: the mapping table has a row
-  per persona. Claimed by: none.
-- **Add** a `copilot-cli.md` reference stating what the Copilot runtime lacks
-  (no hooks, no subagents, no `model:` frontmatter) and which fallback each
-  command uses there. `.github/copilot-instructions.md` covers this repo's
-  contributors; nothing in `specflow/references/` covers the runtime. Upstream
-  has no Copilot reference. Verify: one row per command. Claimed by: D-03 (done, PR #59).
-
-## templates/ (1.3% real)
-
-Five documents copied into the consuming project on `/speckit.constitution`.
-Spec-kit's own commands fill them and expect the upstream section names. They
-shape every downstream artifact, so a change here has the widest blast radius
-of any part.
-
-- **Extend** `spec-template.md` with a STRIDE table and a traceability matrix.
-  Verify: G-10's Verify condition. Claimed by: G-10.
-- **Extend** `constitution-template.md` with a review-stage table stating which
-  model class each stage requires (fast, standard, strongest). Constraint 3:
-  per-agent `model:` aliases are a Claude Code mechanism and do not belong in a
-  file every consuming project receives. Verify: no agent alias in the
-  template. Claimed by: none. G-04 set the routing in `.claude/agents/`.
-- **Extend** `tasks-template.md` with a Verify column so each task names its
-  check, matching the shape `imporvements/tasks.md` uses. Verify: the template
-  table header has the column. Claimed by: none.
-- **Tighten** `checklist-template.md` by adding an `R-NNN` column that joins the
-  existing `CHK` row ids to review findings. Row ids and confidence scoring
-  already exist. Verify: a review run fills the column. Claimed by: none.
-- **Replace**: not warranted.
-
-## scripts/ (2.4% real)
-
-Validation and end-to-end scripts. Export-ignored, so divergence here never
-reaches an installed extension. G-06's merge gate and risk classifier live under
-`.claude/hooks/` per ADR-0001, not here.
-
-- **Add** a `diffstats.py` that regenerates `diff.md` from an upstream clone, so
-  the divergence numbers are a command and not a one-off. `diff.md` describes
-  the method; the script was never committed. Verify: running it reproduces
-  the current table. Claimed by: none.
-- **Add** a golden-run scorer that replays `examples/static-landing-page/` and
-  diffs the output. Verify: G-13's Verify condition. Claimed by: G-13.
-- **Tighten** `e2e-smoke.sh` to assert the Process-step count of each command
-  file (on 2026-09-11: status 8, brainstorm 7, tasks 9, execute 9, review 6) and every
-  marker in the Gate markers table, so a dropped step fails before merge.
-  Verify: deleting one step from any command fails the smoke test. Claimed by:
-  none (D-04 landed only its CI half; no branch holds this part).
-
-## examples/ (0.9% real)
-
-One full run snapshot plus a sample workflow. Export-ignored. Teaching material
-and test fixture, nothing else.
-
-- **Add** a second snapshot for a feature that fails a gate, showing
-  `ANALYZE_REQUIRED` and the recovery path. Every example today is a happy
-  path; the only failure shown is an intended TDD RED. Verify: the snapshot
-  contains the stop code and the rerun. Claimed by: none.
-- **Tighten**: regenerate the snapshot spec when `spec-template.md` changes, so
-  G-13's golden matches the template. Verify: the scorer passes after a
-  template change. Claimed by: G-13, implicitly.
-- **Replace**: not warranted.
-
-## assets/ (excluded from line counts)
-
-Workflow diagrams, 12 MiB, export-ignored because one oversized PNG broke
-install for every user (upstream issue #6).
-
-- **Remove** the PNGs and check in the Mermaid or SVG source beside the deck
-  under `presentation/`, per `standards/presentations.md`. Verify:
-  `validate-release-archive.py` passes and the README renders the diagram from
-  source. Claimed by: none.
-- **Add** or **Extend**: not an option. Any new binary here needs
-  `validate-release-archive.py` run first, and there is no reason to ship a
-  binary the archive strips.
-
-## Root files and .github/ (1.2% and 0.0% real)
-
-`README.md`, `README_zh.md`, `CHANGELOG.md`, `extension.yml`, `SKILL.md`
-(above), `.gitattributes`, `.gitignore`, `LICENSE`, and the CI workflow.
-
-- **Remove** `README_zh.md`, the inline Chinese section at the end of
-  `README.md`, and the sync rule in `AGENTS.md`. The documentation standard
-  forbids translated copies, and `.gitattributes` stopped export-ignoring the
-  file, so the archive ships it now. Verify: `git archive HEAD:specflow` lists
-  no `README_zh.md` and README has one language. Claimed by: `fix-readme-language-policy`, done.
-- **Remove** the `~/.codex/skills/` install instructions from `README.md`.
-  `AGENTS.md` forbids Codex paths; upstream targets Codex. G-18 records the
-  scope decision but edits only the playbook, not `specflow/`. Verify: grep
-  for `codex` in `specflow/README.md` is empty. Claimed by: D-05 (working on).
-- **Tighten** CI to run `e2e-smoke.sh`. CI validates metadata, the archive, and
-  a live install, and never runs the smoke test, which is the only check that
-  catches a Process-step regression. Verify: a CI run shows the smoke step.
-  Claimed by: D-04 (done, PR #53).
-- **Extend** `CHANGELOG.md` with an Unreleased section every merged group
-  appends to. The file opens at 1.0.2 and records nothing since. Verify: the
-  section exists and each merged PR adds a line. Claimed by: D-05 (working on).
-- **Replace** `extension.yml`: not an option. Its schema belongs to spec-kit.
+Merged on 2026-09-11: D-02 (PR #57), D-03 (PR #59), D-06 (PR #58), D-07
+(PR #55), and D-04's CI smoke step and gate-marker assertion (PR #53). D-04's
+step-count half is still open under scripts/ below.
 
 ## Measured state, 2026-09-11
-
-Every roadmap group G-01 to G-18 is merged, so every `Claimed by` bullet above
-is done and every `Claimed by: none` bullet is still open. Diffing the vendored
-upstream against `specflow/` with the rename normalized gives these per-file
-change rates. Files not listed are byte-identical after the rename: `SKILL.md`,
-`extension.yml`, `CHANGELOG.md`, `status.md`, both `after-*` hooks,
-`plan-template.md`, and `tasks-template.md`.
 
 | File | Changed lines |
 |------|---------------|
 | `commands/hooks/before-execute.md` | 51% |
+| `commands/status.md` | 33%, after two `prose-rephraser` passes |
 | `commands/execute.md` | 31% |
+| `scripts/validate-release-archive.py` | 29%, after `script-refactorer` |
 | `README.md` | 23%, nearly all the removed Chinese section |
 | `references/workflow-guide.md` | 17% |
 | `commands/tasks.md`, `templates/spec-template.md` | 12% |
 | `commands/brainstorm.md`, `commands/review.md` | 10%, 7% |
 
-The installable payload stays close to upstream. The fork's divergence lives
-in `.claude/`, `standards/`, `scripts/`, and CI, which the archive strips.
+Byte-identical after the rename: `SKILL.md`, `extension.yml`, `CHANGELOG.md`,
+both `after-*` hooks, `plan-template.md`, and `tasks-template.md`. The
+installable payload stays close to upstream. The fork's divergence lives in
+`.claude/`, `standards/`, `scripts/`, and CI, which the archive strips.
 
-Open bullets with the smallest blast radius, in order: the `after-tasks.md`
-progress read, the `after-execute.md` findings file, the `review.md` prose
-risk tier, the CI smoke step, the CHANGELOG Unreleased section, and the Codex
-lines in `specflow/README.md` (lines 9, 41, 47, 48).
-
-## Renames
-
-D-05 (working on) renames the manifest display name and rewrites the manifest
-strings listed in the table below.
-
-Names are asserted in more files than behavior is. Each row states where a
-rename lands, so the cost is known before the move.
-
-| Name | Asserted in | Cost |
-|------|-------------|------|
-| Extension id `specflow` | 27 files: manifest, 5 commands, 3 hooks, `SKILL.md`, 4 templates, both e2e scripts, `ci.yml`, validator test, dispatcher skill, repo docs | Not an option |
-| `name: "Superpowers Bridge"` and the manifest description | `extension.yml`, `README.md`, `CHANGELOG.md`, `superpowers-bridge.md`, validator test, `AGENTS.md`, `copilot-instructions.md` | Cheap; "bridges" is a banned metaphor |
-| Manifest strings "Enhanced" (6), "Deep-dive" (2), "Intelligent" (1) | Nothing greps them | Free Tighten |
-| `references/superpowers-bridge.md` | 10 citations in commands, `SKILL.md`, README; both validators; the `CLAUDE.md` import | About 8 files |
-| `commands/hooks/*.md` file names | Nothing; the manifest maps hooks to commands | Free |
-| `commands/*.md` file names | The `file:` field in `extension.yml` | Cheap |
-| `templates/*.md` file names | Spec-kit reads `.specify/templates/<name>`; `e2e-smoke.sh` lines 82 to 84 | Not an option |
-
-Stale upstream names to fix regardless of any rename:
-
-- `presentation/marp-deck/deck.md` line 64 says `specify extension add superspec`
-  and `/speckit.superspec.status`. Verify: grep for `superspec` in the deck is
-  empty. Claimed by: D-05 (working on).
-- `.claude/review/schema.json` line 3 titles the schema `SuperspecReviewFindings`.
-  Verify: the hook tests pass after the rename. Claimed by: D-05 (working on).
-- `validate-extension-metadata.py` line 147 checks the README for a
-  `superpowers-bridge --from` string that no README has carried since the
-  rename. Verify: the check is deleted and the validator passes. Claimed by: D-05 (working on).
-- `specflow/LICENSE` keeps "Superspec Contributors". Keep it; MIT requires the
-  original notice.
-
-## Wording and structure, by file
-
-Two agents under `.claude/agents/` diverge a shipped file without changing its
-behavior contract. `prose-rephraser` rewrites sentences to
-`standards/documentation.md` and keeps every heading, step, code block, path,
-and marker verbatim. `script-refactorer` applies `standards/code.md` to a
-script and keeps every exit code, output line, and flag. `divergence-auditor`
-measures the result with `.claude/divergence/measure-divergence.py` and runs
-the guards. The table lists every shipped text file with an upstream
-counterpart, measured on 2026-09-11 against upstream `c20ac6c`, lowest real
-change first. Files a D-group holds are skipped until that group merges, so
-two worktrees never edit one file.
-
-| File | Real | Agent | Claimed by |
-|------|------|-------|------------|
-| `commands/status.md` | 33% | `prose-rephraser` | done, two passes |
-| `SKILL.md` | 0% | `prose-rephraser` | none |
-| `templates/plan-template.md` | 0% | `prose-rephraser` | none |
-| `templates/tasks-template.md` | 0% | `prose-rephraser` | none |
-| `scripts/validate-release-archive.py` | 29% | `script-refactorer` | done |
-| `commands/hooks/after-execute.md` | 0% | `prose-rephraser` | none |
-| `commands/hooks/after-tasks.md` | 0% | `prose-rephraser` | D-01 first |
-| `CHANGELOG.md`, `extension.yml` | 0% | `prose-rephraser` | D-05 first |
-| `scripts/e2e-smoke.sh` | 1% | `script-refactorer` | none |
-| `scripts/e2e-agent-claude.sh` | 2% | `script-refactorer` | none |
-| `templates/checklist-template.md` | 2% | `prose-rephraser` | none |
-| `references/superpowers-bridge.md` | 2% | `prose-rephraser` | D-05 first |
-| `scripts/validate-extension-metadata.py` | 7% | `script-refactorer` | D-05 first |
-| `templates/constitution-template.md` | 8% | `prose-rephraser` | none |
-| `commands/brainstorm.md` | 12% | `prose-rephraser` | none |
-| `commands/review.md` | 14% | `prose-rephraser` | none |
-| `commands/tasks.md`, `templates/spec-template.md` | 19% | `prose-rephraser` | none |
-| `references/workflow-guide.md` | 25% | `prose-rephraser` | none |
-| `commands/execute.md` | 36% | `prose-rephraser` | none |
-| `README.md` | 46% | `prose-rephraser` | D-05 first |
-| `commands/hooks/before-execute.md` | 52% | `prose-rephraser` | none |
-
-Order of work: the five unclaimed 0% files, then the unclaimed scripts and
-templates, then the commands. A command rewrite runs `e2e-smoke.sh` through the
-auditor because the smoke test greps command prose. Mark a row `(working on)`
-in the Claimed by column before dispatching, and commit that mark to `main`.
 Reproduce the table from the repository root:
 
 ```bash
@@ -318,6 +75,207 @@ git clone -q https://github.com/WangX0111/superspec "$SCRATCH/upstream"
 cd specflow && git ls-files | grep -E '\.(md|yml|py|sh)$' | grep -v '^examples/' \
   | xargs python3 ../.claude/divergence/measure-divergence.py --local . --upstream "$SCRATCH/upstream"
 ```
+
+## commands/hooks/
+
+- **Tighten** `after-tasks.md` to read `progress.yml` before writing, as
+  `before-execute.md` does at step 6. Verify: the Process lists a
+  progress-state read step. Claimed by: D-01 (working on).
+- **Extend** `after-execute.md` to write a findings file `review.md` reads,
+  closing implement to review. Verify: `review.md` names the file as an input.
+  Claimed by: D-02 (done, PR #57).
+- **Add** a `before_tasks` hook that stops when the spec's Open Questions
+  table has unresolved rows. Spec-kit fires `hooks.before_tasks`; upstream never
+  registered one. Not cheap: it changes the hook count `e2e-smoke.sh`,
+  `ci.yml`, and the hook tuple in `validate-extension-metadata.py` assert.
+  Verify: all three assertions updated and green. Claimed by: none.
+- **Replace**: not warranted. The hooks are thin and spec-kit fixes their order.
+
+## commands/
+
+Command names are asserted in `e2e-smoke.sh`, `e2e-agent-claude.sh`, and
+`ci.yml`. Every Process-step change needs a smoke-test update.
+
+- **Tighten** `status.md` to report `.clarified` and `.analyzed` per feature.
+  Verify: the smoke test asserts the marker column. Claimed by: D-07 (done, PR #55).
+- **Tighten** `tasks.md` to reject a generated task line containing " and ".
+  Verify: a fixture with a compound task stops the command. Claimed by: D-06 (done, PR #58).
+  ADR-0016 records why the lint is blunt.
+- **Extend** `review.md` with a prose risk tier that selects which review
+  dimensions run, using `risk-classifier.sh` only when present. Verify: the
+  fallback tier rule is in the command file. Claimed by: D-03 (done, PR #59).
+- **Extend** `brainstorm.md` to write resolved questions to `decisions.md` as
+  ADR-lite entries. G-17 covers the read. Verify: a resolved question appears
+  in `decisions.md` after a run. Claimed by: G-20.
+- **Replace** `execute.md` with a dispatcher over the `.claude/agents/` squad
+  on Claude Code, keeping the sequential walk as the Copilot fallback. Verify:
+  both paths pass the agent e2e in dry run. Claimed by: none, deferred in
+  `tasks.md` until G-19 lands a snapshot to assert against.
+- **Add** a sixth command: not an option. It changes `extension.yml`, README,
+  and command-name assertions in four files.
+
+## SKILL.md
+
+The largest single behavior contract and the file a `~/.agents/skills/` install
+reads first. Byte-identical to upstream.
+
+- **Tighten** the phase list to name the gate marker each phase produces, so
+  it and `workflow-guide.md` cannot drift. Verify: the marker names in both
+  files match by grep. Claimed by: G-22.
+- **Extend** with a "Target surface" section stating which steps are Claude
+  Code only and what Copilot does instead. Verify: every Claude-only step has
+  a named fallback. Claimed by: D-03 (done, PR #59).
+- **Replace**: not warranted. Spec-kit's skill loader expects the upstream
+  section shape.
+
+## references/
+
+Nothing asserts against these structurally, so they are cheap to diverge.
+
+- **Add** a `copilot-cli.md` reference stating what the Copilot runtime lacks
+  and which fallback each command uses there. Verify: one row per command.
+  Claimed by: D-03 (done, PR #59).
+- **Extend** `superpowers-bridge.md` to map the review personas under
+  `.claude/agents/` to the `requesting-code-review` skill, so Claude Code
+  prefers the squad and Copilot the skill. Verify: one row per persona.
+  Claimed by: G-22.
+- **Extend** `workflow-guide.md` with one section per new gate or marker. The
+  Gate markers table stays the single source for marker names, and
+  `e2e-smoke.sh` asserts every row since PR #53. Claimed by: continuing, per
+  group.
+
+## templates/
+
+Spec-kit's own commands fill these and expect the upstream section names. A
+change here reaches every downstream artifact.
+
+- **Extend** `constitution-template.md` with a review-stage table naming a
+  model class per stage, never an agent alias. Verify: no alias in the
+  template. Claimed by: G-21.
+- **Extend** `tasks-template.md` with a Verify column. Verify: the table
+  header has the column. Claimed by: G-21.
+- **Tighten** `checklist-template.md` with an `R-NNN` column joining `CHK`
+  rows to review findings. Verify: a review run fills the column. Claimed by:
+  G-21.
+- **Replace**: not warranted.
+
+## examples/
+
+Export-ignored. Teaching material and the scorer's test fixture. Both files
+are upstream's: `static-landing-page/` is upstream's snapshot and predates
+every gate this fork added; `sample-workflow.md` walks a "User Authentication"
+feature no snapshot contains, with abbreviated outputs that show none of the
+markers.
+
+- **Replace** the snapshot with a run of this fork's pipeline on a feature of
+  its own, so the example shows `.clarified`, `.analyzed`, Threat Model,
+  Traceability, and Changelog. Verify: the snapshot carries all five.
+  Claimed by: G-19.
+- **Add** a failing-gate snapshot showing `ANALYZE_REQUIRED` and the rerun.
+  Every example today is a happy path. Verify: the snapshot contains the stop
+  code and the rerun. Claimed by: G-19.
+- **Remove** `sample-workflow.md`. Its feature has no snapshot and its
+  outputs predate the gates. Verify: `README.md` links no removed file.
+  Claimed by: G-19.
+- **Add** a snapshot of a Copilot CLI run, so the fallback path has an
+  example and a dry-run fixture. Verify: the snapshot has no `.claude/` files
+  and every stage artifact. Claimed by: none. Needs a Copilot e2e script
+  (playbook Part 9, item 27).
+- **Tighten**: regenerate the snapshot spec when `spec-template.md` changes,
+  so the scorer golden matches the template. Verify: `score-artifacts.py`
+  passes after a template change. Claimed by: G-13, implicitly.
+
+## scripts/
+
+Export-ignored, so divergence here never reaches an installed extension.
+
+- **Tighten** `e2e-smoke.sh` to assert the Process-step count of each command
+  file (status 9, brainstorm 7, tasks 10, execute 9, review 8 on 2026-09-11),
+  so a dropped step fails before merge. The gate-marker half landed in PR #53.
+  Verify: deleting one step from any command fails the smoke test. Claimed
+  by: G-23.
+- **Add** an upstream drift check that compares the vendored commit to
+  upstream `HEAD`. Verify: a hook test covers both exits. Claimed by: G-23.
+- **Refactor** `e2e-smoke.sh` and `e2e-agent-claude.sh` to `standards/code.md`
+  with `script-refactorer`. Verify: `divergence-auditor` reports every guard
+  green. Claimed by: none.
+
+## assets/
+
+12 MiB of workflow diagrams, export-ignored because one PNG broke install for
+every user (upstream issue #6).
+
+- **Remove** the PNGs and check in Mermaid or SVG source beside the deck under
+  `presentation/`, per `standards/presentations.md`. Verify:
+  `validate-release-archive.py` passes and the README renders the diagram from
+  source. Claimed by: none.
+- **Add** or **Extend**: not an option. There is no reason to ship a binary
+  the archive strips.
+
+## Names
+
+Names are asserted in more files than behavior is. Each row states where a
+rename lands, so the cost is known before the move.
+
+| Name | Today | Asserted in | Cost | Claimed by |
+|------|-------|-------------|------|------------|
+| Manifest `name:` | "Superpowers Bridge" | `extension.yml`, `CHANGELOG.md`, validator test, `AGENTS.md`, `copilot-instructions.md` | Cheap; "bridges" is a banned metaphor | D-05 (working on) |
+| Manifest description and `purpose:` strings | "Bridges", "Deep-dive" (2), "Intelligent", "Enhanced" (6) | Nothing greps them | Free Tighten | D-05 (working on) |
+| Hook `prompt:` and `description:` strings | "Run enhanced Superpowers task decomposition and validation?" | Nothing greps them | Free Tighten | none |
+| `tags:` list | `superpowers`, `brainstorming`, `tdd`, `code-review`, `subagent`, `workflow` | The spec-kit catalog search | Free; add `copilot`, `claude-code` | none |
+| `author:` | "Specflow Contributors" | Nothing | Free | none |
+| `references/superpowers-bridge.md` | Named for the metaphor | 10 citations in commands, `SKILL.md`, README; both validators; the `CLAUDE.md` import | About 8 files | none |
+| `examples/static-landing-page/` | Upstream's feature | dry run, `score-artifacts.yml`, README | Replaced, not renamed | G-19 |
+| `.claude/review/schema.json` title | `SuperspecReviewFindings` was renamed | Hook tests | done | D-05 |
+| `validate-extension-metadata.py` line 147 | Checks for a `superpowers-bridge --from` string no README carries | Validator tests | Delete the branch | D-05 (working on) |
+| `commands/hooks/*.md` file names | `after-tasks`, `before-execute`, `after-execute` | Nothing; the manifest maps hooks to commands | Free, and no reason | none |
+| `commands/*.md` file names | `status`, `brainstorm`, `tasks`, `execute`, `review` | The `file:` field in `extension.yml` | Cheap, and no reason | none |
+| Extension id `specflow` | | 27 files | Not an option | |
+| `templates/*.md` file names | | Spec-kit reads `.specify/templates/<name>`; `e2e-smoke.sh` | Not an option | |
+| `superpowers.yml` cache name | | Every command and the smoke test | Not an option | |
+| `LICENSE` "Superspec Contributors" | | MIT requires the original notice | Not an option | |
+
+## Wording and structure, by file
+
+`prose-rephraser` rewrites sentences to `standards/documentation.md` and keeps
+every heading, step, code block, path, and marker verbatim. `script-refactorer`
+applies `standards/code.md` to a script and keeps every exit code, output
+line, and flag. `divergence-auditor` measures the result with
+`.claude/divergence/measure-divergence.py` and runs the guards. Files a D-item
+or group holds are skipped until it merges, so two worktrees never edit one
+file.
+
+| File | Real | Agent | Claimed by |
+|------|------|-------|------------|
+| `SKILL.md` | 0% | `prose-rephraser` | G-22 first |
+| `templates/plan-template.md` | 0% | `prose-rephraser` | none |
+| `templates/tasks-template.md` | 0% | `prose-rephraser` | G-21 first |
+| `commands/hooks/after-execute.md` | 0% | `prose-rephraser` | none |
+| `commands/hooks/after-tasks.md` | 0% | `prose-rephraser` | D-01 first |
+| `CHANGELOG.md`, `extension.yml` | 0% | `prose-rephraser` | D-05 first |
+| `scripts/e2e-smoke.sh` | 1% | `script-refactorer` | G-23 first |
+| `scripts/e2e-agent-claude.sh` | 2% | `script-refactorer` | none |
+| `templates/checklist-template.md` | 2% | `prose-rephraser` | G-21 first |
+| `references/superpowers-bridge.md` | 2% | `prose-rephraser` | G-22 first |
+| `scripts/validate-extension-metadata.py` | 7% | `script-refactorer` | D-05 first |
+| `templates/constitution-template.md` | 8% | `prose-rephraser` | G-21 first |
+| `commands/brainstorm.md` | 12% | `prose-rephraser` | G-20 first |
+| `commands/review.md` | 14% | `prose-rephraser` | none |
+| `commands/tasks.md` | 19% | `prose-rephraser` | none |
+| `templates/spec-template.md` | 19% | `prose-rephraser` | none |
+| `references/workflow-guide.md` | 25% | `prose-rephraser` | none |
+| `commands/execute.md` | 36% | `prose-rephraser` | none |
+| `README.md` | 46% | `prose-rephraser` | D-05 first |
+| `commands/hooks/before-execute.md` | 52% | `prose-rephraser` | none |
+
+Done: `commands/status.md` (two passes) and
+`scripts/validate-release-archive.py`. Order of work: the unclaimed rows first
+(`plan-template.md`, both `after-*` hooks, `e2e-agent-claude.sh`, `review.md`,
+`tasks.md`, `spec-template.md`, `workflow-guide.md`, `execute.md`,
+`before-execute.md`), then each claimed row
+after its item merges. A command rewrite runs `e2e-smoke.sh` through the
+auditor because the smoke test greps command prose. Mark a row `(working on)`
+before dispatching, and commit that mark to `main`.
 
 ## Choosing
 

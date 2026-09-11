@@ -39,7 +39,7 @@ Donal Moloney
 - Agent Teams run parallel tasks in separate worktrees.
 - Cost governance and per-phase logging record every run.
 
-<!-- speaker notes: The count of 18 is the number of G-NN headers in imporvements/tasks.md. G-02 through G-18 carry a merged PR number in the header. G-01 has every task ticked but names no PR. Gate hooks are G-01 and G-06, review agents G-05, the CI merge gate G-09, Agent Teams G-14, cost governance G-16, and logging G-07. Source: imporvements/tasks.md group headers. -->
+<!-- speaker notes: The count of 18 is the number of G-NN groups in the first roadmap wave, each merged by a PR between #8 and #53. Gate hooks are G-01 and G-06, review agents G-05, the CI merge gate G-09, Agent Teams G-14, cost governance G-16, and logging G-07. Source: git log --merges --first-parent main; imporvements/tasks.md names the wave. -->
 
 ---
 
