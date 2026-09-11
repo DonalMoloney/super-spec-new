@@ -141,7 +141,7 @@ After the superpowers skill's process completes:
   - Brainstorm coverage (edge cases from brainstorming sessions)
 - Report findings with confidence scores (0-100, threshold >= 80)
 - Append each Critical or Important finding that reports a spec gap to the spec's
-  `## Open Questions` table, quoting the finding ID
+  `## Open Questions` table, with the finding ID opening the Question column
 
 **Output mapping**:
 | Superpowers Output | Specflow Destination |

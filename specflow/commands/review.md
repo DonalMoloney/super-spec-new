@@ -27,12 +27,16 @@ Run code review against spec requirements using review skills.
 5. Group findings by severity: Critical > Important > Suggestion
 6. Append spec gaps back to the spec: for each Critical or Important finding that
    reports a missing, ambiguous, or contradicted requirement, add a row to the
-   `## Open Questions` table in `specs/NNN-feature-name/spec.md` quoting the finding ID
+   `## Open Questions` table in `specs/NNN-feature-name/spec.md` whose Question
+   column opens with the finding ID
 
 ## Output
 
 Review findings reported to user. Optionally written to
 `specs/NNN-feature-name/checklist-review.md`.
+
+Spec gaps among the Critical and Important findings are also added to the
+`## Open Questions` table in `specs/NNN-feature-name/spec.md`.
 
 ## Finding Format
 
