@@ -5,29 +5,34 @@ name: Score artifacts
 # tests, the goldens themselves, and this workflow's own expectations. The
 # filter lives in its own workflow because `paths:` is workflow-level: putting
 # it in ci.yml would also gate the metadata and archive validation jobs, which
-# must run on every change.
+# must run on every change. Paths are repository-relative; the steps run from
+# `specflow/`.
 on:
   push:
     branches:
       - main
     paths:
-      - "commands/**"
-      - "templates/**"
-      - "scripts/**"
-      - "examples/**"
+      - "specflow/commands/**"
+      - "specflow/templates/**"
+      - "specflow/scripts/**"
+      - "specflow/examples/**"
       - ".github/workflows/score-artifacts.yml"
   pull_request:
     paths:
-      - "commands/**"
-      - "templates/**"
-      - "scripts/**"
-      - "examples/**"
+      - "specflow/commands/**"
+      - "specflow/templates/**"
+      - "specflow/scripts/**"
+      - "specflow/examples/**"
       - ".github/workflows/score-artifacts.yml"
 
 jobs:
   score:
     name: Score golden artifacts
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: specflow
 
     steps:
       - name: Checkout
