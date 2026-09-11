@@ -458,5 +458,19 @@ cd "$HOOKS/../.."
 python3 -c 'import json;json.load(open(".claude/review/schema.json"))' >/dev/null 2>&1
 check "review findings schema parses as JSON" 0 $?
 
+# --- .github/workflows/merge-gate.yml (the CI merge gate) ---
+GATE_WORKFLOW=".github/workflows/merge-gate.yml"
+gate_src="$(cat "$GATE_WORKFLOW" 2>/dev/null || true)"
+python3 -c 'import yaml;yaml.safe_load(open("'"$GATE_WORKFLOW"'"))' >/dev/null 2>&1
+check "merge gate workflow parses as YAML" 0 $?
+high_gated="$(grep -c "level == 'HIGH'" "$GATE_WORKFLOW" 2>/dev/null || echo 0)"
+check "merge gate workflow gates two steps on HIGH risk" 0 \
+  "$([ "${high_gated:-0}" -eq 2 ]; echo $?)"
+check "security review action is pinned to a commit" 0 \
+  "$(printf '%s' "$gate_src" | grep -Eq 'claude-code-security-review@[0-9a-f]{40}$'; echo $?)"
+check "merge gate workflow runs the gate hook under .claude" 0 \
+  "$(printf '%s' "$gate_src" | grep -Fq '.claude/hooks/merge-gate.sh'; echo $?)"
+check_lacks "merge gate workflow names no .specify hook path" "$gate_src" ".specify/scripts/hooks/"
+
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
