@@ -111,14 +111,14 @@ Source: Part 2 item 3. Effort: low. Depends on: none (artifact-lint already chec
 Claude: `bdd-orchestrator` (adds hook-test cases).
 Codex: `codex:codex-rescue --background`; then `codex review --base main`.
 
-- [ ] T031 Define the gate markers
+- [x] T031 Define the gate markers
 
 1. Read `specflow/references/workflow-guide.md` and `specflow/commands/hooks/before-execute.md` in full.
 2. Add a "Gate markers" subsection to `workflow-guide.md`: `/speckit.clarify` writes `specs/NNN/.clarified`; `/speckit.analyze` writes `specs/NNN/.analyzed` only when it reports zero critical inconsistencies; `/speckit.checklist` output lives at `specs/NNN/checklist-*.md`.
 
 Verify: the subsection exists and names all three markers.
 
-- [ ] T032 Make `before-execute.md` require the analyze marker
+- [x] T032 Make `before-execute.md` require the analyze marker
 
 1. Read the Process steps of `specflow/commands/hooks/before-execute.md` in full (they are asserted structurally by `e2e-smoke.sh`).
 2. Add one Process step: stop with a named error if `specs/NNN/.analyzed` is missing.
@@ -126,14 +126,14 @@ Verify: the subsection exists and names all three markers.
 
 Verify: `cd specflow && bash scripts/e2e-smoke.sh` still exits 0 (after G-01) and the step is present.
 
-- [ ] T033 Make `execute.md` refuse to start without the analyze marker
+- [x] T033 Make `execute.md` refuse to start without the analyze marker
 
 1. Read `specflow/commands/execute.md` Process steps in full.
 2. Add the same check as the first Process step after the constitution gate.
 
 Verify: `grep -n '.analyzed' specflow/commands/execute.md` prints a line; `E2E_DRY_RUN=1 bash scripts/e2e-agent-claude.sh` exits 0.
 
-- [ ] T034 Extend `artifact-lint.sh` for the checklist file
+- [x] T034 Extend `artifact-lint.sh` for the checklist file
 
 1. Add a case for `checklist-*.md`: it must contain at least one checkbox line (unchecked or checked).
 2. Add two cases to `.claude/hooks/tests/run.sh`: a valid checklist passes, an empty one exits 2.
