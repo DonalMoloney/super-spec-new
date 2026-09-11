@@ -54,10 +54,19 @@ def main() -> None:
     namespace_prefix = f"speckit.{ext_id}."
 
     # 1. provides.commands[*].name must use namespace prefix.
-    command_names = re.findall(
-        r"^    - name:[ \t]*[\"']?([^\"'\n]+)[\"']?",
+    # Extract the commands section to avoid matching template names.
+    commands_section_match = re.search(
+        r"^  commands:\n((?:    .+\n)*?)(?=^  \w+:|^hooks:|^$)",
         manifest,
         re.MULTILINE,
+    )
+    if not commands_section_match:
+        fail("extension.yml must declare provides.commands section")
+
+    commands_section = commands_section_match.group(1)
+    command_names = re.findall(
+        r"- name:[ \t]*[\"']?([^\"'\n]+)[\"']?",
+        commands_section,
     )
     if not command_names:
         fail("extension.yml must declare provides.commands[].name entries")
