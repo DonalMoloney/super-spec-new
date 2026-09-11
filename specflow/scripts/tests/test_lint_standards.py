@@ -115,6 +115,16 @@ def test_excluded_directories_are_skipped_on_a_directory_walk():
     assert result.returncode == 0, result.stdout
 
 
+def test_explicit_file_under_an_excluded_directory_is_skipped():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        path = write(root / "imporvements" / "notes.md", "A \u2014 dash.\n")
+        git_repo(root)
+        result = lint(str(path), cwd=root)
+    assert result.returncode == 0, result.stdout
+    assert result.stdout.strip() == "OK: 0 files checked, 0 findings"
+
+
 def test_no_argument_walks_the_current_directory():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)

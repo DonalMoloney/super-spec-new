@@ -4,10 +4,11 @@
 Usage:
     python3 scripts/lint-standards.py [path ...]
 
-A path that is a file is checked as given. A path that is a directory is
-walked through `git ls-files`, so only tracked Markdown is checked, and the
-directories in EXCLUDED_DIRS are skipped. With no path the current directory
-is walked. Exit 0 with no findings, 1 with findings, 2 when a path is missing.
+A path that is a directory is walked through `git ls-files`, so only tracked
+Markdown is checked. A path that is a file is checked whether or not it is
+tracked. Either way a file under one of EXCLUDED_DIRS, relative to the git
+top level, is skipped. With no path the current directory is walked. Exit 0
+with no findings, 1 with findings, 2 when a path is missing.
 """
 
 from __future__ import annotations
@@ -76,6 +77,23 @@ def findings_for(path: Path, pattern: re.Pattern[str]) -> list[str]:
     return lines
 
 
+def is_excluded(path: Path) -> bool:
+    """Return whether `path` sits under an excluded directory of its git checkout.
+
+    A file outside any git checkout is never excluded.
+    """
+    toplevel = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        cwd=path.resolve().parent,
+        capture_output=True,
+        text=True,
+    )
+    if toplevel.returncode != 0:
+        return False
+    relative = path.resolve().relative_to(Path(toplevel.stdout.strip()).resolve()).as_posix()
+    return any(relative.startswith(prefix + "/") for prefix in EXCLUDED_DIRS)
+
+
 def tracked_markdown(directory: Path) -> list[Path]:
     """Return tracked Markdown files under `directory`, minus the excluded dirs."""
     listing = subprocess.run(
@@ -84,23 +102,11 @@ def tracked_markdown(directory: Path) -> list[Path]:
         capture_output=True,
         check=True,
     ).stdout.decode("utf-8")
-    top = subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"],
-        cwd=directory,
-        capture_output=True,
-        check=True,
-        text=True,
-    ).stdout.strip()
-    files: list[Path] = []
-    for name in listing.split("\0"):
-        if not name.endswith(".md"):
-            continue
-        absolute = (directory / name).resolve()
-        relative_to_top = absolute.relative_to(Path(top).resolve()).as_posix()
-        if any(relative_to_top.startswith(prefix + "/") for prefix in EXCLUDED_DIRS):
-            continue
-        files.append(directory / name)
-    return files
+    return [
+        directory / name
+        for name in listing.split("\0")
+        if name.endswith(".md") and not is_excluded(directory / name)
+    ]
 
 
 def collect(arguments: list[str]) -> list[Path]:
@@ -112,7 +118,8 @@ def collect(arguments: list[str]) -> list[Path]:
     for argument in arguments or ["."]:
         path = Path(argument)
         if path.is_file():
-            files.append(path)
+            if not is_excluded(path):
+                files.append(path)
         elif path.is_dir():
             files.extend(tracked_markdown(path))
         else:
