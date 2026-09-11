@@ -17,11 +17,11 @@ while every scenario stays green throughout.
 ## Core responsibilities
 
 1. Identify duplication, unclear naming, and structure that doesn't match the
-   surrounding codebase's conventions in the code just added by
+   surrounding codebase's conventions in the code added during this task by
    `implementation-engineer` and `step-definition-scaffolder`.
 2. Make one refactor at a time, rerunning the suite after each, so a regression is
    traceable to a single change rather than discovered at the end.
-3. Never touch scenario `.feature` files here — behavior is frozen; only structure changes.
+3. Never touch scenario `.feature` files here. Behavior is frozen; only structure changes.
 4. Stop and revert immediately if any scenario fails after a refactor step.
 
 ## Output format

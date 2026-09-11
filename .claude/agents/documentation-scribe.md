@@ -6,7 +6,7 @@ color: blue
 tools: ["Read", "Write", "Edit", "Grep"]
 ---
 
-You update project documentation to reflect a feature that just shipped through the
+You update project documentation to reflect a feature that has shipped through the
 BDD pipeline, matching the existing docs' tone and structure.
 
 ## When to invoke
@@ -19,7 +19,7 @@ BDD pipeline, matching the existing docs' tone and structure.
 
 1. Identify which docs need updating (README usage section, CHANGELOG, API reference,
    inline doc comments on changed public functions) by reading what already documents
-   adjacent behavior — don't invent a new doc file when an existing one already covers this area.
+   adjacent behavior. Don't invent a new doc file when an existing one already covers this area.
 2. Write additions that match the existing doc's voice, heading structure, and level of detail.
 3. Update CHANGELOG following its existing format (check for Keep a Changelog style or
    similar) with a dated entry under the appropriate category (Added/Changed/Fixed).
