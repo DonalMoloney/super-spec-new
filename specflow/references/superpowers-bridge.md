@@ -90,6 +90,8 @@ After the superpowers skill's process completes:
   Socratic method, challenge assumptions)
 - Apply questions to the target spec document
 - Record insights in the spec's "Open Questions" section and "Brainstorm Log"
+- Read `decisions.md` at the project root before questioning, if it exists, and do
+  not re-ask a decision already recorded there
 - The skill may produce a "design document" — fold its insights back into the
   existing spec.md rather than creating a separate file
 
@@ -138,6 +140,8 @@ After the superpowers skill's process completes:
   - Constitution compliance (principles from constitution.md)
   - Brainstorm coverage (edge cases from brainstorming sessions)
 - Report findings with confidence scores (0-100, threshold >= 80)
+- Append each Critical or Important finding that reports a spec gap to the spec's
+  `## Open Questions` table, with the finding ID opening the Question column
 
 **Output mapping**:
 | Superpowers Output | Specflow Destination |

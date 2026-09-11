@@ -25,11 +25,18 @@ Run code review against spec requirements using review skills.
    - **Test coverage**: Verify tests exist for critical paths
 4. Report findings with confidence scores (0-100, only report issues >= 80)
 5. Group findings by severity: Critical > Important > Suggestion
+6. Append spec gaps back to the spec: for each Critical or Important finding that
+   reports a missing, ambiguous, or contradicted requirement, add a row to the
+   `## Open Questions` table in `specs/NNN-feature-name/spec.md` whose Question
+   column opens with the finding ID
 
 ## Output
 
 Review findings reported to user. Optionally written to
 `specs/NNN-feature-name/checklist-review.md`.
+
+Spec gaps among the Critical and Important findings are also added to the
+`## Open Questions` table in `specs/NNN-feature-name/spec.md`.
 
 ## Finding Format
 
@@ -37,6 +44,7 @@ Each finding includes:
 - Clear description with confidence score
 - File path and line reference
 - Specific recommendation or fix suggestion
+- A finding ID of the form `R-NNN`, unique within the review run
 
 Findings below 80 confidence are suppressed to reduce noise.
 
