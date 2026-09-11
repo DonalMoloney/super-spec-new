@@ -34,6 +34,19 @@ skills to `~/.agents/skills/` or `.agents/skills/` for richer brainstorming,
 planning, and execution capabilities. See [superpowers-bridge.md](references/superpowers-bridge.md)
 for detection and integration details.
 
+## Target surface
+
+Specflow runs on Claude Code and on the GitHub Copilot CLI. Every command works
+on both. Three steps behave differently:
+
+| Step | Claude Code | Copilot CLI |
+|------|-------------|-------------|
+| `[P]` and `[SUBAGENT]` tasks in execute | Task tool or Agent Teams, in parallel | In order, in the session |
+| Test gate before ticking a task | `.claude/hooks/test-gate.sh` runs on edit | The agent runs the test command itself |
+| Review risk tier | `.claude/hooks/risk-classifier.sh` when present | The prose rule in `commands/review.md` |
+
+`references/copilot-cli.md` lists the fallback for each command.
+
 ## Project Structure
 
 When initialized, specflow relies on spec-kit's two top-level directories
