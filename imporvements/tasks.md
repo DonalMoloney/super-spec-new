@@ -174,7 +174,7 @@ Verify: the ADR exists and `decisions.md` stays under 60 lines.
 
 ---
 
-## G-05 — Item 6 / Part 4.13: adversarial review agents and findings schema
+## G-05 — Item 6 / Part 4.13: adversarial review agents and findings schema (working on)
 
 Source: Part 3, Part 4.8, Part 4.13. Effort: medium. Depends on: none (G-04 aliases help but are not required).
 Claude: `general-purpose` for the agent files, `bdd-orchestrator` for the schema validator.
@@ -268,7 +268,7 @@ Verify: each query runs without error against the test line from T071.
 
 ---
 
-## G-08 — Intent dispatcher skill
+## G-08 — Intent dispatcher skill (working on)
 
 Source: Part 2 "Intent dispatcher", Part 4.6. Effort: low. Depends on: none.
 Claude: `general-purpose`; run `plugin-dev:skill-reviewer` on the result.
@@ -431,7 +431,7 @@ Verify: `grep -n 'handoff.md' specflow/commands/execute.md specflow/references/w
 
 ---
 
-## G-13 — Items 12 and 19: golden-run scorer and eval replay
+## G-13 — Items 12 and 19: golden-run scorer and eval replay (working on)
 
 Source: Part 2 items 12, 19. Effort: medium-high. Depends on: G-01 (smoke test must pass).
 Claude: `bdd-orchestrator`.
@@ -538,7 +538,7 @@ Verify: `grep -n 'Budgets' .claude/agents/bdd-orchestrator.md` prints a line.
 
 ---
 
-## G-17 — Item 8: close the review loop
+## G-17 — Item 8: close the review loop (working on)
 
 Source: Part 2 item 8. Effort: low. Depends on: none.
 Claude: `general-purpose`, then `work-verifier`.
