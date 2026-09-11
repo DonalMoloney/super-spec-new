@@ -320,6 +320,43 @@ d="$(review_dir)"; write_findings "$d" claude Critical open; touch "$d/$MARKER"
 merge_gate "$d" >/dev/null
 check "blocked merge clears a stale marker"      0 "$([ ! -f "$d/$MARKER" ]; echo $?)"
 
+# --- log-phase.sh (Stop) ---
+telemetry_repo() { # -> dir containing an empty .claude/
+  local d; d="$(mktemp -d)"; mkdir -p "$d/.claude"; echo "$d"
+}
+log_phase() { # dir json -> prints exit code
+  (cd "$1" && run_hook log-phase.sh "$2")
+}
+
+r17="$(telemetry_repo)"
+check "stop hook exits 0" 0 "$(log_phase "$r17" '{"session_id":"abc"}')"
+check "exactly one telemetry line is appended" 0 "$([ "$(wc -l < "$r17/.claude/telemetry.jsonl")" -eq 1 ]; echo $?)"
+check "telemetry line parses as JSON" 0 "$(jq -e . "$r17/.claude/telemetry.jsonl" >/dev/null 2>&1; echo $?)"
+check_has "telemetry line carries the session id" "$(jq -r '.session' "$r17/.claude/telemetry.jsonl")" "abc"
+check_has "telemetry line names the stop event"   "$(jq -r '.event'   "$r17/.claude/telemetry.jsonl")" "stop"
+
+r18="$(telemetry_repo)"; printf 'implement\n' > "$r18/.claude/.current-phase"
+log_phase "$r18" '{"session_id":"abc"}' >/dev/null
+check_has "phase is read from .current-phase" "$(jq -r '.phase' "$r18/.claude/telemetry.jsonl")" "implement"
+
+r19="$(telemetry_repo)"
+log_phase "$r19" '{"session_id":"abc"}' >/dev/null
+check_has "absent .current-phase logs unknown" "$(jq -r '.phase' "$r19/.claude/telemetry.jsonl")" "unknown"
+
+r20="$(telemetry_repo)"
+log_phase "$r20" '{"session_id":"abc"}' >/dev/null
+log_phase "$r20" '{"session_id":"def"}' >/dev/null
+check "a second turn appends instead of overwriting" 0 "$([ "$(wc -l < "$r20/.claude/telemetry.jsonl")" -eq 2 ]; echo $?)"
+
+r21="$(telemetry_repo)"
+check "non-JSON stdin exits 0"  0 "$(log_phase "$r21" 'not json at all {{{')"
+check "non-JSON stdin still logs a line that parses" 0 "$(jq -e . "$r21/.claude/telemetry.jsonl" >/dev/null 2>&1; echo $?)"
+check "non-JSON stdin logs an empty session" 0 "$([ -z "$(jq -r '.session' "$r21/.claude/telemetry.jsonl")" ]; echo $?)"
+
+r22="$(mktemp -d)"
+check "missing .claude directory exits 0" 0 "$(log_phase "$r22" '{"session_id":"abc"}')"
+check "missing .claude directory is not created" 0 "$([ ! -e "$r22/.claude" ]; echo $?)"
+
 # --- .claude/review/schema.json (findings contract read by the reviewer agents) ---
 cd "$HOOKS/../.."
 python3 -c 'import json;json.load(open(".claude/review/schema.json"))' >/dev/null 2>&1
