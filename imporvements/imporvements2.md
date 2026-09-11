@@ -29,7 +29,7 @@ This v2 keeps every item, template, command, and verified fact from the two v1 d
 **Verified live, Sept 11 2026** (GitHub repo page for WangX0111/superspec, repo id 1217951047; description confirmed "Superpowers Bridge for Spec-Kit — Bridges spec-kit specification-driven development with obra/superpowers agent capabilities"):
 
 - **What it is.** A Spec-Kit extension / agent skill (id `superpowers`, "Superpowers Bridge") that bridges GitHub Spec Kit's governance artifacts with obra/superpowers' execution skills. MIT licensed. Small, early, lightly maintained.
-- **Install.** Catalog: `specify extension add superspec`. Pinned release: `specify extension add superspec --from https://github.com/WangX0111/superspec/archive/refs/tags/v1.0.1.zip` (tag v1.0.1 is the version on the SpecKit Extensions community page — **verify the latest tag in your version**). From source: `git clone https://github.com/WangX0111/superspec.git` then `specify extension add ./superspec --dev`. As an agent skill: symlink into `~/.claude/skills/superspec`, `~/.codex/skills/superspec`, or `~/.agents/skills/superspec`. Confirm with `/speckit.superspec.status`.
+- **Install.** Catalog: `specify extension add superspec`. Pinned release: `specify extension add superspec --from https://github.com/WangX0111/superspec/archive/refs/tags/v1.0.1.zip` (tag v1.0.1 is the version on the SpecKit Extensions community page — **verify the latest tag in your version**). From source: `git clone https://github.com/WangX0111/superspec.git` then `specify extension add ./superspec --dev`. As an agent skill: symlink into `~/.claude/skills/superspec` or `~/.agents/skills/superspec`. Confirm with `/speckit.superspec.status`.
 - **Commands.** Adds 5 commands on top of Spec Kit's core: `/speckit.superspec.status`, `/speckit.superspec.brainstorm`, `/speckit.superspec.tasks`, `/speckit.superspec.execute`, `/speckit.superspec.review`. (The repo README's own "5 commands" note lists core Spec Kit commands `/speckit.constitution`, `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.checklist` — **verify the exact roster in your installed version**.)
 - **Flow.** README describes a 7-stage flow (constitution → specify → brainstorm → plan → tasks → execute → review); the architecture diagram groups it into 6 phases.
 - **State.** Persisted as markdown/YAML under `.specify/memory/` (governance) and `specs/NNN-*/` (per-feature: `spec.md`, `plan.md`, `tasks.md`, `progress.yml`), making runs resumable.
@@ -593,7 +593,6 @@ specify extension add superspec
 specify extension add superspec --from https://github.com/WangX0111/superspec/archive/refs/tags/v1.0.1.zip
 git clone https://github.com/WangX0111/superspec.git && specify extension add ./superspec --dev
 ln -sf "$(pwd)/superspec" ~/.claude/skills/superspec
-ln -sf "$(pwd)/superspec" ~/.codex/skills/superspec
 /speckit.superspec.status
 ```
 
@@ -651,7 +650,7 @@ flowchart TD
 - **Onboarding a new developer:** point them at `CLAUDE.md` (which `@import`s the constitution and decisions), have them replay `examples/static-landing-page/` via `scripts/e2e-agent-claude.sh`, then give them a `bounded` spike.
 - **Brownfield migration:** generate the constitution *from existing conventions* (have Claude read the repo and draft `## Code Review Rules`, test command, layout, forbidden deps), commit it, then run the **first spec on a small, low-risk feature** to validate the pipeline before rolling it out.
 - **Fully headless:** drive the whole pipeline with `claude -p`/`codex exec` steps in CI, each with `--output-format json`, scoped `--allowedTools`, `--max-turns`, `timeout`, and the budget cap; persist artifacts as build outputs; human gates become required PR approvals.
-- **Codex as primary harness end-to-end:** put rules in `AGENTS.md` (Codex reads the nearest one; keep it **stable during a session** to preserve prompt caching); use `codex exec "..."` for phases and `codex review --base main --json` for review; symlink Superspec into `~/.codex/skills/`; use Claude as the *cross-model* reviewer via headless `claude -p`.
+- **Codex as primary harness end-to-end:** put rules in `AGENTS.md` (Codex reads the nearest one; keep it **stable during a session** to preserve prompt caching); use `codex exec "..."` for phases and `codex review --base main --json` for review; use Claude as the *cross-model* reviewer via headless `claude -p`.
 
 ### 5.10 Codex CLI notes (v1 + refreshed)
 **`codex exec "<task>"`** is the headless entry point: prompt in, result out, progress on stderr, final message on stdout, clean exit. **`codex review --base main --json`** runs a review. Codex reads `## Code Review Rules` from the nearest `AGENTS.md`. Keep `.specify/` neutral; Codex config lives under `.codex/` (`config.toml`). Sandboxing: `-s read-only|workspace-write`, `--full-auto`, `--yolo` (dangerous). **`--output-schema` requires a gpt-5-family model and can't be combined with `codex exec resume`** (verify). Codex hooks and teams equivalents differ from Claude: **verify in your version**.
