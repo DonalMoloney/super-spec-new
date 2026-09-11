@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # PostToolUse hook (matcher: Edit|Write). Validates the structure of a just
-# edited spec.md / plan.md / tasks.md against specflow's templates. Exit 2
+# edited spec.md / plan.md / tasks.md / checklist-*.md against specflow's templates. Exit 2
 # feeds the findings back to Claude so it fixes them before moving on.
 # Required sections mirror the *(mandatory)* headings in specflow/templates/.
 set -euo pipefail
@@ -19,6 +19,9 @@ case "$(basename "$path")" in
     ;;
   plan.md)
     require_sections "## Summary" "## Technical Context" "## Constitution Check"
+    ;;
+  checklist-*.md)
+    grep -Eq '^[[:space:]]*[-*+][[:space:]]+\[[ xX]\]([[:space:]]|$)' "$path" || err "no checkbox lines (expected '- [ ] ...' or '- [x] ...')"
     ;;
   tasks.md)
     grep -Eq '^- \[[ xX]\] T[0-9]{3}' "$path" || err "no task lines with stable IDs (expected '- [ ] T001 ...')"
