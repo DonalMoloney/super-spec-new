@@ -576,14 +576,14 @@ Decided 2026-09-11: keep Codex as an executor. Codex is not a runtime target for
 implementer and cross-model reviewer for this repo's own development. The Codex
 executor lines in this file and the G-15 differential group stand unchanged.
 
-- [ ] T181 Rewrite the scope note
+- [x] T181 Rewrite the scope note
 
 1. Replace the scope note at the top of `imporvements2.md` with the decision above.
 2. Drop the "pending cleanup" framing; the question is settled.
 
 Verify: the note states that Codex is not a runtime target and is an allowed executor.
 
-- [ ] T182 Remove the Codex install steps and CI step
+- [x] T182 Remove the Codex install steps and CI step
 
 1. Remove the Codex install steps from Parts 5.3, 5.10, and Appendix A.
 2. Remove the Codex CI step from Part 4.11, matching the note already in G-09.
