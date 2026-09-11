@@ -1,6 +1,9 @@
 @AGENTS.md
 @decisions.md
 @open-questions.md
+@standards/code.md
+@standards/documentation.md
+@standards/presentations.md
 
 ## Claude Code specifics
 
