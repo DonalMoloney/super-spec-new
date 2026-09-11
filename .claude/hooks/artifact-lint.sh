@@ -29,6 +29,9 @@ case "$(basename "$path")" in
     if grep -E '^- \[[ xX]\].*\[P\]' "$path" | grep -vqE '^- \[[ xX]\] T[0-9]{3}'; then
       err "malformed [P] marker: a checkbox line with [P] must start with '- [ ] TNNN'"
     fi
+    # AGENTS.md: one outcome per task; a description that needs "and" is two tasks.
+    compound="$(grep -E '^- \[[ xX]\] T[0-9]{3}' "$path" | sed -E 's/`[^`]*`//g' | grep -E '[[:space:]]and[[:space:]]' | head -n1 || true)"
+    [ -z "$compound" ] || err "compound task: '$compound'. One outcome per task; split it at 'and'."
     # A regenerated tasks.md that drops a completed id orphans its progress.yml entry.
     progress="$(dirname "$path")/progress.yml"
     if [ -f "$progress" ]; then
