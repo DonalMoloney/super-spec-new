@@ -181,7 +181,8 @@ model families; alias versions can change. Actual cost savings remain unmeasured
   The PR description states that the trigger was overridden.
 - Consequences: T153 stays runnable without editing the golden to manufacture a
   fourth open question. A real feature still follows the trigger rule; only this
-  one validation run skips it. T153 remains blocked on the Codex usage limit.
+  one validation run skips it. T153 ran on 2026-09-11 with a Claude agent on
+  both sides, because Codex was rate limited; PR #50 records the divergences.
 
 ## ADR-0012: A CI finding is rebutted by a PR label, not by editing the findings file
 

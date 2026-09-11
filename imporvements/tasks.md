@@ -501,7 +501,7 @@ Verify: `E2E_DRY_RUN=1 bash scripts/e2e-agent-claude.sh` exits 0.
 
 ---
 
-## G-15 — Item 14: differential implementation (Claude vs Codex) (merged: PR #44; T153 open)
+## G-15 — Item 14: differential implementation (Claude vs Codex) (merged: PR #44)
 
 Source: Part 2 item 14. Effort: medium-high. Depends on: none. This is the one group where both executors run, by design.
 Claude: `bdd-orchestrator` for the script; then `general-purpose` for the protocol doc.
@@ -522,7 +522,7 @@ Verify: hook tests pass.
 
 Verify: the section names the trigger rule and the cross-test step.
 
-- [ ] T153 Dry run on the example
+- [x] T153 Dry run on the example
 
 1. Run the protocol once on `examples/static-landing-page/` with both executors. The example classifies `STANDARD` and lists three open questions, so the run overrides the trigger rule on purpose; ADR-0011 records why.
 2. Record the divergences found (or "none") in the PR description.
