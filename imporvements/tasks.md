@@ -273,7 +273,7 @@ Source: Part 2 "Intent dispatcher", Part 4.6. Effort: low. Depends on: none.
 Claude: `general-purpose`; run `plugin-dev:skill-reviewer` on the result.
 Codex: `codex:codex-rescue --wait`; then `codex review --base main`.
 
-- [ ] T081 Write the skill
+- [x] T081 Write the skill
 
 1. Create `.claude/skills/specflow-dispatcher/SKILL.md` from Part 4.6.
 2. Rename every `/speckit.superspec.*` command to `/speckit.specflow.*` (this repo's namespace).
@@ -282,7 +282,7 @@ Codex: `codex:codex-rescue --wait`; then `codex review --base main`.
 
 Verify: `grep -c 'superspec' .claude/skills/specflow-dispatcher/SKILL.md` prints 0.
 
-- [ ] T082 Review the trigger description
+- [x] T082 Review the trigger description
 
 1. Dispatch `plugin-dev:skill-reviewer` on the new skill.
 2. Apply only the description-wording findings.
