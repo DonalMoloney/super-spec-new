@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Blocks a merge while a Critical or Important finding is unresolved. A finding
+# counts as resolved only when its status is "fixed" or "rebutted"; the critic
+# stage judges a rebuttal and files its own finding when the rebuttal fails.
+# Minor findings never block. Pass a glob to read findings elsewhere.
+set -euo pipefail
+findings_glob="${1:-.claude/review/*.json}"
+MARKER=".claude/review/.merge-approved"
+SCHEMA_FILE="schema.json" # the findings contract shares the directory with the reports
+count_unresolved() { # severity file -> number of findings that still block
+  jq --arg severity "$1" '
+    [ .findings[]
+      | select(.severity == $severity)
+      | select((.status // "open") != "fixed" and (.status // "open") != "rebutted")
+    ] | length' "$2"
+}
+# A marker left by an earlier run would outlive the findings that earned it.
+rm -f "$MARKER"
+unresolved_critical=0
+unresolved_important=0
+for file in $findings_glob; do
+  [ -e "$file" ] || continue
+  if [ "$(basename "$file")" = "$SCHEMA_FILE" ]; then continue; fi
+  if ! critical_in_file="$(count_unresolved Critical "$file")"; then
+    echo "merge-gate: $file does not parse as a findings document; expected an object with a findings array matching .claude/review/schema.json. Fix the file or move it out of the review directory." >&2
+    exit 1
+  fi
+  important_in_file="$(count_unresolved Important "$file")"
+  unresolved_critical=$((unresolved_critical + critical_in_file))
+  unresolved_important=$((unresolved_important + important_in_file))
+done
+if [ "$unresolved_critical" -gt 0 ]; then
+  echo "MERGE BLOCKED: Critical findings unresolved: $unresolved_critical. Expected 0. Fix or rebut each finding, then rerun." >&2
+  exit 1
+fi
+if [ "$unresolved_important" -gt 0 ]; then
+  echo "MERGE BLOCKED: Important findings unresolved: $unresolved_important. Expected 0. Fix or rebut each finding, then rerun." >&2
+  exit 1
+fi
+mkdir -p "$(dirname "$MARKER")"
+touch "$MARKER"
+echo "MERGE GATE PASSED."

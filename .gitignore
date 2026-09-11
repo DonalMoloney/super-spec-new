@@ -1,3 +1,6 @@
 diff.md
+.claude/review/*.json
+!.claude/review/schema.json
+.claude/review/.merge-approved
 .claude/telemetry.jsonl
 .claude/.current-phase
