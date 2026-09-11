@@ -149,6 +149,12 @@ this is the one place both surfaces read:
 - Each group = one worktree in `~/PycharmProjects/worktrees/<group-name>` with its own agent run.
 - After completion, worktree is deleted and the PR is merged to main.
 
+**Coordination:** Before creating a worktree for a group, mark it as "working on" in `imporvements/tasks.md`:
+- Change the group header from `## G-NN — [title]` to `## G-NN — [title] (working on)`
+- Commit this change to main immediately so other worktrees see it
+- When the group completes and merges, remove "(working on)" marker
+- This prevents simultaneous development of the same group across multiple worktrees
+
 **Agent dispatch pattern:**
 - Create worktree: `git worktree add ~/PycharmProjects/worktrees/G-01-<name> -b <branch-name>`
 - Dispatch agent: e.g., `bdd-orchestrator` for groups with script/hook/CI changes
