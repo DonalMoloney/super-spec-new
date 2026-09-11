@@ -44,3 +44,87 @@ Assign `sonnet` to `gherkin-writer`, `step-definition-scaffolder`, `task-decompo
 Assign `haiku` to `red-phase-verifier`, `green-phase-verifier`, `regression-runner`,
 `documentation-scribe`, and `release-reporter`. Consequences: routing uses explicit
 model families; alias versions can change. Actual cost savings remain unmeasured.
+
+## ADR-0004: The main-commit gate evaluates the landing branch, not HEAD
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: `block-main-commit.sh` read `git rev-parse --abbrev-ref HEAD` at
+  PreToolUse time. A PreToolUse hook fires before the command runs, so that
+  reading answers the wrong question. `git switch -c feat && git commit` was
+  blocked on main, and `git switch main && git commit` was allowed from a
+  feature branch.
+- Decision: split the command on `&&`, `||`, `;`, and `|`, walk the segments in
+  execution order, and track the branch each `switch` or `checkout` leaves
+  behind. Evaluate that branch when a segment commits. A segment counts as a
+  command only when it starts with `git <subcommand>`, so prose quoting git does
+  not steer the gate. A segment that moves HEAD somewhere the gate cannot name,
+  such as `git switch -`, blocks.
+- Consequences: the gate now blocks a commit it used to allow. It reads the
+  command text, not the shell's parse, so a switch written inside a conditional
+  or a function body goes unseen and the commit is judged against the branch at
+  hook time. That direction blocks rather than allows.
+
+## ADR-0005: `risk-classifier.sh` scores with integer counts, not `bc`
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: the Part 4.10 draft pipes `git diff --shortstat` through `bc` to add
+  insertions and deletions. macOS ships bash 3.2, which has no floating-point
+  arithmetic, and `bc` is absent from a bare shell.
+- Decision: the classifier reads `git diff --numstat` and sums the per-file counts
+  in `$(( ))`. Changed lines and changed files are both whole numbers, and both
+  thresholds (400 lines, 15 files) are whole numbers, so no fractional score exists
+  to lose precision on. A binary file reports a dash in numstat; it counts as a file
+  and contributes no lines.
+- Consequences: the script needs only git and bash. A later rule that wants a ratio
+  must compare two integer products, such as `a * 100 -gt b * 30`, never a decimal.
+
+## ADR-0006: A finding clears the merge gate only when fixed or rebutted
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: the findings schema allows five statuses across three severities. The
+  Part 4.9 draft blocks only on `open`, so flipping a Critical to `rejected` clears
+  the gate with no code change and no argument on record.
+- Decision: block every Critical and Important finding until its status is `fixed`
+  or `rebutted`. `open`, `accepted`, and `rejected` block, because none of them
+  changes the code or records a counter-argument. A missing status reads as `open`,
+  the schema default. Minor never blocks. A rebuttal clears any severity, Critical
+  included: the gate checks that a finding was handled, and the critic stage judges
+  whether the handling holds, filing its own open finding when it does not.
+- Consequences: the gate stays a mechanical check. Without a critic stage an author
+  can clear a Critical by writing a rebuttal; `risk-classifier.sh` decides when the
+  critic stage runs.
+
+## ADR-0007: A task keeps its ID when the outcome matches, not the text or the position
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: regenerating `tasks.md` after a spec change has to decide which
+  regenerated task is the old one. Matching on task text loses the ID on any
+  reword. Matching on list position renumbers every task after an insertion,
+  which is the failure the stable IDs exist to prevent.
+- Decision: identity is the outcome a task names. A regenerated task keeps the
+  ID of the existing task with the same outcome, whatever the wording or the
+  position. IDs are append-only: a new task takes the next ID above the highest
+  ever used, and a retired ID is never handed to a different task.
+- Consequences: matching is a judgment the command makes, so the diff summary
+  in ADR-0005 is what makes it reviewable. Append-only allocation leaves gaps in
+  the numbering, which is the cost of never invalidating `progress.yml`.
+
+## ADR-0008: The tasks diff summary always prints and blocks only on a completed ID
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: `/speckit.specflow.tasks` prints added, removed, and renumbered IDs
+  before writing. Blocking every regeneration on a confirmation prompt stalls
+  the automated pipeline; blocking on nothing lets a destructive regeneration
+  through unseen.
+- Decision: print the summary on every regeneration. Stop for confirmation only
+  when a removed or renumbered ID is one that `progress.yml` records as
+  complete, because that is the only change that destroys recorded work.
+  Additions, removals of unstarted tasks, and reordering write without a prompt.
+- Consequences: the common regeneration stays unattended. The destructive case
+  needs a human. `artifact-lint.sh` catches the same case after the write, so a
+  regeneration that skips the prompt still fails the gate.

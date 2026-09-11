@@ -22,11 +22,17 @@ fresh_repo() { # branch
 # --- block-main-commit.sh (PreToolUse: Bash) ---
 r="$(fresh_repo main)"; cd "$r"
 check "commit on main is blocked"        2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git commit -m x"}}')"
+check "branch created then commit allowed"  0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git switch -c feat && git commit -m x"}}')"
+check "checkout -b then commit allowed"    0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git checkout -b feat && git commit -m x"}}')"
+check "commit before a later switch blocked" 2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git commit -m x && git switch -c feat"}}')"
+check "checkout of a path does not retarget" 2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git checkout . && git commit -m x"}}')"
 check "commit on master is blocked"      2 "$(cd "$(fresh_repo master)" && run_hook block-main-commit.sh '{"tool_input":{"command":"git add -A && git commit -m x"}}')"
 check "non-commit git on main allowed"   0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git status"}}')"
 check "empty command allowed"            0 "$(run_hook block-main-commit.sh '{"tool_input":{}}')"
 git switch -q -c feature
 check "commit on feature branch allowed" 0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git commit -m x"}}')"
+check "switch to main then commit blocked" 2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git switch main && git commit -m x"}}')"
+check "prose naming a switch does not retarget" 0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git commit -m msg-mentioning git switch main && git commit inline"}}')"
 cd /
 
 # --- test-gate.sh (PostToolUse: Edit|Write) ---
@@ -64,6 +70,13 @@ printf '# Tasks\n- [ ] do a without an id\n' > tasks.md
 check "tasks without T-ids blocked"             2 "$(lint tasks.md)"
 printf '# Tasks\n- [ ] T001 do a\n- [ ] [P] do b\n' > tasks.md
 check "malformed [P] line blocked"              2 "$(lint tasks.md)"
+printf '# Tasks\n- [x] T001 do a\n- [ ] T002 do b\n' > tasks.md
+printf 'spec: 001-x\nphases:\n  - phase: 1\n    tasks:\n      T001: complete\n' > progress.yml
+check "completed id still in tasks.md passes"   0 "$(lint tasks.md)"
+printf '# Tasks\n- [ ] T002 do b\n' > tasks.md
+check "completed id dropped from tasks.md blocked" 2 "$(lint tasks.md)"
+rm -f progress.yml
+check "dropped id allowed with no progress.yml" 0 "$(lint tasks.md)"
 printf '# Checklist\n- [ ] Confirm the requirement.\n' > checklist-quality.md
 check "unchecked checklist passes"              0 "$(lint checklist-quality.md)"
 printf '# Checklist\n- [x] Confirm the requirement.\n' > checklist-quality.md
@@ -240,6 +253,72 @@ sm="$(printf '%s\n' "$out" | grep -n "^spec: 001-x" | head -1 | cut -d: -f1)"
 tl="$(printf '%s\n' "$out" | grep -n "T002 pending" | head -1 | cut -d: -f1)"
 hd="$(printf '%s\n' "$out" | grep -n "HANDOFF-MARKER" | head -1 | cut -d: -f1)"
 check "section order is open-questions, summary, task, handoff" 0 "$([ -n "$oq" ] && [ -n "$sm" ] && [ -n "$tl" ] && [ -n "$hd" ] && [ "$oq" -lt "$sm" ] && [ "$sm" -lt "$tl" ] && [ "$tl" -lt "$hd" ]; echo $?)"
+
+# --- risk-classifier.sh (run by the review pipeline against a base ref) ---
+check_out() { # name expected actual
+  if [ "$2" = "$3" ]; then pass=$((pass+1)); echo "ok   $1"
+  else fail=$((fail+1)); echo "FAIL $1 (expected '$2', got '$3')"; fi
+}
+branch_with() { # path content -> repo on a feature branch holding that file
+  local d; d="$(fresh_repo main)"
+  git -C "$d" switch -q -c feature
+  mkdir -p "$d/$(dirname "$1")"
+  printf '%s\n' "$2" > "$d/$1"
+  git -C "$d" add -A
+  git -C "$d" -c user.email=t@t -c user.name=t commit -q -m change
+  echo "$d"
+}
+classify() { # repo -> HIGH or STANDARD
+  ( cd "$1" && bash "$HOOKS/risk-classifier.sh" main 2>/dev/null )
+}
+check_out "diff touching auth/ is HIGH"     HIGH     "$(classify "$(branch_with auth/session.sh 'check_token')")"
+check_out "lockfile change is HIGH"         HIGH     "$(classify "$(branch_with package-lock.json '{}')")"
+check_out "two-line doc change is STANDARD" STANDARD "$(classify "$(branch_with docs/notes.md $'line one\nline two')")"
+classify_exit() { # repo base -> exit code
+  ( cd "$1" && bash "$HOOKS/risk-classifier.sh" "$2" >/dev/null 2>&1 ); echo $?
+}
+check "unknown base ref fails closed" 2 "$(classify_exit "$(branch_with docs/notes.md one)" no-such-ref)"
+
+# --- merge-gate.sh (run before a merge; reads the reviewer findings documents) ---
+MARKER=".claude/review/.merge-approved"
+review_dir() { # -> project dir holding an empty .claude/review/
+  local d; d="$(mktemp -d)"; mkdir -p "$d/.claude/review"; echo "$d"
+}
+write_findings() { # dir reviewer severity status
+  cat > "$1/.claude/review/$2.json" <<JSON
+{"schema_version":"1.0","reviewer":"$2","verdict":"BLOCK","findings":[{"id":"F1","severity":"$3","location":"a.sh:1","evidence":"failing test","fix":"do the thing","status":"$4"}]}
+JSON
+}
+merge_gate() { # dir -> exit code
+  ( cd "$1" && bash "$HOOKS/merge-gate.sh" >/dev/null 2>&1 ); echo $?
+}
+d="$(review_dir)"; write_findings "$d" claude Critical open
+check "open Critical blocks the merge"           1 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Critical accepted
+check "accepted Critical blocks the merge"       1 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Critical rebutted
+check "rebutted Critical clears the merge"       0 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Important open
+check "open Important blocks the merge"          1 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Important rebutted
+check "rebutted Important clears the merge"      0 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Important fixed
+check "fixed Important clears the merge"         0 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Minor open
+check "open Minor never blocks the merge"        0 "$(merge_gate "$d")"
+d="$(review_dir)"
+printf '%s\n' '{"schema_version":"1.0","reviewer":"claude","verdict":"BLOCK","findings":[{"id":"F1","severity":"Critical","location":"a.sh:1","evidence":"failing test","fix":"do the thing"}]}' > "$d/.claude/review/claude.json"
+check "Critical with no status blocks the merge" 1 "$(merge_gate "$d")"
+d="$(review_dir)"
+check "no findings documents clears the merge"   0 "$(merge_gate "$d")"
+check "cleared merge writes the approval marker" 0 "$([ -f "$d/$MARKER" ]; echo $?)"
+d="$(review_dir)"; cp "$HOOKS/../review/schema.json" "$d/.claude/review/schema.json"
+check "schema.json is not read as findings"      0 "$(merge_gate "$d")"
+d="$(review_dir)"; printf 'not json at all\n' > "$d/.claude/review/claude.json"
+check "unreadable findings document blocks"      1 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Critical open; touch "$d/$MARKER"
+merge_gate "$d" >/dev/null
+check "blocked merge clears a stale marker"      0 "$([ ! -f "$d/$MARKER" ]; echo $?)"
 
 # --- .claude/review/schema.json (findings contract read by the reviewer agents) ---
 cd "$HOOKS/../.."

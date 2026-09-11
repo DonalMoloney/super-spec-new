@@ -408,6 +408,49 @@ The agent MUST:
 
 ---
 
+## Budgets
+
+Each phase has a recommended token ceiling and suggested model class. Headless runs can enforce the ceiling via the Claude budget-cap flag (name not yet confirmed; see G-09 T092). Tune these values per organization: higher ceilings allow more thorough exploration; lower ceilings prioritize cost.
+
+| Phase | Token Ceiling | Model Class | Notes |
+|-------|---------------|-------------|-------|
+| 0 - Constitution | 150k | Haiku | Lightweight interview; mechanical |
+| 1 - Specify | 200k | Sonnet | Balanced specification; user interview |
+| 2 - Brainstorm | 250k | Opus | Thorough questioning; divergent thinking pays off |
+| 3 - Plan | 200k | Sonnet | Technical planning; research codebase |
+| 4 - Tasks | 150k | Sonnet | Task decomposition; mechanical breakdown |
+| 5 - Execute | 500k | Variable | Most expensive; actual implementation. Mix: Haiku (mechanical), Sonnet (normal), Opus (complex). |
+| 6 - Review | 300k | Opus | Multi-lens review; high-stakes reasoning. Scale with risk level (STRIDE, security, cross-model). |
+
+**Headless gating:** In CI workflows, pass `--max-turns 6` and the budget-cap flag to the `claude -p` invocation. Example: `claude -p "..." --output-format json --max-turns 6 [budget-flag-TBD]`. Phase overages are reported in the JSON output as `total_cost_usd`; gates can reject runs exceeding the ceiling.
+
+**Tuning:** Track actual spend per phase (`.specify/telemetry.jsonl` + `jq` rollup); adjust ceilings weekly based on feature complexity and harness speed. HIGH-risk features (auth, payments, migrations) typically exceed standard ceilings by 20–50%; allocate accordingly or extend the critic loop allowance.
+
+---
+
+## Hotfix path
+
+A defect in a released feature takes the hotfix path. The hotfix path skips
+Phase 2 brainstorming and keeps every gate.
+
+1. Branch from the release tag that carries the defect.
+2. Write a failing test that reproduces the defect before changing any code.
+3. Write the smallest fix that turns the test green.
+4. Add tasks for the fix to the feature's `tasks.md` with new IDs. Completed
+   IDs keep their numbers.
+5. Remove `.clarified` and `.analyzed`, then run `/speckit.clarify` and
+   `/speckit.analyze` again. A hotfix changes the spec, so the analysis that
+   preceded it no longer holds.
+6. Run the merge gate. The merge gate is the one step the hotfix path cannot
+   skip, whatever the severity of the defect.
+7. Append a row to the spec's `## Changelog`: the new version, the date, and
+   one line naming the defect and the fix.
+
+Phase 2 drops out because a hotfix has one known outcome and nothing left to
+explore. Every other phase runs in its usual order.
+
+---
+
 ## Session Resumability
 
 Specflow is designed to survive session interruptions. All state lives in plain-text

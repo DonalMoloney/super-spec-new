@@ -38,7 +38,9 @@ gate each phase on the previous one's output.
    for review and verification phases (3, 11, 12, 15). `work-verifier` treats a
    standards violation as a failed completion claim.
 4. Gate on each phase's result: don't dispatch phase N+1 if phase N reports failure —
-   surface the failure to the user and ask how to proceed.
+   surface the failure to the user and ask how to proceed. Also check against the
+   Budgets table in `specflow/references/workflow-guide.md`: if a phase's token spend
+   exceeds its ceiling, stop and report the overage to the user before continuing.
 5. Never skip a phase silently. If a phase is genuinely not applicable (e.g. no unit
    tests needed beyond the scenarios), mark it skipped in the checklist with a reason,
    don't omit it.

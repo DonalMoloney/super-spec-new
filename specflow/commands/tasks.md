@@ -23,7 +23,17 @@ Generate a phased task breakdown using writing-plans skills.
    - `[REVIEW]` — requires code review before proceeding
    - `[SUBAGENT]` — can be delegated to a subagent
 6. Define phase dependencies and checkpoint gates
-7. Write to `specs/NNN-feature-name/tasks.md`
+7. **Preserve stable IDs**: if `specs/NNN-feature-name/tasks.md` already exists,
+   read every `TNNN` ID in it before writing. Match each regenerated task to an
+   existing task by the outcome it names, not by its wording and not by its
+   position in the list. A matched task keeps its existing ID. A task with no
+   match gets the next ID above the highest ID the file has ever used. A retired
+   ID is never handed to a different task.
+8. **Print a diff summary** of the regeneration before writing: the IDs added,
+   the IDs removed, and the IDs renumbered. If `specs/NNN-feature-name/progress.yml`
+   records a removed or renumbered ID as complete, stop and ask the user to
+   confirm; otherwise write the file.
+9. Write to `specs/NNN-feature-name/tasks.md`
 
 ## Output
 

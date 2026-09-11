@@ -531,21 +531,21 @@ Verify: PR description contains the divergence list.
 
 ---
 
-## G-16 — Item 22: cost governance (working on)
+## G-16 — Item 22: cost governance (merged: PR #27)
 
 Source: Part 2 item 22, Part 6, Appendix B. Effort: low. Depends on: G-04 (routing table exists).
 Claude: `documentation-scribe`.
 Model: `documentation-scribe` runs `haiku`.
 Codex: `codex:codex-rescue --wait`; then `codex review --base main`.
 
-- [ ] T161 Add the per-phase budget table
+- [x] T161 Add the per-phase budget table
 
 1. Add "Budgets" to `workflow-guide.md`: one row per phase with a token ceiling and a model class from Appendix B.
 2. Note the headless budget-cap flag by its verified name from G-09.
 
 Verify: the table has a row for each of the 7 workflow stages.
 
-- [ ] T162 Wire budgets into `bdd-orchestrator`
+- [x] T162 Wire budgets into `bdd-orchestrator`
 
 1. Add one line to `.claude/agents/bdd-orchestrator.md`: stop and report if a phase exceeds its Budgets row.
 
