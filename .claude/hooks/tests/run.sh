@@ -82,5 +82,10 @@ for f in "$EX"/*/spec.md "$EX"/*/plan.md "$EX"/*/tasks.md; do
   check "shipped example passes: $(basename "$(dirname "$f")")/$(basename "$f")" 0 "$(run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$f\"}}")"
 done
 
+# --- .claude/review/schema.json (findings contract read by the reviewer agents) ---
+cd "$HOOKS/../.."
+python3 -c 'import json;json.load(open(".claude/review/schema.json"))' >/dev/null 2>&1
+check "review findings schema parses as JSON" 0 $?
+
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]
