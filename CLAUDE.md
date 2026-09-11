@@ -16,6 +16,9 @@
 - `work-verifier` also stands alone: dispatch it any time a completion claim (yours,
   another agent's, or a prior session's) needs independent, adversarial re-checking
   before it's trusted — not only inside the BDD pipeline.
+- `prose-rephraser`, `script-refactorer`, and `divergence-auditor` rewrite one shipped
+  file under `specflow/` to `standards/` and measure the result against upstream. The
+  file table and dispatch order live in `imporvements/divergence-by-part.md`.
 - Follow `superpowers:test-driven-development` for any code task that ISN'T routed
   through the BDD squad above.
 - Before editing a command file under `specflow/commands/`, read its current Process

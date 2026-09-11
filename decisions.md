@@ -203,3 +203,20 @@ model families; alias versions can change. Actual cost savings remain unmeasured
   so a partial rebuttal still needs the code fixed. Only someone with triage
   rights can apply a label, which makes the reviewer-of-record the gatekeeper
   ADR-0006 assumed the critic stage would be.
+
+## ADR-0013: A rewrite for divergence changes prose and structure, never the contract
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: the shipped payload under `specflow/` sits at 8.6% real divergence
+  from upstream, and eight files are byte-identical after the rename. Rewriting
+  them raises divergence, but `e2e-smoke.sh`, both validators, and the hook
+  tests grep headings, step counts, and output lines.
+- Decision: `prose-rephraser` and `script-refactorer` each take one file and
+  freeze its contract: headings, numbered steps, code blocks, paths, markers,
+  exit codes, and output lines stay verbatim. Only sentences and code structure
+  change. `divergence-auditor` proves the result by measuring real percent
+  before and after with `measure-divergence.py` and running every guard.
+- Consequences: a rewrite can never add or remove a step; that stays a roadmap
+  move with its own item. The measurer lives under `.claude/divergence/`, so it
+  is not part of the archive and its tests run in CI beside the review tests.
