@@ -1,0 +1,93 @@
+name: Merge gate
+
+# Classifies the diff, reviews it headlessly into .claude/review/, then lets
+# merge-gate.sh judge the findings. The security review and the mutation run
+# cost money, so they run only on a HIGH-risk diff. The gate always runs.
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review-gate:
+    name: Review gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    env:
+      # An if: expression cannot read the secrets context, so key presence
+      # becomes an environment value first. A fork pull request receives no
+      # secrets and skips both review steps; this repository is private.
+      HAS_ANTHROPIC_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+      BASE_REF: origin/${{ github.base_ref }}
+
+    steps:
+      - name: Check out the merge commit
+        uses: actions/checkout@v4
+        with:
+          # risk-classifier.sh diffs base...HEAD and needs the base branch.
+          fetch-depth: 0
+
+      - name: Classify risk
+        id: risk
+        run: |
+          set -euo pipefail
+          level="$(.claude/hooks/risk-classifier.sh "$BASE_REF")"
+          echo "level=$level" >> "$GITHUB_OUTPUT"
+          echo "Risk level: $level"
+
+      - name: Headless Claude review
+        if: env.HAS_ANTHROPIC_KEY == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -euo pipefail
+          npm install -g @anthropic-ai/claude-code
+          timeout 300 claude -p "Read .claude/review/schema.json, then review the diff of $BASE_REF...HEAD against standards/code.md and against the feature spec under specs/, if one exists. Return one JSON object matching that schema, with reviewer set to headless-ci and stage set to correctness. Report at least one finding, or show criterion by criterion that the diff adds no untested behavior, no swallowed error, and no change the task did not name." \
+            --output-format json \
+            --allowedTools "Read,Grep,Bash(git diff:*)" \
+            --permission-mode plan \
+            --max-budget-usd 1.00 > review-envelope.json
+          # --output-format json wraps the answer in a result envelope. The
+          # findings document merge-gate.sh reads is the .result string.
+          if ! jq -e '.result | fromjson' review-envelope.json > headless-ci.json; then
+            echo "headless review: .result holds no findings document; expected JSON matching .claude/review/schema.json. Read the envelope below, then rerun the job." >&2
+            cat review-envelope.json >&2
+            exit 1
+          fi
+          # The document reaches .claude/review/ only after it validates, so the
+          # gate never reads a truncated file.
+          python3 .claude/review/validate-findings.py headless-ci.json
+          mv headless-ci.json .claude/review/headless-ci.json
+
+      - name: Anthropic security review
+        if: steps.risk.outputs.level == 'HIGH' && env.HAS_ANTHROPIC_KEY == 'true'
+        # Pinned to a commit because the action publishes no release tag.
+        uses: anthropics/claude-code-security-review@0c6a49f1fa56a1d472575da86a94dbc1edb78eda
+        with:
+          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          comment-pr: 'true'
+
+      - name: Semgrep
+        # Scanner findings are advisory; merge-gate.sh is the blocking check.
+        # continue-on-error reports a scanner failure instead of hiding it.
+        continue-on-error: true
+        run: pipx run semgrep ci
+
+      - name: Mutation score
+        if: steps.risk.outputs.level == 'HIGH'
+        # No mutmut configuration is committed, so the step reports a score and
+        # blocks nothing until a threshold is chosen.
+        continue-on-error: true
+        run: pipx run mutmut run --paths-to-mutate specflow/scripts
+
+      - name: Merge gate
+        if: always()
+        run: .claude/hooks/merge-gate.sh ".claude/review/*.json"
