@@ -401,7 +401,7 @@ Verify: `bash .claude/hooks/tests/run.sh` reports zero FAIL.
 
 ---
 
-## G-12 — Item 20: resumable sessions via `SessionStart`
+## G-12 — Item 20: resumable sessions via `SessionStart` (working on)
 
 Source: Part 2 item 20. Effort: medium. Depends on: none.
 Claude: `bdd-orchestrator`; use `claude-code-guide` for the `SessionStart` matcher values.
@@ -459,7 +459,7 @@ Verify: workflow YAML parses; `paths:` filter lists the three dirs.
 
 ---
 
-## G-14 — Item 5: Agent Teams for `[P]` tasks
+## G-14 — Item 5: Agent Teams for `[P]` tasks (working on)
 
 Source: Part 2 item 5. Effort: medium. Depends on: none.
 Claude: `general-purpose`; `claude-code-guide` first for the current env flag and limits.
