@@ -10,13 +10,13 @@ Print the project's progress, each feature's phase, and the superpowers detectio
 
 ## Process
 
-1. Scan `.specify/` directory structure
-2. Check if `constitution.md` exists
+1. Scan the `.specify/` directory tree.
+2. Check whether `constitution.md` exists.
 3. **Run superpowers detection**: Check for all superpowers skills at
    `.agents/skills/` and `~/.agents/skills/`. Write the result to
    `.specify/superpowers.yml`.
-4. For each spec directory, read `progress.yml` (or infer progress from existing files)
-5. Display a status summary:
+4. Read `progress.yml` in each spec directory, or infer the phase from the files present.
+5. Print a status summary:
 
 ```
 Specflow Project Status
@@ -32,7 +32,7 @@ Features:
 Suggested next step: /speckit.specflow.execute 001
 ```
 
-6. If no `.specify/` exists, suggest: "No specflow project found. Run
+6. If no `.specify/` directory exists, print: "No specflow project found. Run
    `/speckit.constitution` to get started."
 
 ## File Inference Fallback
@@ -47,8 +47,8 @@ If `progress.yml` is missing, infer the phase from the files present:
 ## Superpowers Detection
 
 Check for skills at these paths:
-1. `.agents/skills/{skill-name}/SKILL.md` (project-local)
-2. `~/.agents/skills/{skill-name}/SKILL.md` (user-global)
+1. Check `.agents/skills/{skill-name}/SKILL.md` first, the project-local path.
+2. Check `~/.agents/skills/{skill-name}/SKILL.md` second, the user-global path.
 
 The command writes the result to `.specify/superpowers.yml`. Read
 `references/superpowers-bridge.md` for the detection and adaptation rules.
