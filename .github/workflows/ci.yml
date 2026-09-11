@@ -6,9 +6,11 @@ on:
       - main
   pull_request:
 
+# Superseding a pull request run is fine: only the newest commit gets merged.
+# A push to main must never be cancelled, or a merged commit goes untested.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   validate:
