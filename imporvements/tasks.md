@@ -412,28 +412,28 @@ Verify: `bash .claude/hooks/tests/run.sh` reports zero FAIL.
 
 ---
 
-## G-12 — Item 20: resumable sessions via `SessionStart` (working on)
+## G-12 — Item 20: resumable sessions via `SessionStart` (merged: PR #22)
 
 Source: Part 2 item 20. Effort: medium. Depends on: none.
 Claude: `bdd-orchestrator`; use `claude-code-guide` for the `SessionStart` matcher values.
 Model: `bdd-orchestrator` runs `opus`; `claude-code-guide` inherits the session model.
 Codex: `codex:codex-rescue --background`; then `codex review --base main`.
 
-- [ ] T121 Add `session-start.sh`
+- [x] T121 Add `session-start.sh`
 
 1. Create `.claude/hooks/session-start.sh`: on `compact` or `resume`, print `open-questions.md`, the current feature's `progress.yml` summary, and the current task line; exit 0 always.
 2. Add a test: with a fixture `progress.yml`, stdout contains the current task ID.
 
 Verify: hook tests pass.
 
-- [ ] T122 Register with a matcher
+- [x] T122 Register with a matcher
 
 1. Add a `SessionStart` entry to `.claude/settings.json` with matcher `compact|resume`.
 2. Confirm the matcher syntax with `claude-code-guide`.
 
 Verify: `jq .hooks.SessionStart .claude/settings.json` prints the entry.
 
-- [ ] T123 Add the handoff note convention
+- [x] T123 Add the handoff note convention
 
 1. Add to `workflow-guide.md`: `execute` writes `specs/NNN/handoff.md` (5 lines max) at every checkpoint; `session-start.sh` prints it if present.
 2. Add the matching Process step to `specflow/commands/execute.md`.
