@@ -200,6 +200,8 @@ adapts only the input and output locations to spec-kit's layout.
 
 [superpowers-bridge.md](references/superpowers-bridge.md) states the detection
 paths, the adaptation rules, and each fallback.
+[copilot-cli.md](references/copilot-cli.md) lists, per command, what runs
+differently on the GitHub Copilot CLI.
 
 ## Submitting to the spec-kit catalog
 
