@@ -64,3 +64,35 @@ model families; alias versions can change. Actual cost savings remain unmeasured
   command text, not the shell's parse, so a switch written inside a conditional
   or a function body goes unseen and the commit is judged against the branch at
   hook time. That direction blocks rather than allows.
+
+## ADR-0005: `risk-classifier.sh` scores with integer counts, not `bc`
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: the Part 4.10 draft pipes `git diff --shortstat` through `bc` to add
+  insertions and deletions. macOS ships bash 3.2, which has no floating-point
+  arithmetic, and `bc` is absent from a bare shell.
+- Decision: the classifier reads `git diff --numstat` and sums the per-file counts
+  in `$(( ))`. Changed lines and changed files are both whole numbers, and both
+  thresholds (400 lines, 15 files) are whole numbers, so no fractional score exists
+  to lose precision on. A binary file reports a dash in numstat; it counts as a file
+  and contributes no lines.
+- Consequences: the script needs only git and bash. A later rule that wants a ratio
+  must compare two integer products, such as `a * 100 -gt b * 30`, never a decimal.
+
+## ADR-0006: A finding clears the merge gate only when fixed or rebutted
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: the findings schema allows five statuses across three severities. The
+  Part 4.9 draft blocks only on `open`, so flipping a Critical to `rejected` clears
+  the gate with no code change and no argument on record.
+- Decision: block every Critical and Important finding until its status is `fixed`
+  or `rebutted`. `open`, `accepted`, and `rejected` block, because none of them
+  changes the code or records a counter-argument. A missing status reads as `open`,
+  the schema default. Minor never blocks. A rebuttal clears any severity, Critical
+  included: the gate checks that a finding was handled, and the critic stage judges
+  whether the handling holds, filing its own open finding when it does not.
+- Consequences: the gate stays a mechanical check. Without a critic stage an author
+  can clear a Critical by writing a rebuttal; `risk-classifier.sh` decides when the
+  critic stage runs.
