@@ -4,7 +4,8 @@
 A golden run is only useful if regressions in its artifacts are measurable, so
 this script grades four dimensions a reviewer would otherwise check by hand:
 mandatory spec sections, criterion traceability, stable task ids, and leftover
-clarification markers. The report goes to stdout as a single JSON object; every
+clarification markers. Traceability grades whether each criterion has a filled
+test cell, not whether the reference in that cell resolves. The report goes to stdout as a single JSON object; every
 failure path writes a ``FAIL:`` line to stderr and exits 1 with stdout empty.
 The reported ``feature_dir`` echoes the argument as given and is not a scored
 field.
@@ -110,6 +111,12 @@ def declared_criteria(spec_lines: list[str]) -> set[str]:
 
 def traced_criteria(spec_lines: list[str]) -> set[str]:
     """Return the ids the Traceability table maps to a non-empty test cell.
+
+    A cell counts as traced when it holds any text other than ``-``, so the
+    placeholder ``TBD`` scores exactly as a real reference does. Nothing here
+    opens the file a ``file::anchor`` cell names or checks that the anchor
+    exists. A ``traceability.score`` of 100.0 therefore means every criterion
+    has a filled cell, not that every criterion has a test behind it.
 
     Ids the table names but spec.md never declares are the caller's problem to
     filter; this function reports what the table claims.
