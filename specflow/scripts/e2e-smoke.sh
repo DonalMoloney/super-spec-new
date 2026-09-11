@@ -69,7 +69,7 @@ assert_grep()    {
 step "1/5" "Initialize spec-kit in a fresh project"
 cd "$WORK" || exit 1
 if ! uvx --from git+https://github.com/github/spec-kit.git specify init \
-        --here --integration codex --ignore-agent-tools --force \
+        --here --integration claude --ignore-agent-tools --force \
         </dev/null >"$INIT_LOG" 2>&1; then
   fail "specify init exited non-zero (see $INIT_LOG)"
   echo "----- last 30 lines of init log -----"
@@ -102,6 +102,13 @@ for c in status brainstorm tasks execute review; do
               "$ADD_LOG"
 done
 
+# spec-kit registers each command as a skill directory holding a SKILL.md
+# symlink into .specify/extensions/, so -f resolves the link before checking.
+for c in status brainstorm tasks execute review; do
+  assert_file "Claude Code command file for speckit.specflow.$c" \
+              "$WORK/.claude/skills/speckit-specflow-$c/SKILL.md"
+done
+
 # Hook commands are stored in extensions.yml under each hook name.
 # Format (real):
 #   hooks:
@@ -127,6 +134,25 @@ uvx --from git+https://github.com/github/spec-kit.git specify extension list \
 assert_grep "extension list shows 'Commands: 5 | Hooks: 3'" \
             "Commands: 5 | Hooks: 3" \
             "$LIST_LOG"
+
+# -------------------------------------------------------------------------
+step "2b/5" "Install specflow for the GitHub Copilot CLI"
+WORK_COPILOT="$(mktemp -d -t specflow-e2e-copilot.XXXXXX)"
+cd "$WORK_COPILOT" || exit 1
+if ! uvx --from git+https://github.com/github/spec-kit.git specify init \
+        --here --integration copilot --ignore-agent-tools --force \
+        </dev/null >"$WORK_COPILOT/.init.log" 2>&1; then
+  fail "specify init for copilot exited non-zero (see $WORK_COPILOT/.init.log)"
+  tail -n 30 "$WORK_COPILOT/.init.log"
+  exit 1
+fi
+uvx --from git+https://github.com/github/spec-kit.git specify extension add "$REPO_ROOT" --dev \
+    </dev/null >"$WORK_COPILOT/.add.log" 2>&1 \
+  || fail "specify extension add for copilot exited non-zero (see $WORK_COPILOT/.add.log)"
+for c in status brainstorm tasks execute review; do
+  assert_file "Copilot command file for speckit.specflow.$c" \
+              "$WORK_COPILOT/.github/skills/speckit-specflow-$c/SKILL.md"
+done
 
 # -------------------------------------------------------------------------
 step "3/5" "Simulate /speckit.specify (calls create-new-feature.sh directly)"
