@@ -1,4 +1,6 @@
 @AGENTS.md
+@decisions.md
+@open-questions.md
 
 ## Claude Code specifics
 
@@ -16,3 +18,8 @@
 - Before editing a command file under `specflow/commands/`, read its current Process
   steps in full — these are behavior contracts other tooling (`e2e-smoke.sh`,
   `e2e-agent-claude.sh`) asserts against structurally.
+- Memory layer: `decisions.md` (ADR-lite) and `open-questions.md` are imported
+  above, so they are in context every session. Record a non-obvious choice as an
+  ADR when you make it; add a question when you find one you can't resolve.
+  Keep both files short: context is a finite attention budget, and recall
+  degrades as it grows. Prefer deleting resolved items over archiving them.
