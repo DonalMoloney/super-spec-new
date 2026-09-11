@@ -192,6 +192,9 @@ for marker in $GATE_MARKERS; do
   fi
 done
 
+# The status sample prints the gate markers per feature.
+assert_grep "status.md sample output reports gate markers" 'gates: clarified, analyzed' "$REPO_ROOT/commands/status.md"
+
 # -------------------------------------------------------------------------
 step "5/5" "Generated artifacts (for human review)"
 cd "$WORK" || exit 1
