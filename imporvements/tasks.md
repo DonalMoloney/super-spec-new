@@ -501,7 +501,7 @@ Verify: `E2E_DRY_RUN=1 bash scripts/e2e-agent-claude.sh` exits 0.
 
 ---
 
-## G-15 — Item 14: differential implementation (Claude vs Codex) (working on)
+## G-15 — Item 14: differential implementation (Claude vs Codex) (merged: PR #44; T153 open)
 
 Source: Part 2 item 14. Effort: medium-high. Depends on: none. This is the one group where both executors run, by design.
 Claude: `bdd-orchestrator` for the script; then `general-purpose` for the protocol doc.

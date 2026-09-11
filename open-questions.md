@@ -17,3 +17,20 @@ archive` a consuming project installs.
 Owner: whoever gives `specflow/commands/review.md` numbered stages, or
 rewords the guidance line to not depend on a stage number. Resolve by picking
 one and deleting this entry.
+
+## Does the landing-page example meet the differential-implementation trigger?
+
+G-15's protocol runs a differential implementation only when
+`.claude/hooks/risk-classifier.sh` prints `HIGH` or the spec lists more than
+three open questions. The `static-landing-page` golden has exactly three open
+questions and a docs-only diff, which classifies `STANDARD`. T153 asks for a
+dry run on that example, so the example the roadmap picked cannot trigger the
+rule the same group wrote.
+
+T153 is also blocked on a Codex account usage limit, verified 2026-09-11 at
+11:40: `codex exec` and the `codex:codex-rescue` agent both return "You've hit
+your usage limit", reset at 15:12.
+
+Owner: whoever retries T153. Resolve by either running the protocol on a spec
+that meets the trigger, or recording that the dry run deliberately overrides
+the trigger rule, then deleting this entry.
