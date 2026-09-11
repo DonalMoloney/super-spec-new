@@ -123,6 +123,25 @@ Every agent, on either target surface, produces work against the three files und
 - [`standards/presentations.md`](standards/presentations.md): how slide decks are
   formatted. Marp front matter, per-slide limits, deck shape, and a render check.
 
+## Code Review Rules
+
+- Review code against [standards/code.md](standards/code.md).
+- Run both extension validators from `specflow/` before approving a change:
+
+  ```bash
+  python3 scripts/validate-extension-metadata.py
+  python3 scripts/validate-release-archive.py
+  ```
+
+- Require the hook tests to pass. Run from the repository root:
+
+  ```bash
+  bash .claude/hooks/tests/run.sh
+  ```
+
+- Reject unresolved `[NEEDS CLARIFICATION]` markers in shipped templates.
+- Keep the English and Chinese README changes in sync.
+
 ## Agent behavior guidelines
 
 Adapted from [andrej-karpathy-skills CLAUDE.md](https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md).

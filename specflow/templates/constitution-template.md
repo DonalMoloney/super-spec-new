@@ -98,3 +98,12 @@ Any amendment requires:
 - Verification that core principles are not violated
 
 **Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
+
+## Code Review Rules
+
+- **Error handling**: Follow [ERROR_HANDLING_CONVENTION].
+- **Test command**: Run [TEST_COMMAND] before accepting a change.
+- **Forbidden dependencies**: Reject [FORBIDDEN_DEPENDENCIES].
+- **Security rules**: Enforce [SECURITY_RULES].
+- **Spec approved**: Require human approval before implementation. Record [SPEC_APPROVAL_EVIDENCE].
+- **Merge approved**: Require human approval before merging. Record [MERGE_APPROVAL_EVIDENCE].
