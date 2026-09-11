@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Tests for score-artifacts.py, the feature-directory artifact scorer."""
 
+import difflib
 import json
 import os
 import subprocess
@@ -20,6 +21,9 @@ GOLDEN_FEATURE_DIR = (
 SEEDED_BUG_FEATURE_DIR = (
     Path(__file__).resolve().parents[2] / "examples" / "seeded-bug"
 )
+
+SEEDED_BUG_EXTRA_FILE = Path("README.md")
+SEEDED_BUG_REMOVED_SPEC_ROW = "| SC-003 | `checklists/review.md::AS3.4` | Passing |"
 
 SPECFLOW_DIR = Path(__file__).resolve().parents[2]
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -650,3 +654,46 @@ def test_marker_in_a_non_utf8_file_is_still_located():
     assert report["needs_clarification"]["locations"] == [
         {"file": "notes.md", "line": 2}
     ]
+
+
+def files_under(root):
+    """Return every file under root as a path relative to root."""
+    return {path.relative_to(root) for path in root.rglob("*") if path.is_file()}
+
+
+def test_seeded_bug_differs_from_the_golden_only_by_the_sc_003_row():
+    golden_files = files_under(GOLDEN_FEATURE_DIR)
+    seeded_files = files_under(SEEDED_BUG_FEATURE_DIR)
+    assert seeded_files - golden_files == {SEEDED_BUG_EXTRA_FILE}, (
+        "seeded-bug holds files the landing page golden does not, beyond "
+        f"{SEEDED_BUG_EXTRA_FILE}: "
+        f"{sorted(str(name) for name in seeded_files - golden_files)}"
+    )
+    assert not golden_files - seeded_files, (
+        "seeded-bug is missing files the landing page golden holds: "
+        f"{sorted(str(name) for name in golden_files - seeded_files)}"
+    )
+    differing = sorted(
+        str(name)
+        for name in golden_files & seeded_files
+        if (GOLDEN_FEATURE_DIR / name).read_bytes()
+        != (SEEDED_BUG_FEATURE_DIR / name).read_bytes()
+    )
+    assert differing == ["spec.md"], (
+        "seeded-bug has drifted from the landing page golden. Only spec.md may "
+        f"differ, but these files differ: {differing}. Re-copy the drifted "
+        "files from "
+        "specflow/examples/static-landing-page/specs/001-static-landing-page/."
+    )
+    golden_spec = (GOLDEN_FEATURE_DIR / "spec.md").read_text(encoding="utf-8")
+    seeded_spec = (SEEDED_BUG_FEATURE_DIR / "spec.md").read_text(encoding="utf-8")
+    changes = [
+        line
+        for line in difflib.ndiff(golden_spec.splitlines(), seeded_spec.splitlines())
+        if line.startswith(("- ", "+ "))
+    ]
+    assert changes == [f"- {SEEDED_BUG_REMOVED_SPEC_ROW}"], (
+        "seeded-bug spec.md must differ from the landing page golden only by "
+        f"the removed row {SEEDED_BUG_REMOVED_SPEC_ROW!r}, but the differences "
+        f'are ("-" golden only, "+" seeded-bug only): {changes}'
+    )
