@@ -9,6 +9,9 @@ check() { # name expected_exit actual_exit
   if [ "$2" -eq "$3" ]; then pass=$((pass+1)); echo "ok   $1"
   else fail=$((fail+1)); echo "FAIL $1 (expected exit $2, got $3)"; fi
 }
+status_of() { # command... -> prints its exit code
+  "$@"; echo $?
+}
 run_hook() { # hook json  -> prints exit code
   printf '%s' "$2" | bash "$HOOKS/$1" >/dev/null 2>&1; echo $?
 }
@@ -20,7 +23,7 @@ fresh_repo() { # branch
 }
 
 # --- block-main-commit.sh (PreToolUse: Bash) ---
-r="$(fresh_repo main)"; cd "$r"
+r="$(fresh_repo main)"; cd "$r" || exit 1
 check "commit on main is blocked"        2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git commit -m x"}}')"
 check "branch created then commit allowed"  0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git switch -c feat && git commit -m x"}}')"
 check "checkout -b then commit allowed"    0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git checkout -b feat && git commit -m x"}}')"
@@ -36,7 +39,7 @@ check "prose naming a switch does not retarget" 0 "$(run_hook block-main-commit.
 cd /
 
 # --- test-gate.sh (PostToolUse: Edit|Write) ---
-r="$(fresh_repo feature)"; cd "$r"
+r="$(fresh_repo feature)"; cd "$r" || exit 1
 printf -- '- [ ] T001 first\n' > tasks.md
 git add tasks.md && git -c user.email=t@t -c user.name=t commit -q -m tasks
 J="{\"tool_input\":{\"file_path\":\"$r/tasks.md\"}}"
@@ -50,12 +53,14 @@ check "task added but not ticked -> allow" 0 "$(SPECFLOW_TEST_CMD=false run_hook
 cd /
 
 # --- artifact-lint.sh (PostToolUse: Edit|Write) ---
-r="$(fresh_repo feature)"; mkdir -p "$r/specs/001-x"; cd "$r/specs/001-x"
+r="$(fresh_repo feature)"; mkdir -p "$r/specs/001-x"; cd "$r/specs/001-x" || exit 1
 lint() { run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$PWD/$1\"}}"; }
 printf '# Spec\n## User Scenarios & Testing\n## Requirements\n## Success Criteria\n' > spec.md
 check "spec with mandatory sections passes"     0 "$(lint spec.md)"
 printf '# Spec\n## Requirements\n' > spec.md
 check "spec missing mandatory section blocked"  2 "$(lint spec.md)"
+printf '# Spec\n## User Scenarios & Testing\n## Requirements\n' > spec.md
+check "spec missing only Success Criteria blocked" 2 "$(lint spec.md)"
 printf '# Spec\n## User Scenarios & Testing\n## Requirements\n## Success Criteria\n[NEEDS CLARIFICATION: x]\n' > spec.md
 check "unclarified marker allowed before clarify" 0 "$(lint spec.md)"
 touch .clarified
@@ -89,18 +94,29 @@ printf '# Checklist\nThe prose mentions [ ] without a checkbox line.\n' > checkl
 check "checklist with only prose blocked"       2 "$(lint checklist-quality.md)"
 printf 'anything\n' > notes.md
 check "unrelated file ignored"                  0 "$(lint notes.md)"
+check "nonexistent path allowed"                0 "$(lint no-such-dir/spec.md)"
 cd /
 EX="$HOOKS/../../specflow/examples/static-landing-page/specs"
 for f in "$EX"/*/spec.md "$EX"/*/plan.md "$EX"/*/tasks.md; do
   check "shipped example passes: $(basename "$(dirname "$f")")/$(basename "$f")" 0 "$(run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$f\"}}")"
 done
 
+# --- artifact-lint.sh runs the Markdown lint when the script is present ---
+cd "$HOOKS/../.." || exit 1
+md="$(mktemp -d)"
+printf 'Second \xe2\x80\x94 line.\n' > "$md/dash.md"
+printf 'A plain sentence.\n' > "$md/clean.md"
+check "markdown with an em-dash is blocked from the repo root" 2 "$(run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$md/dash.md\"}}")"
+check "markdown without findings passes from the repo root"    0 "$(run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$md/clean.md\"}}")"
+check "markdown with an em-dash passes where the lint script is absent" 0 "$(cd "$md" && run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$md/dash.md\"}}")"
+cd / || exit 1
+
 # --- session-start.sh (SessionStart) ---
 session_start_out() { # json -> stdout
   printf '%s' "$1" | bash "$HOOKS/session-start.sh" 2>/dev/null
 }
 session_start_err() { # json -> stderr
-  printf '%s' "$1" | bash "$HOOKS/session-start.sh" 2>&1 >/dev/null
+  { printf '%s' "$1" | bash "$HOOKS/session-start.sh" >/dev/null; } 2>&1
 }
 session_start_exit() { # json -> exit code
   run_hook session-start.sh "$1"
@@ -172,7 +188,7 @@ out="$(cd "$r5" && session_start_out '{}')"
 err="$(cd "$r5" && session_start_err '{}')"
 check_has  "well-formed candidate selected when newest is malformed" "$out" "001-good"
 check_lacks "malformed candidate's spec id absent from stdout"       "$out" "002-bad"
-check "malformed candidate produces no stderr output" 0 "$([ -z "$err" ]; echo $?)"
+check "malformed candidate produces no stderr output" 0 "$(status_of [ -z "$err" ])"
 
 r6="$(mktemp -d)"
 check "zero-candidate repo exits 0" 0 "$(cd "$r6" && session_start_exit '{}')"
@@ -193,7 +209,7 @@ out="$(cd "$r8" && session_start_out '{}')"
 oq_line="$(printf '%s\n' "$out" | grep -n "OPEN-Q-MARKER" | head -1 | cut -d: -f1)"
 sm_line="$(printf '%s\n' "$out" | grep -n "^spec: 001-x" | head -1 | cut -d: -f1)"
 check_has "open-questions.md content appears in output" "$out" "OPEN-Q-MARKER"
-check "open-questions.md content precedes summary line" 0 "$([ -n "$oq_line" ] && [ -n "$sm_line" ] && [ "$oq_line" -lt "$sm_line" ]; echo $?)"
+check "open-questions.md content precedes summary line" 0 "$(if [ -n "$oq_line" ] && [ -n "$sm_line" ] && [ "$oq_line" -lt "$sm_line" ]; then echo 0; else echo 1; fi)"
 
 r9="$(mktemp -d)"
 write_progress "$r9/specs/001-x" 001-x complete 3
@@ -204,7 +220,7 @@ r10="$(mktemp -d)"
 write_progress "$r10/specs/001-x" 001-x complete 4
 out="$(cd "$r10" && session_start_out '{}')"
 count="$(printf '%s\n' "$out" | grep -c '^spec: 001-x status: complete current_phase: 4$')"
-check "exactly one summary line with spec id status and phase" 0 "$([ "$count" -eq 1 ]; echo $?)"
+check "exactly one summary line with spec id status and phase" 0 "$(status_of [ "$count" -eq 1 ])"
 
 r11="$(mktemp -d)"
 write_progress "$r11/specs/001-x" 001-x complete 2
@@ -224,7 +240,7 @@ write_progress "$r13/specs/001-x" 001-x complete 2
 check "no tasks.md exits 0" 0 "$(cd "$r13" && session_start_exit '{}')"
 out="$(cd "$r13" && session_start_out '{}')"
 err="$(cd "$r13" && session_start_err '{}')"
-check "no tasks.md produces no stderr" 0 "$([ -z "$err" ]; echo $?)"
+check "no tasks.md produces no stderr" 0 "$(status_of [ -z "$err" ])"
 check_lacks "no tasks.md means no task line" "$out" "- [ ] T"
 
 r14="$(mktemp -d)"
@@ -235,12 +251,12 @@ out="$(cd "$r14" && session_start_out '{}')"
 task_line="$(printf '%s\n' "$out" | grep -n "T001 pending task" | head -1 | cut -d: -f1)"
 handoff_line="$(printf '%s\n' "$out" | grep -n "HANDOFF-MARKER" | head -1 | cut -d: -f1)"
 check_has "handoff.md content appears in output" "$out" "HANDOFF-MARKER"
-check "handoff.md content follows task line" 0 "$([ -n "$task_line" ] && [ -n "$handoff_line" ] && [ "$handoff_line" -gt "$task_line" ]; echo $?)"
+check "handoff.md content follows task line" 0 "$(if [ -n "$task_line" ] && [ -n "$handoff_line" ] && [ "$handoff_line" -gt "$task_line" ]; then echo 0; else echo 1; fi)"
 
 r15="$(mktemp -d)"
 write_progress "$r15/specs/001-x" 001-x complete 2
 out="$(cd "$r15" && session_start_out '{}')"
-check "no handoff.md and no tasks.md means output is exactly the summary line" 0 "$([ "$out" = "spec: 001-x status: complete current_phase: 2" ]; echo $?)"
+check "no handoff.md and no tasks.md means output is exactly the summary line" 0 "$(status_of [ "$out" = "spec: 001-x status: complete current_phase: 2" ])"
 
 r16="$(mktemp -d)"
 write_progress "$r16/specs/001-x" 001-x complete 5
@@ -252,20 +268,39 @@ oq="$(printf '%s\n' "$out" | grep -n "OPEN-Q-MARKER" | head -1 | cut -d: -f1)"
 sm="$(printf '%s\n' "$out" | grep -n "^spec: 001-x" | head -1 | cut -d: -f1)"
 tl="$(printf '%s\n' "$out" | grep -n "T002 pending" | head -1 | cut -d: -f1)"
 hd="$(printf '%s\n' "$out" | grep -n "HANDOFF-MARKER" | head -1 | cut -d: -f1)"
-check "section order is open-questions, summary, task, handoff" 0 "$([ -n "$oq" ] && [ -n "$sm" ] && [ -n "$tl" ] && [ -n "$hd" ] && [ "$oq" -lt "$sm" ] && [ "$sm" -lt "$tl" ] && [ "$tl" -lt "$hd" ]; echo $?)"
+check "section order is open-questions, summary, task, handoff" 0 "$(if [ -n "$oq" ] && [ -n "$sm" ] && [ -n "$tl" ] && [ -n "$hd" ] && [ "$oq" -lt "$sm" ] && [ "$sm" -lt "$tl" ] && [ "$tl" -lt "$hd" ]; then echo 0; else echo 1; fi)"
 
 # --- risk-classifier.sh (run by the review pipeline against a base ref) ---
 check_out() { # name expected actual
   if [ "$2" = "$3" ]; then pass=$((pass+1)); echo "ok   $1"
   else fail=$((fail+1)); echo "FAIL $1 (expected '$2', got '$3')"; fi
 }
+commit_feature() { # dir -> commits the working tree on a new feature branch
+  git -C "$1" switch -q -c feature
+  git -C "$1" add -A
+  git -C "$1" -c user.email=t@t -c user.name=t commit -q -m change
+}
 branch_with() { # path content -> repo on a feature branch holding that file
   local d; d="$(fresh_repo main)"
-  git -C "$d" switch -q -c feature
   mkdir -p "$d/$(dirname "$1")"
   printf '%s\n' "$2" > "$d/$1"
-  git -C "$d" add -A
-  git -C "$d" -c user.email=t@t -c user.name=t commit -q -m change
+  commit_feature "$d"
+  echo "$d"
+}
+branch_with_lines() { # count -> repo on a feature branch adding that many lines to one file
+  branch_with notes.txt "$(seq 1 "$1")"
+}
+branch_with_files() { # count -> repo on a feature branch adding that many one-line files
+  local d i; d="$(fresh_repo main)"
+  for i in $(seq 1 "$1"); do printf 'line\n' > "$d/f$i.txt"; done
+  commit_feature "$d"
+  echo "$d"
+}
+branch_with_binary() { # -> repo on a feature branch adding one binary file and ten text lines
+  local d; d="$(fresh_repo main)"
+  printf '\0\1\2\3' > "$d/logo.bin"
+  seq 1 10 > "$d/notes.txt"
+  commit_feature "$d"
   echo "$d"
 }
 classify() { # repo -> HIGH or STANDARD
@@ -274,6 +309,11 @@ classify() { # repo -> HIGH or STANDARD
 check_out "diff touching auth/ is HIGH"     HIGH     "$(classify "$(branch_with auth/session.sh 'check_token')")"
 check_out "lockfile change is HIGH"         HIGH     "$(classify "$(branch_with package-lock.json '{}')")"
 check_out "two-line doc change is STANDARD" STANDARD "$(classify "$(branch_with docs/notes.md $'line one\nline two')")"
+check_out "400 changed lines is STANDARD"   STANDARD "$(classify "$(branch_with_lines 400)")"
+check_out "401 changed lines is HIGH"       HIGH     "$(classify "$(branch_with_lines 401)")"
+check_out "15 changed files is STANDARD"    STANDARD "$(classify "$(branch_with_files 15)")"
+check_out "16 changed files is HIGH"        HIGH     "$(classify "$(branch_with_files 16)")"
+check_out "binary file counts as a file, not lines" STANDARD "$(classify "$(branch_with_binary)")"
 classify_exit() { # repo base -> exit code
   ( cd "$1" && bash "$HOOKS/risk-classifier.sh" "$2" >/dev/null 2>&1 ); echo $?
 }
@@ -311,14 +351,14 @@ printf '%s\n' '{"schema_version":"1.0","reviewer":"claude","verdict":"BLOCK","fi
 check "Critical with no status blocks the merge" 1 "$(merge_gate "$d")"
 d="$(review_dir)"
 check "no findings documents clears the merge"   0 "$(merge_gate "$d")"
-check "cleared merge writes the approval marker" 0 "$([ -f "$d/$MARKER" ]; echo $?)"
+check "cleared merge writes the approval marker" 0 "$(status_of [ -f "$d/$MARKER" ])"
 d="$(review_dir)"; cp "$HOOKS/../review/schema.json" "$d/.claude/review/schema.json"
 check "schema.json is not read as findings"      0 "$(merge_gate "$d")"
 d="$(review_dir)"; printf 'not json at all\n' > "$d/.claude/review/claude.json"
 check "unreadable findings document blocks"      1 "$(merge_gate "$d")"
 d="$(review_dir)"; write_findings "$d" claude Critical open; touch "$d/$MARKER"
 merge_gate "$d" >/dev/null
-check "blocked merge clears a stale marker"      0 "$([ ! -f "$d/$MARKER" ]; echo $?)"
+check "blocked merge clears a stale marker"      0 "$(status_of [ ! -f "$d/$MARKER" ])"
 
 # --- rebut-findings.sh (CI; marks a findings document rebutted when the PR carries the label) ---
 rebut() { # dir file reason -> exit code
@@ -344,7 +384,7 @@ log_phase() { # dir json -> prints exit code
 
 r17="$(telemetry_repo)"
 check "stop hook exits 0" 0 "$(log_phase "$r17" '{"session_id":"abc"}')"
-check "exactly one telemetry line is appended" 0 "$([ "$(wc -l < "$r17/.claude/telemetry.jsonl")" -eq 1 ]; echo $?)"
+check "exactly one telemetry line is appended" 0 "$(status_of [ "$(wc -l < "$r17/.claude/telemetry.jsonl")" -eq 1 ])"
 check "telemetry line parses as JSON" 0 "$(jq -e . "$r17/.claude/telemetry.jsonl" >/dev/null 2>&1; echo $?)"
 check_has "telemetry line carries the session id" "$(jq -r '.session' "$r17/.claude/telemetry.jsonl")" "abc"
 check_has "telemetry line names the stop event"   "$(jq -r '.event'   "$r17/.claude/telemetry.jsonl")" "stop"
@@ -360,16 +400,16 @@ check_has "absent .current-phase logs unknown" "$(jq -r '.phase' "$r19/.claude/t
 r20="$(telemetry_repo)"
 log_phase "$r20" '{"session_id":"abc"}' >/dev/null
 log_phase "$r20" '{"session_id":"def"}' >/dev/null
-check "a second turn appends instead of overwriting" 0 "$([ "$(wc -l < "$r20/.claude/telemetry.jsonl")" -eq 2 ]; echo $?)"
+check "a second turn appends instead of overwriting" 0 "$(status_of [ "$(wc -l < "$r20/.claude/telemetry.jsonl")" -eq 2 ])"
 
 r21="$(telemetry_repo)"
 check "non-JSON stdin exits 0"  0 "$(log_phase "$r21" 'not json at all {{{')"
 check "non-JSON stdin still logs a line that parses" 0 "$(jq -e . "$r21/.claude/telemetry.jsonl" >/dev/null 2>&1; echo $?)"
-check "non-JSON stdin logs an empty session" 0 "$([ -z "$(jq -r '.session' "$r21/.claude/telemetry.jsonl")" ]; echo $?)"
+check "non-JSON stdin logs an empty session" 0 "$(status_of [ -z "$(jq -r '.session' "$r21/.claude/telemetry.jsonl")" ])"
 
 r22="$(mktemp -d)"
 check "missing .claude directory exits 0" 0 "$(log_phase "$r22" '{"session_id":"abc"}')"
-check "missing .claude directory is not created" 0 "$([ ! -e "$r22/.claude" ]; echo $?)"
+check "missing .claude directory is not created" 0 "$(status_of [ ! -e "$r22/.claude" ])"
 
 # --- diff-impl.sh (sets up the two worktrees a differential run implements in) ---
 diff_impl_repo() { # -> temp repo holding a committed spec directory
@@ -396,24 +436,24 @@ diff_impl_clean() { # dir feature -> removes every worktree and branch the run c
 r23="$(diff_impl_repo)"
 check "missing spec-dir argument fails"   2 "$(diff_impl_exit "$r23")"
 check "nonexistent spec-dir fails"        2 "$(diff_impl_exit "$r23" specs/999-none)"
-check "a rejected run creates no worktrees" 0 "$([ ! -e "$r23/worktrees" ]; echo $?)"
+check "a rejected run creates no worktrees" 0 "$(status_of [ ! -e "$r23/worktrees" ])"
 
 r24="$(diff_impl_repo)"; real24="$(cd "$r24" && pwd -P)"
 out="$(cd "$r24" && bash "$HOOKS/diff-impl.sh" specs/001-x 2>/dev/null)"; st=$?
 check "successful run exits 0"            0 "$st"
-check "worktree a is created"             0 "$([ -d "$r24/worktrees/001-x-a" ]; echo $?)"
-check "worktree b is created"             0 "$([ -d "$r24/worktrees/001-x-b" ]; echo $?)"
+check "worktree a is created"             0 "$(status_of [ -d "$r24/worktrees/001-x-a" ])"
+check "worktree b is created"             0 "$(status_of [ -d "$r24/worktrees/001-x-b" ])"
 branch_a="$(git -C "$r24/worktrees/001-x-a" rev-parse --abbrev-ref HEAD)"
 branch_b="$(git -C "$r24/worktrees/001-x-b" rev-parse --abbrev-ref HEAD)"
 check_out "worktree a sits on the -a branch" 001-x-a "$branch_a"
 check_out "worktree b sits on the -b branch" 001-x-b "$branch_b"
-check "the two worktrees are on distinct branches" 0 "$([ "$branch_a" != "$branch_b" ]; echo $?)"
+check "the two worktrees are on distinct branches" 0 "$(status_of [ "$branch_a" != "$branch_b" ])"
 check_has "run prints worktree a's path"  "$out" "worktree-a: $real24/worktrees/001-x-a"
 check_has "run prints worktree b's path"  "$out" "worktree-b: $real24/worktrees/001-x-b"
 check_has "run prints the shared test command" "$out" "test-command: cd specflow && python3"
 check "a second run on the same spec fails" 2 "$(diff_impl_exit "$r24" specs/001-x)"
 diff_impl_clean "$r24" 001-x
-check "cleanup leaves the repo with no extra worktree" 0 "$([ "$(git -C "$r24" worktree list | wc -l)" -eq 1 ]; echo $?)"
+check "cleanup leaves the repo with no extra worktree" 0 "$(status_of [ "$(git -C "$r24" worktree list | wc -l)" -eq 1 ])"
 
 r25="$(diff_impl_repo)"
 out="$(cd "$r25" && SPECFLOW_TEST_CMD='marker-test-cmd' bash "$HOOKS/diff-impl.sh" specs/001-x 2>/dev/null)"
@@ -462,13 +502,13 @@ diff_impl_clean "$r31" 001-x
 r26="$(diff_impl_repo)"
 git -C "$r26" branch 001-x-a
 check "an existing branch name fails"     2 "$(diff_impl_exit "$r26" specs/001-x)"
-check "a name collision creates no worktrees" 0 "$([ ! -e "$r26/worktrees" ]; echo $?)"
+check "a name collision creates no worktrees" 0 "$(status_of [ ! -e "$r26/worktrees" ])"
 git -C "$r26" branch -D 001-x-a >/dev/null
 
 cd /
 
 # --- .claude/review/schema.json (findings contract read by the reviewer agents) ---
-cd "$HOOKS/../.."
+cd "$HOOKS/../.." || exit 1
 python3 -c 'import json;json.load(open(".claude/review/schema.json"))' >/dev/null 2>&1
 check "review findings schema parses as JSON" 0 $?
 
@@ -479,7 +519,7 @@ python3 -c 'import yaml;yaml.safe_load(open("'"$GATE_WORKFLOW"'"))' >/dev/null 2
 check "merge gate workflow parses as YAML" 0 $?
 high_gated="$(grep -c "level == 'HIGH'" "$GATE_WORKFLOW" 2>/dev/null || echo 0)"
 check "merge gate workflow gates two steps on HIGH risk" 0 \
-  "$([ "${high_gated:-0}" -eq 2 ]; echo $?)"
+  "$(status_of [ "${high_gated:-0}" -eq 2 ])"
 check "security review action is pinned to a commit" 0 \
   "$(printf '%s' "$gate_src" | grep -Eq 'claude-code-security-review@[0-9a-f]{40}$'; echo $?)"
 check "merge gate workflow runs the gate hook under .claude" 0 \

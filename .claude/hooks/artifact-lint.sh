@@ -40,5 +40,14 @@ case "$(basename "$path")" in
     fi
     ;;
 esac
+# The lint lives under scripts/, which the archive strips, so a consuming project without it skips this check.
+MARKDOWN_LINT="specflow/scripts/lint-standards.py"
+case "$path" in
+  *.md)
+    if [ -f "$MARKDOWN_LINT" ] && ! lint_out="$(python3 "$MARKDOWN_LINT" "$path" 2>&1)"; then
+      err "$(printf '%s' "$lint_out" | grep -v '^FAIL:' | sed "s|^$path:||" | tr '\n' ';')"
+    fi
+    ;;
+esac
 [ "$fail" -eq 0 ] || exit 2
 exit 0
