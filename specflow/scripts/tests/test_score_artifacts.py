@@ -558,3 +558,66 @@ def test_stdout_is_the_report_indented_by_two_with_sorted_keys():
     assert result.returncode == 0, result.stderr
     expected = json.dumps(json.loads(result.stdout), indent=2, sort_keys=True) + "\n"
     assert result.stdout == expected
+
+
+def test_traceability_table_under_a_later_h1_does_not_trace_a_criterion():
+    spec = """# Feature
+
+## Requirements
+
+- **FR-001**: The page loads.
+- **FR-002**: The page prints.
+
+## Traceability
+
+| Criterion | Test |
+|---|---|
+| FR-001 | `checklists/review.md::FR-001` |
+
+# Appendix
+
+| FR-002 | anything at all |
+"""
+    with tempfile.TemporaryDirectory() as directory:
+        report = score_json(write_feature(directory, spec))
+    assert report["traceability"]["untraced"] == ["FR-002"]
+    assert report["traceability"]["traced"] == 1
+
+
+def test_mandatory_section_written_as_h1_is_still_missing():
+    spec = """# Feature
+
+## User Scenarios & Testing *(mandatory)*
+
+# Requirements *(mandatory)*
+
+## Success Criteria *(mandatory)*
+"""
+    with tempfile.TemporaryDirectory() as directory:
+        report = score_json(write_feature(directory, spec))
+    assert report["spec_sections"]["missing"] == ["Requirements"]
+    assert report["spec_sections"]["present"] == 2
+
+
+def test_h3_subheading_inside_traceability_keeps_the_rows_below_it_traced():
+    spec = """# Feature
+
+## Requirements
+
+- **FR-001**: The page loads.
+- **FR-002**: The page prints.
+
+## Traceability
+
+| Criterion | Test |
+|---|---|
+| FR-001 | `checklists/review.md::FR-001` |
+
+### Success criteria
+
+| FR-002 | `checklists/review.md::FR-002` |
+"""
+    with tempfile.TemporaryDirectory() as directory:
+        report = score_json(write_feature(directory, spec))
+    assert report["traceability"]["untraced"] == []
+    assert report["traceability"]["traced"] == 2

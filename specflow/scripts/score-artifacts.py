@@ -28,11 +28,12 @@ MANDATORY_SPEC_SECTIONS = (
     "Success Criteria",
 )
 TRACEABILITY_SECTION = "Traceability"
+SECTION_LEVEL = 2
 UNTRACED_CELL = "-"
 PERCENT = 100
 SCORE_DECIMALS = 1
 
-SECTION_HEADING = re.compile(r"^##\s+(.*?)\s*$")
+ATX_HEADING = re.compile(r"^(#{1,6})\s+(.*?)\s*$")
 MANDATORY_SUFFIX = re.compile(r"\s*\*\(mandatory\)\*$")
 CRITERION_DECLARATION = re.compile(r"^- \*\*((?:FR|SC)-\d+)\*\*:")
 CRITERION_ID = re.compile(r"\b(?:FR|SC)-\d+\b")
@@ -60,12 +61,23 @@ def percentage(part: int, whole: int) -> float | None:
     return round(part * PERCENT / whole, SCORE_DECIMALS)
 
 
-def heading_name(line: str) -> str | None:
-    """Return the H2 title on line with any ``*(mandatory)*`` marker removed."""
-    match = SECTION_HEADING.match(line)
+def heading(line: str) -> tuple[int, str] | None:
+    """Return the ATX level and title on line, or None when line is not a heading.
+
+    The title has any ``*(mandatory)*`` marker removed.
+    """
+    match = ATX_HEADING.match(line)
     if not match:
         return None
-    return MANDATORY_SUFFIX.sub("", match.group(1))
+    return len(match.group(1)), MANDATORY_SUFFIX.sub("", match.group(2))
+
+
+def heading_name(line: str) -> str | None:
+    """Return the H2 title on line, or None when line is not an H2 heading."""
+    parsed = heading(line)
+    if parsed is None or parsed[0] != SECTION_LEVEL:
+        return None
+    return parsed[1]
 
 
 def score_spec_sections(spec_lines: list[str]) -> dict:
@@ -101,9 +113,10 @@ def traced_criteria(spec_lines: list[str]) -> set[str]:
     traced = set()
     in_section = False
     for line in spec_lines:
-        name = heading_name(line)
-        if name is not None:
-            in_section = name == TRACEABILITY_SECTION
+        parsed = heading(line)
+        if parsed is not None and parsed[0] <= SECTION_LEVEL:
+            level, name = parsed
+            in_section = level == SECTION_LEVEL and name == TRACEABILITY_SECTION
             continue
         if not in_section:
             continue
