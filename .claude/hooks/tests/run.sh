@@ -320,6 +320,20 @@ d="$(review_dir)"; write_findings "$d" claude Critical open; touch "$d/$MARKER"
 merge_gate "$d" >/dev/null
 check "blocked merge clears a stale marker"      0 "$([ ! -f "$d/$MARKER" ]; echo $?)"
 
+# --- rebut-findings.sh (CI; marks a findings document rebutted when the PR carries the label) ---
+rebut() { # dir file reason -> exit code
+  ( cd "$1" && bash "$HOOKS/rebut-findings.sh" "$2" "$3" >/dev/null 2>&1 ); echo $?
+}
+d="$(review_dir)"; write_findings "$d" headless-ci Critical open
+check "rebut-findings marks every finding rebutted"  0 "$(rebut "$d" .claude/review/headless-ci.json "label findings-rebutted on PR #1")"
+check "rebutted document then clears the merge"      0 "$(merge_gate "$d")"
+check_out "rebuttal reason is recorded on the finding" "label findings-rebutted on PR #1" \
+  "$(jq -r '.findings[0].rebuttal' "$d/.claude/review/headless-ci.json")"
+d="$(review_dir)"
+check "rebut-findings fails on a missing document"   2 "$(rebut "$d" .claude/review/headless-ci.json reason)"
+d="$(review_dir)"; write_findings "$d" headless-ci Important open
+check "rebut-findings needs a reason"                2 "$(rebut "$d" .claude/review/headless-ci.json "")"
+
 # --- log-phase.sh (Stop) ---
 telemetry_repo() { # -> dir containing an empty .claude/
   local d; d="$(mktemp -d)"; mkdir -p "$d/.claude"; echo "$d"
@@ -471,6 +485,12 @@ check "security review action is pinned to a commit" 0 \
 check "merge gate workflow runs the gate hook under .claude" 0 \
   "$(printf '%s' "$gate_src" | grep -Fq '.claude/hooks/merge-gate.sh'; echo $?)"
 check_lacks "merge gate workflow names no .specify hook path" "$gate_src" ".specify/scripts/hooks/"
+check "merge gate workflow reruns when a label changes" 0 \
+  "$(printf '%s' "$gate_src" | grep -Eq '^\s+types: \[.*labeled.*\]'; echo $?)"
+check "merge gate workflow honors the findings-rebutted label" 0 \
+  "$(printf '%s' "$gate_src" | grep -Fq "'findings-rebutted'"; echo $?)"
+check "merge gate workflow runs the rebuttal hook under .claude" 0 \
+  "$(printf '%s' "$gate_src" | grep -Fq '.claude/hooks/rebut-findings.sh'; echo $?)"
 
 echo "$pass passed, $fail failed"
 [ "$fail" -eq 0 ]

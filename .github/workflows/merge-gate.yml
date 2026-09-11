@@ -5,7 +5,8 @@ name: Merge gate
 # cost money, so they run only on a HIGH-risk diff. The gate always runs.
 on:
   pull_request:
-    types: [opened, synchronize]
+    # labeled and unlabeled rerun the gate when findings-rebutted changes.
+    types: [opened, synchronize, labeled, unlabeled]
 
 permissions:
   contents: read
@@ -88,6 +89,24 @@ jobs:
         continue-on-error: true
         run: pipx run mutmut run --paths-to-mutate specflow/scripts
 
+      - name: Apply the findings-rebutted label
+        # The headless findings file lives only in this job, so an author
+        # cannot commit a status change to it. A reviewer-of-record rebuts
+        # its findings by writing the rebuttal in the PR description and
+        # applying the label; the label is what the gate honors. ADR-0012.
+        if: always() && contains(github.event.pull_request.labels.*.name, 'findings-rebutted')
+        run: |
+          set -euo pipefail
+          if [ -f .claude/review/headless-ci.json ]; then
+            .claude/hooks/rebut-findings.sh .claude/review/headless-ci.json \
+              "label findings-rebutted on PR #${{ github.event.pull_request.number }}; rebuttal in the PR description"
+          fi
+
       - name: Merge gate
         if: always()
-        run: .claude/hooks/merge-gate.sh ".claude/review/*.json"
+        run: |
+          set -euo pipefail
+          if ! .claude/hooks/merge-gate.sh ".claude/review/*.json"; then
+            echo "To rebut a false positive: write the rebuttal under 'Risks / open questions' in the PR description, then have the reviewer-of-record apply the findings-rebutted label." >&2
+            exit 1
+          fi

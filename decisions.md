@@ -182,3 +182,23 @@ model families; alias versions can change. Actual cost savings remain unmeasured
 - Consequences: T153 stays runnable without editing the golden to manufacture a
   fourth open question. A real feature still follows the trigger rule; only this
   one validation run skips it. T153 remains blocked on the Codex usage limit.
+
+## ADR-0012: A CI finding is rebutted by a PR label, not by editing the findings file
+
+- Date: 2026-09-11
+- Status: accepted, amends ADR-0006
+- Context: the merge-gate workflow writes the headless reviewer's findings to
+  `.claude/review/headless-ci.json`, which `.gitignore` excludes. An author
+  cannot commit a status change to a file that exists only inside the job, so a
+  false-positive Important finding blocked the merge with no way out but a code
+  change.
+- Decision: the `findings-rebutted` label is the rebuttal. When a pull request
+  carries it, the workflow runs `rebut-findings.sh` on the headless document
+  before the gate, marking every finding `rebutted` with the label as
+  provenance. The rebuttal text lives in the PR description. The workflow reruns
+  on `labeled` and `unlabeled`, so removing the label restores the block.
+  Findings files a reviewer commits keep the per-finding status path.
+- Consequences: the label clears the whole headless document, not one finding,
+  so a partial rebuttal still needs the code fixed. Only someone with triage
+  rights can apply a label, which makes the reviewer-of-record the gatekeeper
+  ADR-0006 assumed the critic stage would be.
