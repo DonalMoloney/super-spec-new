@@ -270,6 +270,55 @@ Stale upstream names to fix regardless of any rename:
 - `specflow/LICENSE` keeps "Superspec Contributors". Keep it; MIT requires the
   original notice.
 
+## Wording and structure, by file
+
+Two agents under `.claude/agents/` diverge a shipped file without changing its
+behavior contract. `prose-rephraser` rewrites sentences to
+`standards/documentation.md` and keeps every heading, step, code block, path,
+and marker verbatim. `script-refactorer` applies `standards/code.md` to a
+script and keeps every exit code, output line, and flag. `divergence-auditor`
+measures the result with `.claude/divergence/measure-divergence.py` and runs
+the guards. The table lists every shipped text file with an upstream
+counterpart, measured on 2026-09-11 against upstream `c20ac6c`, lowest real
+change first. Files a D-group holds are skipped until that group merges, so
+two worktrees never edit one file.
+
+| File | Real | Agent | Claimed by |
+|------|------|-------|------------|
+| `commands/status.md` | 33% | `prose-rephraser` | done, two passes |
+| `SKILL.md` | 0% | `prose-rephraser` | none |
+| `templates/plan-template.md` | 0% | `prose-rephraser` | none |
+| `templates/tasks-template.md` | 0% | `prose-rephraser` | none |
+| `scripts/validate-release-archive.py` | 29% | `script-refactorer` | done |
+| `commands/hooks/after-execute.md` | 0% | `prose-rephraser` | D-02 first |
+| `commands/hooks/after-tasks.md` | 0% | `prose-rephraser` | D-01 first |
+| `CHANGELOG.md`, `extension.yml` | 0% | `prose-rephraser` | D-05 first |
+| `scripts/e2e-smoke.sh` | 1% | `script-refactorer` | none |
+| `scripts/e2e-agent-claude.sh` | 2% | `script-refactorer` | none |
+| `templates/checklist-template.md` | 2% | `prose-rephraser` | none |
+| `references/superpowers-bridge.md` | 2% | `prose-rephraser` | D-05 first |
+| `scripts/validate-extension-metadata.py` | 7% | `script-refactorer` | D-05 first |
+| `templates/constitution-template.md` | 8% | `prose-rephraser` | none |
+| `commands/brainstorm.md` | 12% | `prose-rephraser` | none |
+| `commands/review.md` | 14% | `prose-rephraser` | D-03 first |
+| `commands/tasks.md`, `templates/spec-template.md` | 19% | `prose-rephraser` | none |
+| `references/workflow-guide.md` | 25% | `prose-rephraser` | none |
+| `commands/execute.md` | 36% | `prose-rephraser` | none |
+| `README.md` | 46% | `prose-rephraser` | D-05 first |
+| `commands/hooks/before-execute.md` | 52% | `prose-rephraser` | none |
+
+Order of work: the five unclaimed 0% files, then the unclaimed scripts and
+templates, then the commands. A command rewrite runs `e2e-smoke.sh` through the
+auditor because the smoke test greps command prose. Mark a row `(working on)`
+in the Claimed by column before dispatching, and commit that mark to `main`.
+Reproduce the table from the repository root:
+
+```bash
+git clone -q https://github.com/WangX0111/superspec "$SCRATCH/upstream"
+cd specflow && git ls-files | grep -E '\.(md|yml|py|sh)$' | grep -v '^examples/' \
+  | xargs python3 ../.claude/divergence/measure-divergence.py --local . --upstream "$SCRATCH/upstream"
+```
+
 ## Choosing
 
 Pick by blast radius, not by the percentage. The percentage measures past

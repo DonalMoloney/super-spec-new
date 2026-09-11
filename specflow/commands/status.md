@@ -1,6 +1,6 @@
 # speckit.specflow.status
 
-Show current project progress, feature status, and superpowers detection results.
+Print the project's progress, each feature's phase, and the superpowers detection result.
 
 ## Usage
 
@@ -10,13 +10,13 @@ Show current project progress, feature status, and superpowers detection results
 
 ## Process
 
-1. Scan `.specify/` directory structure
-2. Check if `constitution.md` exists
+1. Scan the `.specify/` directory tree.
+2. Check whether `constitution.md` exists.
 3. **Run superpowers detection**: Check for all superpowers skills at
-   `.agents/skills/` and `~/.agents/skills/`. Update `.specify/superpowers.yml`
-   with current detection results.
-4. For each spec directory, read `progress.yml` (or infer progress from existing files)
-5. Display a status summary:
+   `.agents/skills/` and `~/.agents/skills/`. Write the result to
+   `.specify/superpowers.yml`.
+4. Read `progress.yml` in each spec directory, or infer the phase from the files present.
+5. Print a status summary:
 
 ```
 Specflow Project Status
@@ -32,23 +32,23 @@ Features:
 Suggested next step: /speckit.specflow.execute 001
 ```
 
-6. If no `.specify/` exists, suggest: "No specflow project found. Run
+6. If no `.specify/` directory exists, print: "No specflow project found. Run
    `/speckit.constitution` to get started."
 
 ## File Inference Fallback
 
-If `progress.yml` does not exist, infer progress from which files are present:
-- `spec.md` exists → specify is done
-- `spec.md` has Brainstorm Log entries → brainstorm was run
-- `plan.md` exists → plan is done
-- `tasks.md` exists → tasks are done
-- `tasks.md` has `[x]` checkboxes → execute is in progress (count checked vs total)
+If `progress.yml` is missing, infer the phase from the files present:
+- If `spec.md` exists, specify is done.
+- If `spec.md` has Brainstorm Log entries, brainstorm ran.
+- If `plan.md` exists, plan is done.
+- If `tasks.md` exists, tasks is done.
+- If `tasks.md` has `[x]` checkboxes, execute is in progress. Count the checked boxes against the total.
 
 ## Superpowers Detection
 
 Check for skills at these paths:
-1. `.agents/skills/{skill-name}/SKILL.md` (project-local)
-2. `~/.agents/skills/{skill-name}/SKILL.md` (user-global)
+1. Check `.agents/skills/{skill-name}/SKILL.md` first, the project-local path.
+2. Check `~/.agents/skills/{skill-name}/SKILL.md` second, the user-global path.
 
-Results are persisted to `.specify/superpowers.yml`. See `references/superpowers-bridge.md`
-for full detection and adaptation details.
+The command writes the result to `.specify/superpowers.yml`. Read
+`references/superpowers-bridge.md` for the detection and adaptation rules.

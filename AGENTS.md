@@ -91,6 +91,11 @@ there, so a workflow under `specflow/` never runs.
   `.specify/superpowers.yml` (skill detection cache) as plain YAML — a command must be
   safe to re-run after an interruption by reading these first, not by assuming a fresh start.
 
+Three agents rewrite shipped files without changing their contracts: `prose-rephraser`
+for prose, `script-refactorer` for scripts, and `divergence-auditor` to measure the
+change against upstream and run the guards. The file table and dispatch order live in
+`imporvements/divergence-by-part.md` under "Wording and structure, by file".
+
 ## Task decomposition
 
 Any time a task (a `tasks.md` entry, a BDD-squad task, a plan step) gets broken down,

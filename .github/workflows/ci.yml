@@ -48,6 +48,9 @@ jobs:
       - name: Review findings validator tests
         run: python3 -m pytest .claude/review/tests -q
 
+      - name: Divergence measurer tests
+        run: python3 -m pytest .claude/divergence/tests -q
+
       - name: Hook tests
         run: bash .claude/hooks/tests/run.sh
 
