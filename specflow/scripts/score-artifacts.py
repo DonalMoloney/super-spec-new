@@ -6,6 +6,8 @@ this script grades four dimensions a reviewer would otherwise check by hand:
 mandatory spec sections, criterion traceability, stable task ids, and leftover
 clarification markers. The report goes to stdout as a single JSON object; every
 failure path writes a ``FAIL:`` line to stderr and exits 1 with stdout empty.
+The reported ``feature_dir`` echoes the argument as given and is not a scored
+field.
 """
 
 from __future__ import annotations
@@ -26,17 +28,18 @@ MANDATORY_SPEC_SECTIONS = (
     "Success Criteria",
 )
 TRACEABILITY_SECTION = "Traceability"
+SECTION_LEVEL = 2
 UNTRACED_CELL = "-"
 PERCENT = 100
 SCORE_DECIMALS = 1
 
-SECTION_HEADING = re.compile(r"^##\s+(.*?)\s*$")
+ATX_HEADING = re.compile(r"^(#{1,6})\s+(.*?)\s*$")
 MANDATORY_SUFFIX = re.compile(r"\s*\*\(mandatory\)\*$")
 CRITERION_DECLARATION = re.compile(r"^- \*\*((?:FR|SC)-\d+)\*\*:")
 CRITERION_ID = re.compile(r"\b(?:FR|SC)-\d+\b")
 TABLE_ROW = re.compile(r"^\|(.+)\|\s*$")
 TABLE_SEPARATOR = re.compile(r"^[\s:|-]+$")
-TASK_LINE = re.compile(r"^- \[[ x]\]\s*(.*?)\s*$")
+TASK_LINE = re.compile(r"^\s*- \[[ xX]\]\s*(.*?)\s*$")
 STABLE_TASK_ID = re.compile(r"^T\d+")
 
 
@@ -47,8 +50,12 @@ def fail(message: str) -> None:
 
 
 def read_lines(path: Path) -> list[str]:
-    """Read path as UTF-8 text and return its lines without line endings."""
-    return path.read_text(encoding="utf-8").splitlines()
+    """Read path as UTF-8 text and return its lines without line endings.
+
+    Undecodable bytes become the replacement character, so a stray byte costs
+    the file nothing beyond the characters it sits on.
+    """
+    return path.read_text(encoding="utf-8", errors="replace").splitlines()
 
 
 def percentage(part: int, whole: int) -> float | None:
@@ -58,12 +65,23 @@ def percentage(part: int, whole: int) -> float | None:
     return round(part * PERCENT / whole, SCORE_DECIMALS)
 
 
-def heading_name(line: str) -> str | None:
-    """Return the H2 title on line with any ``*(mandatory)*`` marker removed."""
-    match = SECTION_HEADING.match(line)
+def heading(line: str) -> tuple[int, str] | None:
+    """Return the ATX level and title on line, or None when line is not a heading.
+
+    The title has any ``*(mandatory)*`` marker removed.
+    """
+    match = ATX_HEADING.match(line)
     if not match:
         return None
-    return MANDATORY_SUFFIX.sub("", match.group(1))
+    return len(match.group(1)), MANDATORY_SUFFIX.sub("", match.group(2))
+
+
+def heading_name(line: str) -> str | None:
+    """Return the H2 title on line, or None when line is not an H2 heading."""
+    parsed = heading(line)
+    if parsed is None or parsed[0] != SECTION_LEVEL:
+        return None
+    return parsed[1]
 
 
 def score_spec_sections(spec_lines: list[str]) -> dict:
@@ -99,9 +117,10 @@ def traced_criteria(spec_lines: list[str]) -> set[str]:
     traced = set()
     in_section = False
     for line in spec_lines:
-        name = heading_name(line)
-        if name is not None:
-            in_section = name == TRACEABILITY_SECTION
+        parsed = heading(line)
+        if parsed is not None and parsed[0] <= SECTION_LEVEL:
+            level, name = parsed
+            in_section = level == SECTION_LEVEL and name == TRACEABILITY_SECTION
             continue
         if not in_section:
             continue
@@ -183,13 +202,14 @@ def main() -> None:
     if len(sys.argv) != 2:
         fail("usage: score-artifacts.py <specs/NNN-slug feature directory>")
 
-    feature_dir = Path(sys.argv[1])
+    given_path = sys.argv[1]
+    feature_dir = Path(given_path)
     if not feature_dir.exists():
-        fail(f"feature directory not found: {feature_dir}")
+        fail(f"feature directory not found: {given_path}")
     if not feature_dir.is_dir():
-        fail(f"expected a feature directory, found a file: {feature_dir}")
+        fail(f"expected a feature directory, found a file: {given_path}")
     if not (feature_dir / SPEC_FILENAME).is_file():
-        fail(f"feature directory has no {SPEC_FILENAME}: {feature_dir}")
+        fail(f"feature directory has no {SPEC_FILENAME}: {given_path}")
 
     report = build_report(feature_dir)
     print(json.dumps(report, indent=2, sort_keys=True))
