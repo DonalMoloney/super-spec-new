@@ -697,3 +697,35 @@ def test_seeded_bug_differs_from_the_golden_only_by_the_sc_003_row():
         f"the removed row {SEEDED_BUG_REMOVED_SPEC_ROW!r}, but the differences "
         f'are ("-" golden only, "+" seeded-bug only): {changes}'
     )
+
+
+def test_criterion_id_after_leading_text_in_the_first_cell_is_traced():
+    spec = """# Feature
+
+## Requirements
+
+- **FR-001**: The page loads.
+
+## Traceability
+
+| Criterion | Test |
+|---|---|
+| Req **FR-001** | `checklists/review.md::FR-001` |
+"""
+    with tempfile.TemporaryDirectory() as directory:
+        report = score_json(write_feature(directory, spec))
+    assert report["traceability"]["untraced"] == []
+
+
+def test_directory_named_like_markdown_does_not_hide_a_later_marker():
+    notes = "A line holding NEEDS CLARIFICATION about the beans.\n"
+    with tempfile.TemporaryDirectory() as directory:
+        feature_dir = write_feature(directory, SPEC_WITH_MARKERS)
+        (feature_dir / "notes.md").mkdir()
+        (feature_dir / "zz-notes.md").write_text(notes)
+        result = score(feature_dir)
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    assert report["needs_clarification"]["locations"] == [
+        {"file": "zz-notes.md", "line": 1}
+    ]
