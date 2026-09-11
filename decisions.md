@@ -166,3 +166,19 @@ model families; alias versions can change. Actual cost savings remain unmeasured
 - Consequences: a future README edit touches one file, not two, and cannot drift
   out of sync. Chinese-reading users lose a translated copy; none is planned as
   a replacement.
+
+## ADR-0011: The T153 dry run overrides the differential-implementation trigger
+
+- Date: 2026-09-11
+- Status: accepted
+- Context: the protocol in `workflow-guide.md` runs a differential implementation
+  only when `risk-classifier.sh` prints `HIGH` or the spec lists more than three
+  open questions. The `static-landing-page` golden classifies `STANDARD` and
+  lists exactly three, so the example T153 names cannot meet the rule.
+- Decision: T153 runs the protocol on that example anyway. The dry run checks the
+  protocol's steps: two worktrees, two executors, cross-run tests, divergences
+  recorded. It does not check the trigger, which the hook tests already cover.
+  The PR description states that the trigger was overridden.
+- Consequences: T153 stays runnable without editing the golden to manufacture a
+  fourth open question. A real feature still follows the trigger rule; only this
+  one validation run skips it. T153 remains blocked on the Codex usage limit.

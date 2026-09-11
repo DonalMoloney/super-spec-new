@@ -524,7 +524,7 @@ Verify: the section names the trigger rule and the cross-test step.
 
 - [ ] T153 Dry run on the example
 
-1. Run the protocol once on `examples/static-landing-page/` with both executors.
+1. Run the protocol once on `examples/static-landing-page/` with both executors. The example classifies `STANDARD` and lists three open questions, so the run overrides the trigger rule on purpose; ADR-0011 records why.
 2. Record the divergences found (or "none") in the PR description.
 
 Verify: PR description contains the divergence list.
