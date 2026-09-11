@@ -51,6 +51,26 @@ This v2 keeps every item, template, command, and verified fact from the two v1 d
 - [x] Item 2 — gate hooks (`block-main-commit.sh`, `test-gate.sh`, `.claude/settings.json`) (PR #2, merged)
 - [x] Item 13 — memory layer (`decisions.md`, `open-questions.md`, `@import` in CLAUDE.md) (PR #3, merged)
 - [x] Item 4 — artifact linting (`artifact-lint.sh` PostToolUse hook) (PR #4, merged)
+- [x] G-01 — repair the two known `main` failures (PR #8, merged)
+- [x] G-02 — Item 1: Code Review Rules in the constitution and `AGENTS.md` (PR #10, merged)
+- [x] G-03 — Item 3: clarify, analyze, and checklist gates (PR #11, merged)
+- [x] G-04 — Item 7: model routing on every subagent (PR #9, merged)
+- [x] G-05 — Item 6 / 4.13: adversarial review agents and findings schema (PR #13, merged)
+- [x] G-06 — merge gate and risk classifier scripts (PR #30, merged)
+- [x] G-07 — Item 9: observability Stop hook (PR #31, merged)
+- [x] G-08 — intent dispatcher skill (PR #14, merged)
+- [ ] G-09 — Items 10, 15, 17: CI merge-gate workflow
+- [x] G-10 — Item 21: STRIDE lens and traceability matrix in the spec template (PR #33, merged)
+- [x] G-11 — Item 18: spec change management (PR #32, merged)
+- [x] G-12 — Item 20: resumable sessions via `SessionStart` (PR #22, merged)
+- [x] G-13 — Items 12, 19: golden-run scorer and eval replay (PR #20, merged)
+- [x] G-14 — Item 5: Agent Teams for `[P]` tasks (PR #17, merged)
+- [ ] G-15 — Item 14: differential implementation (Claude vs Codex)
+- [x] G-16 — Item 22: cost governance (PR #27, merged)
+- [x] G-17 — Item 8: close the review loop (PR #12, merged)
+- [x] G-18 — playbook scope cleanup (PR #15, merged)
+
+See `imporvements/tasks.md` for each group's task list and `imporvements/model-routing.md` for which model and effort ran each one.
 
 ## Part 2 — The Focused Improvement Roadmap
 
