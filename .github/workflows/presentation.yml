@@ -1,0 +1,33 @@
+name: Presentation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "presentation/**"
+  pull_request:
+    paths:
+      - "presentation/**"
+
+jobs:
+  render:
+    name: Render the Marp deck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # ubuntu-latest ships Google Chrome, which Marp uses for PDF export.
+      - name: Render to PDF
+        run: npx --yes @marp-team/marp-cli@4.2.3 --pdf presentation/marp-deck/deck.md -o deck.pdf
+
+      - name: Lint the deck against the documentation standard
+        run: python3 specflow/scripts/lint-standards.py presentation

@@ -57,6 +57,23 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
+      - name: Lint Markdown against the documentation standard
+        run: python3 specflow/scripts/lint-standards.py
+
+      - name: Shellcheck
+        run: shellcheck -S warning .claude/hooks/*.sh .claude/hooks/tests/run.sh specflow/scripts/*.sh
+
+      - name: Ruff
+        run: ruff check specflow/scripts .claude/review .claude/divergence
+
+      - name: Structural smoke test
+        working-directory: specflow
+        run: bash scripts/e2e-smoke.sh
+
+      - name: Agent e2e dry run against the example snapshot
+        working-directory: specflow
+        run: E2E_DRY_RUN=1 bash scripts/e2e-agent-claude.sh
+
       - name: Verify install with latest spec-kit
         run: |
           set -euo pipefail
