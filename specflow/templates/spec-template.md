@@ -151,6 +151,7 @@
 ## Traceability
 
 Every FR and SC criterion needs at least one named test before the conformance review runs.
+`score-artifacts.py` reads only the Test name column; Status is for a human reader.
 
 | Criterion ID | Test name | Status |
 |--------------|-----------|--------|
