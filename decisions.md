@@ -10,8 +10,7 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Context: this repo is the extension and has no `.specify/`.
 - Decision: harness-specific hooks and `settings.json` live under `.claude/`;
   `specflow/` stays harness-neutral runtime payload.
-- Consequences: hooks are outside the spec-kit archive; a consuming project
-  copies them.
+- Consequences: a consuming project copies the hooks in by hand.
 
 ## ADR-0002: Quality standards live in `standards/`, not `.claude/rules/` or agent prompts
 
@@ -19,7 +18,7 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Status: accepted
 - Context: `.claude/rules/` is Claude-only, and 17 pasted copies drift.
 - Decision: three harness-neutral files under `standards/`, imported by
-  `CLAUDE.md` and linked from `AGENTS.md`.
+  `CLAUDE.md`, linked from `AGENTS.md`, and passed by path on each dispatch.
 - Consequences: a rule change is one edit. `standards/` is not in the archive.
 
 ## ADR-0003: Route subagents by judgment and execution cost
@@ -39,11 +38,13 @@ deleting them; prune anything older than a quarter that no longer guides work.
 
 - Date: 2026-09-11
 - Status: accepted
-- Context: a PreToolUse hook fires before `git switch -c feat && git commit`
-  runs, so HEAD is the wrong branch.
+- Context: a PreToolUse hook fires before the command runs, so HEAD is the
+  wrong branch.
 - Decision: `block-main-commit.sh` splits the command on `&&`, `||`, `;`, and
   `|`, tracks the branch each `switch` or `checkout` leaves behind, and judges
-  a commit against it. A move it cannot name, such as `git switch -`, blocks.
+  a commit against it. Only a segment starting with `git <subcommand>` counts,
+  so prose quoting git does not steer the gate. A move it cannot name, such as
+  `git switch -`, blocks.
 - Consequences: a switch inside a conditional goes unseen, which errs toward
   blocking.
 
@@ -51,7 +52,7 @@ deleting them; prune anything older than a quarter that no longer guides work.
 
 - Date: 2026-09-11
 - Status: accepted
-- Context: macOS bash 3.2 has no floating point, and `bc` is not guaranteed.
+- Context: macOS bash 3.2 has no floating point; `bc` is not guaranteed.
 - Decision: sum `git diff --numstat` per-file counts in `$(( ))` against 400
   lines and 15 files. A binary file counts as a file with no lines.
 - Consequences: a ratio rule compares two integer products, never a decimal.
@@ -62,8 +63,9 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Status: accepted
 - Context: blocking only on `open` let a Critical flip to `rejected` unfixed.
 - Decision: a Critical or Important finding blocks unless its status is `fixed`
-  or `rebutted`; a missing status reads as `open`. Minor never blocks. A
-  rebuttal clears any severity; the critic stage judges whether it holds.
+  or `rebutted`; `accepted` and a missing status block too. Minor never
+  blocks. A rebuttal clears any severity; the critic stage judges whether it
+  holds.
 - Consequences: `risk-classifier.sh` decides when the critic stage runs.
 
 ## ADR-0010: `specflow/README.md` drops its Chinese translation
@@ -79,10 +81,10 @@ deleting them; prune anything older than a quarter that no longer guides work.
 
 - Date: 2026-09-11
 - Status: accepted
-- Context: the trigger needs `HIGH` risk or more than three open questions; the
-  `static-landing-page` golden meets neither.
+- Context: the trigger needs `HIGH` risk or more than three open questions;
+  the golden meets neither.
 - Decision: T153 runs the protocol on the golden anyway, checking its steps,
-  not the trigger, which the hook tests cover.
+  not the trigger.
 - Consequences: a real feature still follows the trigger; PR #50 records the
   divergences.
 
@@ -93,8 +95,9 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Context: `.claude/review/headless-ci.json` is gitignored, so its status
   cannot be committed.
 - Decision: the `findings-rebutted` label is the rebuttal: the workflow runs
-  `rebut-findings.sh` before the gate and reruns on `labeled` and `unlabeled`.
-  The rebuttal text lives in the PR description.
+  `rebut-findings.sh` before the gate, marking every finding `rebutted`, and
+  reruns on `labeled` and `unlabeled`. The rebuttal text lives in the PR
+  description. Committed findings files keep the per-finding status path.
 - Consequences: the label clears the whole document; a partial rebuttal still
   needs the code fixed.
 
@@ -104,7 +107,8 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Status: accepted
 - Context: `e2e-smoke.sh`, both validators, and the hook tests grep headings
   and step counts.
-- Decision: `prose-rephraser` and `script-refactorer` keep headings, numbered
+- Decision: `prose-rephraser` and `script-refactorer` take one file each and
+  keep headings, numbered
   steps, code blocks, paths, markers, exit codes, and output lines verbatim;
   `divergence-auditor` measures and runs every guard.
 - Consequences: a rewrite never adds or removes a step.
@@ -116,7 +120,10 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Context: eight reviewers landed after ADR-0003 with mixed models.
 - Decision: final-verdict agents run on opus: `critic`, `security-reviewer`,
   `threat-model-reviewer`, `spec-red-team-reviewer`, and the ADR-0003 list.
-  Stage 2 panel personas run on sonnet because `critic` reviews their review.
+  Stage 2 panel personas (`conformance-reviewer`, `correctness-reviewer`,
+  `maintainability-reviewer`, `performance-reviewer`) run on sonnet because
+  `critic` reviews their review. Mechanical runners and the divergence
+  measurer stay on haiku.
 - Consequences: a new reviewer picks its class by whether another agent checks
   its output.
 
