@@ -552,6 +552,11 @@ check "project-dir without pyproject.toml fails" 2 "$(mutation_gate "$(mktemp -d
 check "mutmut missing from PATH fails"       2 "$(PATH=/usr/bin:/bin mutation_gate "$SAMPLE")"
 check "non-integer threshold fails"          2 "$(MUTATION_THRESHOLD=abc mutation_gate "$SAMPLE")"
 check "threshold above 100 fails"            2 "$(MUTATION_THRESHOLD=101 mutation_gate "$SAMPLE")"
+check "threshold beyond the integer range fails" 2 "$(MUTATION_THRESHOLD=9223372036854775808 mutation_gate "$SAMPLE")"
+shim="$(mktemp -d)"
+ln -s "$(command -v bash)" "$shim/bash"
+ln -s "$(command -v mutmut)" "$shim/mutmut"
+check "jq missing from PATH fails"           2 "$(PATH="$shim" mutation_gate "$SAMPLE")"
 out="$(bash "$HOOKS/mutation-gate.sh" "$SAMPLE" 2>&1)"; st=$?
 check "the sample passes the gate"           0 "$st"
 check_has "the sample reports a full score"  "$out" "mutation score 100%; expected >= 80%"
@@ -559,8 +564,14 @@ s="$(survivor_copy)"
 out="$(MUTATION_THRESHOLD=100 bash "$HOOKS/mutation-gate.sh" "$s" 2>&1)"; st=$?
 check "a surviving mutant fails the gate at threshold 100" 1 "$st"
 check_has "the failing run prints the score line" "$out" "mutation score 95%; expected >= 100%"
-check_has "the failing run counts the survivors" "$out" "1 of 23 mutants survived"
+check_has "the failing run counts the survivors" "$out" "22 of 23 mutants killed; 1 survived, 0 uncovered or timed out"
 check "a surviving mutant passes at the default threshold" 0 "$(mutation_gate "$s")"
+u="$(mktemp -d)/sample"
+cp -R "$SAMPLE" "$u"
+printf '\n\ndef tax_cents(subtotal_cents: int, rate_percent: int) -> int:\n    return subtotal_cents * rate_percent // 100\n' >> "$u/pricing.py"
+out="$(MUTATION_THRESHOLD=100 bash "$HOOKS/mutation-gate.sh" "$u" 2>&1)"; st=$?
+check "an untested function fails the gate at threshold 100" 1 "$st"
+check_has "the failing run counts the uncovered mutants" "$out" "23 of 26 mutants killed; 0 survived, 3 uncovered or timed out"
 
 # --- .claude/review/schema.json (findings contract read by the reviewer agents) ---
 cd "$HOOKS/../.." || exit 1
