@@ -36,7 +36,8 @@ Generate a phased task breakdown using writing-plans skills.
 9. **Print a diff summary** of the regeneration before writing: the IDs added,
    the IDs removed, and the IDs renumbered. If `specs/NNN-feature-name/progress.yml`
    records a removed or renumbered ID as complete, stop and ask the user to
-   confirm; otherwise write the file.
+   confirm; otherwise write the file. When `.claude/hooks/artifact-lint.sh`
+   exists in the repository, it rejects the same case after the write.
 10. Write to `specs/NNN-feature-name/tasks.md`
 
 ## Output
