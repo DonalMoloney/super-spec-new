@@ -29,7 +29,7 @@ EXPECTED_ORDER = [
     "release-reporter",
 ]
 
-# Routing per ADR-0003 as amended by ADR-0014 in decisions.md.
+# ADR-0003, as amended by ADR-0014 in decisions.md, fixes the class per agent.
 OPUS_AGENTS = {
     "requirements-analyst",
     "scenario-critic",
@@ -153,5 +153,5 @@ def test_phase_agent_routes_to_its_adr_model(agent):
 def test_missing_model_field_names_the_agent(tmp_path):
     agent_file = tmp_path / "nameless-runner.md"
     agent_file.write_text("---\nname: nameless-runner\n---\n\nBody.\n")
-    with pytest.raises(AssertionError, match="nameless-runner"):
+    with pytest.raises(AssertionError, match="agent nameless-runner has no model:"):
         frontmatter_model(agent_file)
