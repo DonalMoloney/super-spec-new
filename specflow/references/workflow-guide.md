@@ -93,75 +93,75 @@ matching section while it runs a command.
 ## Phase 2: Brainstorming
 
 **Command**: `/speckit.specflow.brainstorm`
-**Gate**: Target spec file must exist.
-**Output**: Updated spec file (edge cases, open questions, brainstorm log).
+**Gate**: The target spec file exists.
+**Output**: Spec file, updated with new edge cases, open questions, and a brainstorm log entry.
 
 ### Superpowers Integration
 
-If the `brainstorming` skill is detected (see [superpowers-bridge.md](superpowers-bridge.md)):
-- Read its SKILL.md and follow its questioning protocol
-- Adapt outputs to update the spec file instead of creating separate documents
-- Follow its session structure (one question at a time, multiple choice when possible)
+When the `brainstorming` skill is detected (see [superpowers-bridge.md](superpowers-bridge.md)), follow this process:
+- Read the skill's SKILL.md file and follow its questioning protocol
+- Write findings into the spec file rather than a separate document
+- Ask one question at a time, in multiple-choice form where it fits, per the skill's session structure
 
 ### Built-in Fallback Protocol
 
-When superpowers brainstorming is not available, use this 5-category questioning protocol:
+When superpowers brainstorming is not available, run this 5-category questioning protocol instead:
 
 #### Category 1: Boundary Conditions
-Ask about minimum/maximum values, empty states, and edge-of-range inputs.
+Ask about minimum and maximum values, empty states, and inputs at the edge of a range.
 - "What happens when [input] is empty?"
 - "What's the maximum number of [items] the system should handle?"
 - "What happens at exactly the boundary of [limit]?"
 
 #### Category 2: Error Scenarios
-Ask about failure modes, recovery, and degradation.
+Ask about failure modes, recovery, and degraded behavior.
 - "What happens when [external service] is unavailable?"
 - "How should the system recover from [failure type]?"
 - "What error message should the user see when [scenario]?"
 
 #### Category 3: Scale & Performance
-Ask about load, concurrency, and resource constraints.
+Ask about load, concurrency, and limits on resources.
 - "What happens with [N]x expected traffic?"
 - "Are there rate limits needed for [operation]?"
 - "What's the acceptable response time for [action]?"
 
 #### Category 4: Security & Privacy
-Ask about attack vectors, data protection, and authorization.
+Ask about attack vectors, data protection, and who holds authorization.
 - "Can [feature] be abused by [actor type]?"
 - "What data needs to be encrypted or redacted?"
 - "Who should NOT have access to [resource]?"
 
 #### Category 5: User Experience
-Ask about confusion points, accessibility, and unintended usage.
+Ask about points of confusion, accessibility, and use the design did not intend.
 - "What if the user tries to [unintended action]?"
 - "How does this work for users with [accessibility need]?"
 - "What happens if the user navigates away mid-[process]?"
 
 ### Process
 
-1. **Read the spec** and identify areas with thin coverage or placeholder edge cases.
+1. **Read the spec** and find the sections with thin coverage or a placeholder edge case.
 
-2. **Ask ONE question at a time**. Wait for the user's answer before proceeding.
-   Prefer multiple-choice format when possible for efficient exploration.
+2. **Ask one question at a time**. Wait for the user's answer before the next question.
+   Use multiple-choice form where it speeds up the exchange.
 
 3. **After each answer**:
-   - If it reveals a new requirement: add to spec's Functional Requirements
-   - If it resolves an open question: update the Open Questions table
-   - If it reveals an edge case: add to the Edge Cases section
-   - If it changes an acceptance scenario: update the relevant user story
+   - A new requirement goes into the spec's Functional Requirements
+   - A resolved question updates the Open Questions table
+   - A new edge case goes into the Edge Cases section
+   - A changed acceptance scenario updates the matching user story
 
-4. **Continue** through all 5 categories, skipping questions already covered by the spec.
+4. **Continue** through all 5 categories and skip a question the spec already covers.
 
-5. **When the user says the spec is ready** (or all categories explored):
-   - Add a dated entry to the "Brainstorm Log" section
-   - Summarize: number of questions explored, insights discovered, spec updates made
+5. **When the user says the spec is ready** (or the agent has covered every category):
+   - Log a dated entry in the "Brainstorm Log" section
+   - State the number of questions asked, the insights found, and the updates made to the spec
    - Suggest: "Run `/speckit.plan` to create the implementation plan."
 
 ### Iteration
 
-This phase can be run multiple times. Each session:
-- Starts by reading previous brainstorm log entries to avoid repeating questions
-- Focuses on the user-specified topic (if provided) or unexplored categories
+This phase may run more than once. Each session:
+- Reads the previous brainstorm log entries first, so it does not repeat a question
+- Focuses on the topic the user named, or on an unexplored category when none was named
 - Appends a new entry to the brainstorm log
 
 ---
