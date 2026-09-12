@@ -433,7 +433,7 @@ The agent MUST:
 
 ## Budgets
 
-Each phase has a recommended token ceiling and suggested model class. Headless runs can enforce the ceiling via the Claude budget-cap flag (name not yet confirmed; see G-09 T092). Tune these values per organization: higher ceilings allow more thorough exploration; lower ceilings prioritize cost.
+Each phase carries a recommended token ceiling and a suggested model class. A headless run can enforce the ceiling with the Claude budget-cap flag (name not yet confirmed; see G-09 T092). Tune these values per organization. A higher ceiling buys deeper exploration; a lower ceiling keeps cost down.
 
 | Phase | Token Ceiling | Model Class | Notes |
 |-------|---------------|-------------|-------|
@@ -445,9 +445,9 @@ Each phase has a recommended token ceiling and suggested model class. Headless r
 | 5 - Execute | 500k | Variable | Most expensive; actual implementation. Mix: Haiku (mechanical), Sonnet (normal), Opus (complex). |
 | 6 - Review | 300k | Opus | Multi-lens review; high-stakes reasoning. Scale with risk level (STRIDE, security, cross-model). |
 
-**Headless gating:** In CI workflows, pass `--max-turns 6` and the budget-cap flag to the `claude -p` invocation. Example: `claude -p "..." --output-format json --max-turns 6 [budget-flag-TBD]`. Phase overages are reported in the JSON output as `total_cost_usd`; gates can reject runs exceeding the ceiling.
+**Headless gating:** In CI, pass `--max-turns 6` and the budget-cap flag to the `claude -p` invocation. Example: `claude -p "..." --output-format json --max-turns 6 [budget-flag-TBD]`. The JSON output reports phase overages as `total_cost_usd`. A gate can reject a run that exceeds the ceiling.
 
-**Tuning:** Track actual spend per phase (`.specify/telemetry.jsonl` + `jq` rollup); adjust ceilings weekly based on feature complexity and CLI speed. HIGH-risk features (auth, payments, migrations) typically exceed standard ceilings by 20–50%; allocate accordingly or extend the critic loop allowance.
+**Tuning:** Track actual spend per phase (`.specify/telemetry.jsonl` + `jq` rollup). Adjust ceilings weekly for feature complexity and CLI speed. HIGH-risk features (auth, payments, migrations) exceed standard ceilings by 20–50%. Allocate more budget or extend the critic loop allowance.
 
 ---
 
