@@ -5,8 +5,7 @@
 > `specflow/` and is not part of the shipped extension, so this playbook carries
 > no Codex install steps and no Codex CI step. Codex stays an allowed implementer
 > and cross-model reviewer for this repo's own development: the `codex review` and
-> `codex:codex-rescue` references below are current, as are the Codex executor
-> lines in `imporvements/tasks.md`.
+> `codex:codex-rescue` references below are current.
 
 ## Part 0 — Executive Summary + What's New in v2
 
@@ -45,32 +44,12 @@ This v2 keeps every item, template, command, and verified fact from the two v1 d
 
 ---
 
-## Progress checklist (this repo)
+## Progress (this repo)
 
-- [x] PR template — `.github/pull_request_template.md` (PR #1, merged)
-- [x] Item 2 — gate hooks (`block-main-commit.sh`, `test-gate.sh`, `.claude/settings.json`) (PR #2, merged)
-- [x] Item 13 — memory layer (`decisions.md`, `open-questions.md`, `@import` in CLAUDE.md) (PR #3, merged)
-- [x] Item 4 — artifact linting (`artifact-lint.sh` PostToolUse hook) (PR #4, merged)
-- [x] G-01 — repair the two known `main` failures (PR #8, merged)
-- [x] G-02 — Item 1: Code Review Rules in the constitution and `AGENTS.md` (PR #10, merged)
-- [x] G-03 — Item 3: clarify, analyze, and checklist gates (PR #11, merged)
-- [x] G-04 — Item 7: model routing on every subagent (PR #9, merged)
-- [x] G-05 — Item 6 / 4.13: adversarial review agents and findings schema (PR #13, merged)
-- [x] G-06 — merge gate and risk classifier scripts (PR #30, merged)
-- [x] G-07 — Item 9: observability Stop hook (PR #31, merged)
-- [x] G-08 — intent dispatcher skill (PR #14, merged)
-- [x] G-09 — Items 10, 15, 17: CI merge-gate workflow (PR #46, merged)
-- [x] G-10 — Item 21: STRIDE lens and traceability matrix in the spec template (PR #33, merged)
-- [x] G-11 — Item 18: spec change management (PR #32, merged)
-- [x] G-12 — Item 20: resumable sessions via `SessionStart` (PR #22, merged)
-- [x] G-13 — Items 12, 19: golden-run scorer and eval replay (PR #20, merged)
-- [x] G-14 — Item 5: Agent Teams for `[P]` tasks (PR #17, merged)
-- [x] G-15 — Item 14: differential implementation (Claude vs Codex) (PR #44 merged the script and protocol; T153 ran 2026-09-11, PR #50, see ADR-0011)
-- [x] G-16 — Item 22: cost governance (PR #27, merged)
-- [x] G-17 — Item 8: close the review loop (PR #12, merged)
-- [x] G-18 — playbook scope cleanup (PR #15, merged)
-
-See `imporvements/tasks.md` for each group's task list and `imporvements/model-routing.md` for which model and effort ran each one.
+Every item in Part 2 and every file in Part 4 merged between PR #1 and PR #53
+on 2026-09-11. The per-group record is `git log --merges --first-parent main`.
+`imporvements/tasks.md` holds the second wave, `imporvements/cleanup.md` the
+hygiene debt, and `imporvements/divergence-by-part.md` the option space.
 
 ## Part 2 — The Focused Improvement Roadmap
 
@@ -745,6 +724,168 @@ flowchart TD
 
 ---
 
+## Part 9: v3 scoped items (23 to 36)
+
+Items 1 to 22 are merged (Progress, above). These fourteen are the next
+candidates. Each is one outcome with a `Verify:` line a reviewer can run, the
+same shape `tasks.md` groups use, so claiming one means decomposing it into a
+group numbered G-24 or later. Facts marked *verified* were checked on
+2026-09-11; sources are in Appendix E. Every item keeps the three constraints
+in `divergence-by-part.md`: namespace lock-step, superpowers optional, both
+runtimes.
+
+### Tier A: ship it (install, upgrade, release)
+
+**23. A catalog entry users can search.** *(NEW in v3)* What: a `catalog.json`
+(spec-kit catalog schema 1.0) at the repository root, served raw from GitHub,
+and a README line telling a user to list it in `.specify/extension-catalogs.yml`
+with `install_allowed: true` or to set `SPECKIT_CATALOG_URL`. Why: spec-kit's
+own catalog is empty by design, so `specify extension search specflow` finds
+nothing and the only install paths are `--from <zip>` and `--dev`. How: one
+entry pointing at the release ZIP from item 24; a CI step runs
+`SPECKIT_CATALOG_URL=<raw url> specify extension search specflow` and greps
+the id. *Verified:* catalogs are JSON files with a schema version, listed with
+name, url, priority, and install_allowed; check the entry fields against
+`docs/reference/extensions.md` in your spec-kit version. Verify: the CI step
+passes. Effort: low. Deps: 24.
+
+**24. A release workflow that runs the archive validator.** *(NEW in v3)*
+What: `release.yml` on a `v*` tag runs `validate-release-archive.py <tag>` and
+attaches the `git archive` ZIP and the validator output to the GitHub release.
+Why: the last tag is v1.0.2 (2026-08-07), the catalog downloads the tag ZIP,
+and no check runs on a tag before users pull it; issue #6 was exactly that.
+How: reuse the validator; adopt a version rule for a prompt contract: a
+changed Process step or template section is minor, a renamed marker, command,
+or file is major, wording is patch; D-05's CHANGELOG Unreleased section is the
+input. Verify: pushing a tag produces a release with two assets, and `specify
+extension add specflow --from <release zip>` installs in a fresh project.
+Effort: low. Deps: D-05.
+
+**25. A template drift report in status.** *(NEW in v3)* What: a stamp comment
+in every shipped template (`<!-- specflow template: spec-template 1.1.0 -->`)
+and a Doctor section in `/speckit.specflow.status` that compares the stamps in
+`.specify/templates/` with the installed extension version and lists stale
+templates. Why: `/speckit.constitution` copies templates once; an extension
+upgrade leaves the copies behind and nothing says so. How: a prose Process
+step in `status.md`, so it runs on the Copilot CLI; `e2e-smoke.sh` asserts the
+stamp in an installed template. Verify: the smoke test greps the stamp, and a
+dry-run fixture with an old stamp prints the stale line. Effort: low. Deps: 24.
+Blast radius: every template, but one comment line each.
+
+**26. An upgrade path the smoke test walks.** *(NEW in v3)* What:
+`e2e-smoke.sh` installs the v1.0.2 release ZIP, installs the checkout over it
+with `--dev`, and asserts no stale command file or `extensions.yml` entry
+remains. Why: every user who installed 1.0.2 upgrades through this path and
+it has never run. How: `specify extension --help` names the update or remove
+subcommand in the installed version; use it, or `remove` then `add`. Verify:
+the smoke test reports the upgrade assertions and passes. Effort: low.
+Deps: 24.
+
+### Tier B: prove it on both runtimes
+
+**27. An agent-driven e2e for the Copilot CLI.** *(NEW in v3)* What:
+`scripts/e2e-agent-copilot.sh`, the twin of the Claude script: the dry run
+replays the snapshot, the live run drives each stage with `copilot -p "<stage
+prompt>"` and per-tool allow flags such as `--allow-tool='shell(git:*)'`,
+under `timeout`. Why: the README says the extension runs on the Copilot CLI,
+and the only Copilot check is the install layout the smoke test asserts (PR
+#59). How: move the stage prompts and assertions into a sourced
+`e2e-stages.sh` both scripts share; CI runs the dry run. *Verified:* `-p` is
+the non-interactive mode and `--allow-tool` scopes permissions; check the
+flag names against the programmatic reference in your version, and never use
+`--allow-all-tools` on a runner that can push. Verify: `E2E_DRY_RUN=1 bash
+scripts/e2e-agent-copilot.sh` exits 0 in CI. Effort: medium. Deps: none.
+
+**28. Gate hooks on the Copilot CLI.** *(NEW in v3)* What: a
+`.github/hooks/specflow.json` registering the existing scripts under
+`preToolUse` (block-main-commit, test-gate), `postToolUse` (artifact-lint),
+and `sessionStart` (session-start). Why: `copilot-cli.md` says the agent runs
+each gate itself as a command step, which is the prompt-level gate item 2
+exists to remove. How: the scripts stay in `.claude/hooks/` (ADR-0001); a
+thin adapter maps exit 2 to the deny JSON the Copilot hook expects on stdout,
+and the config carries both `bash` and `powershell` keys. Record the second
+harness directory as an ADR. *Verified:* Copilot CLI hooks live in
+`.github/hooks/`, support `sessionStart`, `sessionEnd`, `userPromptSubmitted`,
+`preToolUse`, `postToolUse`, and `errorOccurred`, and `preToolUse` denies by a
+JSON object on stdout, not by exit code. Verify: a hook test runs the adapter
+on a blocked command and asserts the deny JSON; a live Copilot session
+refuses `git commit` on main. Effort: medium. Deps: 27 for the live check.
+
+**29. The merge gate reads the feature's findings file.** *(NEW in v3)* What:
+`merge-gate.sh` includes `specs/*/review-findings.json` in its default glob,
+the file `review.md` writes since PR #57, and `merge-gate.yml` passes both
+globs. Why: a review on the Copilot CLI writes findings the gate never reads,
+so a Critical finding blocks nothing there. Verify: a hook test with a
+Critical finding in `specs/001-x/review-findings.json` prints `MERGE
+BLOCKED`. Effort: low. Deps: none.
+
+**30. A contract for the progress file.** *(NEW in v3)* What:
+`.claude/review/validate-progress.py`, dependency-free like
+`validate-findings.py`, checking the keys of `progress.yml`, phase names
+against the Gate markers table, and that every task ID marked complete exists
+in `tasks.md`; `artifact-lint.sh` calls it on write. Why: `progress.yml` is
+the resumability contract and nothing validates it, so a misspelled phase
+resumes at the wrong step without a message. Verify: three tests: an unknown
+phase, an unknown task ID, and a valid file. Effort: low. Deps: none.
+
+### Tier C: operate it
+
+**31. A reviewer scorecard.** *(NEW in v3)* What: `.claude/review/scorecard.sh`
+reads every findings file, prints per-persona precision (fixed divided by
+fixed plus rejected plus rebutted) with counts, and writes
+`.claude/review/scorecard.md`. Why: section 3.9 and the weekly ritual in Part
+6 assume a scorecard and none exists, so a persona below 0.5 precision cannot
+be found, let alone demoted. Verify: a fixture with four findings, two fixed
+and two rejected, prints 0.50. Effort: low. Deps: none.
+
+**32. Cost per feature against the budget table.** *(NEW in v3)* What:
+`.claude/hooks/cost-report.sh` sums `total_cost_usd` per feature from
+`.specify/telemetry.jsonl`, prints a table beside the Budgets table in
+`workflow-guide.md`, and exits 1 when a feature is over budget. Why: G-16 set
+budgets and G-07 logs phases; nothing joins them, so a budget is a number
+nobody checks. Verify: a fixture over budget exits 1 and names the feature.
+Effort: low. Deps: none.
+
+**33. The lint checks a traceability row names a real test.** *(NEW in v3)*
+What: once `.analyzed` exists, `artifact-lint.sh` reads the `## Traceability`
+rows and fails when the named test is not found in the test tree. Why:
+`specflow/templates/spec-template.md` records that the scorer reads only the
+Test name column, not whether the test exists, so an invented name passes. Verify: a hook test with a
+row naming a missing test blocks. Effort: low. Deps: none.
+
+**34. A seeded-ambiguity golden.** *(NEW in v3)* What:
+`examples/seeded-ambiguity/`, a spec with one planted ambiguity (an undefined
+sort order, say), and a scorer dimension for whether brainstorm or clarify
+surfaced it as an open question. Why: the scorer proves the reviewer finds a
+seeded bug; nothing proves the spec phase finds a seeded ambiguity, and the
+spec phase is where upstream is thinnest. Verify: `score-artifacts.py` scores
+the new golden and `score-artifacts.yml` replays it. Effort: medium. Deps:
+G-19.
+
+**35. A tested superpowers version range.** *(NEW in v3)* What:
+`superpowers.yml` records the installed superpowers version from the plugin
+manifest, `superpowers-bridge.md` states the tested range, and status warns
+outside it. Why: v6.0 rewrote `subagent-driven-development` and v6.2 moved
+the SDD workspace; the bridge assumes a skill shape and nothing says which.
+Verify: a dry-run fixture with `version: 5.0.0` prints the warning. Effort:
+low. Deps: none.
+
+**36. Upstream the resync-safe moves.** *(NEW in v3)* What: open pull
+requests against WangX0111/superspec for the Tighten moves tagged "breaks
+resync: rarely": the after-tasks progress read (D-01), the status marker
+column (D-07), the compound-task rule (D-06), and the Copilot fallback rows
+(D-03). Why: every accepted move shrinks the diff the drift check in G-23
+reports, and the fork's value is the `.claude/` toolkit, not five prompt
+files. Verify: the PR links are recorded beside each bullet in
+`divergence-by-part.md`. Effort: low. Deps: none. No code.
+
+**Days 90 to 120.** Items 24, 23, 26 (release, catalog, upgrade), then 29 and
+30 (the gate and the progress contract), then 27 and 28 (Copilot e2e and
+hooks). Items 31 to 33 fit any short session. Items 34 to 36 wait for G-19
+and for the D-items to merge.
+
+---
+
 ## Appendix A — Command Cheat Sheet
 ```bash
 # --- Install ---
@@ -825,5 +966,7 @@ codex exec "run tests and fix failures"
 - Mutation tools + thresholds (Stryker break threshold/exit 1, mutmut `--CI`, PIT `<mutationThreshold>`, cargo-mutants, etc.).
 - Research: CodeT (2207.10397; "improves the pass@1 on HumanEval to 65.8%, an increase of absolute 18.8%... and an absolute 20+% improvement over previous state-of-the-art"); Panickssery self-preference (2404.13076, NeurIPS 2024); Huang self-correction (2310.01798, ICLR 2024); Du multiagent debate (2305.14325, ICML 2024); Irving debate (1805.00899); McAleese CriticGPT (2407.00215, "preferred over human critiques in 63% of cases"); Anthropic context-engineering post ("context rot," "attention budget," Sept 2025). Anthropic Code Review Security preview (Feb 19–20 2026; Opus 4.6 "found and validated more than 500 high-severity vulnerabilities").
 - Plugin landscape (subagent-verified): `openai/codex-plugin-cc` (~32.7k★, active), `alirezarezvani/claude-skills` (~25–26k★, not page-verified), `wan-huiyan/agent-review-panel` (21★, v3.5.0), `alecnielsen/adversarial-review` (37★, stale).
+
+- **v3 additions (Sept 11 2026):** Copilot CLI hooks reference (`.github/hooks/`, six events, `preToolUse` deny via JSON on stdout, `bash`/`powershell` keys); Copilot CLI programmatic reference (`-p`, `--allow-tool`, `--allow-all-tools` caveat); spec-kit `docs/reference/extensions.md` (catalog JSON schema 1.0, `.specify/extension-catalogs.yml` fields, `SPECKIT_CATALOG_URL` override).
 
 **"Verify in your version" (could not fully pin):** Superspec's exact current command roster and latest tag; the exact Claude headless dollar-budget flag name; exact model IDs/aliases; Agent Teams stability (experimental); Codex hooks/teams equivalents; the arXiv IDs 2608.18167 (AR protocol) and 2607.10411 (Rahman sycophancy) — carried from v1, not re-fetched this session; `alirezarezvani/claude-skills` star count (snippets only).

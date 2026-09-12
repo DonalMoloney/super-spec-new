@@ -63,8 +63,8 @@ there, so a workflow under `specflow/` never runs.
 - `presentation/`: currently empty; this is where the Marp slide deck giving a
   project overview will go once written. Author it as a single `.md` file with Marp
   front matter (`marp: true`) so it renders via the Marp CLI/VS Code extension. Don't
-  add a build step or framework for it. Draw its content from `imporvements/improvements.md`
-  (the project roadmap) and this file, not from re-deriving the project's purpose from scratch.
+  add a build step or framework for it. Draw its content from `imporvements/imporvements2.md`
+  (the playbook) and this file, not from re-deriving the project's purpose from scratch.
 
 ## Gotchas
 
@@ -179,7 +179,7 @@ this is the one place both surfaces read:
 ## Roadmap execution workflow
 
 **Main branch stays clean:**
-- All roadmap work (G-01 through G-18) runs in background git worktrees.
+- All roadmap work (G-19 onward; G-01 to G-18 merged) runs in background git worktrees.
 - Main branch is always on the latest merge; no feature branches here.
 - Each group = one worktree in `~/PycharmProjects/worktrees/<group-name>` with its own agent run.
 - After completion, worktree is deleted and the PR is merged to main.
