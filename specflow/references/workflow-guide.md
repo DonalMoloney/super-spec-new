@@ -1,13 +1,13 @@
 # Specflow Workflow Guide
 
-This guide provides detailed phase-by-phase instructions for the specflow development
-workflow. The SKILL.md file references this document for progressive disclosure:
-the agent reads the relevant section while it runs a command.
+This guide gives phase-by-phase instructions for the specflow workflow. SKILL.md
+references this document for progressive disclosure: the agent reads only the
+matching section while it runs a command.
 
 ## Phase 0: Project Initialization
 
 **Command**: `/speckit.constitution`
-**Gate**: None. This is the entry point.
+**Gate**: None. This phase starts the workflow.
 **Output**: `.specify/` directory structure + `memory/constitution.md`
 
 ### Steps
@@ -21,26 +21,25 @@ the agent reads the relevant section while it runs a command.
    ```
 
 2. **Copy templates** from the specflow skill's `templates/` directory into
-   `.specify/templates/`. This gives the project its own copy of templates
-   that can be customized.
+   `.specify/templates/`. The project keeps its own copy to customize.
 
 3. **Interview the user** about:
    - Project name and purpose
-   - Core principles (3-7 principles, each with a clear name and description)
+   - Core principles (3-7 principles, each with a name and a description)
    - Technology stack (layers, technologies, purposes)
    - Development workflow preferences (which quality gates to enforce)
    - Governance rules
 
 4. **Generate constitution** using `constitution-template.md` as skeleton.
-   Fill in all sections based on user responses. Ensure the "Development Workflow"
-   and "Quality Gates" sections are populated.
+   Fill in every section from the user's responses. Populate the "Development Workflow"
+   and "Quality Gates" sections.
 
 5. **Write** to `.specify/memory/constitution.md`
 
 ### Verification
 
 - File exists at `.specify/memory/constitution.md`
-- All template placeholders replaced with actual content
+- Every placeholder replaced with real content
 - At least 3 core principles defined
 - Quality gates section has at least one requirement marked
 
