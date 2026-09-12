@@ -476,13 +476,15 @@ out. Every other phase runs in its usual order.
 
 ## Differential implementation
 
-Two executors implement the same spec in separate worktrees, then each side runs
-the other's tests. Where the two implementations disagree, the spec is ambiguous.
-The run pays for two implementations, so it is not the default Phase 5 path.
+Two executors implement the same spec in separate worktrees, then each runs
+the other's tests. A disagreement between the implementations marks the spec
+as ambiguous. Two implementations cost more than one, so this is not the
+default Phase 5 path.
 
 ### Trigger
 
-Run it only when one of these holds. Otherwise take the normal Phase 5 path.
+Run the differential implementation only when one of these holds. Otherwise,
+follow the normal Phase 5 path.
 
 - `.claude/hooks/risk-classifier.sh` prints `HIGH` for the change. Its other
   value is `STANDARD`.
@@ -491,20 +493,22 @@ Run it only when one of these holds. Otherwise take the normal Phase 5 path.
 ### Steps
 
 1. Create the worktrees: `bash .claude/hooks/diff-impl.sh specs/NNN-feature-name`.
-   It prints the two paths and the test command both sides run. The script is not
-   part of the extension archive a consuming project installs; without it, run
-   `git worktree add -b <feature>-a worktrees/<feature>-a HEAD` and the same for
-   `-b`.
+   The command prints both worktree paths and the test command each side runs.
+   The script sits outside the extension archive a consuming project installs.
+   Without it, run `git worktree add -b <feature>-a worktrees/<feature>-a HEAD`,
+   then run it again for the `-b` worktree.
 2. Implement worktree A with `implementation-engineer`, working from `spec.md`.
 3. Implement worktree B with `codex:codex-rescue`, working from the same
    `spec.md`. Neither executor sees the other's diff.
 4. Run A's tests in worktree B, then B's tests in worktree A.
-5. Collect the divergences: every test that passes in its own worktree and fails
-   in the other, plus every observable behavior difference the tests miss.
+5. Collect the divergences. A divergence is a test that passes in its own
+   worktree and fails in the other, or an observable behavior difference the
+   tests miss.
 6. Append one row per divergence to the spec's `## Open Questions` table, with
-   the failing test name opening the Question column. A divergence names a gap in
-   the spec, not a bug in one worktree, until the question is answered.
-7. Answer the questions, keep one worktree, and delete the other with its branch.
+   the failing test name opening the Question column. A divergence marks a gap
+   in the spec, not a bug in one worktree, until answered.
+7. Answer the questions. Keep one worktree, then delete the other with its
+   branch.
 
 ---
 
