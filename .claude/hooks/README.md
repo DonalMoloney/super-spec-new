@@ -45,3 +45,11 @@ The classifier prints `HIGH` or `STANDARD` for the diff between `main` and
 `HEAD`. `HIGH` turns on the security review and the mutation score in CI. The gate reads `.claude/review/*.json` and exits 1 when a Critical or
 Important finding is neither fixed nor rebutted. A branch carrying no findings
 file passes and leaves `.claude/review/.merge-approved` behind.
+
+`mutation-gate.sh` runs mutmut 3 on a project directory and exits 1 when the
+share of mutants the tests kill is below `MUTATION_THRESHOLD`, which defaults
+to 80. No workflow calls it yet. Run it on the sample project to see it pass:
+
+```bash
+.claude/hooks/mutation-gate.sh specflow/examples/mutation-gate-sample
+```
