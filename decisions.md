@@ -10,15 +10,17 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Context: this repo is the extension and has no `.specify/`.
 - Decision: harness-specific hooks and `settings.json` live under `.claude/`;
   `specflow/` stays harness-neutral runtime payload.
-- Consequences: a consuming project copies the hooks in by hand.
+- Consequences: hooks under `.claude/` are outside the spec-kit `git archive`,
+  so a consuming project copies them by hand.
 
 ## ADR-0002: Quality standards live in `standards/`, not `.claude/rules/` or agent prompts
 
 - Date: 2026-09-11
 - Status: accepted
 - Context: `.claude/rules/` is Claude-only, and 17 pasted copies drift.
-- Decision: three harness-neutral files under `standards/`, imported by
-  `CLAUDE.md`, linked from `AGENTS.md`, and passed by path on each dispatch.
+- Decision: three harness-neutral files under `standards/`. `CLAUDE.md`
+  imports them, `AGENTS.md` links them, and `bdd-orchestrator` passes the
+  relevant path on each dispatch.
 - Consequences: a rule change is one edit. `standards/` is not in the archive.
 
 ## ADR-0003: Route subagents by judgment and execution cost
