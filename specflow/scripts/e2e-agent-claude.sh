@@ -1,39 +1,32 @@
 #!/usr/bin/env bash
 # scripts/e2e-agent-claude.sh
 #
-# End-to-end AI-generation test for the specflow extension, driven by Claude
-# Code in headless (-p) mode. This is the second of two e2e tests in this repo:
+# Full agent-driven end-to-end test for the specflow extension, run through
+# Claude Code in headless (-p) mode. scripts/e2e-smoke.sh covers the other
+# e2e test: structural assertions with no LLM, ~60s.
 #
-#   1. scripts/e2e-smoke.sh        : structural assertions, no LLM, ~60s
-#   2. scripts/e2e-agent-claude.sh : full agent-driven workflow, this file
-#
-# Goal
-#   Drive a deterministic feature ("a static landing page for the specflow
-#   project") through every stage of specflow's workflow, and assert at each
-#   stage that the expected artifact + section structure was produced. This
-#   tells us per-stage whether brainstorm / tasks / execute / review actually
-#   work end-to-end (not just that they're registered).
+# Drives a deterministic feature ("a static landing page for the specflow
+# project") through every stage of specflow's workflow and asserts, at each
+# stage, that the expected artifact and section structure exist. Each stage
+# is a separate `claude -p` invocation; the first failed assertion stops the
+# run.
 #
 # Pipeline
-#   Stage 0  /speckit.constitution  → .specify/memory/constitution.md
-#   Stage 1  /speckit.specify       → specs/001-.../spec.md
-#   Stage 2  /speckit.specflow.brainstorm  (mutates spec.md, adds Edge Cases)
-#   Stage 3  /speckit.plan          → specs/001-.../plan.md
-#   Stage 4  /speckit.tasks         → specs/001-.../tasks.md
+#   Stage 1  /speckit.constitution, writes .specify/memory/constitution.md
+#   Stage 2  /speckit.specify, writes specs/001-.../spec.md
+#   Stage 3  /speckit.specflow.brainstorm  (mutates spec.md, adds Edge Cases)
+#   Stage 4  /speckit.plan, writes specs/001-.../plan.md
+#   Stage 5  /speckit.tasks, writes specs/001-.../tasks.md
 #                                     (after_tasks hook may invoke .specflow.tasks)
-#   Stage 5  /speckit.specflow.execute   → web/index.html + progress updates
-#   Stage 6  /speckit.specflow.review    → checklists/review.md
-#
-# Each stage is a separate `claude -p` invocation. After each, we assert
-# (a) expected file exists, (b) certain section headings exist (contract
-# markers, NOT prose). First failure stops the whole run.
+#   Stage 6  /speckit.specflow.execute, writes web/index.html and progress updates
+#   Stage 7  /speckit.specflow.review, writes checklists/review.md
 #
 # Environment
 #   ANTHROPIC_API_KEY     required (unless E2E_DRY_RUN=1)
-#   E2E_DRY_RUN=1         echo the prompts but don't call claude (free)
+#   E2E_DRY_RUN=1         print the prompts, skip the claude call (free)
 #   E2E_MAX_BUDGET_USD    per-stage budget cap, default 0.50
-#   E2E_MAX_TURNS         per-stage turn cap, default 12
-#   E2E_KEEP_WORKDIR=0    delete tmp project at the end (default: keep)
+#   E2E_MAX_TURNS         per-stage turn cap, default 30
+#   E2E_KEEP_WORKDIR=0    delete the tmp project at exit (default: keep)
 #
 # Usage
 #   ANTHROPIC_API_KEY=sk-ant-... bash scripts/e2e-agent-claude.sh
@@ -62,14 +55,14 @@ else
   C_GREEN=""; C_RED=""; C_YELLOW=""; C_DIM=""; C_BOLD=""; C_RST=""
 fi
 
-# ---------- preflight ----------------------------------------------------
+# preflight: required binaries and auth
 if [ "$DRY_RUN" != "1" ]; then
   if ! command -v claude >/dev/null 2>&1; then
     printf '%sFAIL%s claude CLI not in PATH. Install: npm i -g @anthropic-ai/claude-code\n' "$C_RED" "$C_RST"; exit 1
   fi
-  # claude supports ANTHROPIC_API_KEY env var, OAuth (claude login -> keychain),
-  # or apiKeyHelper. We don't enforce env var; claude itself will error out if
-  # no auth is available. Only warn if neither env var is set and we're in CI.
+  # claude accepts ANTHROPIC_API_KEY, OAuth (claude login -> keychain), or
+  # apiKeyHelper; claude itself errors when no auth is available. CI has no
+  # keychain, so the missing env var is fatal only there.
   if [ -z "${ANTHROPIC_API_KEY:-}" ] && [ -n "${CI:-}" ]; then
     printf '%sFAIL%s ANTHROPIC_API_KEY not set in CI environment.\n' "$C_RED" "$C_RST"; exit 1
   fi
@@ -98,7 +91,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# ---------- output helpers ----------------------------------------------
+# output helpers
 PASS=0; FAIL=0; FAILED_STAGE=""
 pass()  { printf '    %sok%s   %s\n' "$C_GREEN" "$C_RST" "$1"; PASS=$((PASS+1)); }
 miss()  { printf '    %sFAIL%s %s\n' "$C_RED"   "$C_RST" "$1"; FAIL=$((FAIL+1)); }
@@ -107,7 +100,6 @@ title() { printf '\n%s[Stage %s]%s %s\n'   "$C_BOLD" "$1" "$C_RST" "$2"; }
 
 skip()           { printf '    %s~%s    %s %s(dry-run)%s\n' "$C_YELLOW" "$C_RST" "$1" "$C_DIM" "$C_RST"; }
 assert_file()    { [ -f "$2" ]   && pass "$1" || { miss "$1 (missing: ${2#$WORK/})"; return 1; }; }
-assert_dir()     { [ -d "$2" ]   && pass "$1" || { miss "$1 (missing: ${2#$WORK/})"; return 1; }; }
 assert_no_path() { [ ! -e "$2" ] && pass "$1" || { miss "$1 (unexpected: ${2#$WORK/})"; return 1; }; }
 assert_grep() {
   local desc="$1" pattern="$2" file="$3"
@@ -115,9 +107,18 @@ assert_grep() {
   else miss "$desc (pattern '$pattern' missing from ${file#$WORK/})"; return 1; fi
 }
 
-# ---------- agent driver -------------------------------------------------
-# Args: <stage_id> <prompt>
-# Side-effect: cwd must be $WORK so claude picks up .claude/ and .specify/.
+# Stops the run once a stage has set FAILED_STAGE.
+stop_if_stage_failed() {
+  [ -z "$FAILED_STAGE" ] && return 0
+  printf '\n%sStopped at Stage %s%s\n' "$C_RED" "$FAILED_STAGE" "$C_RST"
+  exit 1
+}
+
+PROMPT_PREVIEW_CHARS=400
+
+# Runs one workflow stage's prompt through claude -p.
+# Args: <stage_id> <prompt>. Requires cwd == $WORK so claude picks up
+# .claude/ and .specify/.
 run_claude() {
   local stage_id="$1"; shift
   local prompt="$1"
@@ -130,19 +131,19 @@ run_claude() {
 
   if [ "$DRY_RUN" = "1" ]; then
     note "DRY_RUN: would call claude with prompt:"
-    printf '%s        %s%s\n' "$C_DIM" "$prompt" "$C_RST" | head -c 400; echo
+    printf '%s        %s%s\n' "$C_DIM" "$prompt" "$C_RST" | head -c "$PROMPT_PREVIEW_CHARS"; echo
     : > "$log"
     return 0
   fi
 
-  # --permission-mode acceptEdits  → no interactive prompt for file writes
-  # --max-turns                    → cap agent loops
-  # --max-budget-usd               → cap per-stage spend
-  # --output-format text           → human-readable response (we don't parse it)
-  # We rely on claude reading the project dir (.claude/, .specify/, AGENTS.md
-  # auto-discovery) so it knows about the spec-kit + specflow slash commands.
-  # claude exits non-zero on max-turns or budget after writing artifacts, so
-  # the on-disk assertions below decide whether the stage delivered.
+  # --permission-mode acceptEdits: no interactive prompt for file writes
+  # --max-turns: caps agent loops
+  # --max-budget-usd: caps per-stage spend
+  # --output-format text: response format; the caller does not parse it
+  # claude reads the project dir (.claude/, .specify/, AGENTS.md auto-discovery)
+  # to find the spec-kit and specflow slash commands. claude exits non-zero on
+  # max-turns or budget after writing artifacts, so the on-disk assertions
+  # below decide whether the stage delivered.
   if claude -p \
         --permission-mode acceptEdits \
         --max-turns "$MAX_TURNS" \
@@ -157,9 +158,19 @@ run_claude() {
   fi
 }
 
-# ========================================================================
-#  PREP: spec-kit init + install specflow from local checkout
-# ========================================================================
+LOG_TAIL_LINES=20
+SKILLS_LIST_LIMIT=30
+
+# Runs one `uvx --from spec-kit specify ...` step, logging output and
+# printing pass/fail. Exits 1 on failure, after showing the log tail.
+run_uvx_step() {
+  local log="$1" ok_msg="$2" fail_msg="$3"; shift 3
+  uvx --from git+https://github.com/github/spec-kit.git "$@" \
+      </dev/null >"$log" 2>&1 \
+    || { miss "$fail_msg (see $log)"; tail -n "$LOG_TAIL_LINES" "$log"; exit 1; }
+  pass "$ok_msg"
+}
+
 if [ -n "$RESUME_WORKDIR" ]; then
   title 0 "prep: resuming from existing workdir"
   cd "$WORK" || exit 1
@@ -169,28 +180,21 @@ else
   title 0 "prep: init spec-kit + install specflow (--dev)"
   cd "$WORK" || exit 1
 
-  uvx --from git+https://github.com/github/spec-kit.git specify init \
-      --here --integration claude --ignore-agent-tools --force \
-      </dev/null >"$LOGS/init.log" 2>&1 \
-    || { miss "specify init failed (see $LOGS/init.log)"; tail -n 20 "$LOGS/init.log"; exit 1; }
-  pass "specify init (--integration claude) succeeded"
-
-  uvx --from git+https://github.com/github/spec-kit.git specify extension add "$REPO_ROOT" --dev \
-      </dev/null >"$LOGS/add.log" 2>&1 \
-    || { miss "specify extension add failed (see $LOGS/add.log)"; tail -n 20 "$LOGS/add.log"; exit 1; }
-  pass "specflow installed --dev"
+  run_uvx_step "$LOGS/init.log" "specify init (--integration claude) succeeded" "specify init failed" \
+    specify init --here --integration claude --ignore-agent-tools --force
+  run_uvx_step "$LOGS/add.log" "specflow installed --dev" "specify extension add failed" \
+    specify extension add "$REPO_ROOT" --dev
 fi
 
 assert_file ".specify/extensions.yml present" "$WORK/.specify/extensions.yml" || exit 1
 [ -d "$WORK/.claude" ] && pass ".claude/ scaffolding present (slash commands discoverable)" \
                        || miss ".claude/ missing; the agent cannot see slash commands"
 
-# Show what slash command files Claude will see (helps diagnose later)
+# A missing skill file here explains a stage 1+ failure before the agent runs.
 note "slash commands visible to claude (.claude/skills/):"
 find "$WORK/.claude" -type f \( -name '*.md' -o -name 'SKILL.md' \) 2>/dev/null \
-  | sed "s|^$WORK/.claude/|        |" | sort | head -n 30 || true
+  | sed "s|^$WORK/.claude/|        |" | sort | head -n "$SKILLS_LIST_LIMIT" || true
 
-# Critical: assert all 5 specflow commands are actually visible to claude.
 # spec-kit compiles commands/X.md into SKILL.md with frontmatter, but in some
 # install modes the compiled artifacts land under
 #   .specify/extensions/<slug>/.specify-dev/agent-commands/claude/...
@@ -225,9 +229,7 @@ if [ "$DRY_RUN" = "1" ]; then
   pass "snapshot copied into ${WORK##*/}"
 fi
 
-# ========================================================================
-#  STAGE 1: /speckit.constitution
-# ========================================================================
+# stage 1: /speckit.constitution
 title 1 "/speckit.constitution: establish project principles"
 LANDING_VISION='Static landing page for the specflow project.
 Audience: developers evaluating spec-kit extensions.
@@ -251,11 +253,9 @@ if [ -z "$FAILED_STAGE" ]; then
   assert_file ".specify/memory/constitution.md exists" "$WORK/.specify/memory/constitution.md"           || FAILED_STAGE=1
   assert_grep "  has ## Core Principles section"        '^#{2,4}[[:space:]]+Core Principles' "$WORK/.specify/memory/constitution.md" || FAILED_STAGE=1
 fi
-[ -n "$FAILED_STAGE" ] && { printf '\n%sStopped at Stage %s%s\n' "$C_RED" "$FAILED_STAGE" "$C_RST"; exit 1; }
+stop_if_stage_failed
 
-# ========================================================================
-#  STAGE 2: /speckit.specify
-# ========================================================================
+# stage 2: /speckit.specify
 title 2 "/speckit.specify: write the feature spec"
 run_claude 2 "$(cat <<EOF
 Use the slash command /speckit.specify with this feature description:
@@ -289,11 +289,9 @@ if [ -z "$FAILED_STAGE" ]; then
   assert_no_path "  no .specify/specs/ leak (issue #4)" "$WORK/.specify/specs"  || FAILED_STAGE=2
   assert_grep "  spec.md mentions P1/P2/P3" '\b(P1|P2|P3)\b' "$SPEC_DIR/spec.md" || FAILED_STAGE=2
 fi
-[ -n "$FAILED_STAGE" ] && { printf '\n%sStopped at Stage %s%s\n' "$C_RED" "$FAILED_STAGE" "$C_RST"; exit 1; }
+stop_if_stage_failed
 
-# ========================================================================
-#  STAGE 3: /speckit.specflow.brainstorm: specflow-specific
-# ========================================================================
+# stage 3: /speckit.specflow.brainstorm
 title 3 "/speckit.specflow.brainstorm: deep-dive edge cases"
 SPEC_REL="${SPEC_DIR#$WORK/}/spec.md"
 SPEC_BEFORE_HASH="$(shasum "$SPEC_DIR/spec.md" 2>/dev/null | awk '{print $1}')"
@@ -325,11 +323,9 @@ if [ -z "$FAILED_STAGE" ]; then
   assert_grep "  ## Edge Cases section added" '^#{2,4}[[:space:]]+Edge Cases'           "$SPEC_DIR/spec.md" || FAILED_STAGE=3
   assert_grep "  ## Open Questions or Assumptions added" '^#{2,4}[[:space:]]+(Open Questions|Assumptions)' "$SPEC_DIR/spec.md" || FAILED_STAGE=3
 fi
-[ -n "$FAILED_STAGE" ] && { printf '\n%sStopped at Stage %s%s\n' "$C_RED" "$FAILED_STAGE" "$C_RST"; exit 1; }
+stop_if_stage_failed
 
-# ========================================================================
-#  STAGE 4: /speckit.plan
-# ========================================================================
+# stage 4: /speckit.plan
 title 4 "/speckit.plan: technical implementation plan"
 run_claude 4 "$(cat <<EOF
 Run /speckit.plan to produce a technical implementation plan for the spec at
@@ -341,11 +337,9 @@ EOF
 if [ -z "$FAILED_STAGE" ]; then
   assert_file "plan.md exists at ${SPEC_DIR#$WORK/}/plan.md" "$SPEC_DIR/plan.md" || FAILED_STAGE=4
 fi
-[ -n "$FAILED_STAGE" ] && { printf '\n%sStopped at Stage %s%s\n' "$C_RED" "$FAILED_STAGE" "$C_RST"; exit 1; }
+stop_if_stage_failed
 
-# ========================================================================
-#  STAGE 5: /speckit.tasks (may trigger specflow.tasks via after_tasks hook)
-# ========================================================================
+# stage 5: /speckit.tasks (after_tasks hook may trigger specflow.tasks)
 title 5 "/speckit.tasks: phased task breakdown"
 run_claude 5 "$(cat <<EOF
 Run /speckit.tasks to produce a phased task breakdown for the plan at
@@ -360,11 +354,9 @@ if [ -z "$FAILED_STAGE" ]; then
   assert_file "tasks.md exists" "$SPEC_DIR/tasks.md" || FAILED_STAGE=5
   assert_grep "  contains T001-style task IDs" '\bT[0-9]{3}\b' "$SPEC_DIR/tasks.md" || FAILED_STAGE=5
 fi
-[ -n "$FAILED_STAGE" ] && { printf '\n%sStopped at Stage %s%s\n' "$C_RED" "$FAILED_STAGE" "$C_RST"; exit 1; }
+stop_if_stage_failed
 
-# ========================================================================
-#  STAGE 6: /speckit.specflow.execute: actually build web/index.html
-# ========================================================================
+# stage 6: /speckit.specflow.execute
 title 6 "/speckit.specflow.execute: implement"
 run_claude 6 "$(cat <<EOF
 Before implementation, run /speckit.analyze for ${SPEC_DIR#$WORK/}.
@@ -391,11 +383,9 @@ if [ -z "$FAILED_STAGE" ]; then
     note "progress.yml not produced (soft signal; the specflow contract suggests it)"
   fi
 fi
-[ -n "$FAILED_STAGE" ] && { printf '\n%sStopped at Stage %s%s\n' "$C_RED" "$FAILED_STAGE" "$C_RST"; exit 1; }
+stop_if_stage_failed
 
-# ========================================================================
-#  STAGE 7: /speckit.specflow.review
-# ========================================================================
+# stage 7: /speckit.specflow.review
 title 7 "/speckit.specflow.review: review against spec"
 run_claude 7 "$(cat <<EOF
 Run /speckit.specflow.review to review the implementation under web/ against
@@ -408,11 +398,9 @@ if [ -z "$FAILED_STAGE" ]; then
   assert_file "review.md exists" "$SPEC_DIR/checklists/review.md" || FAILED_STAGE=7
   assert_grep "  review.md is a checklist" '\[[ xX]\]' "$SPEC_DIR/checklists/review.md" || FAILED_STAGE=7
 fi
-[ -n "$FAILED_STAGE" ] && { printf '\n%sStopped at Stage %s%s\n' "$C_RED" "$FAILED_STAGE" "$C_RST"; exit 1; }
+stop_if_stage_failed
 
-# ========================================================================
-#  Summary
-# ========================================================================
+# summary
 printf '\n%sSummary%s: %d assertions passed across 7 stages\n' "$C_BOLD" "$C_RST" "$PASS"
 echo
 echo "Final artifacts under workdir:"
