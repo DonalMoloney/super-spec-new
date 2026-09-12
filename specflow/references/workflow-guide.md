@@ -259,16 +259,16 @@ This phase may run more than once. Each session:
 ## Phase 5: Execution
 
 **Command**: `/speckit.specflow.execute`
-**Gate**: Constitution exists. The target feature has tasks and an `.analyzed` marker.
-**Output**: Code changes, updated task checkboxes.
+**Gate**: The constitution exists, and the target feature already holds tasks and an `.analyzed` marker.
+**Output**: Code changes, checked-off tasks.
 
 ### Gate markers
 
-The agent following this Specflow workflow owns these markers around core
-spec-kit commands. Do not assume an upstream command creates them automatically.
-Resolve one feature directory under the consuming project's root first.
-`specs/NNN/` is shorthand for its actual directory, such as
-`specs/001-user-login/`. Keep feature artifacts outside `.specify/`.
+This workflow's agent owns these markers, not an upstream spec-kit command.
+Do not assume a core command writes them for you.
+First resolve one feature directory under the consuming project's root.
+`specs/NNN/` stands for the actual directory, for example
+`specs/001-user-login/`. Store feature artifacts outside `.specify/`.
 
 | Command | Artifact | Completion rule |
 |---------|----------|-----------------|
@@ -276,88 +276,89 @@ Resolve one feature directory under the consuming project's root first.
 | `/speckit.analyze` | `specs/NNN-feature-name/.analyzed` | After tasks, write the marker only when the analysis reports zero critical inconsistencies. |
 | `/speckit.checklist` | `specs/NNN-feature-name/checklist-*.md` | Write the requested checklist with at least one checked or unchecked checkbox line. |
 
-After each successful clarify or analyze result, the agent writes the matching
-empty marker file. Remove that marker before rerunning its command. An interrupted
-run or a report with critical inconsistencies must leave `.analyzed` absent.
-Resolve critical findings, rerun analysis, then retry execution. Never create an
-analyze marker from artifact existence or inferred progress alone.
+The agent writes the matching empty marker file after each successful clarify
+or analyze run. Remove the marker before rerunning its command. A run that gets
+interrupted, or a report with critical inconsistencies, must leave `.analyzed`
+absent. Resolve the critical findings, rerun analysis, then retry execution.
+Never create an analyze marker from artifact existence or inferred progress alone.
 
 Remove `.clarified` when the spec changes. Remove `.analyzed` when the spec, plan,
-tasks, or constitution changes. Changes to task completion checkboxes during
-execution do not invalidate analysis. After a constitution change, invalidate
-analysis markers for all features governed by it.
+tasks, or constitution changes. Checking off a task during execution does not
+invalidate analysis. After a constitution change, invalidate the analysis markers
+for every feature it governs.
 
-When invoking `/speckit.checklist`, direct its output to the feature's
-`checklist-*.md` path. If the core command emits a checklist elsewhere, copy its
-completed output to that path. Unchecked items are valid; an empty checklist fails
-artifact linting.
+When `/speckit.checklist` runs, direct its output to the feature's
+`checklist-*.md` path. If the core command writes the checklist elsewhere, copy
+the finished output to that path. Unchecked items are valid; an empty checklist
+fails artifact linting.
 
 Both execution entry points check `.analyzed` before implementation starts,
-including resumed runs. A missing marker produces `ANALYZE_REQUIRED` with the
-feature path and instructions to run `/speckit.analyze`. This gate applies even
+resumed runs included. A missing marker produces `ANALYZE_REQUIRED`, naming the
+feature path and the `/speckit.analyze` command to run. This gate holds even
 when Superpowers skills are unavailable.
 
 ### Steps
 
-1. **Verify gates**: Require the constitution, then the target feature's
-   `.analyzed` marker. Stop with `ANALYZE_REQUIRED` if the marker is absent.
-   Read tasks, plan, spec, and constitution after these checks pass.
+1. **Confirm the gates**: Check for the constitution first, then the target
+   feature's `.analyzed` marker. Stop with `ANALYZE_REQUIRED` when the marker
+   is absent. Read tasks, plan, spec, and constitution once both checks pass.
 
-2. **Superpowers detection**: Check for `executing-plans`,
-   `subagent-driven-development`, and `test-driven-development` skills.
+2. **Detect superpowers**: Check whether the `executing-plans`,
+   `subagent-driven-development`, and `test-driven-development` skills exist.
 
-3. **Walk through tasks** phase by phase, respecting execution markers:
+3. **Work through the tasks** phase by phase, honoring their execution markers:
 
    **For `[TDD]` tasks**:
    - Write the test first
    - Run it and confirm it FAILS
-   - Implement the minimum code to pass
+   - Write the minimal code that makes it pass
    - Run it and confirm it PASSES
-   - Refactor if needed
-   - If TDD skill available: follow its full process
+   - Refactor when needed
+   - If the TDD skill is available, follow its full process
 
    **For `[SUBAGENT]` tasks**:
-   - On Claude Code with the subagent-driven-development skill found, follow
-     its dispatch protocol
-   - On Claude Code without the skill, dispatch one subagent per task with the
-     Task tool and review each result before the next dispatch
-   - On the Copilot CLI, implement sequentially in-session
-   - If marked `[P]` as well, the `[P]` rule below decides the surface
+   - On Claude Code, when the subagent-driven-development skill is found,
+     follow its dispatch protocol
+   - On Claude Code without the skill, dispatch one subagent per task through
+     the Task tool and review each result before dispatching the next
+   - On the Copilot CLI, implement each task in sequence, in the same session
+   - When a task also carries `[P]`, the `[P]` rule below decides the surface
 
    **For `[REVIEW]` tasks**:
-   - Complete the implementation
-   - Present the changes to the user
-   - Wait for explicit approval before continuing
+   - Finish the implementation
+   - Show the changes to the user
+   - Wait for explicit approval before moving on
 
    **For `[P]` tasks**:
-   - On Claude Code with Agent Teams available and
+   - On Claude Code, with Agent Teams available and
      `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` set: dispatch one teammate per
-     `[P]` task in the batch, each in its own worktree, with the file paths the
-     task line names stated in the teammate's brief so no two teammates touch
-     the same file. Do not nest teams. A teammate never dispatches its own team.
-   - On Claude Code without Agent Teams: launch the batch in parallel with the
-     Task tool
-   - On the Copilot CLI: run the batch in order, identical to the non-parallel
+     `[P]` task in the batch, each in its own worktree, and state the file
+     paths that task line names in the teammate's brief so no two teammates
+     touch the same file. Do not nest teams. A teammate never dispatches its
+     own team.
+   - On Claude Code without Agent Teams: launch the batch in parallel through
+     the Task tool
+   - On the Copilot CLI: run the batch in order, the same as the non-parallel
      task path
-   - Check that no two parallel tasks name the same file
+   - Confirm no two parallel tasks name the same file
 
-4. **At each checkpoint**:
-   - Summarize completed work
-   - Run applicable tests
-   - Report results
+4. **At every checkpoint**:
+   - Summarize the work completed
+   - Run the applicable tests
+   - Report the results
    - Ask: "Phase [N] complete. Proceed to Phase [N+1]?"
-   - Wait for explicit user approval
+   - Wait for the user's explicit approval
 
-5. **Update task checkboxes** in `tasks.md` as each task completes.
+5. **Check off each task** in `tasks.md` as it completes.
 
 ### Human Checkpoint Protocol
 
 The agent MUST:
 - Never skip a phase checkpoint
-- Present a clear summary of what was done
-- Report test results if tests were run
-- Wait for explicit "proceed" or "continue" from the user
-- If the user requests changes, address them before proceeding
+- Present a clear summary of the work done
+- Report test results when tests ran
+- Wait for the user's explicit "proceed" or "continue"
+- Address any requested changes before proceeding
 
 ---
 
