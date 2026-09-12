@@ -365,52 +365,55 @@ The agent MUST:
 ## Phase 6: Review
 
 **Command**: `/speckit.specflow.review`
-**Gate**: Implementation must exist (at least some tasks completed).
-**Output**: Review findings reported to user.
+**Gate**: At least one task is complete.
+**Output**: The review reports its findings to the user.
 
 ### Steps
 
-1. **Read inputs**: spec (acceptance scenarios), plan (constitution check),
-   constitution (principles), and `specs/NNN-feature-name/review-scope.md`
-   when the `after_implement` hook wrote one.
+1. **Read inputs**: Pull the acceptance scenarios from the spec, the
+   constitution check from the plan, the principles from the constitution,
+   and `specs/NNN-feature-name/review-scope.md` when the `after_implement`
+   hook wrote one.
 
-2. **Superpowers detection**: If `requesting-code-review` skill is available,
-   follow its review protocol.
+2. **Superpowers detection**: When the `requesting-code-review` skill is
+   available, follow its review protocol.
 
-3. **Risk tier**: Sum the lines and count the files in
-   `git diff --numstat main...HEAD`. HIGH when more than 400 lines or more than
-   15 files changed, when a changed path has a directory named `auth`,
-   `payments`, `billing`, `migrations`, `infra`, `secrets`, or `crypto`, or
-   when a dependency lock file changed. Otherwise STANDARD. Take the answer of
-   `.claude/hooks/risk-classifier.sh` instead when the repository has it. HIGH
-   runs step 4 and then audits each finding for a `file:line` reference and
-   evidence; STANDARD runs step 4 once.
+3. **Risk tier**: Add the changed lines and count the changed files from
+   `git diff --numstat main...HEAD`. The tier is HIGH when the diff exceeds
+   400 lines, touches more than 15 files, changes a path under a directory
+   named `auth`, `payments`, `billing`, `migrations`, `infra`, `secrets`, or
+   `crypto`, or changes a dependency lock file. Otherwise the tier is
+   STANDARD. Use the `.claude/hooks/risk-classifier.sh` result instead, when
+   the repository has that script. HIGH runs step 4 and then audits each
+   finding for a `file:line` reference and evidence. STANDARD runs step 4
+   once.
 
 4. **Review dimensions** (built-in protocol):
 
-   a. **Spec compliance**: For each acceptance scenario in the spec, verify it
-      is implemented and can be demonstrated.
+   a. **Spec compliance**: Verify that each acceptance scenario in the spec is
+      implemented and can be demonstrated.
 
-   b. **Edge case coverage**: For each edge case in the spec (including those
-      from brainstorming), verify handling exists.
+   b. **Edge case coverage**: Verify that every edge case in the spec,
+      including any found during brainstorming, has handling.
 
-   c. **Constitution compliance**: For each principle, verify the implementation
-      respects it.
+   c. **Constitution compliance**: Check that the implementation respects
+      every principle.
 
-   d. **Code quality**: Check for correctness, security, error handling, performance.
+   d. **Code quality**: Check correctness, security, error handling, and
+      performance.
 
-   e. **Test coverage**: Verify tests exist for critical paths.
+   e. **Test coverage**: Verify that tests cover every critical path.
 
 5. **Report findings** with:
-   - Confidence score (0-100, only report issues >= 80)
+   - Confidence score (0-100, reported only when >= 80)
    - Severity (Critical / Important / Suggestion)
-   - File path and line reference
-   - Specific recommendation
+   - File path and line number
+   - A specific recommendation
 
-6. **Group** by severity, highest first.
+6. **Group** the findings by severity, highest first.
 
-7. **Write** the findings to `specs/NNN-feature-name/review-findings.json` in
-   the shape `commands/review.md` documents under Findings File.
+7. **Write** the findings to `specs/NNN-feature-name/review-findings.json`, in
+   the shape `commands/review.md` defines under Findings File.
 
 ---
 
