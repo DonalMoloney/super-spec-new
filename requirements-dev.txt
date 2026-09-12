@@ -1,3 +1,4 @@
 PyYAML>=6
 pytest>=8
 ruff>=0.14
+mutmut>=3,<4
