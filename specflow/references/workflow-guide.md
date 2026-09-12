@@ -514,14 +514,14 @@ follow the normal Phase 5 path.
 
 ## Session Resumability
 
-Specflow survives session interruptions. All state lives in plain-text
-files under `.specify/memory/` (governance: `constitution.md`) and `specs/NNN-*/`
-(per-feature: `spec.md`, `plan.md`, `tasks.md`, `progress.yml`). This section
-documents how the agent detects and resumes work.
+Specflow survives a session interruption: all state lives in plain-text files.
+`.specify/memory/` holds governance state (`constitution.md`); `specs/NNN-*/`
+holds per-feature state (`spec.md`, `plan.md`, `tasks.md`, `progress.yml`). The
+agent detects the resume point from these files and continues from there.
 
 ### Progress File: `progress.yml`
 
-Each feature spec directory may contain a `progress.yml` file:
+A feature spec directory may hold a `progress.yml` file:
 
 ```yaml
 spec: 001-static-landing-page
@@ -537,69 +537,69 @@ phases:
 
 ### Resume Check Protocol
 
-Every specflow command begins with:
+Every specflow command runs this check first:
 
-1. **Scan `.specify/`**: does it exist? Are there spec directories?
-2. **Read `superpowers.yml`**: which superpowers skills are available?
-   If the file does not exist, run detection and create it.
-3. **Read `progress.yml`**: what phase is each feature in?
-4. **If no `progress.yml`**: Infer progress from file existence:
+1. **Scan `.specify/`**: confirm the directory exists and look for spec directories inside it.
+2. **Read `superpowers.yml`**: find which superpowers skills the project has detected.
+   If the file is missing, run detection and create it.
+3. **Read `progress.yml`**: get the current phase of each feature.
+4. **If `progress.yml` is missing**: infer progress from which files exist:
    - `constitution.md` → constitution done
    - `spec.md` → specify done
    - `spec.md` has Brainstorm Log entries → brainstorm was run at least once
    - `plan.md` → plan done
    - `tasks.md` → tasks done
    - `tasks.md` has `[x]` checkboxes → execute in progress
-5. **Report** current state to the user (including superpowers status) before proceeding
-6. **Resume** from the detected point (see phase-specific rules below)
+5. **Report** the current state, including superpowers status, to the user before continuing
+6. **Resume** work from the detected point; see the phase-specific rules below
 
-`.claude/hooks/session-start.sh` prints `specs/NNN/handoff.md` at session start if the
-feature has one, ahead of any command-driven resume check. `handoff.md` stays at 5
-lines or fewer, the convention `/speckit.specflow.execute` follows when it writes the
-file at each phase checkpoint.
+`.claude/hooks/session-start.sh` prints `specs/NNN/handoff.md` at session start,
+when the feature has one, before any command runs its own resume check.
+`handoff.md` stays at 5 lines or fewer; `/speckit.specflow.execute` writes it at
+each phase checkpoint under that limit.
 
 ### Phase-Specific Resume Rules
 
 **Constitution** (`in_progress`):
 - Re-read `constitution.md`
-- Identify sections still containing template placeholders (`[PRINCIPLE_NAME]`, etc.)
-- Ask user about remaining sections only
+- Find sections that still hold a template placeholder such as `[PRINCIPLE_NAME]`
+- Ask only about the sections left unresolved
 
 **Specify** (`in_progress`):
 - Re-read `spec.md`
-- Look for `[NEEDS CLARIFICATION]` markers and empty placeholder sections
-- Continue the interview for unresolved items only
+- Look for a `[NEEDS CLARIFICATION]` marker or an empty placeholder section
+- Continue the interview, covering only the unresolved items
 
 **Brainstorm** (`in_progress`):
-- Re-read `spec.md` Brainstorm Log to see which sessions have been completed
-- Re-read Open Questions table and count `Open` vs `Resolved`
-- Skip categories already covered in previous sessions
-- Resume from the first unexplored category or open question
+- Re-read the `spec.md` Brainstorm Log to see which sessions ran already
+- Read the Open Questions table and count each `Open` and `Resolved` entry
+- Skip any category a previous session already covered
+- Resume at the first unexplored category or open question
 
 **Plan** (`in_progress`):
 - Re-read `plan.md`
-- Look for `NEEDS CLARIFICATION` fields
-- Fill in missing technical context; do not regenerate completed sections
+- Look for a `NEEDS CLARIFICATION` field
+- Fill in the missing technical context; do not regenerate a section that is already complete
 
 **Tasks** (`in_progress`):
 - Re-read `tasks.md`
-- Verify all user stories from `spec.md` have corresponding tasks
-- Add missing tasks without disrupting existing task numbering
+- Check that every user story in `spec.md` maps to a task
+- Add any missing task without disturbing the existing numbering
 
 **Execute** (`in_progress`):
-- Re-read `tasks.md` and parse checkboxes
-- Count `[x]` (completed) vs `[ ]` (remaining)
-- Identify the **current phase** (first phase with unchecked tasks)
-- Skip all completed tasks; resume from the first `[ ]` task in that phase
-- If a phase checkpoint was not yet confirmed, re-present the checkpoint summary
+- Re-read `tasks.md` and parse its checkboxes
+- Count the `[x]` entries against the `[ ]` entries
+- Find the **current phase**: the first phase with an unchecked task
+- Skip every completed task and resume at the first `[ ]` task in that phase
+- Re-present the checkpoint summary if a phase checkpoint is still unconfirmed
 
 **Review** (`in_progress`):
-- Re-read any existing checklist files
-- Continue from unchecked review items
+- Re-read any checklist file already on disk
+- Continue from the first unchecked review item
 
 ### Writing `progress.yml`
 
-The agent updates `progress.yml` at these moments:
+The agent writes to `progress.yml` at these points:
 
 | Event | Update |
 |-------|--------|
@@ -609,14 +609,14 @@ The agent updates `progress.yml` at these moments:
 | Task checkbox toggled during execute | Update `completed_tasks` and `current_task` |
 | User explicitly skips a phase | Set phase to `skipped` |
 
-If `progress.yml` does not exist when a command runs, create it with all
-prior phases inferred as `done` based on existing files.
+If `progress.yml` does not exist when a command runs, the command creates it
+and infers every prior phase as `done` from the files already on disk.
 
 ### Superpowers Status File: `superpowers.yml`
 
-A project-level file `.specify/superpowers.yml` persists the superpowers detection
-results so they are **visible in the project docs** and **don't require re-detection
-on every command**.
+The project-level file `.specify/superpowers.yml` stores the superpowers
+detection result so it stays **visible in the project docs** and **doesn't
+need re-detection on every command**.
 
 ```yaml
 # .specify/superpowers.yml
@@ -650,18 +650,18 @@ skills:
 
 **Why persist this**:
 
-1. **Visibility**: Anyone reading `.specify/` can see which superpowers the project uses
-2. **Auditability**: The `last_checked` timestamp shows when detection last ran
-3. **Speed**: No need to check the filesystem on every command invocation
-4. **Override**: Users can manually set `detected: true/false` to force behavior
+1. **Visibility**: a reader of `.specify/` can see which superpowers the project uses
+2. **Auditability**: the `last_checked` timestamp records when detection last ran
+3. **Speed**: the command reads the cache instead of checking the filesystem on every invocation
+4. **Override**: a user can set `detected: true/false` by hand to force the behavior
 
 **Reading superpowers status during resume**:
 
-When the resume check runs, it reads `superpowers.yml` instead of re-detecting.
-This means a command like `/speckit.specflow.brainstorm` will use the cached detection
-result to decide between enhanced mode (superpowers) and fallback mode (built-in).
-If a skill was `detected: false` last time, the command does a single re-check
-before falling back, in case the user installed it since the last session.
+The resume check reads `superpowers.yml` instead of re-detecting.
+`/speckit.specflow.brainstorm`, for example, uses the cached result to choose
+between enhanced mode (superpowers) and fallback mode (built-in). When a skill
+was `detected: false` last time, the command runs one re-check before it falls
+back, in case the user installed the skill since the last session.
 
 ---
 
