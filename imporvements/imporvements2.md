@@ -65,7 +65,7 @@ This v2 keeps every item, template, command, and verified fact from the two v1 d
 - [x] G-12 — Item 20: resumable sessions via `SessionStart` (PR #22, merged)
 - [x] G-13 — Items 12, 19: golden-run scorer and eval replay (PR #20, merged)
 - [x] G-14 — Item 5: Agent Teams for `[P]` tasks (PR #17, merged)
-- [ ] G-15 — Item 14: differential implementation (Claude vs Codex) (PR #44 merged the script and protocol; T153 dry run open, see ADR-0011)
+- [x] G-15 — Item 14: differential implementation (Claude vs Codex) (PR #44 merged the script and protocol; T153 ran 2026-09-11, PR #50, see ADR-0011)
 - [x] G-16 — Item 22: cost governance (PR #27, merged)
 - [x] G-17 — Item 8: close the review loop (PR #12, merged)
 - [x] G-18 — playbook scope cleanup (PR #15, merged)

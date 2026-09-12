@@ -2,8 +2,8 @@
 
 Read this before starting a roadmap group from `tasks.md`. It names the model and
 the reasoning effort to run each remaining group at, and why. Every group is
-merged. One task is open: G-15's T153, blocked on a Codex usage limit. Status
-was checked against `main` on 2026-09-11.
+merged, including G-15's T153 (PR #50, ADR-0011). Status was checked against
+`main` on 2026-09-11.
 
 `tasks.md` already carries a `Model:` line per group under ADR-0003, which routes
 the subagent. Effort is the second dial and ADR-0003 does not cover it. Where the
@@ -22,7 +22,7 @@ sets the effort of the session that dispatches it.
 
 | Group | Open tasks | Executor | Model | Effort | Status |
 |---|---|---|---|---|---|
-| G-15 differential implementation | T153 only | `bdd-orchestrator` | opus | high | blocked |
+| G-15 differential implementation | T153 only | `bdd-orchestrator` | opus | high | done (PR #50) |
 
 A claimed group has a worktree and a `(working on)` marker in `tasks.md`.
 Neither open group is part-finished on `main`: both are at task 1.

@@ -165,10 +165,9 @@ shape. `presentation/marp-deck/deck.md` predates the standard.
   `conformance-reviewer`, `performance-reviewer` on sonnet. Either amend the
   ADR to say why a Stage 2 persona runs cheaper, or reroute the four. Verify:
   every `*-reviewer.md` model matches a line in the ADR. Claimed by: none.
-- **Q-23** Fix the cross-reference in ADR-0007. It cites "the diff summary in
-  ADR-0005"; ADR-0005 is the integer scoring rule and the diff summary is
-  ADR-0008. Verify: `grep -n 'ADR-0005' decisions.md` matches only ADR-0005's
-  own heading. Claimed by: none.
+- **Q-23** Void. PR #63 folded ADR-0007 and ADR-0008 into step 9 of
+  `specflow/commands/tasks.md` and deleted both, so the cross-reference no
+  longer exists. Verify: `grep -c 'ADR-000[78]' decisions.md` prints 0.
 - **Q-24** Decide whether the `[NEEDS CLARIFICATION]` placeholder on
   `spec-template.md` line 118 breaks the Code Review Rule that rejects
   unresolved markers in shipped templates. The scorer's golden test expects
