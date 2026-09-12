@@ -48,45 +48,45 @@ matching section while it runs a command.
 ## Phase 1: Specification
 
 **Command**: `/speckit.specify`
-**Gate**: Constitution must exist at `.specify/memory/constitution.md`
+**Gate**: The constitution must exist at `.specify/memory/constitution.md`
 **Output**: `specs/NNN-feature-name/spec.md`
 
 ### Steps
 
-1. **Verify constitution** exists. If not, guide user to run `/speckit.constitution` first.
+1. **Verify the constitution** exists. If it is missing, direct the user to run `/speckit.constitution` first.
 
-2. **Determine spec number**: Scan `specs/` for existing directories.
-   Next number = highest existing + 1, zero-padded to 3 digits (001, 002, ...).
+2. **Determine the spec number**: scan `specs/` for existing directories.
+   The next number is the highest existing number plus one, zero-padded to 3 digits (001, 002, ...).
 
-3. **Read constitution** to understand project constraints and principles.
+3. **Read the constitution** to learn the project's constraints and principles.
 
 4. **Interview the user** about:
-   - Feature name and high-level description
-   - User scenarios (who does what, why, expected outcomes)
-   - Priority ranking of scenarios (P1, P2, P3)
-   - Known requirements and constraints
-   - Success criteria (measurable outcomes)
-   - Assumptions
+   - The feature's name and a short description
+   - User scenarios: who does what, why, and the expected outcome
+   - Each scenario's priority (P1, P2, P3)
+   - The known requirements and constraints
+   - Measurable success criteria
+   - Any assumptions
 
-5. **Generate spec** using `spec-template.md` as skeleton.
-   - Fill in user stories with Given/When/Then acceptance scenarios
-   - Mark functional requirements with MUST/SHOULD/MAY
-   - Flag unclear items as `[NEEDS CLARIFICATION]`
-   - Leave "Open Questions", "Brainstorm Log", and "Brainstorm Prompts" sections
-     with initial prompts but no resolved content
+5. **Generate the spec** from `spec-template.md`.
+   - Write each user story's acceptance scenarios in Given/When/Then form
+   - Mark each functional requirement MUST/SHOULD/MAY
+   - Flag an unclear item as `[NEEDS CLARIFICATION]`
+   - Leave the "Open Questions", "Brainstorm Log", and "Brainstorm Prompts" sections
+     with their initial prompts and no resolved content
 
-6. **Write** to `specs/NNN-feature-name/spec.md`
+6. **Write the spec** to `specs/NNN-feature-name/spec.md`
 
-7. **Suggest next step**: "Run `/speckit.specflow.brainstorm specs/NNN-feature-name/spec.md`
+7. **Suggest the next step**: "Run `/speckit.specflow.brainstorm specs/NNN-feature-name/spec.md`
    to discover edge cases before planning."
 
 ### Verification
 
-- File exists at expected path
-- At least one user story with acceptance scenarios
-- Priority assigned to each user story
-- Functional requirements section populated
-- Success criteria section populated
+- The spec file exists at the expected path
+- At least one user story has acceptance scenarios
+- Each user story has an assigned priority
+- The Functional Requirements section is populated
+- The success criteria section is populated
 
 ---
 
