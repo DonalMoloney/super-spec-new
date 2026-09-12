@@ -528,6 +528,41 @@ git -C "$r26" branch -D 001-x-a >/dev/null
 
 cd /
 
+# --- mutation-gate.sh (runs mutmut on a project and blocks below MUTATION_THRESHOLD) ---
+SAMPLE="$HOOKS/../../specflow/examples/mutation-gate-sample"
+mutation_gate() { # project-dir -> exit code
+  bash "$HOOKS/mutation-gate.sh" "$1" >/dev/null 2>&1; echo $?
+}
+survivor_copy() { # -> copy of the sample with the free-shipping boundary test removed
+  local d; d="$(mktemp -d)/sample"
+  cp -R "$SAMPLE" "$d"
+  rm -rf "$d/mutants"
+  python3 - "$d/tests/test_pricing.py" <<'PY'
+import pathlib, sys
+path = pathlib.Path(sys.argv[1])
+lines = path.read_text().splitlines(keepends=True)
+start = lines.index("def test_order_at_free_shipping_line_pays_nothing():\n")
+path.write_text("".join(lines[:start] + lines[start + 4:]))
+PY
+  echo "$d"
+}
+check "missing project-dir argument fails"   2 "$(mutation_gate "")"
+check "nonexistent project-dir fails"        2 "$(mutation_gate /nonexistent/project)"
+check "project-dir without pyproject.toml fails" 2 "$(mutation_gate "$(mktemp -d)")"
+check "mutmut missing from PATH fails"       2 "$(PATH=/usr/bin:/bin mutation_gate "$SAMPLE")"
+check "non-integer threshold fails"          2 "$(MUTATION_THRESHOLD=abc mutation_gate "$SAMPLE")"
+check "threshold above 100 fails"            2 "$(MUTATION_THRESHOLD=101 mutation_gate "$SAMPLE")"
+out="$(bash "$HOOKS/mutation-gate.sh" "$SAMPLE" 2>&1)"; st=$?
+check "the sample passes the gate"           0 "$st"
+check_has "the sample reports a full score"  "$out" "mutation score 100%; expected >= 80%"
+s="$(survivor_copy)"
+out="$(MUTATION_THRESHOLD=100 bash "$HOOKS/mutation-gate.sh" "$s" 2>&1)"; st=$?
+check "a surviving mutant fails the gate at threshold 100" 1 "$st"
+check_has "the failing run prints the score line" "$out" "mutation score 95%; expected >= 100%"
+check_has "the failing run counts the survivors" "$out" "1 of 23 mutants survived"
+check "a surviving mutant passes at the default threshold" 0 "$(mutation_gate "$s")"
+check "a stale cache does not hide a survivor" 1 "$(MUTATION_THRESHOLD=100 mutation_gate "$s")"
+
 # --- .claude/review/schema.json (findings contract read by the reviewer agents) ---
 cd "$HOOKS/../.." || exit 1
 python3 -c 'import json;json.load(open(".claude/review/schema.json"))' >/dev/null 2>&1
