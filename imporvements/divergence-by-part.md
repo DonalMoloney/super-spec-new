@@ -247,26 +247,26 @@ file.
 
 | File | Real | Agent | Claimed by |
 |------|------|-------|------------|
-| `SKILL.md` | 0% | `prose-rephraser` | G-22 first |
-| `templates/plan-template.md` | 0% | `prose-rephraser` | none |
-| `templates/tasks-template.md` | 0% | `prose-rephraser` | G-21 first |
-| `commands/hooks/after-execute.md` | 0% | `prose-rephraser` | none |
+| `SKILL.md` | 40% | `prose-rephraser` | done, PR #70 |
+| `templates/plan-template.md` | 20% | `prose-rephraser` | done, PR #69 |
+| `templates/tasks-template.md` | 42% | `prose-rephraser` | done, PR #69 |
+| `commands/hooks/after-execute.md` | 65% | `prose-rephraser` | done, PR #70 |
 | `commands/hooks/after-tasks.md` | 0% | `prose-rephraser` | D-01 first |
 | `CHANGELOG.md`, `extension.yml` | 0% | `prose-rephraser` | D-05 first |
-| `scripts/e2e-smoke.sh` | 1% | `script-refactorer` | G-23 first |
-| `scripts/e2e-agent-claude.sh` | 2% | `script-refactorer` | none |
-| `templates/checklist-template.md` | 2% | `prose-rephraser` | G-21 first |
+| `scripts/e2e-smoke.sh` | 56% | `script-refactorer` | done, PR #68; G-23 lands on the refactored file |
+| `scripts/e2e-agent-claude.sh` | 42% | `script-refactorer` | done, PR #68 |
+| `templates/checklist-template.md` | 34% | `prose-rephraser` | done, PR #69 |
 | `references/superpowers-bridge.md` | 2% | `prose-rephraser` | G-22 first |
 | `scripts/validate-extension-metadata.py` | 7% | `script-refactorer` | D-05 first |
-| `templates/constitution-template.md` | 8% | `prose-rephraser` | G-21 first |
-| `commands/brainstorm.md` | 12% | `prose-rephraser` | G-20 first |
-| `commands/review.md` | 14% | `prose-rephraser` | none |
-| `commands/tasks.md` | 19% | `prose-rephraser` | none |
-| `templates/spec-template.md` | 19% | `prose-rephraser` | none |
-| `references/workflow-guide.md` | 25% | `prose-rephraser` | none |
-| `commands/execute.md` | 36% | `prose-rephraser` | none |
+| `templates/constitution-template.md` | 36% | `prose-rephraser` | done, PR #69 |
+| `commands/brainstorm.md` | 54% | `prose-rephraser` | done, PR #67 |
+| `commands/review.md` | 76% | `prose-rephraser` | done, PR #67 |
+| `commands/tasks.md` | 58% | `prose-rephraser` | done, PR #66 |
+| `templates/spec-template.md` | 33% | `prose-rephraser` | done, PR #69 |
+| `references/workflow-guide.md` | 57% | `prose-rephraser` | done, PR #71 |
+| `commands/execute.md` | 57% | `prose-rephraser` | done, PR #66 |
 | `README.md` | 46% | `prose-rephraser` | D-05 first |
-| `commands/hooks/before-execute.md` | 52% | `prose-rephraser` | none |
+| `commands/hooks/before-execute.md` | 70% | `prose-rephraser` | done, PR #70 |
 
 Done: `commands/status.md` (two passes) and
 `scripts/validate-release-archive.py`. Order of work: the unclaimed rows first
