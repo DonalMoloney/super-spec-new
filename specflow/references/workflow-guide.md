@@ -214,44 +214,45 @@ This phase may run more than once. Each session:
 ## Phase 4: Task Decomposition
 
 **Command**: `/speckit.specflow.tasks`
-**Gate**: Plan must exist for the target feature.
+**Gate**: The target feature already has a plan.
 **Output**: `specs/NNN-feature-name/tasks.md`
 
 ### Steps
 
 1. **Read inputs**: plan, spec, constitution.
 
-2. **Superpowers integration**: If `writing-plans` skill is detected, read it and
-   follow its task decomposition process, but structure the output using
+2. **Superpowers integration**: When the `writing-plans` skill is detected, read it
+   and follow its task decomposition process. Structure the output with the
    `tasks-template.md` format.
 
-3. **Decompose** the plan into phases:
-   - Phase 1: Setup (project structure, dependencies)
-   - Phase 2: Foundational (blocking prerequisites)
-   - Phase 3+: One phase per user story, ordered by priority
-   - Final phase: Polish and cross-cutting concerns
+3. **Split the plan** into phases:
+   - Phase 1: Setup (project structure and dependencies)
+   - Phase 2: Foundational (prerequisites that block later phases)
+   - Phase 3+: one phase per user story, highest priority first
+   - Final phase: Polish, plus concerns that cut across every phase
 
-4. **Apply execution markers** from the plan's execution strategy:
-   - `[TDD]` for components identified as needing test-first approach
-   - `[REVIEW]` for components identified as needing review gates
-   - `[SUBAGENT]` for independent work streams
-   - `[P]` for tasks within the same phase that can run in parallel
+4. **Add the execution markers** from the plan's execution strategy:
+   - `[TDD]` for a component that needs tests first
+   - `[REVIEW]` for a component that needs a review gate
+   - `[SUBAGENT]` for an independent work stream
+   - `[P]` for a task in the same phase that can run in parallel with the rest
 
-5. **Keep each task singular**: one outcome per line; split a description that needs "and".
+5. **Keep each task singular**: one outcome per line; split a task description
+   that needs "and".
 
-6. **Define checkpoints** at each phase boundary.
+6. **Add a checkpoint** at each phase boundary.
 
-7. **Document dependencies** and execution order.
+7. **Record the dependencies** and the execution order.
 
-8. **Write** to `specs/NNN-feature-name/tasks.md`
+8. **Write the result** to `specs/NNN-feature-name/tasks.md`
 
 ### Verification
 
-- Every user story from the spec has corresponding tasks
-- Tasks are traceable to user stories via `[US#]` labels
-- Execution markers match the plan's execution strategy
-- Phase dependencies are documented
-- At least one checkpoint per phase transition
+- Every user story in the spec maps to a task
+- Each task traces to its user story with a `[US#]` label
+- The execution markers match the plan's execution strategy
+- Phase dependencies are on record
+- Each phase transition has at least one checkpoint
 
 ---
 
