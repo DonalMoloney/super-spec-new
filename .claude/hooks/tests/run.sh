@@ -535,8 +535,8 @@ mutation_gate() { # project-dir -> exit code
 }
 survivor_copy() { # -> copy of the sample with the free-shipping boundary test removed
   local d; d="$(mktemp -d)/sample"
+  # The copy keeps the mutants/ cache the passing run left, so its first run is the stale-cache case.
   cp -R "$SAMPLE" "$d"
-  rm -rf "$d/mutants"
   python3 - "$d/tests/test_pricing.py" <<'PY'
 import pathlib, sys
 path = pathlib.Path(sys.argv[1])
@@ -561,7 +561,6 @@ check "a surviving mutant fails the gate at threshold 100" 1 "$st"
 check_has "the failing run prints the score line" "$out" "mutation score 95%; expected >= 100%"
 check_has "the failing run counts the survivors" "$out" "1 of 23 mutants survived"
 check "a surviving mutant passes at the default threshold" 0 "$(mutation_gate "$s")"
-check "a stale cache does not hide a survivor" 1 "$(MUTATION_THRESHOLD=100 mutation_gate "$s")"
 
 # --- .claude/review/schema.json (findings contract read by the reviewer agents) ---
 cd "$HOOKS/../.." || exit 1
