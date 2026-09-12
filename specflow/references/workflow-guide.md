@@ -169,44 +169,45 @@ This phase may run more than once. Each session:
 ## Phase 3: Planning
 
 **Command**: `/speckit.plan`
-**Gate**: Spec file must exist. Brainstorm is recommended but not required.
+**Gate**: The spec file must exist. Brainstorming helps but isn't required.
 **Output**: `specs/NNN-feature-name/plan.md`
 
 ### Steps
 
-1. **Read inputs**: spec file, constitution, any previous plan for this feature.
+1. **Read inputs**: the spec file, the constitution, and any earlier plan for
+   this feature.
 
-2. **Constitution compliance check**: Verify the planned approach respects every
-   principle. Document results in the "Constitution Check" table.
+2. **Constitution compliance check**: Check that the planned approach respects
+   every principle. Record the result in the "Constitution Check" table.
 
-3. **Research the codebase**: Use Glob, Grep, and Read tools to determine:
-   - Language/framework already in use
-   - Existing patterns and conventions
-   - Files that will need modification
-   - Testing framework in use
+3. **Research the codebase**: Use the Glob, Grep, and Read tools to find:
+   - The language and framework already in use
+   - The existing patterns and conventions
+   - Files that need a change
+   - The testing framework in use
 
-4. **Design project structure**: Determine which files to create or modify.
-   Document in the "Source Code" section of the plan.
+4. **Design project structure**: Decide which files to create or change, and
+   record them in the "Source Code" section of the plan.
 
 5. **Determine execution strategy**:
    - Which components need TDD? (complex logic, critical paths)
    - Which work streams can run in parallel? (independent files)
-   - Where are human checkpoints needed? (before integration, before merge)
-   - What needs code review? (APIs, security, data models)
+   - Where does the work need a human checkpoint? (before integration, before merge)
+   - What needs a code review? (APIs, security, data models)
 
-6. **Superpowers integration**: If `writing-plans` skill is detected, read it
-   and use its blueprint process to enhance the execution strategy section.
+6. **Superpowers integration**: When the `writing-plans` skill is found, read
+   it and follow its blueprint process to sharpen the execution strategy section.
 
-7. **Generate plan** using `plan-template.md` as skeleton. Fill all sections.
+7. **Generate plan** from `plan-template.md`, filling every section.
 
-8. **Write** to `specs/NNN-feature-name/plan.md`
+8. **Write** the plan to `specs/NNN-feature-name/plan.md`
 
 ### Verification
 
-- Constitution check table completed, with no unresolved violations
-- Technical context filled (no remaining NEEDS CLARIFICATION without good reason)
-- Project structure documented with real file paths
-- Execution strategy populated with at least TDD and checkpoint decisions
+- The Constitution check table is complete, with no violation unresolved
+- The technical context is filled in, with no NEEDS CLARIFICATION left without a stated reason
+- The project structure names real file paths
+- The execution strategy states at least the TDD and checkpoint decisions
 
 ---
 
