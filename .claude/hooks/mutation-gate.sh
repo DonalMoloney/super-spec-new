@@ -25,12 +25,17 @@ case "$threshold" in
     echo "mutation-gate: MUTATION_THRESHOLD is '$threshold'; expected a whole number from 0 to 100." >&2
     exit 2 ;;
 esac
-if [ "$threshold" -gt 100 ]; then
+# A value longer than three digits overflows the integer compare, which returns false and would let the run pass.
+if [ "${#threshold}" -gt 3 ] || [ "$threshold" -gt 100 ]; then
   echo "mutation-gate: MUTATION_THRESHOLD is $threshold; expected a whole number from 0 to 100." >&2
   exit 2
 fi
 if ! command -v mutmut >/dev/null 2>&1; then
   echo "mutation-gate: mutmut is not on PATH; expected mutmut 3. Run: python3 -m pip install -r requirements-dev.txt." >&2
+  exit 2
+fi
+if ! command -v jq >/dev/null 2>&1; then
+  echo "mutation-gate: jq is not on PATH; expected jq to read mutmut's stats file. Install jq." >&2
   exit 2
 fi
 cd "$project_dir"
@@ -48,13 +53,11 @@ mutmut export-cicd-stats >/dev/null
 killed="$(jq '.killed' "$STATS_FILE")"
 survived="$(jq '.survived' "$STATS_FILE")"
 total="$(jq '.total' "$STATS_FILE")"
-if [ "$total" -eq 0 ]; then
-  echo "mutation-gate: mutmut generated 0 mutants in $project_dir; expected at least one. Check source_paths in pyproject.toml." >&2
-  exit 2
-fi
+# A mutant no test reaches, or one that times out, counts against the score without surviving.
+unreached=$((total - killed - survived))
 score=$((killed * 100 / total))
 if [ "$score" -lt "$threshold" ]; then
-  echo "MUTATION GATE FAILED: mutation score ${score}%; expected >= ${threshold}%. $survived of $total mutants survived. Run 'mutmut results' in $project_dir to list them." >&2
+  echo "MUTATION GATE FAILED: mutation score ${score}%; expected >= ${threshold}%. $killed of $total mutants killed; $survived survived, $unreached uncovered or timed out. Run 'mutmut results' in $project_dir to list the survivors and 'mutmut browse' to see the rest." >&2
   exit 1
 fi
 echo "MUTATION GATE PASSED: mutation score ${score}%; expected >= ${threshold}%. $killed of $total mutants killed."
