@@ -93,7 +93,7 @@ matching section while it runs a command.
 ## Phase 2: Brainstorming
 
 **Command**: `/speckit.specflow.brainstorm`
-**Gate**: The target spec file exists.
+**Gate**: The target spec file must exist.
 **Output**: Spec file, updated with new edge cases, open questions, and a brainstorm log entry.
 
 ### Superpowers Integration
@@ -142,7 +142,7 @@ Ask about points of confusion, accessibility, and use the design did not intend.
 1. **Read the spec** and find the sections with thin coverage or a placeholder edge case.
 
 2. **Ask one question at a time**. Wait for the user's answer before the next question.
-   Use multiple-choice form where it speeds up the exchange.
+   Prefer multiple-choice form when possible, for faster exploration.
 
 3. **After each answer**:
    - A new requirement goes into the spec's Functional Requirements
@@ -169,7 +169,7 @@ This phase may run more than once. Each session:
 ## Phase 3: Planning
 
 **Command**: `/speckit.plan`
-**Gate**: The spec file must exist. Brainstorming helps but isn't required.
+**Gate**: The spec file must exist. Brainstorming is recommended but not required.
 **Output**: `specs/NNN-feature-name/plan.md`
 
 ### Steps
@@ -205,7 +205,7 @@ This phase may run more than once. Each session:
 ### Verification
 
 - The Constitution check table is complete, with no violation unresolved
-- The technical context is filled in, with no NEEDS CLARIFICATION left without a stated reason
+- The technical context is filled in, with no NEEDS CLARIFICATION left without good reason
 - The project structure names real file paths
 - The execution strategy states at least the TDD and checkpoint decisions
 
@@ -214,7 +214,7 @@ This phase may run more than once. Each session:
 ## Phase 4: Task Decomposition
 
 **Command**: `/speckit.specflow.tasks`
-**Gate**: The target feature already has a plan.
+**Gate**: A plan must exist for the target feature.
 **Output**: `specs/NNN-feature-name/tasks.md`
 
 ### Steps
@@ -228,14 +228,14 @@ This phase may run more than once. Each session:
 3. **Split the plan** into phases:
    - Phase 1: Setup (project structure and dependencies)
    - Phase 2: Foundational (prerequisites that block later phases)
-   - Phase 3+: one phase per user story, highest priority first
+   - Phase 3+: one phase per user story, ordered by priority
    - Final phase: Polish, plus concerns that cut across every phase
 
 4. **Add the execution markers** from the plan's execution strategy:
    - `[TDD]` for a component that needs tests first
    - `[REVIEW]` for a component that needs a review gate
    - `[SUBAGENT]` for an independent work stream
-   - `[P]` for a task in the same phase that can run in parallel with the rest
+   - `[P]` for tasks in the same phase that can run in parallel
 
 5. **Keep each task singular**: one outcome per line; split a task description
    that needs "and".
@@ -299,7 +299,7 @@ when Superpowers skills are unavailable.
 
 ### Steps
 
-1. **Confirm the gates**: Check for the constitution first, then the target
+1. **Confirm the gates**: Require the constitution first, then the target
    feature's `.analyzed` marker. Stop with `ANALYZE_REQUIRED` when the marker
    is absent. Read tasks, plan, spec, and constitution once both checks pass.
 
@@ -365,7 +365,7 @@ The agent MUST:
 ## Phase 6: Review
 
 **Command**: `/speckit.specflow.review`
-**Gate**: At least one task is complete.
+**Gate**: An implementation must exist (at least one task complete).
 **Output**: The review reports its findings to the user.
 
 ### Steps
@@ -402,7 +402,7 @@ The agent MUST:
    d. **Code quality**: Check correctness, security, error handling, and
       performance.
 
-   e. **Test coverage**: Verify that tests cover every critical path.
+   e. **Test coverage**: Verify that tests exist for the critical paths.
 
 5. **Report findings** with:
    - Confidence score (0-100, reported only when >= 80)
@@ -447,7 +447,7 @@ Each phase carries a recommended token ceiling and a suggested model class. A he
 
 **Headless gating:** In CI, pass `--max-turns 6` and the budget-cap flag to the `claude -p` invocation. Example: `claude -p "..." --output-format json --max-turns 6 [budget-flag-TBD]`. The JSON output reports phase overages as `total_cost_usd`. A gate can reject a run that exceeds the ceiling.
 
-**Tuning:** Track actual spend per phase (`.specify/telemetry.jsonl` + `jq` rollup). Adjust ceilings weekly for feature complexity and CLI speed. HIGH-risk features (auth, payments, migrations) exceed standard ceilings by 20–50%. Allocate more budget or extend the critic loop allowance.
+**Tuning:** Track actual spend per phase (`.specify/telemetry.jsonl` + `jq` rollup). Adjust ceilings weekly for feature complexity and CLI speed. HIGH-risk features (auth, payments, migrations) often exceed standard ceilings by 20–50%. Allocate more budget or extend the critic loop allowance.
 
 ---
 
@@ -464,8 +464,8 @@ brainstorming and keeps every gate.
 5. Remove `.clarified` and `.analyzed`, then rerun `/speckit.clarify` and
    `/speckit.analyze`. A hotfix changes the spec, so the prior analysis no
    longer holds.
-6. Run the merge gate: the hotfix path cannot skip this step, whatever the
-   defect's severity.
+6. Run the merge gate. The merge gate is the one step the hotfix path cannot
+   skip, whatever the defect's severity.
 7. Append a row to the spec's `## Changelog`: the new version, the date, and
    one line naming the defect and the fix.
 
