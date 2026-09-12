@@ -8,16 +8,16 @@
 ## User Scenarios & Testing *(mandatory)*
 
 <!--
-  IMPORTANT: User stories should be PRIORITIZED as user flows ordered by importance.
-  Each user story must be INDEPENDENTLY TESTABLE - meaning if you implement only ONE of them,
-  you should still have a viable MVP (Minimum Viable Product) that delivers value.
+  Order the user stories by importance, most important first.
+  Each user story stands on its own: implementing only one still ships a
+  usable MVP (Minimum Viable Product).
 
-  Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
-  Think of each story as a standalone slice of functionality that can be:
-  - Developed independently
-  - Tested independently
-  - Deployed independently
-  - Demonstrated to users independently
+  Assign each story a priority (P1, P2, P3), with P1 the most critical.
+  Each story is a standalone slice of functionality:
+  - It can be developed without the others.
+  - It can be tested without the others.
+  - It can be deployed without the others.
+  - It can be demonstrated to users without the others.
 -->
 
 ### User Story 1 - [Brief Title] (Priority: P1)
@@ -68,34 +68,35 @@
 ### Edge Cases
 
 <!--
-  ACTION REQUIRED: Fill in the right edge cases for this feature.
-  Use the brainstorm prompts below as conversation starters for /speckit.specflow.brainstorm.
+  Fill in the edge cases this feature needs.
+  Use the brainstorm prompts below to start a /speckit.specflow.brainstorm session.
 -->
 
 - What happens when [boundary condition]?
-- How does system handle [error scenario]?
+- How does the system handle [error scenario]?
 
 #### Brainstorm Prompts
 
 <!--
-  These prompts guide the /speckit.specflow.brainstorm command. They serve as starting points
-  for deep-dive questioning sessions. Add domain-specific prompts as needed.
+  These prompts guide /speckit.specflow.brainstorm. Each one opens a line of
+  questioning. Add a prompt specific to this feature's domain when the list
+  below does not cover it.
 -->
 
 - **Boundary conditions**: What are the minimum and maximum valid inputs? What happens at the edges?
 - **Error scenarios**: What if the network is down? What if the database is unavailable? What if input is malformed?
-- **Scale**: What happens with 10x or 100x expected load? Are there rate limits to consider?
+- **Scale**: What happens under 10x or 100x the expected load? Do rate limits apply?
 - **Security**: Can this feature be abused? Are there injection vectors? What about unauthorized access?
 - **User confusion**: Where might users misunderstand the feature? What if they use it in an unintended way?
 - **Data integrity**: What happens during concurrent modifications? What about partial failures?
-- **Backwards compatibility**: Does this break existing behavior? How do we handle migration?
+- **Backwards compatibility**: Does this break existing behavior? What migration path does it need?
 
 ## Open Questions
 
 <!--
-  This section tracks unresolved questions discovered during brainstorming.
-  Each question has a status (Open/Resolved) and a resolution summary.
-  /speckit.specflow.brainstorm updates this section as questions are explored.
+  This section lists unresolved questions from brainstorming.
+  Each question carries a status, Open or Resolved, and a resolution summary.
+  /speckit.specflow.brainstorm updates this section as it explores each question.
 -->
 
 | # | Question | Status | Resolution |
@@ -151,7 +152,7 @@
 ## Traceability
 
 Every FR and SC criterion needs at least one named test before the conformance review runs.
-Automated scoring reads only the Test name column; Status is for a human reader.
+Automated scoring reads only the Test name column. Status is for a human reader.
 
 | Criterion ID | Test name | Status |
 |--------------|-----------|--------|
@@ -169,8 +170,8 @@ Automated scoring reads only the Test name column; Status is for a human reader.
 
 <!--
   This section records insights from /speckit.specflow.brainstorm sessions.
-  Each entry is dated and summarizes what was discovered and decided.
-  Do not edit manually. The brainstorm command maintains this section.
+  Each entry is dated and states what the session found and decided.
+  Do not edit it by hand. /speckit.specflow.brainstorm maintains this section.
 -->
 
 <!-- Example entry:
@@ -186,9 +187,9 @@ Automated scoring reads only the Test name column; Status is for a human reader.
 ## Changelog
 
 <!--
-  One row per spec version, newest last. Add a row whenever the spec changes
-  after its first approval, then remove `.clarified` and `.analyzed` and rerun
-  /speckit.clarify and /speckit.analyze.
+  One row records each spec version, newest last. Add a row when the spec
+  changes after its first approval. Then delete `.clarified` and `.analyzed`,
+  and rerun /speckit.clarify and /speckit.analyze.
 -->
 
 | Version | Date | Summary |

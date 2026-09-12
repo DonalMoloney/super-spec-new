@@ -10,8 +10,8 @@
 ## Technical Context
 
 <!--
-  ACTION REQUIRED: Replace placeholders with actual technical details.
-  Mark unknown items as NEEDS CLARIFICATION.
+  ACTION REQUIRED: Replace each placeholder with the real technical detail.
+  Mark an unknown item as NEEDS CLARIFICATION.
 -->
 
 **Language/Version**: [e.g., Python 3.11, TypeScript 5.x, Rust 1.75 or NEEDS CLARIFICATION]
@@ -25,11 +25,11 @@
 
 ## Constitution Check
 
-*GATE: Must pass before proceeding. Re-check after design phase.*
+*GATE: The plan must pass this check before it proceeds. Re-check it after the design phase.*
 
 <!--
-  Verify each constitution principle is respected by this plan.
-  Mark each as PASS, NEEDS ATTENTION, or VIOLATION (with justification).
+  Check the plan against each constitution principle.
+  Mark each principle PASS, NEEDS ATTENTION, or VIOLATION, with justification.
 -->
 
 | Principle | Status | Notes |
@@ -52,8 +52,8 @@ specs/[###-feature]/
 ### Source Code (repository root)
 
 <!--
-  ACTION REQUIRED: Replace with the concrete layout for this feature.
-  Delete unused options and expand with real paths.
+  ACTION REQUIRED: Replace the layout below with this feature's real structure.
+  Drop the unused options and list the real paths.
 -->
 
 ```text
@@ -73,15 +73,16 @@ tests/
 ## Execution Strategy
 
 <!--
-  This section identifies HOW tasks should be executed, feeding into /speckit.specflow.tasks
-  and /speckit.specflow.execute commands.
+  This section states how tasks run.
+  `/speckit.specflow.tasks` reads it to build the task breakdown.
+  `/speckit.specflow.execute` reads it during execution.
 -->
 
 ### TDD Requirements
 
 <!--
-  Which areas of this feature require strict RED-GREEN-REFACTOR discipline?
-  Tasks for these areas will be marked [TDD] in the task breakdown.
+  List the areas of this feature that need strict RED-GREEN-REFACTOR discipline.
+  The task breakdown marks their tasks [TDD].
 -->
 
 - [ ] [Component/module]: [Why TDD is needed, e.g., "Complex business logic with many edge cases"]
@@ -90,30 +91,30 @@ tests/
 ### Parallel Execution Opportunities
 
 <!--
-  Which work streams are independent and can be dispatched to parallel subagents?
-  Tasks for these areas will be marked [SUBAGENT] in the task breakdown.
+  List the work streams that run independently and can go to parallel subagents.
+  The task breakdown marks their tasks [SUBAGENT].
 -->
 
-- [ ] [Work stream A] and [Work stream B] have no shared files or dependencies
-- [ ] [Work stream C] can proceed independently after [prerequisite]
+- [ ] [Work stream A] and [Work stream B] share no files or dependencies
+- [ ] [Work stream C] runs independently after [prerequisite]
 
 ### Human Checkpoints
 
 <!--
-  Define explicit gates where the agent must pause and get human approval.
-  These become phase boundaries in the task breakdown.
+  Define each gate where the agent pauses for human approval.
+  Each gate becomes a phase boundary in the task breakdown.
 -->
 
-1. After foundational setup: verify project structure and dependencies are correct
-2. After each user story: verify behavior matches acceptance scenarios
-3. After all stories: run full test suite before polish phase
-4. Before merge: final review against spec
+1. After the foundational setup, check that the project structure and dependencies are correct
+2. After each user story, check that its behavior matches the acceptance scenarios
+3. After all stories, run the full test suite before the polish phase
+4. Before the merge, review the work against the spec
 
 ### Review Gates
 
 <!--
-  Which tasks require code review before proceeding?
-  Tasks for these areas will be marked [REVIEW] in the task breakdown.
+  List the tasks that need code review before the plan proceeds.
+  The task breakdown marks their tasks [REVIEW].
 -->
 
 - [ ] [API contracts/interfaces]: Review before implementing consumers
@@ -122,7 +123,7 @@ tests/
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
+> **Fill in this table only when the Constitution Check lists a violation to justify**
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|

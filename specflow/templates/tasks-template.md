@@ -14,9 +14,9 @@ description: "Task list template for feature implementation"
 ```
 
 **Markers**:
-- **[P]**: Can run in parallel (different files, no dependencies)
-- **[TDD]**: Must follow RED-GREEN-REFACTOR (write test → fail → implement → pass → refactor)
-- **[REVIEW]**: Requires code review before proceeding to next task
+- **[P]**: Runs in parallel (different files, no dependencies)
+- **[TDD]**: Follows RED-GREEN-REFACTOR (write test, fail, implement, pass, refactor)
+- **[REVIEW]**: Pauses for a code review before the next task starts
 - **[SUBAGENT]**: Can be delegated to a subagent for parallel execution
 
 **One outcome per task**: a description that needs "and" is two tasks. Split it.
@@ -28,36 +28,36 @@ description: "Task list template for feature implementation"
 - **Single project**: `src/`, `tests/` at repository root
 - **Web app**: `backend/src/`, `frontend/src/`
 - **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Adjust paths based on plan.md structure decisions
+- Match these paths to the structure decisions in plan.md
 
 <!--
   ============================================================================
-  IMPORTANT: The tasks below are SAMPLE TASKS for illustration purposes only.
+  IMPORTANT: The tasks below are sample tasks. They illustrate the format only.
 
-  The /speckit.specflow.tasks command MUST replace these with actual tasks based on:
-  - User stories from spec.md (with their priorities P1, P2, P3...)
-  - Technical decisions from plan.md
-  - Execution strategy from plan.md (TDD, parallel, review gates)
-  - Entities from spec.md
+  /speckit.specflow.tasks must replace them with real tasks drawn from:
+  - User stories in spec.md, with their priorities (P1, P2, P3...)
+  - Technical decisions in plan.md
+  - The execution strategy in plan.md (TDD, parallel work, review gates)
+  - Entities in spec.md
 
-  Tasks MUST be organized by user story so each story can be:
+  Tasks must group by user story, so each story can be:
   - Implemented independently
   - Tested independently
   - Delivered as an MVP increment
 
-  DO NOT keep these sample tasks in the generated tasks.md file.
+  Remove these sample tasks from the generated tasks.md file.
   ============================================================================
 -->
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-**Purpose**: Project initialization and basic structure
+**Purpose**: Set up the project and its basic structure
 
-- [ ] T001 Create project structure per implementation plan
-- [ ] T002 Initialize project with dependencies
+- [ ] T001 Create the project structure per the implementation plan
+- [ ] T002 Initialize the project with its dependencies
 - [ ] T003 [P] Configure the linter
 
-**Execution notes**: No special discipline required. Verify project builds before proceeding.
+**Execution notes**: This phase needs no special discipline. Confirm the build before the next phase starts.
 
 ---
 
@@ -67,15 +67,15 @@ description: "Task list template for feature implementation"
 
 **CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T004 [TDD] Setup core data models/entities
-- [ ] T005 [P] Implement shared utilities
-- [ ] T006 [P] [REVIEW] Set up API routing
-- [ ] T007 Configure error handling
+- [ ] T004 [TDD] Set up the core data models/entities
+- [ ] T005 [P] Implement the shared utilities
+- [ ] T006 [P] [REVIEW] Set up the API routing
+- [ ] T007 Configure the error handling
 
-**Execution notes**: For tasks marked [TDD], write tests first, verify they fail, then implement.
-For tasks marked [REVIEW], pause for human review of API contracts before consumers are built.
+**Execution notes**: For tasks marked [TDD], write the tests first, run them, confirm they fail, then implement.
+For tasks marked [REVIEW], pause for a human review of the API contracts before any consumer is built.
 
-**Checkpoint**: Foundation ready. Get human approval before starting user stories.
+**Checkpoint**: The foundation is ready. Get human approval before any user story starts.
 
 ---
 
@@ -86,23 +86,23 @@ For tasks marked [REVIEW], pause for human review of API contracts before consum
 
 ### Tests for User Story 1 (if TDD applies)
 
-> Write these tests FIRST. Verify they FAIL before implementation.
+> Write these tests first. Confirm they fail before you implement.
 
-- [ ] T008 [P] [TDD] [US1] Contract test for [endpoint] in tests/contract/
-- [ ] T009 [P] [TDD] [US1] Integration test for [user flow] in tests/integration/
+- [ ] T008 [P] [TDD] [US1] Write a contract test for [endpoint] in tests/contract/
+- [ ] T009 [P] [TDD] [US1] Write an integration test for [user flow] in tests/integration/
 
 ### Implementation for User Story 1
 
-- [ ] T010 [P] [US1] Create [Entity1] model in src/models/
-- [ ] T011 [P] [US1] Create [Entity2] model in src/models/
-- [ ] T012 [US1] Implement [Service] in src/services/ (depends on T010, T011)
-- [ ] T013 [US1] Implement [endpoint/feature] in src/
+- [ ] T010 [P] [US1] Create the [Entity1] model in src/models/
+- [ ] T011 [P] [US1] Create the [Entity2] model in src/models/
+- [ ] T012 [US1] Implement the [Service] in src/services/ (depends on T010, T011)
+- [ ] T013 [US1] Implement the [endpoint/feature] in src/
 - [ ] T014 [US1] [REVIEW] Add input validation
 
-**Execution notes**: If `subagent-driven-development` is available, T010 and T011 can be
-dispatched as parallel subagents. T014 requires review before proceeding.
+**Execution notes**: If `subagent-driven-development` is available, dispatch T010 and T011
+as parallel subagents. T014 needs review before the next task starts.
 
-**Checkpoint**: User Story 1 fully functional and testable. Get human approval.
+**Checkpoint**: User Story 1 works and can be tested on its own. Get human approval.
 
 ---
 
@@ -113,12 +113,12 @@ dispatched as parallel subagents. T014 requires review before proceeding.
 
 ### Implementation for User Story 2
 
-- [ ] T015 [P] [SUBAGENT] [US2] Create [Entity] model
-- [ ] T016 [US2] Implement [Service]
-- [ ] T017 [US2] Implement [endpoint/feature]
-- [ ] T018 [US2] Integrate with User Story 1 components (if needed)
+- [ ] T015 [P] [SUBAGENT] [US2] Create the [Entity] model
+- [ ] T016 [US2] Implement the [Service]
+- [ ] T017 [US2] Implement the [endpoint/feature]
+- [ ] T018 [US2] Integrate with the User Story 1 components, if needed
 
-**Checkpoint**: User Stories 1 AND 2 both work independently. Get human approval.
+**Checkpoint**: User Stories 1 and 2 both work independently. Get human approval.
 
 ---
 
@@ -128,16 +128,16 @@ dispatched as parallel subagents. T014 requires review before proceeding.
 
 ## Phase N: Polish & Cross-Cutting Concerns
 
-**Purpose**: Improvements that affect multiple user stories
+**Purpose**: Polish work that spans multiple user stories
 
-- [ ] TXXX [P] [SUBAGENT] Documentation updates
-- [ ] TXXX Code cleanup
-- [ ] TXXX [P] Performance optimization
-- [ ] TXXX [REVIEW] Security hardening
-- [ ] TXXX Run full test suite: all tests must pass
+- [ ] TXXX [P] [SUBAGENT] Update the documentation
+- [ ] TXXX Clean up the code
+- [ ] TXXX [P] Optimize performance
+- [ ] TXXX [REVIEW] Harden security
+- [ ] TXXX Run the full test suite: every test must pass
 
-**Execution notes**: Polish phase tasks can largely run in parallel. Final security
-hardening requires review. All tests must pass before this phase is considered complete.
+**Execution notes**: Most polish tasks run in parallel. The final security hardening
+needs review. Every test must pass before this phase ends.
 
 ---
 
@@ -145,66 +145,66 @@ hardening requires review. All tests must pass before this phase is considered c
 
 ### Phase Dependencies
 
-- **Setup (Phase 1)**: No dependencies: start immediately
-- **Foundational (Phase 2)**: Depends on Setup: BLOCKS all user stories
-- **User Stories (Phase 3+)**: All depend on Foundational completion
-  - Stories can proceed in parallel (if using subagents) or sequentially by priority
-- **Polish (Final Phase)**: Depends on all desired user stories being complete
+- **Setup (Phase 1)**: No dependencies. Starts immediately.
+- **Foundational (Phase 2)**: Depends on Setup. Blocks every user story.
+- **User Stories (Phase 3+)**: Each depends on the Foundational phase completing.
+  - Stories run in parallel with subagents, or in order by priority.
+- **Polish (Final Phase)**: Depends on every chosen user story finishing.
 
 ### Within Each User Story
 
-1. Tests (if [TDD]) MUST be written and FAIL before implementation
-2. Models before services
-3. Services before endpoints
-4. Core implementation before integration
-5. [REVIEW] tasks pause for human review
-6. Story complete before moving to next priority
+1. Under [TDD], write the tests and confirm they fail before implementation starts
+2. Models come before services
+3. Services come before endpoints
+4. Core implementation comes before integration
+5. A [REVIEW] task pauses for human review
+6. Finish the story before moving to the next priority
 
 ### Parallel Opportunities
 
-- All tasks marked [P] within the same phase can run in parallel
-- All tasks marked [SUBAGENT] can be dispatched to subagents
-- Once Foundational phase completes, user stories can start in parallel
-- Different user stories can be worked on by different subagents
+- Tasks marked [P] in the same phase run in parallel
+- The executor can dispatch tasks marked [SUBAGENT] to subagents
+- Once the Foundational phase completes, user stories can start in parallel
+- Different subagents can work on different user stories
 
 ---
 
 ## Superpowers Execution
 
 <!--
-  This section documents how /speckit.specflow.execute should process this task list.
-  The execute command reads these instructions to determine execution behavior.
+  This section tells /speckit.specflow.execute how to process this task list.
+  The execute command reads these instructions to decide how it runs.
 -->
 
 ### Execution Discipline by Marker
 
-- **[TDD]**: Follow RED-GREEN-REFACTOR. If `test-driven-development` skill is available,
-  read and follow its process. Otherwise: write test → run (must fail) → implement →
-  run (must pass) → refactor if needed.
-- **[SUBAGENT]**: If `subagent-driven-development` skill is available, dispatch to a
-  subagent. Otherwise: implement sequentially in the current session.
-- **[REVIEW]**: Pause execution. Present completed work to user. Wait for explicit
-  approval before continuing.
-- **[P]**: On Claude Code, launch parallel tasks with the Task tool. On the Copilot
-  CLI, run them in order.
+- **[TDD]**: Follow RED-GREEN-REFACTOR. When the `test-driven-development` skill is
+  available, read it and follow its process. Otherwise: write the test → run it
+  (must fail) → implement → run it (must pass) → refactor if needed.
+- **[SUBAGENT]**: When the `subagent-driven-development` skill is available, dispatch
+  the task to a subagent. Otherwise: implement it in the current session, in order.
+- **[REVIEW]**: Pause execution. Show the completed work to the user. Wait for
+  explicit approval before the next task starts.
+- **[P]**: On Claude Code, launch the tasks in parallel with the Task tool. On the
+  Copilot CLI, run them in order.
 
 ### Checkpoint Protocol
 
 At every phase boundary:
-1. Summarize what was completed in this phase
-2. Run applicable tests
-3. Report test results
-4. Ask user: "Phase [N] complete. Proceed to Phase [N+1]?"
-5. Only continue after explicit user approval
+1. Summarize what this phase completed
+2. Run the applicable tests
+3. Report the test results
+4. Ask the user: "Phase [N] complete. Proceed to Phase [N+1]?"
+5. Continue only after the user gives explicit approval
 
 ---
 
 ## Notes
 
-- [P] tasks = different files, no dependencies
-- [TDD] tasks = strict RED-GREEN-REFACTOR discipline
-- [REVIEW] tasks = human review gate
-- [SUBAGENT] tasks = candidate for parallel subagent dispatch
-- [Story] label maps task to specific user story for traceability
-- Commit after each task or logical group
-- Stop at any checkpoint to validate independently
+- [P] tasks touch different files, with no dependencies
+- [TDD] tasks follow strict RED-GREEN-REFACTOR discipline
+- [REVIEW] tasks stop at a human review gate
+- [SUBAGENT] tasks are candidates for parallel subagent dispatch
+- The [Story] label maps a task to its user story, for traceability
+- Commit after every task or logical group
+- Stop at any checkpoint to confirm the work independently

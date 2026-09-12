@@ -29,7 +29,7 @@
 
 ## Technology Stack
 
-<!-- Document the project's core technology choices -->
+<!-- Name the project's core technology choices below. -->
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
@@ -39,32 +39,32 @@
 ## Development Workflow
 
 <!--
-  This section anchors the project to the specflow pipeline.
-  Adjust the steps below to reflect your team's actual process.
+  This section ties the project to the specflow pipeline.
+  Edit the steps below to match the team's actual process.
 -->
 
-This project follows **specification-driven development** using the specflow pipeline:
+This project follows **specification-driven development** through the specflow pipeline:
 
-1. **Constitution** (`/speckit.constitution`): Establish and maintain these governance principles
-2. **Specification** (`/speckit.specify`): Define feature requirements before any code is written
-3. **Brainstorming** (`/speckit.specflow.brainstorm`): Challenge assumptions and discover edge cases
-4. **Planning** (`/speckit.plan`): Design technical approach with constitution compliance check
-5. **Task Decomposition** (`/speckit.specflow.tasks`): Break down into executable, trackable tasks
-6. **Execution** (`/speckit.specflow.execute`): Implement with appropriate discipline (TDD, subagents)
-7. **Review** (`/speckit.specflow.review`): Verify implementation against spec and constitution
+1. **Constitution** (`/speckit.constitution`): Set and keep these governance principles
+2. **Specification** (`/speckit.specify`): Write feature requirements before any code
+3. **Brainstorming** (`/speckit.specflow.brainstorm`): Question assumptions and find edge cases
+4. **Planning** (`/speckit.plan`): Design the technical approach and check it against the constitution
+5. **Task Decomposition** (`/speckit.specflow.tasks`): Split the plan into executable, trackable tasks
+6. **Execution** (`/speckit.specflow.execute`): Build with the discipline the task needs (TDD, subagents)
+7. **Review** (`/speckit.specflow.review`): Check the implementation against the spec and the constitution
 
 ### Workflow Rules
 
 - No code is written before a spec is approved
 - Every spec goes through at least one brainstorm session
-- Implementation plans must pass a constitution compliance check
-- Phase checkpoints require explicit human approval
+- An implementation plan must pass a constitution compliance check
+- Every phase boundary needs explicit human approval
 
 ## Quality Gates
 
 <!--
-  Define what review and testing gates apply to this project.
-  These feed into the /speckit.specflow.review and /speckit.specflow.execute commands.
+  Name the review and testing gates that apply to this project.
+  The /speckit.specflow.review and /speckit.specflow.execute commands read these.
 -->
 
 ### Testing Requirements
@@ -77,25 +77,25 @@ This project follows **specification-driven development** using the specflow pip
 ### Review Requirements
 
 - [ ] **Code review**: [REQUIRED/OPTIONAL], [who reviews, what criteria]
-- [ ] **Spec compliance**: [REQUIRED/OPTIONAL], verify all acceptance scenarios pass
+- [ ] **Spec compliance**: [REQUIRED/OPTIONAL], check that every acceptance scenario passes
 - [ ] **Security review**: [REQUIRED/OPTIONAL], [scope description]
 - [ ] **Performance review**: [REQUIRED/OPTIONAL], [benchmarks or targets]
 
 ### Deployment Gates
 
 - [ ] All tests pass
-- [ ] All review items resolved
-- [ ] Constitution compliance verified
+- [ ] All review items are resolved
+- [ ] The constitution compliance check passes
 - [ ] [PROJECT-SPECIFIC GATE]
 
 ## Governance
 
-This constitution is the highest governing document for all development activities.
-Any amendment requires:
+This constitution governs every development activity in the project.
+An amendment requires:
 
-- Documented change rationale
-- Updated related specs and plans
-- Verification that core principles are not violated
+- A documented rationale for the change
+- Updated specs and plans
+- Confirmation that no principle is violated
 
 **Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
 
