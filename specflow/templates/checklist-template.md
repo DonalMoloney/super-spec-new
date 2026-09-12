@@ -6,71 +6,71 @@
 
 <!--
   ============================================================================
-  IMPORTANT: The checklist items below are SAMPLE ITEMS for illustration only.
+  The checklist items below are sample items for illustration only.
 
-  The /speckit.checklist command MUST replace these with actual items based on:
+  The /speckit.checklist command must replace these with actual items based on:
   - User's specific checklist request
   - Feature requirements from spec.md
   - Technical context from plan.md
   - Implementation details from tasks.md
 
-  DO NOT keep these sample items in the generated checklist file.
+  Delete these sample items before shipping the generated checklist file.
   ============================================================================
 -->
 
 ## Spec Compliance
 
 <!--
-  Verify each acceptance scenario from the spec is implemented and passing.
-  Generated from spec.md user stories and acceptance scenarios.
+  Check that each acceptance scenario from the spec is implemented and passing.
+  These items come from spec.md's user stories and acceptance scenarios.
 -->
 
 - [ ] CHK001 US1 Scenario 1: [Given/When/Then from spec], implemented and tested
 - [ ] CHK002 US1 Scenario 2: [Given/When/Then from spec], implemented and tested
 - [ ] CHK003 US2 Scenario 1: [Given/When/Then from spec], implemented and tested
-- [ ] CHK004 Edge case: [Edge case from spec], handled correctly
+- [ ] CHK004 Edge case: [Edge case from spec], handled
 
 ## Code Review
 
 <!--
-  Standard code quality checks applicable to most features.
-  Adjust based on constitution quality gates.
+  These checks apply to most features.
+  Adjust them against the constitution's quality gates.
 -->
 
 ### Correctness
 
-- [ ] CHK010 Logic is correct and handles all acceptance scenarios
-- [ ] CHK011 Edge cases from brainstorming are handled
+- [ ] CHK010 The logic passes every acceptance scenario
+- [ ] CHK011 The implementation covers every edge case from brainstorming
 - [ ] CHK012 Error handling covers every failure path (no silent failures)
-- [ ] CHK013 Data validation at system boundaries
+- [ ] CHK013 The system validates data at every boundary
 
 ### Security
 
-- [ ] CHK020 No injection vulnerabilities (SQL, XSS, command injection)
-- [ ] CHK021 Authentication and authorization checks in place
-- [ ] CHK022 Sensitive data is not logged or exposed
-- [ ] CHK023 Input sanitization at all entry points
-- [ ] CHK024 STRIDE table filled or each row marked N/A
+- [ ] CHK020 No injection vulnerability exists (SQL, XSS, command injection)
+- [ ] CHK021 Authentication and authorization checks exist
+- [ ] CHK022 The code never logs or exposes sensitive data
+- [ ] CHK023 Every entry point sanitizes its input
+- [ ] CHK024 The review fills the STRIDE table, or marks each row N/A
 
 ### Performance
 
-- [ ] CHK030 No N+1 queries or unnecessary database calls
-- [ ] CHK031 Appropriate caching where beneficial
-- [ ] CHK032 No blocking operations in critical paths
-- [ ] CHK033 Resource cleanup (connections, file handles, etc.)
+- [ ] CHK030 The code makes no N+1 query or unnecessary database call
+- [ ] CHK031 The code caches where caching pays off
+- [ ] CHK032 Critical paths run no blocking operation
+- [ ] CHK033 The code closes every connection and file handle it opens
 
 ### Code Quality
 
-- [ ] CHK040 Follows project conventions from constitution
-- [ ] CHK041 Functions are focused and appropriately sized
-- [ ] CHK042 No code duplication beyond acceptable thresholds
-- [ ] CHK043 Naming is clear and consistent
+- [ ] CHK040 The code follows the constitution's conventions
+- [ ] CHK041 Each function does one thing and stays small
+- [ ] CHK042 Duplicate code stays under the project's limit
+- [ ] CHK043 Names stay clear and consistent
 
 ## Constitution Compliance
 
 <!--
-  Verify each constitution principle is respected.
-  Generated from .specify/memory/constitution.md principles.
+  Check that the feature respects each constitution principle.
+  These items come from the principles in .specify/memory/constitution.md.
 -->
 
 - [ ] CHK050 [Principle 1]: [Specific verification for this feature]
@@ -80,19 +80,19 @@
 ## Test Coverage
 
 <!--
-  Verify tests exist and pass for critical functionality.
+  Check that tests exist and pass for critical functionality.
 -->
 
 - [ ] CHK060 Unit tests cover core business logic
 - [ ] CHK061 Integration tests cover user flows
-- [ ] CHK062 All tests pass in CI environment
+- [ ] CHK062 All tests pass in the CI environment
 - [ ] CHK063 [TDD] tasks followed RED-GREEN-REFACTOR discipline
-- [ ] CHK064 Every criterion has a test in Traceability
+- [ ] CHK064 Every criterion lists a test in Traceability
 
 ## [Custom Category]
 
 <!--
-  Add domain-specific checklist categories as needed.
+  Add domain-specific checklist categories here.
   Examples: Accessibility, Internationalization, Data Migration, API Compatibility
 -->
 
@@ -104,5 +104,5 @@
 - Check items off as completed: `[x]`
 - Add inline comments for findings or exceptions
 - Link to relevant code, tests, or documentation
-- Items are numbered sequentially (CHK###) for easy reference
-- Report issues with confidence scores (0-100, only flag items >= 80 confidence)
+- Number items sequentially (CHK###) for easy reference
+- Report issues with a confidence score (0-100); flag only scores at or above 80
