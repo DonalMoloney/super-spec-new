@@ -29,9 +29,39 @@ EXPECTED_ORDER = [
     "release-reporter",
 ]
 
+# Routing per ADR-0003 as amended by ADR-0014 in decisions.md.
+OPUS_AGENTS = {
+    "requirements-analyst",
+    "scenario-critic",
+    "spec-alignment-auditor",
+    "work-verifier",
+    "code-reviewer",
+}
+SONNET_AGENTS = {
+    "gherkin-writer",
+    "step-definition-scaffolder",
+    "task-decomposer",
+    "implementation-engineer",
+    "refactor-specialist",
+    "unit-test-augmenter",
+}
+HAIKU_AGENTS = {
+    "red-phase-verifier",
+    "green-phase-verifier",
+    "regression-runner",
+    "documentation-scribe",
+    "release-reporter",
+}
+EXPECTED_MODEL = {
+    **{name: "opus" for name in OPUS_AGENTS},
+    **{name: "sonnet" for name in SONNET_AGENTS},
+    **{name: "haiku" for name in HAIKU_AGENTS},
+}
 
 NUMBERED_ITEM = re.compile(r"^(\d+)\. (.*)$")
 BACKTICKED_TOKEN = re.compile(r"`([^`]+)`")
+FRONTMATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
+MODEL_FIELD = re.compile(r"^model:\s*(\S+)\s*$", re.MULTILINE)
 
 
 def dispatch_section(markdown: str) -> str:
@@ -54,6 +84,14 @@ def dispatched_agents(markdown: str) -> list[str]:
         agents.append(token.group(1))
     return agents
 
+
+def frontmatter_model(agent_file: Path) -> str:
+    """Return the `model:` value from an agent file's YAML frontmatter."""
+    frontmatter = FRONTMATTER.match(agent_file.read_text())
+    assert frontmatter, f"{agent_file.name} has no YAML frontmatter"
+    model = MODEL_FIELD.search(frontmatter.group(1))
+    assert model, f"agent {agent_file.stem} has no model: field in its frontmatter"
+    return model.group(1)
 
 
 def assert_expected_order(markdown: str) -> None:
@@ -104,3 +142,16 @@ def test_work_verifier_precedes_release_reporter(orchestrator_markdown):
     agents = dispatched_agents(orchestrator_markdown)
     assert agents.index("work-verifier") < agents.index("release-reporter")
 
+
+@pytest.mark.parametrize("agent", EXPECTED_ORDER)
+def test_phase_agent_routes_to_its_adr_model(agent):
+    assert frontmatter_model(AGENTS_DIR / f"{agent}.md") == EXPECTED_MODEL[agent], (
+        f"{agent} is routed off the ADR-0003/ADR-0014 model class"
+    )
+
+
+def test_missing_model_field_names_the_agent(tmp_path):
+    agent_file = tmp_path / "nameless-runner.md"
+    agent_file.write_text("---\nname: nameless-runner\n---\n\nBody.\n")
+    with pytest.raises(AssertionError, match="nameless-runner"):
+        frontmatter_model(agent_file)
