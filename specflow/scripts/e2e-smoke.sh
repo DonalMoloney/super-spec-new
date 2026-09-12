@@ -24,6 +24,7 @@ FEAT_LOG="$WORK/.feat.log"
 SPEC_KIT_GIT_URL="https://github.com/github/spec-kit.git"
 SPECFLOW_COMMANDS=(status brainstorm tasks execute review)
 EXPECTED_HOOK_COUNT=3
+LOG_TAIL_LINES=30
 
 if [ -t 1 ]; then
   C_GREEN=$'\033[32m'; C_RED=$'\033[31m'; C_DIM=$'\033[2m'; C_BOLD=$'\033[1m'; C_RST=$'\033[0m'
@@ -68,7 +69,7 @@ if ! run_specify init \
         </dev/null >"$INIT_LOG" 2>&1; then
   fail "specify init exited non-zero (see $INIT_LOG)"
   echo "----- last 30 lines of init log -----"
-  tail -n 30 "$INIT_LOG"
+  tail -n "$LOG_TAIL_LINES" "$INIT_LOG"
   exit 1
 fi
 
@@ -84,7 +85,7 @@ if ! run_specify extension add "$REPO_ROOT" --dev \
         </dev/null >"$ADD_LOG" 2>&1; then
   fail "specify extension add exited non-zero (see $ADD_LOG)"
   echo "----- last 30 lines of add log -----"
-  tail -n 30 "$ADD_LOG"
+  tail -n "$LOG_TAIL_LINES" "$ADD_LOG"
 fi
 
 assert_file ".specify/extensions.yml created" "$WORK/.specify/extensions.yml"
@@ -132,7 +133,7 @@ if ! run_specify init \
         --here --integration copilot --ignore-agent-tools --force \
         </dev/null >"$WORK_COPILOT/.init.log" 2>&1; then
   fail "specify init for copilot exited non-zero (see $WORK_COPILOT/.init.log)"
-  tail -n 30 "$WORK_COPILOT/.init.log"
+  tail -n "$LOG_TAIL_LINES" "$WORK_COPILOT/.init.log"
   exit 1
 fi
 run_specify extension add "$REPO_ROOT" --dev \
