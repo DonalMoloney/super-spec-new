@@ -12,14 +12,14 @@
 # run.
 #
 # Pipeline
-#   Stage 1  /speckit.constitution      → .specify/memory/constitution.md
-#   Stage 2  /speckit.specify           → specs/001-.../spec.md
+#   Stage 1  /speckit.constitution, writes .specify/memory/constitution.md
+#   Stage 2  /speckit.specify, writes specs/001-.../spec.md
 #   Stage 3  /speckit.specflow.brainstorm  (mutates spec.md, adds Edge Cases)
-#   Stage 4  /speckit.plan              → specs/001-.../plan.md
-#   Stage 5  /speckit.tasks             → specs/001-.../tasks.md
+#   Stage 4  /speckit.plan, writes specs/001-.../plan.md
+#   Stage 5  /speckit.tasks, writes specs/001-.../tasks.md
 #                                     (after_tasks hook may invoke .specflow.tasks)
-#   Stage 6  /speckit.specflow.execute  → web/index.html + progress updates
-#   Stage 7  /speckit.specflow.review   → checklists/review.md
+#   Stage 6  /speckit.specflow.execute, writes web/index.html and progress updates
+#   Stage 7  /speckit.specflow.review, writes checklists/review.md
 #
 # Environment
 #   ANTHROPIC_API_KEY     required (unless E2E_DRY_RUN=1)
@@ -136,10 +136,10 @@ run_claude() {
     return 0
   fi
 
-  # --permission-mode acceptEdits  → no interactive prompt for file writes
-  # --max-turns                    → cap agent loops
-  # --max-budget-usd               → cap per-stage spend
-  # --output-format text           → response format; the caller does not parse it
+  # --permission-mode acceptEdits: no interactive prompt for file writes
+  # --max-turns: caps agent loops
+  # --max-budget-usd: caps per-stage spend
+  # --output-format text: response format; the caller does not parse it
   # claude reads the project dir (.claude/, .specify/, AGENTS.md auto-discovery)
   # to find the spec-kit and specflow slash commands. claude exits non-zero on
   # max-turns or budget after writing artifacts, so the on-disk assertions
