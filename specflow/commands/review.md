@@ -8,72 +8,72 @@ Run code review against spec requirements using review skills.
 /speckit.specflow.review [scope]
 ```
 
-**Scope**: Optional file paths, spec number, or "all changes". Defaults to the files listed in the feature's `review-scope.md` when that file exists, otherwise to the latest feature.
+**Scope**: an optional list of file paths, a spec number, or "all changes". It defaults to the files listed in the feature's `review-scope.md` when that file exists, and otherwise to the latest feature.
 
 ## Process
 
-1. Read the spec and plan for the feature being reviewed. If
+1. Read the spec and the plan for the feature under review. If
    `specs/NNN-feature-name/review-scope.md` exists and the user gave no scope,
    read it and review the files it lists
-2. **Superpowers detection**: Check for `requesting-code-review` skill
-   - **If found**: Read the skill and follow its pre-evaluation checklist and review
-     dispatch protocol
-   - **If not found**: Use the built-in review protocol below
-3. **Risk tier**: Classify the change before reviewing. Run
-   `git diff --numstat main...HEAD` and sum the lines and count the files. The
-   tier is HIGH when more than 400 lines or more than 15 files changed, when
-   any changed path has a directory named `auth`, `payments`, `billing`,
-   `migrations`, `infra`, `secrets`, or `crypto`, or when any changed file is a
-   dependency lock file (`package-lock.json`, `yarn.lock`, `Cargo.lock`,
-   `poetry.lock`, `go.sum`, or a `requirements*.txt`). Otherwise the tier is
-   STANDARD. When `.claude/hooks/risk-classifier.sh` exists in the repository,
-   run it and take its answer instead. A HIGH tier runs every dimension in
-   step 4 and then a second pass that audits each finding for a `file:line`
-   reference and evidence, dropping any finding without both. A STANDARD tier
-   runs step 4 once.
+2. **Superpowers detection**: Check for the `requesting-code-review` skill
+   - **If found**: Read the skill and follow its pre-evaluation checklist and
+     review dispatch protocol
+   - **If not found**: Follow the built-in review protocol below
+3. **Risk tier**: Classify the change before the review starts. Run
+   `git diff --numstat main...HEAD` and sum the changed lines and files. The
+   tier is HIGH when the diff changes more than 400 lines or more than 15
+   files, when any changed path has a directory named `auth`, `payments`,
+   `billing`, `migrations`, `infra`, `secrets`, or `crypto`, or when any
+   changed file is a dependency lock file (`package-lock.json`, `yarn.lock`,
+   `Cargo.lock`, `poetry.lock`, `go.sum`, or a `requirements*.txt`). Otherwise
+   the tier is STANDARD. When `.claude/hooks/risk-classifier.sh` exists in the
+   repository, run it and use its answer instead. A HIGH tier runs every
+   dimension in step 4, then a second pass that checks each finding for a
+   `file:line` reference and evidence and drops any finding missing either. A
+   STANDARD tier runs step 4 once.
 4. Built-in review protocol:
-   - **Spec compliance**: Verify each acceptance scenario from the spec is implemented
-   - **Edge case coverage**: Verify brainstormed edge cases are handled
-   - **Constitution compliance**: Check all governance principles are respected
-   - **Code quality**: Check for bugs, security issues, error handling
-   - **Test coverage**: Verify tests exist for critical paths
-5. Report findings with confidence scores (0-100, only report issues >= 80)
+   - **Spec compliance**: Check that each acceptance scenario in the spec is implemented
+   - **Edge case coverage**: Check that the brainstormed edge cases are handled
+   - **Constitution compliance**: Check that the code follows every governance principle
+   - **Code quality**: Check for bugs, security flaws, and missing error handling
+   - **Test coverage**: Check that tests cover the critical paths
+5. Report each finding with a confidence score from 0-100, and report only findings that score 80 or higher
 6. Group findings by severity: Critical > Important > Suggestion
-7. Append spec gaps back to the spec: for each Critical or Important finding that
-   reports a missing, ambiguous, or contradicted requirement, add a row to the
-   `## Open Questions` table in `specs/NNN-feature-name/spec.md` whose Question
-   column opens with the finding ID
+7. Append each spec gap to the spec: for each Critical or Important finding
+   that reports a missing, ambiguous, or contradicted requirement, add a row
+   to the `## Open Questions` table in `specs/NNN-feature-name/spec.md` and
+   open its Question column with the finding ID
 8. **Write the findings file**: Write every reported finding to
-   `specs/NNN-feature-name/review-findings.json` in the shape under Findings
-   File below. Overwrite the file on each run. A run with no findings writes
-   the file with an empty `findings` array and the verdict `CLEAN`
+   `specs/NNN-feature-name/review-findings.json` in the shape the Findings
+   File section defines below. Overwrite the file on each run. A run with no
+   findings writes an empty `findings` array and the verdict `CLEAN`
 
 ## Output
 
-Review findings reported to user and written to
-`specs/NNN-feature-name/review-findings.json`. Optionally also written to
+The command reports findings to the user and writes them to
+`specs/NNN-feature-name/review-findings.json`. It can also write them to
 `specs/NNN-feature-name/checklist-review.md`.
 
-Spec gaps among the Critical and Important findings are also added to the
-`## Open Questions` table in `specs/NNN-feature-name/spec.md`.
+The command also adds spec gaps among the Critical and Important findings to
+the `## Open Questions` table in `specs/NNN-feature-name/spec.md`.
 
 ## Finding Format
 
 Each finding includes:
-- Clear description with confidence score
-- File path and line reference
-- Specific recommendation or fix suggestion
+- A clear description and a confidence score
+- A file path and a line reference
+- A specific recommendation or fix
 - A finding ID of the form `R-NNN`, unique within the review run
 
-Findings below 80 confidence are suppressed to reduce noise.
+The review drops any finding below 80 confidence to cut the noise.
 
 ## Findings File
 
-`review-findings.json` is one object. `verdict` is `BLOCK` when any Critical
-finding is open, `CONCERNS` when only Important or Suggestion findings are
-open, and `CLEAN` otherwise. Each finding's `status` starts as `open`; a later
-run or a human sets it to `fixed` or `rebutted`. The severity `Suggestion` in
-the report maps to `Minor` in the file.
+`review-findings.json` holds one object. Its `verdict` is `BLOCK` when a
+Critical finding is open, `CONCERNS` when only Important or Suggestion
+findings are open, and `CLEAN` otherwise. Each finding's `status` starts as
+`open`, and a later run or a person sets it to `fixed` or `rebutted`. The
+report's `Suggestion` severity maps to `Minor` in the file.
 
 ```json
 {
@@ -94,14 +94,16 @@ the report maps to `Minor` in the file.
 }
 ```
 
-A merge gate that reads this file blocks while any Critical or Important
-finding is still `open`.
+A merge gate reading this file blocks while a Critical or Important finding
+stays `open`.
 
 ## Superpowers Adaptation
 
-When using the `requesting-code-review` skill, adapt its outputs:
-- Add specflow-specific review dimensions: spec compliance, constitution compliance,
-  brainstorm coverage
-- Output location → report to user, optionally write to checklist file
+When the command uses the `requesting-code-review` skill, it adapts the
+skill's outputs:
+- Add review dimensions specific to specflow: spec compliance, constitution
+  compliance, and brainstorm coverage
+- Output location → report to the user, and optionally write it to the
+  checklist file
 
-See `references/superpowers-bridge.md` for full adaptation rules.
+See `references/superpowers-bridge.md` for the full adaptation rules.
