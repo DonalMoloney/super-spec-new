@@ -1,35 +1,18 @@
 #!/usr/bin/env bash
 # scripts/e2e-smoke.sh
 #
-# End-to-end smoke test for the specflow extension.
+# Structural end-to-end smoke test for the specflow extension: installs this
+# checkout into a fresh spec-kit project and asserts the file layout spec-kit
+# and specflow jointly promise, without invoking an LLM.
 #
-# What it does (no LLM/agent required):
-#   1. Initializes a fresh spec-kit project in a temp dir (offline + --no-git).
-#   2. Installs THIS local checkout of specflow via `specify extension add --dev`.
-#   3. Simulates `/speckit.specify` by directly invoking spec-kit's
-#      `.specify/scripts/bash/create-new-feature.sh` (which is the same script
-#      the agent calls). This proves the file system layout spec-kit really
-#      produces, independent of which LLM is used.
-#   4. Asserts everything spec-kit + specflow jointly promise:
-#        - .specify/  contains memory/, templates/, scripts/, integrations/
-#        - .specify/extensions.yml  registers all 5 specflow commands + 3 hooks
-#        - specs/NNN-...  is at the project ROOT (NOT under .specify/)
-#        - .specify/specs/  does NOT exist (catches the path drift in issue #4)
-#        - specflow's own command/hook docs do not contradict the actual
-#          spec-kit layout (i.e. they shouldn't reference `.specify/specs/`).
-#   5. Prints a PASS/FAIL summary and a tree of artifacts that were generated,
-#      so a human can eyeball the workdir and decide whether the repo is OK.
+# Usage: bash scripts/e2e-smoke.sh
+# Exit code: 0 when every assertion passes, 1 otherwise.
 #
-# Usage:
-#   bash scripts/e2e-smoke.sh
-#
-# Exit code:
-#   0 if every assertion passed; 1 otherwise.
-#
-# Tip:
-#   The temp project is left behind on purpose so you can inspect it. The path
-#   is printed at the end. Delete it manually when you're done (`rm -rf <path>`).
+# The workdir is left on disk after the run for inspection; delete it
+# manually when done (`rm -rf <path>`).
 
+# -e is omitted on purpose: a failing install or feature-creation command is
+# recorded as a failed assertion below rather than aborting the run.
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -37,6 +20,10 @@ WORK="$(mktemp -d -t specflow-e2e.XXXXXX)"
 INIT_LOG="$WORK/.init.log"
 ADD_LOG="$WORK/.add.log"
 FEAT_LOG="$WORK/.feat.log"
+
+SPEC_KIT_GIT_URL="https://github.com/github/spec-kit.git"
+SPECFLOW_COMMANDS=(status brainstorm tasks execute review)
+EXPECTED_HOOK_COUNT=3
 
 if [ -t 1 ]; then
   C_GREEN=$'\033[32m'; C_RED=$'\033[31m'; C_DIM=$'\033[2m'; C_BOLD=$'\033[1m'; C_RST=$'\033[0m'
@@ -48,14 +35,23 @@ PASS=0
 FAIL=0
 FAILS=()
 
+# Run `specify` from spec-kit's git ref via uvx without a local install.
+run_specify() { uvx --from "git+$SPEC_KIT_GIT_URL" specify "$@"; }
+
+# Print a passing assertion and count it.
 pass() { printf '  %sok%s   %s\n' "$C_GREEN" "$C_RST" "$1"; PASS=$((PASS+1)); }
+# Print a failing assertion, count it, and record its label for the summary.
 fail() { printf '  %sFAIL%s %s\n' "$C_RED"   "$C_RST" "$1"; FAIL=$((FAIL+1)); FAILS+=("$1"); }
+# Print a numbered step header.
 step() { printf '\n%s[%s]%s %s\n' "$C_BOLD" "$1" "$C_RST" "$2"; }
 
-# Assertion helpers --------------------------------------------------------
+# Assert a file exists at path.
 assert_file()    { if [ -f "$2" ]; then pass "$1";   else fail "$1 (missing: $2)"; fi; }
+# Assert a directory exists at path.
 assert_dir()     { if [ -d "$2" ]; then pass "$1";   else fail "$1 (missing: $2)"; fi; }
+# Assert a directory does not exist at path.
 assert_no_dir()  { if [ ! -d "$2" ]; then pass "$1"; else fail "$1 (unexpected: $2)"; fi; }
+# Assert a file exists and contains pattern.
 assert_grep()    {
   local desc="$1" pattern="$2" file="$3"
   if [ -f "$file" ] && grep -q -- "$pattern" "$file"; then
@@ -65,10 +61,9 @@ assert_grep()    {
   fi
 }
 
-# -------------------------------------------------------------------------
 step "1/5" "Initialize spec-kit in a fresh project"
 cd "$WORK" || exit 1
-if ! uvx --from git+https://github.com/github/spec-kit.git specify init \
+if ! run_specify init \
         --here --integration claude --ignore-agent-tools --force \
         </dev/null >"$INIT_LOG" 2>&1; then
   fail "specify init exited non-zero (see $INIT_LOG)"
@@ -84,9 +79,8 @@ assert_file ".specify/templates/plan-template.md present"    "$WORK/.specify/tem
 assert_file ".specify/templates/tasks-template.md present"   "$WORK/.specify/templates/tasks-template.md"
 assert_file "create-new-feature.sh present"                  "$WORK/.specify/scripts/bash/create-new-feature.sh"
 
-# -------------------------------------------------------------------------
 step "2/5" "Install specflow from local checkout (--dev)"
-if ! uvx --from git+https://github.com/github/spec-kit.git specify extension add "$REPO_ROOT" --dev \
+if ! run_specify extension add "$REPO_ROOT" --dev \
         </dev/null >"$ADD_LOG" 2>&1; then
   fail "specify extension add exited non-zero (see $ADD_LOG)"
   echo "----- last 30 lines of add log -----"
@@ -95,66 +89,60 @@ fi
 
 assert_file ".specify/extensions.yml created" "$WORK/.specify/extensions.yml"
 
-# All 5 slash commands are advertised in the install output (spec-kit prints them).
-for c in status brainstorm tasks execute review; do
-  assert_grep "command speckit.specflow.$c advertised on install" \
-              "speckit.specflow.$c" \
+# Every specflow command is advertised in the install output (spec-kit prints them).
+for cmd in "${SPECFLOW_COMMANDS[@]}"; do
+  assert_grep "command speckit.specflow.$cmd advertised on install" \
+              "speckit.specflow.$cmd" \
               "$ADD_LOG"
 done
 
 # spec-kit registers each command as a skill directory holding a SKILL.md
 # symlink into .specify/extensions/, so -f resolves the link before checking.
-for c in status brainstorm tasks execute review; do
-  assert_file "Claude Code command file for speckit.specflow.$c" \
-              "$WORK/.claude/skills/speckit-specflow-$c/SKILL.md"
+for cmd in "${SPECFLOW_COMMANDS[@]}"; do
+  assert_file "Claude Code command file for speckit.specflow.$cmd" \
+              "$WORK/.claude/skills/speckit-specflow-$cmd/SKILL.md"
 done
 
-# Hook commands are stored in extensions.yml under each hook name.
-# Format (real):
-#   hooks:
-#     after_tasks:
-#     - extension: specflow
-#       command: speckit.specflow.tasks
+# extensions.yml nests each hook's commands as `command: speckit.specflow.<name>`
+# lines under the hook's own key; counting those lines counts the hooks.
 HOOK_COUNT=0
 if [ -f "$WORK/.specify/extensions.yml" ]; then
   HOOK_COUNT=$(grep -cE "^[[:space:]]+command:[[:space:]]*speckit\.specflow\." \
                "$WORK/.specify/extensions.yml" 2>/dev/null || true)
   HOOK_COUNT=${HOOK_COUNT:-0}
 fi
-if [ "$HOOK_COUNT" = "3" ]; then
-  pass "3 hooks reference speckit.specflow.* in extensions.yml"
+if [ "$HOOK_COUNT" = "$EXPECTED_HOOK_COUNT" ]; then
+  pass "$EXPECTED_HOOK_COUNT hooks reference speckit.specflow.* in extensions.yml"
 else
-  fail "expected 3 hooks referencing speckit.specflow.*, got $HOOK_COUNT"
+  fail "expected $EXPECTED_HOOK_COUNT hooks referencing speckit.specflow.*, got $HOOK_COUNT"
 fi
 
-# Cross-check via `specify extension list` (the same assertion the CI uses).
+# Cross-check via `specify extension list`, the same assertion CI runs.
 LIST_LOG="$WORK/.list.log"
-uvx --from git+https://github.com/github/spec-kit.git specify extension list \
+run_specify extension list \
     </dev/null >"$LIST_LOG" 2>&1 || true
 assert_grep "extension list shows 'Commands: 5 | Hooks: 3'" \
             "Commands: 5 | Hooks: 3" \
             "$LIST_LOG"
 
-# -------------------------------------------------------------------------
 step "2b/5" "Install specflow for the GitHub Copilot CLI"
 WORK_COPILOT="$(mktemp -d -t specflow-e2e-copilot.XXXXXX)"
 cd "$WORK_COPILOT" || exit 1
-if ! uvx --from git+https://github.com/github/spec-kit.git specify init \
+if ! run_specify init \
         --here --integration copilot --ignore-agent-tools --force \
         </dev/null >"$WORK_COPILOT/.init.log" 2>&1; then
   fail "specify init for copilot exited non-zero (see $WORK_COPILOT/.init.log)"
   tail -n 30 "$WORK_COPILOT/.init.log"
   exit 1
 fi
-uvx --from git+https://github.com/github/spec-kit.git specify extension add "$REPO_ROOT" --dev \
+run_specify extension add "$REPO_ROOT" --dev \
     </dev/null >"$WORK_COPILOT/.add.log" 2>&1 \
   || fail "specify extension add for copilot exited non-zero (see $WORK_COPILOT/.add.log)"
-for c in status brainstorm tasks execute review; do
-  assert_file "Copilot command file for speckit.specflow.$c" \
-              "$WORK_COPILOT/.github/skills/speckit-specflow-$c/SKILL.md"
+for cmd in "${SPECFLOW_COMMANDS[@]}"; do
+  assert_file "Copilot command file for speckit.specflow.$cmd" \
+              "$WORK_COPILOT/.github/skills/speckit-specflow-$cmd/SKILL.md"
 done
 
-# -------------------------------------------------------------------------
 step "3/5" "Simulate /speckit.specify (calls create-new-feature.sh directly)"
 cd "$WORK" || exit 1
 bash .specify/scripts/bash/create-new-feature.sh \
@@ -176,19 +164,14 @@ else
   cat "$FEAT_LOG"
 fi
 
-# -------------------------------------------------------------------------
 step "4/5" "Verify specflow docs match spec-kit's real layout"
-# Catches the bug from issue #4: specflow docs say `.specify/specs/...` but
-# spec-kit really puts files under `specs/...`. We check three doc tiers:
-#   - commands/*.md and commands/hooks/*.md  (agent-facing instructions)
-#   - templates/*.md                          (templates that get installed)
-#   - README* / SKILL.md / examples/*.md      (human-facing docs)
+# check_drift asserts none of the given paths reference the stale
+# `.specify/specs/` layout from issue #4; the real path is `specs/`.
 check_drift() {
   local desc="$1"; shift
   local hits=0
-  # examples/static-landing-page/ is a real-run e2e snapshot. Its README
-  # legitimately contains the wrong path in teaching prose (e.g. "X, not
-  # .specify/specs/..."), so we exclude that directory from drift checks.
+  # static-landing-page/ is a real-run e2e snapshot whose README teaches the
+  # old path in prose, so drift checks exclude that directory.
   hits=$(grep -rEn --exclude-dir='static-landing-page' '\.specify/specs/' "$@" 2>/dev/null | wc -l | tr -d ' ')
   if [ "$hits" -eq 0 ]; then
     pass "$desc"
@@ -228,7 +211,6 @@ assert_grep "review.md writes review-findings.json"    'review-findings\.json' "
 # The tasks command carries the singular-task rule from AGENTS.md.
 assert_grep "tasks.md states the one-outcome-per-task rule" 'one outcome per task' "$REPO_ROOT/commands/tasks.md"
 
-# -------------------------------------------------------------------------
 step "5/5" "Generated artifacts (for human review)"
 cd "$WORK" || exit 1
 echo "  ${C_DIM}workdir:${C_RST} $WORK"
@@ -239,7 +221,6 @@ find . -type f \
   | sed 's|^./|    |' \
   | sort
 
-# -------------------------------------------------------------------------
 TOTAL=$((PASS + FAIL))
 printf '\n%sSummary:%s %d/%d passed' "$C_BOLD" "$C_RST" "$PASS" "$TOTAL"
 if [ "$FAIL" -gt 0 ]; then
