@@ -849,8 +849,8 @@ Effort: low. Deps: none.
 **33. The lint checks a traceability row names a real test.** *(NEW in v3)*
 What: once `.analyzed` exists, `artifact-lint.sh` reads the `## Traceability`
 rows and fails when the named test is not found in the test tree. Why:
-ADR-0009 records that the scorer checks a criterion has a named test, not
-that the test exists, so an invented name passes. Verify: a hook test with a
+`specflow/templates/spec-template.md` records that the scorer reads only the
+Test name column, not whether the test exists, so an invented name passes. Verify: a hook test with a
 row naming a missing test blocks. Effort: low. Deps: none.
 
 **34. A seeded-ambiguity golden.** *(NEW in v3)* What:

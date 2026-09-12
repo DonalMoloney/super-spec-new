@@ -3,7 +3,7 @@
 This file lists hygiene debt: work that needs no design, only a session short
 enough to run one `Verify:` line. Read it when a roadmap group in `tasks.md`
 is too large for the time you have. The first cleanup wave, Q-01 to Q-28,
-merged in PR #53. Every number below was measured on `main` at `df50cb8` on
+merged in PR #53. Every number below was measured on `main` at `b113540` on
 2026-09-11.
 
 Every check the repo ships passes today:
@@ -12,9 +12,9 @@ Every check the repo ships passes today:
 |-------|--------|
 | `validate-extension-metadata.py` | OK |
 | `validate-release-archive.py` | within every limit |
-| `.claude/hooks/tests/run.sh` | 145 passed, 0 failed |
+| `.claude/hooks/tests/run.sh` | 167 passed, 0 failed |
 | `pytest scripts/tests .claude/review/tests .claude/divergence` | 80 passed |
-| `lint-standards.py` | 56 files, 0 findings |
+| `lint-standards.py` | 59 files, 0 findings |
 | `shellcheck -S warning` over hooks and scripts | 0 findings |
 | `e2e-smoke.sh` | 23/23 passed |
 | `E2E_DRY_RUN=1 e2e-agent-claude.sh` | exit 0 |
