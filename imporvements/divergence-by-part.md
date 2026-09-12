@@ -161,7 +161,7 @@ reaches an installed extension. G-06's merge gate and risk classifier live under
   file (on 2026-09-11: status 8, brainstorm 7, tasks 9, execute 9, review 6) and every
   marker in the Gate markers table, so a dropped step fails before merge.
   Verify: deleting one step from any command fails the smoke test. Claimed by:
-  D-04 (working on, after D-01 to D-03 merge).
+  none (D-04 landed only its CI half; no branch holds this part).
 
 ## examples/ (0.9% real)
 
@@ -207,7 +207,7 @@ install for every user (upstream issue #6).
 - **Tighten** CI to run `e2e-smoke.sh`. CI validates metadata, the archive, and
   a live install, and never runs the smoke test, which is the only check that
   catches a Process-step regression. Verify: a CI run shows the smoke step.
-  Claimed by: D-04 (working on).
+  Claimed by: D-04 (done, PR #53).
 - **Extend** `CHANGELOG.md` with an Unreleased section every merged group
   appends to. The file opens at 1.0.2 and records nothing since. Verify: the
   section exists and each merged PR adds a line. Claimed by: D-05 (working on).

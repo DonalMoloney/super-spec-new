@@ -615,7 +615,7 @@ Verify: `grep -ci codex imporvements/imporvements2.md` prints a nonzero count an
 ## Deferred (no steps yet)
 
 - **Item 11 multi-feature concurrency**: Part 8 says do this only once single-feature runs are boring. Revisit after G-14 has run on three features.
-- **Item 16 mutation-testing gate**: this repo has no application code to mutate; the gate lands in a consuming project's constitution (G-02 Code Review Rules placeholder covers it). The CI step in G-09 stays behind the `HIGH` condition and a missing `stryker` config is a no-op.
+- **Item 16 mutation-testing gate**: PR #64 added `.claude/hooks/mutation-gate.sh` and a sample project under `specflow/examples/mutation-gate-sample/` to run it on. Still open: the `merge-gate.yml` mutation step uses a mutmut 2 flag that mutmut 3 rejects; replace its run line with `bash .claude/hooks/mutation-gate.sh <project-dir>` in the CI wave.
 
 ## Suggested order
 
