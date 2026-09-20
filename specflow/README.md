@@ -1,7 +1,7 @@
 # Specflow for spec-kit
 
 Specflow is a [spec-kit](https://github.com/github/spec-kit) extension that adds
-five commands to the spec-kit workflow. Each command follows an
+six commands to the spec-kit workflow. Each command follows an
 [obra/superpowers](https://github.com/obra/superpowers) skill when that skill is
 installed and a built-in protocol when it is not. Spec-kit owns the documents:
 constitution, spec, plan, tasks, checklist. Specflow adds edge-case
@@ -55,7 +55,7 @@ specify extension list
 Expected in the output:
 
 ```
-Commands: 5 | Hooks: 3
+Commands: 6 | Hooks: 5
 ```
 
 Then run the status command inside the agent. On a fresh project it reports
@@ -82,8 +82,9 @@ Suggested next step: /speckit.specflow.execute 001
 | `/speckit.specflow.tasks` | Write a phased task breakdown with execution markers |
 | `/speckit.specflow.execute` | Implement the tasks with TDD, subagents, and checkpoints |
 | `/speckit.specflow.review` | Review the implementation against the spec |
+| `/speckit.specflow.gate` | Write a feature's clarify or analyze marker once its gate passes |
 
-The five commands sit beside the core spec-kit commands
+The six commands sit beside the core spec-kit commands
 (`/speckit.constitution`, `/speckit.specify`, `/speckit.plan`,
 `/speckit.tasks`, `/speckit.checklist`), which spec-kit provides.
 

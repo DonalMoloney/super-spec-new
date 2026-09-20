@@ -6,8 +6,8 @@ The hook fires before `/speckit.implement` starts. It points the user at
 ## Checks
 
 1. **Constitution gate**: Check that `.specify/memory/constitution.md` exists. If
-   it is missing, the hook stops with `CONSTITUTION_REQUIRED` and tells the user
-   to run `/speckit.constitution`.
+   it is missing, the hook stops with `CONSTITUTION_REQUIRED`, names the missing
+   path, and tells the user to run `/speckit.constitution`.
 2. **Analyze gate**: Find the feature `/speckit.implement` targets, under
    the project root's `specs/NNN-feature-name/`. If the target is ambiguous, ask
    the user to pick one. That directory needs a regular file named `.analyzed`.

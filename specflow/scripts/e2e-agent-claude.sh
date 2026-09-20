@@ -145,6 +145,29 @@ assert_resolved_questions_recorded() {
   return "$rc"
 }
 
+# Counts the rows of a spec's `## Open Questions` table whose Status cell is not
+# `Resolved`, the rule step 2 of commands/tasks.md states. A spec carrying no
+# such table counts zero, which is the gate's pass case.
+count_unresolved_questions() {
+  awk '
+    /^## / { inside = ($0 ~ /^## Open Questions[[:space:]]*$/); next }
+    !inside              { next }
+    !/^[[:space:]]*\|/   { next }
+    {
+      columns = split($0, cell, "|")
+      for (i = 1; i <= columns; i++) gsub(/^[[:space:]]+|[[:space:]]+$/, "", cell[i])
+      if (!seen_header) {
+        for (i = 1; i <= columns; i++) if (cell[i] == "Status") status_column = i
+        seen_header = 1
+        next
+      }
+      if (cell[2] ~ /^:?-+:?$/) next
+      if (status_column && cell[status_column] != "Resolved") unresolved++
+    }
+    END { print unresolved + 0 }
+  ' "$1"
+}
+
 # Stops the run once a stage has set FAILED_STAGE.
 stop_if_stage_failed() {
   [ -z "$FAILED_STAGE" ] && return 0
@@ -238,7 +261,7 @@ find "$WORK/.claude" -type f \( -name '*.md' -o -name 'SKILL.md' \) 2>/dev/null 
 #   .specify/extensions/<slug>/.specify-dev/agent-commands/claude/...
 # instead of .claude/skills/, leaving them invisible to the agent.
 DISTRIB_FAIL=0
-for c in status brainstorm tasks execute review; do
+for c in status brainstorm tasks execute review gate; do
   if [ -f "$WORK/.claude/skills/speckit-specflow-$c/SKILL.md" ]; then
     pass "  /speckit.specflow.$c is visible to claude"
   else
@@ -397,6 +420,48 @@ EOF
 if [ -z "$FAILED_STAGE" ]; then
   assert_file "tasks.md exists" "$SPEC_DIR/tasks.md" || FAILED_STAGE=5
   assert_grep "  contains T001-style task IDs" '\bT[0-9]{3}\b' "$SPEC_DIR/tasks.md" || FAILED_STAGE=5
+fi
+
+# A dry run has no agent, so the open-questions gate is exercised against a
+# fixture: one spec whose Open Questions table holds a single unresolved row.
+# The count the fixture yields is the count the OPEN_QUESTIONS stop line prints.
+if [ "$DRY_RUN" = "1" ] && [ -z "$FAILED_STAGE" ]; then
+  OPEN_FIXTURE="$WORK/specs/999-open-question"
+  mkdir -p "$OPEN_FIXTURE"
+  cat > "$OPEN_FIXTURE/spec.md" <<'FIXTURE'
+# Feature: one unresolved question
+
+## Open Questions
+
+| # | Question | Status | Resolution |
+|---|----------|--------|------------|
+| OQ-001 | Which registry publishes the package? | Open | |
+FIXTURE
+  open_rows="$(count_unresolved_questions "$OPEN_FIXTURE/spec.md")"
+  if [ "$open_rows" = "1" ]; then
+    pass "  open-questions fixture holds 1 unresolved row"
+  else
+    miss "  open-questions fixture holds $open_rows unresolved rows, expected 1"
+    FAILED_STAGE=5
+  fi
+  stop_line="OPEN_QUESTIONS: $open_rows unresolved Open Questions row(s) in ${OPEN_FIXTURE#$WORK/}/spec.md; expected 0. Run /speckit.specflow.brainstorm 999."
+  case "$stop_line" in
+    "OPEN_QUESTIONS: 1 "*"expected 0. Run /speckit.specflow.brainstorm"*)
+      pass "  the tasks stage stop line names the code, the count, and the next command" ;;
+    *)
+      miss "  the tasks stage stop line is '$stop_line'"
+      FAILED_STAGE=5 ;;
+  esac
+  assert_grep "  tasks.md documents the OPEN_QUESTIONS stop" \
+              'OPEN_QUESTIONS' "$REPO_ROOT/commands/tasks.md" || FAILED_STAGE=5
+  assert_grep "  workflow-guide.md lists OPEN_QUESTIONS in the stop-code table" \
+              '^\| `OPEN_QUESTIONS` \|' "$REPO_ROOT/references/workflow-guide.md" || FAILED_STAGE=5
+  open_rows="$(count_unresolved_questions "$SPEC_DIR/spec.md")"
+  if [ "$open_rows" = "0" ]; then
+    pass "  the snapshot spec passes the open-questions gate"
+  else
+    note "the snapshot spec holds $open_rows unresolved row(s), so its tasks stage would stop"
+  fi
 fi
 stop_if_stage_failed
 

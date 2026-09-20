@@ -40,13 +40,15 @@ for how specflow detects and wires them in.
 ## Target surface
 
 Specflow runs on Claude Code and on the GitHub Copilot CLI, and every command works
-on either surface. Three steps still diverge between them:
+on either surface. Two steps still diverge between them:
 
 | Step | Claude Code | Copilot CLI |
 |------|-------------|-------------|
 | `[P]` and `[SUBAGENT]` tasks in execute | Task tool or Agent Teams, in parallel | In order, in the session |
-| Test gate before ticking a task | `.claude/hooks/test-gate.sh` runs on edit | The agent runs the test command itself |
-| Review risk tier | `.claude/hooks/risk-classifier.sh` when present | The prose rule in `commands/review.md` |
+| Test gate before ticking a task | `.claude/hooks/test-gate.sh`, in this repository only, runs on edit | The agent runs the test command itself |
+
+The review risk tier no longer diverges: both surfaces run
+`gates/bash/risk-classifier.sh`, which the extension archive carries.
 
 `references/copilot-cli.md` names the fallback behavior for each command.
 
@@ -89,9 +91,10 @@ elsewhere:
 - `.specify/scripts/powershell/resolve-template.ps1 <name> -Json`
 - `.specify/scripts/python/resolve_template.py <name> --json`
 
-When the resolver fails, stop and report the error. Do not fall back to
-reading `.specify/templates/<name>.md`, which holds only the core layer and
-silently drops the others.
+When the resolver fails, stop with `RESOLVER_REQUIRED`, name the variant that
+failed, and tell the user to reinstall spec-kit 0.16.2 or newer. Do not fall
+back to reading `.specify/templates/<name>.md`, which holds only the core layer
+and silently drops the others.
 
 ## Commands
 
@@ -105,6 +108,7 @@ silently drops the others.
 | `/speckit.specflow.tasks` | Break the plan into a phased task list |
 | `/speckit.specflow.execute` | Run the implementation through TDD and subagents |
 | `/speckit.specflow.review` | Review the code against the spec's requirements |
+| `/speckit.specflow.gate` | Write a feature's clarify or analyze marker once its gate passes |
 | `/speckit.checklist` | Build a checklist for the given context |
 
 ---

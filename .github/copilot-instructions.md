@@ -31,9 +31,11 @@ or `templates/`. CI runs the same checks.
 
 ## Architecture
 
-- `specflow/extension.yml`: manifest, 5 commands, 5 templates, 3 hooks.
+- `specflow/extension.yml`: manifest, 6 commands, 5 templates, 5 scripts, 5 hooks.
 - `specflow/commands/*.md`: one file per `/speckit.specflow.*` command; each is an
   Input/Output/Process behavior contract, not code.
+- `specflow/gates/`: the gate scripts `provides.scripts` declares, shipped in the
+  install archive so either surface can run them (ADR-0025).
 - `specflow/templates/*.md`: document templates spec-kit resolves at command time
   from `.specify/extensions/specflow/templates/`, above core and below presets.
 - `specflow/references/`: fallback protocols and superpowers skill mapping.

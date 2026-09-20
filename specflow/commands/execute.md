@@ -11,8 +11,8 @@ The command drives implementation through TDD, subagent dispatch, and review gat
 ## Process
 
 1. **Constitution gate**: Check that `.specify/memory/constitution.md` exists. If it
-   is missing, stop with `CONSTITUTION_REQUIRED` and tell the user to run
-   `/speckit.constitution`.
+   is missing, stop with `CONSTITUTION_REQUIRED`, name the missing path, and tell
+   the user to run `/speckit.constitution`.
 2. **Analyze gate**: Find the target feature under the project root's
    `specs/NNN-feature-name/` from the supplied spec number or path. If the target
    is ambiguous, ask the user to pick one. Check for a regular file named

@@ -51,9 +51,10 @@ RESOLVER_ERROR_LINES=3
 EXPECTED_PROCESS_STEPS=(
   "status 8"
   "brainstorm 8"
-  "tasks 10"
+  "tasks 12"
   "execute 9"
   "review 9"
+  "gate 4"
 )
 
 # The workflow guide phase that mirrors each command, as
@@ -67,9 +68,11 @@ MIRRORED_PHASES=(
   "execute|## Phase 5: Execution|### Steps"
   "review|## Phase 6: Review|### Steps"
 )
-# The guide is phase-structured and status is not a phase, so status mirrors
-# nothing. Any other command missing from MIRRORED_PHASES fails below.
-UNMIRRORED_COMMANDS=("status")
+# The guide is phase-structured, and neither status nor gate is a phase, so
+# neither mirrors a phase. The Gate markers table under Phase 5 carries the
+# protocol gate follows. Any other command missing from MIRRORED_PHASES fails
+# below.
+UNMIRRORED_COMMANDS=("status" "gate")
 # Backticked names that match the artifact shape but name no project state.
 # SKILL.md is the superpowers skill file a command reads; package-lock.json is
 # one of the lock files review.md lists to classify risk.
@@ -306,6 +309,11 @@ fi
 
 assert_file ".specify/extensions.yml created" "$WORK/.specify/extensions.yml"
 
+# gates/ carries no export-ignore rule, so a catalog install and a --dev install
+# both land the gate scripts beside the commands (ADR-0025).
+assert_file "gates/bash/risk-classifier.sh installed" \
+            "$WORK/.specify/extensions/specflow/gates/bash/risk-classifier.sh"
+
 assert_resolved_template "claude" "$WORK"
 
 # Every shipped template stamps its own name and the extension version it
@@ -370,6 +378,8 @@ for cmd in "${SPECFLOW_COMMANDS[@]}"; do
   assert_file "Copilot command file for speckit.specflow.$cmd" \
               "$WORK_COPILOT/.github/skills/speckit-specflow-$cmd/SKILL.md"
 done
+assert_file "copilot: gates/bash/risk-classifier.sh installed" \
+            "$WORK_COPILOT/.specify/extensions/specflow/gates/bash/risk-classifier.sh"
 assert_resolved_template "copilot" "$WORK_COPILOT"
 
 for tmpl in "${SPECFLOW_TEMPLATES[@]}"; do

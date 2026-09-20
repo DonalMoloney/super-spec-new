@@ -237,53 +237,60 @@ This phase may run more than once. Each session:
 ## Phase 4: Task Decomposition
 
 **Command**: `/speckit.specflow.tasks`
-**Gate**: A plan must exist for the target feature.
+**Gate**: The constitution exists, a plan exists for the target feature, and every Open Questions row is `Resolved`.
 **Output**: `specs/NNN-feature-name/tasks.md`
 
 ### Steps
 
-1. **Read inputs**: plan, spec, constitution.
+1. **Confirm the gates**: Require `.specify/memory/constitution.md` first. Stop
+   with `CONSTITUTION_REQUIRED` when it is absent. Then count the rows of the
+   `## Open Questions` table in `spec.md` whose Status cell is not `Resolved`.
+   Stop with `OPEN_QUESTIONS` and the count when the count is above zero. A
+   spec carrying no such table counts zero rows.
 
-2. **Resolve `tasks-template`** through the resolver named in Phase 0 and read
+2. **Read inputs**: plan, spec, constitution.
+
+3. **Resolve `tasks-template`** through the resolver named in Phase 0 and read
    `TEMPLATE_CONTENT`. Its structure holds the output the steps below fill.
+   Stop with `RESOLVER_REQUIRED` when the resolver fails.
 
-3. **Superpowers integration**: When the `writing-plans` skill is detected, read
+4. **Superpowers integration**: When the `writing-plans` skill is detected, read
    it and follow its task decomposition process to sharpen the split below.
 
-4. **Split the plan** into phases:
+5. **Split the plan** into phases:
    - Phase 1: Setup (project structure and dependencies)
    - Phase 2: Foundational (prerequisites that block later phases)
    - Phase 3+: one phase per user story, ordered by priority
    - Final phase: Polish, plus concerns that cut across every phase
 
-5. **Add the execution markers** from the plan's execution strategy:
+6. **Add the execution markers** from the plan's execution strategy:
    - `[TDD]` for a component that needs tests first
    - `[REVIEW]` for a component that needs a review gate
    - `[SUBAGENT]` for an independent work stream
    - `[P]` for tasks in the same phase that can run in parallel
 
-6. **Keep each task singular and checkable**: one outcome per line; split a task
+7. **Keep each task singular and checkable**: one outcome per line; split a task
    description that needs "and". Give every task a row in the
    `## Task Verification` table, whose Verify cell names the command or the
    observation that proves the task is done.
 
-7. **Add a checkpoint** at each phase boundary.
+8. **Add a checkpoint** at each phase boundary.
 
-8. **Record the dependencies** and the execution order.
+9. **Record the dependencies** and the execution order.
 
-9. **Preserve stable IDs**: when `specs/NNN-feature-name/tasks.md` already
-   exists, read every `TNNN` ID in it before writing. Match each regenerated
-   task to an existing task by the outcome it names, not by its wording and not
-   by its position in the list. A matched task keeps its existing ID. A task
-   with no match gets the next ID above the highest ID the file has ever used.
-   A retired ID never goes to a different task.
+10. **Preserve stable IDs**: when `specs/NNN-feature-name/tasks.md` already
+    exists, read every `TNNN` ID in it before writing. Match each regenerated
+    task to an existing task by the outcome it names, not by its wording and not
+    by its position in the list. A matched task keeps its existing ID. A task
+    with no match gets the next ID above the highest ID the file has ever used.
+    A retired ID never goes to a different task.
 
-10. **Print a diff summary** of the regeneration before writing: the IDs added,
+11. **Print a diff summary** of the regeneration before writing: the IDs added,
     the IDs removed, and the IDs renumbered. When
     `specs/NNN-feature-name/progress.yml` marks a removed or renumbered ID
     complete, stop and ask the user to confirm. Otherwise write the file.
 
-11. **Write the result** to `specs/NNN-feature-name/tasks.md`
+12. **Write the result** to `specs/NNN-feature-name/tasks.md`
 
 ### Verification
 
@@ -427,8 +434,8 @@ The agent MUST:
    400 lines, touches more than 15 files, changes a path under a directory
    named `auth`, `payments`, `billing`, `migrations`, `infra`, `secrets`, or
    `crypto`, or changes a dependency lock file. Otherwise the tier is
-   STANDARD. Use the `.claude/hooks/risk-classifier.sh` result instead, when
-   the repository has that script. HIGH runs step 4 and then audits each
+   STANDARD. Use the `gates/bash/risk-classifier.sh` result instead, when
+   the installed extension carries that script. HIGH runs step 4 and then audits each
    finding for a `file:line` reference and evidence. STANDARD runs step 4
    once.
 
@@ -480,9 +487,26 @@ The agent MUST:
 | 1 | `/speckit.specify` | Constitution exists | `specs/NNN/spec.md` |
 | 2 | `/speckit.specflow.brainstorm` | Spec exists | Updated spec.md |
 | 3 | `/speckit.plan` | Spec exists | `specs/NNN/plan.md` |
-| 4 | `/speckit.specflow.tasks` | Plan exists | `specs/NNN/tasks.md` |
+| 4 | `/speckit.specflow.tasks` | Constitution, plan, and no unresolved open question | `specs/NNN/tasks.md` |
 | 5 | `/speckit.specflow.execute` | Constitution, tasks, and `.analyzed` exist | Code + updated tasks.md |
 | 6 | `/speckit.specflow.review` | Implementation exists | Review report |
+
+### Stop codes
+
+A stopped command prints one of these codes, then the value it expected, then
+the value it found, then the command that clears the stop.
+
+| Code | Printed by | Expected | Found | Next command |
+|------|------------|----------|-------|--------------|
+| `ANALYZE_REQUIRED` | `/speckit.specflow.execute` and the `before_implement` hook | `specs/NNN-feature-name/.analyzed` | the marker absent | `/speckit.analyze NNN` |
+| `OPEN_QUESTIONS` | `/speckit.specflow.tasks` | 0 rows outside `Resolved` | the unresolved row count | `/speckit.specflow.brainstorm NNN` |
+| `CONSTITUTION_REQUIRED` | `/speckit.specflow.execute`, `/speckit.specflow.tasks`, `/speckit.specflow.gate`, and the `before_implement`, `after_clarify`, `after_analyze` hooks | `.specify/memory/constitution.md` | the file absent | `/speckit.constitution` |
+| `RESOLVER_REQUIRED` | `/speckit.specflow.tasks`, and the five resolver steps in `SKILL.md` | a resolver under `.specify/scripts/` | the variant that failed | reinstall spec-kit 0.16.2 or newer |
+
+`/speckit.specflow.gate` and the `after_clarify` and `after_analyze` hooks print
+two more. `CLARIFY_INCOMPLETE` names the `NEEDS CLARIFICATION` marker count left
+in `spec.md`, and `ANALYZE_CRITICAL` names the CRITICAL row count in the
+analysis report. Both expect 0, and both name the command to rerun.
 
 ---
 
@@ -502,7 +526,7 @@ Each phase carries a recommended token ceiling and a suggested model class. A he
 
 **Headless gating:** In CI, pass `--max-turns 6` and `--max-budget-usd` to the `claude -p` invocation. Example: `claude -p "..." --output-format json --max-turns 6 --max-budget-usd 1.00`. The JSON output reports phase overages as `total_cost_usd`. A gate can reject a run that exceeds the ceiling.
 
-**Tuning:** Track actual spend per phase (`.claude/telemetry.jsonl` + `jq` rollup). Adjust ceilings weekly for feature complexity and CLI speed. HIGH-risk features (auth, payments, migrations) often exceed standard ceilings by 20–50%. Allocate more budget or extend the critic loop allowance.
+**Tuning:** Track actual spend per phase (`.claude/telemetry.jsonl`, in this repository only, plus a `jq` rollup). Adjust ceilings weekly for feature complexity and CLI speed. HIGH-risk features (auth, payments, migrations) often exceed standard ceilings by 20–50%. Allocate more budget or extend the critic loop allowance.
 
 ---
 
@@ -541,15 +565,16 @@ default Phase 5 path.
 Run the differential implementation only when one of these holds. Otherwise,
 follow the normal Phase 5 path.
 
-- `.claude/hooks/risk-classifier.sh` prints `HIGH` for the change. Its other
+- `gates/bash/risk-classifier.sh` prints `HIGH` for the change. Its other
   value is `STANDARD`.
 - The feature's `spec.md` lists more than three open questions.
 
 ### Steps
 
-1. Create the worktrees: `bash .claude/hooks/diff-impl.sh specs/NNN-feature-name`.
-   The command prints both worktree paths and the test command each side runs.
-   The script sits outside the extension archive a consuming project installs.
+1. Create the worktrees: `bash .claude/hooks/diff-impl.sh specs/NNN-feature-name`,
+   a script that exists in this repository only, not in the extension archive a
+   consuming project installs. The command prints both worktree paths and the
+   test command each side runs.
    Without it, run `git worktree add -b <feature>-a worktrees/<feature>-a HEAD`,
    then run it again for the `-b` worktree.
 2. Implement worktree A with `implementation-engineer`, working from `spec.md`.
@@ -608,9 +633,10 @@ Every specflow command runs this check first:
 5. **Report** the current state, including superpowers status, to the user before continuing
 6. **Resume** work from the detected point; see the phase-specific rules below
 
-`.claude/hooks/session-start.sh` prints `specs/NNN/handoff.md` at session start,
-when the feature has one, before any command runs its own resume check. Phase 5,
-step 4 writes that file at each phase checkpoint.
+`.claude/hooks/session-start.sh`, in this repository only, prints
+`specs/NNN/handoff.md` at session start, when the feature has one, before any
+command runs its own resume check. Phase 5, step 4 writes that file at each
+phase checkpoint.
 
 ### Phase-Specific Resume Rules
 
@@ -666,7 +692,7 @@ The agent writes to `progress.yml` at these points:
 Every `status` field, at the top level, on a phase, and on a task, holds one of
 four values: `pending`, `in_progress`, `complete`, `skipped`. A task the run
 cannot automate is `skipped`, and its task line in `tasks.md` states why.
-`.claude/review/validate-progress.py` rejects any other value.
+`gates/python/validate-progress.py` rejects any other value.
 
 If `progress.yml` does not exist when a command runs, the command creates it
 and infers every prior phase as `complete` from the files already on disk.
@@ -727,7 +753,7 @@ back, in case the user installed the skill since the last session.
 ## Review stack
 
 Four review stages run against a feature. Each stage writes findings JSON that
-conforms to `.claude/review/schema.json`.
+conforms to `references/findings-schema.json`.
 
 - **Stage 0: spec red-team.** `spec-red-team-reviewer` and `threat-model-reviewer`
   attack `spec.md` before any code exists. The gate is no unresolved
@@ -743,9 +769,10 @@ conforms to `.claude/review/schema.json`.
   findings, not the code. It rejects any finding without a `file:line`
   reference or a failing test. The loop stops after three rounds.
 
-The agents live in `.claude/agents/`. They are not part of the extension archive a
-consuming project installs. When they are absent, `/speckit.specflow.review` and
-its built-in protocol above are the fallback for all four stages. The command
-writes the same findings shape to `specs/NNN-feature-name/review-findings.json`.
-This repository's gate reads that file with
-`bash .claude/hooks/merge-gate.sh 'specs/*/review-findings.json'`.
+The agents live in `.claude/agents/`, in this repository only, outside the
+extension archive a consuming project installs. When they are absent,
+`/speckit.specflow.review` and its built-in protocol above are the fallback for
+all four stages. The command writes the same findings shape to
+`specs/NNN-feature-name/review-findings.json`. The shipped gate reads that file
+with `bash gates/bash/merge-gate.sh 'specs/*/review-findings.json'`, run from the
+project root.

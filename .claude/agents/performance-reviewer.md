@@ -14,5 +14,5 @@ and hot path are visible in the code.
 
 Do not report micro-optimizations without measured impact. Cite `file:line` and the
 measurement or complexity evidence. Output one JSON object conforming to
-`.claude/review/schema.json` with `stage: "performance"` and verdict `BLOCK`,
+`specflow/references/findings-schema.json` with `stage: "performance"` and verdict `BLOCK`,
 `CONCERNS`, or `CLEAN`.

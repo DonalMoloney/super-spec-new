@@ -26,8 +26,8 @@ Run code review against spec requirements using review skills.
    `billing`, `migrations`, `infra`, `secrets`, or `crypto`, or when any
    changed file is a dependency lock file (`package-lock.json`, `yarn.lock`,
    `Cargo.lock`, `poetry.lock`, `go.sum`, or a `requirements*.txt`). Otherwise
-   the tier is STANDARD. When `.claude/hooks/risk-classifier.sh` exists in the
-   repository, run it and use its answer instead. A HIGH tier runs every
+   the tier is STANDARD. When `gates/bash/risk-classifier.sh` exists under the
+   installed extension directory, run it and use its answer instead. A HIGH tier runs every
    dimension in step 4, then a second pass that checks each finding for a
    `file:line` reference and evidence and drops any finding missing either. A
    STANDARD tier runs step 4 once.

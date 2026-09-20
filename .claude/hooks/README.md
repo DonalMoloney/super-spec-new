@@ -53,6 +53,10 @@ same two from a feature branch before you push:
 .claude/hooks/merge-gate.sh
 ```
 
+Both paths are two-line scripts that exec the shipped gate under
+`specflow/gates/bash/`, where ADR-0025 moved the code so a catalog install
+carries it. Edit the shipped copy, not the shim.
+
 The classifier prints `HIGH` or `STANDARD` for the diff between `main` and
 `HEAD`. `HIGH` turns on the security review and the mutation score in CI. The
 gate reads `.claude/review/*.json` and `specs/*/review-findings.json`, then

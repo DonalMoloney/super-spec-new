@@ -390,6 +390,46 @@ check_out() { # name expected actual
   if [ "$2" = "$3" ]; then pass=$((pass+1)); echo "ok   $1"
   else fail=$((fail+1)); echo "FAIL $1 (expected '$2', got '$3')"; fi
 }
+
+# --- gates/bash/write-marker.sh (the shipped clarify and analyze gate) ---
+WRITE_MARKER="$HOOKS/../../specflow/gates/bash/write-marker.sh"
+feature_with_spec() { # spec body -> feature directory holding that spec.md
+  local d; d="$(mktemp -d)"; mkdir -p "$d/specs/001-x"
+  printf '%s\n' "$1" > "$d/specs/001-x/spec.md"
+  echo "$d/specs/001-x"
+}
+write_marker() { # feature_dir marker [stdin] -> exit code
+  bash "$WRITE_MARKER" "$1" "$2" </dev/null >/dev/null 2>&1; echo $?
+}
+write_marker_from() { # feature_dir marker report -> exit code
+  printf '%s\n' "$3" | bash "$WRITE_MARKER" "$1" "$2" >/dev/null 2>&1; echo $?
+}
+CRITICAL_REPORT='| ID | Category | Severity | Location | Summary |
+|----|----------|----------|----------|---------|
+| A1 | Coverage | CRITICAL | spec.md:L10 | no task covers FR-003 |'
+CLEAN_REPORT='| ID | Category | Severity | Location | Summary |
+|----|----------|----------|----------|---------|
+| A1 | Style | LOW | spec.md:L10 | wording |'
+f="$(feature_with_spec '# Spec')"
+check "clarified marker written for a resolved spec"   0 "$(write_marker "$f" clarified)"
+check "the clarified marker file lands beside spec.md" 0 "$(status_of [ -f "$f/.clarified" ])"
+f="$(feature_with_spec '# Spec
+
+A gap remains: [NEEDS CLARIFICATION: which registry?]')"
+check "unresolved spec refuses the clarified marker"   1 "$(write_marker "$f" clarified)"
+check "the refused clarify run writes no marker"       0 "$(status_of [ ! -f "$f/.clarified" ])"
+check_out "the refused clarify run names the count and the fix" \
+  "CLARIFY_INCOMPLETE: $f/spec.md holds 1 'NEEDS CLARIFICATION' marker(s); expected 0. Resolve each one, then rerun /speckit.clarify." \
+  "$(bash "$WRITE_MARKER" "$f" clarified 2>&1 >/dev/null)"
+f="$(feature_with_spec '# Spec')"
+check "a report with a CRITICAL row refuses the analyzed marker" 1 \
+  "$(write_marker_from "$f" analyzed "$CRITICAL_REPORT")"
+check "the refused analyze run writes no marker"       0 "$(status_of [ ! -f "$f/.analyzed" ])"
+check "a report with no CRITICAL row writes the analyzed marker" 0 \
+  "$(write_marker_from "$f" analyzed "$CLEAN_REPORT")"
+check "the analyzed marker file lands beside spec.md"  0 "$(status_of [ -f "$f/.analyzed" ])"
+check "an unknown marker name exits 2"                 2 "$(write_marker "$f" bogus)"
+check "a missing feature directory exits 2"            2 "$(write_marker "$f/absent" clarified)"
 commit_feature() { # dir -> commits the working tree on a new feature branch
   git -C "$1" switch -q -c feature
   git -C "$1" add -A
@@ -467,7 +507,7 @@ check "Critical with no status blocks the merge" 1 "$(merge_gate "$d")"
 d="$(review_dir)"
 check "no findings documents clears the merge"   0 "$(merge_gate "$d")"
 check "cleared merge writes the approval marker" 0 "$(status_of [ -f "$d/$MARKER" ])"
-d="$(review_dir)"; cp "$HOOKS/../review/schema.json" "$d/.claude/review/schema.json"
+d="$(review_dir)"; cp "$HOOKS/../../specflow/references/findings-schema.json" "$d/.claude/review/schema.json"
 check "schema.json is not read as findings"      0 "$(merge_gate "$d")"
 d="$(review_dir)"; printf 'not json at all\n' > "$d/.claude/review/claude.json"
 check "unreadable findings document blocks"      1 "$(merge_gate "$d")"
@@ -877,10 +917,14 @@ check "upstream drift workflow may write issues" 0 \
   "$(printf '%s' "$drift_src" | grep -Fq 'issues: write'; echo $?)"
 cd / || exit 1
 
-# --- .claude/review/schema.json (findings contract read by the reviewer agents) ---
+# --- specflow/references/findings-schema.json (findings contract, ADR-0025) ---
 cd "$HOOKS/../.." || exit 1
-python3 -c 'import json;json.load(open(".claude/review/schema.json"))' >/dev/null 2>&1
+python3 -c 'import json;json.load(open("specflow/references/findings-schema.json"))' >/dev/null 2>&1
 check "review findings schema parses as JSON" 0 $?
+check "the risk classifier hook execs the shipped gate" 0 \
+  "$(grep -Fq 'specflow/gates/bash/risk-classifier.sh' "$HOOKS/risk-classifier.sh"; echo $?)"
+check "the merge gate hook execs the shipped gate" 0 \
+  "$(grep -Fq 'specflow/gates/bash/merge-gate.sh' "$HOOKS/merge-gate.sh"; echo $?)"
 
 # --- .github/workflows/merge-gate.yml (the CI merge gate) ---
 GATE_WORKFLOW=".github/workflows/merge-gate.yml"

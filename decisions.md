@@ -286,6 +286,22 @@ deleting them; prune anything older than a quarter that no longer guides work.
   `extension.yml` carries `1.1.0` and every `[Unreleased]` entry moves under
   that heading. A later floor raise needs a major bump and a migration note.
 
+## ADR-0025: The gate scripts ship under `specflow/gates/`
+
+- Date: 2026-09-20
+- Status: accepted, amends ADR-0001 for four scripts
+- Context: `.claude/` is export-ignored, so a catalog install carries no gate
+  and the Copilot CLI runs none. The claim that execute refuses to start
+  without `.analyzed` then rests on prose alone.
+- Decision: `risk-classifier.sh`, `merge-gate.sh`, `validate-findings.py`, and
+  `validate-progress.py` move to `specflow/gates/`, which no `export-ignore`
+  rule strips, beside the new `write-marker.sh`. `provides.scripts` declares
+  all five. A two-line script under `.claude/` execs each shipped bash copy, so
+  `settings.json`, `merge-gate.yml`, and the hook tests keep their paths. Every
+  other hook stays under `.claude/` per ADR-0001.
+- Consequences: `validate-release-archive.py` expects `gates/` in the archive.
+  The `shellcheck` and `ruff` steps in `ci.yml` still name only the old paths.
+
 ## ADR-0026: `verify.sh` states the tool versions it does not match
 
 - Date: 2026-09-20

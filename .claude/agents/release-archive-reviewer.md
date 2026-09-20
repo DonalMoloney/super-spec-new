@@ -21,7 +21,7 @@ artifact, not the working tree.
 4. Check that changed commands and templates reference only files present in the
    archive.
 
-Output one JSON object conforming to `.claude/review/schema.json` with
+Output one JSON object conforming to `specflow/references/findings-schema.json` with
 `stage: "release-archive"`. Cite the validator command and its result in `evidence`
 for each finding. Use `BLOCK` for a failed validator or a missing runtime member,
 `CONCERNS` for an unverified release assumption, and `CLEAN` when the archive passes.

@@ -16,5 +16,5 @@ Every finding needs a `file:line` location and evidence from a failing test, a
 reproducible execution, or a rule in `standards/code.md`. Mark an unproven suspicion
 as `UNCERTAIN` in `evidence` instead of presenting it as a defect.
 
-Output one JSON object conforming to `.claude/review/schema.json` with
+Output one JSON object conforming to `specflow/references/findings-schema.json` with
 `stage: "correctness"` and verdict `BLOCK`, `CONCERNS`, or `CLEAN`.

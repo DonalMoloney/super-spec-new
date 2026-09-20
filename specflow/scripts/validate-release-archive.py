@@ -57,6 +57,17 @@ REQUIRED_MEMBERS = (
     # commands/*.md link to these at runtime ("See references/...").
     "references/superpowers-mapping.md",
     "references/workflow-guide.md",
+    # gates/python/validate-findings.py reads this schema at runtime and no
+    # provides entry declares it, so the manifest check below skips it.
+    "references/findings-schema.json",
+    # The gate scripts ship so a catalog install can run them (ADR-0025).
+    # provides.scripts declares the same five paths; a row here also fails when
+    # a manifest entry is dropped alongside the file.
+    "gates/bash/risk-classifier.sh",
+    "gates/bash/merge-gate.sh",
+    "gates/bash/write-marker.sh",
+    "gates/python/validate-findings.py",
+    "gates/python/validate-progress.py",
 )
 
 # The export-ignore rules in .gitattributes strip these prefixes and members.

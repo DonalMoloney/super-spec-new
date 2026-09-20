@@ -52,12 +52,18 @@ there, so a workflow under `specflow/` never runs.
 
 ## Architecture
 
-- `specflow/extension.yml`: the manifest, which declares the 5 commands, 5 templates, and
-  3 hooks (`after_tasks`, `before_implement`, `after_implement`) spec-kit's catalog reads.
+- `specflow/extension.yml`: the manifest, which declares the 6 commands, 5 templates,
+  5 scripts, and 5 hooks (`after_clarify`, `after_analyze`, `after_tasks`,
+  `before_implement`, `after_implement`) spec-kit's catalog reads.
 - `specflow/commands/*.md`: one file per `/speckit.specflow.*` command (`status`,
-  `brainstorm`, `tasks`, `execute`, `review`). Each is a behavior contract of Input,
-  Output, and numbered Process steps, not code.
-- `specflow/commands/hooks/*.md`: the 3 optional hook prompts.
+  `brainstorm`, `tasks`, `execute`, `review`, `gate`). Each is a behavior contract of
+  Input, Output, and numbered Process steps, not code.
+- `specflow/commands/hooks/*.md`: the 5 hook prompts.
+- `specflow/gates/`: the 5 scripts `provides.scripts` declares, under `bash/` and
+  `python/`. No `export-ignore` rule strips this directory, so a catalog install
+  carries them and the Copilot CLI can run them (ADR-0025). A two-line script
+  under `.claude/hooks/` execs each shipped bash gate, so `.claude/settings.json`
+  and `merge-gate.yml` keep their paths.
 - `specflow/templates/*.md`: document templates spec-kit installs to
   `.specify/extensions/specflow/templates/` and resolves at command time. The
   resolver layers project overrides, presets, extension templates, then core,
@@ -208,7 +214,7 @@ See `improvements/roadmap.md` for item definitions, executors, and Verify condit
 ## Claude Code
 
 @specflow/references/superpowers-mapping.md is the map between this project's
-5 commands and the obra/superpowers skills they bridge to. Read it before editing
+commands and the obra/superpowers skills they bridge to. Read it before editing
 any command file's superpowers-detection logic.
 
 <!-- CLAUDE.md at the repo root imports this file with `@AGENTS.md`. Keep this file the

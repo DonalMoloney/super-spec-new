@@ -53,6 +53,30 @@ provides:
     - name: "speckit.specflow.review"
       file: "commands/review.md"
       description: "Run code review against spec requirements using review skills"
+    - name: "speckit.specflow.gate"
+      file: "commands/gate.md"
+      description: "Write a feature's clarify or analyze marker, or report why the gate refused"
+  scripts:
+    - name: "risk-classifier"
+      file: "gates/bash/risk-classifier.sh"
+      runtimes: ["bash"]
+      description: "Print HIGH or STANDARD for the diff between a base ref and HEAD"
+    - name: "merge-gate"
+      file: "gates/bash/merge-gate.sh"
+      runtimes: ["bash"]
+      description: "Block a merge while a Critical or Important finding is neither fixed nor rebutted"
+    - name: "write-marker"
+      file: "gates/bash/write-marker.sh"
+      runtimes: ["bash"]
+      description: "Write a feature's clarify or analyze marker once its gate passes"
+    - name: "validate-findings"
+      file: "gates/python/validate-findings.py"
+      runtimes: ["python"]
+      description: "Check a review findings document against the findings schema"
+    - name: "validate-progress"
+      file: "gates/python/validate-progress.py"
+      runtimes: ["python"]
+      description: "Check a feature's progress.yml against the resumability contract"
   templates:
     - name: "constitution-template"
       file: "templates/constitution-template.md"
@@ -70,6 +94,14 @@ provides:
       file: "templates/checklist-template.md"
       description: "Checklist with code review and spec compliance categories"
 hooks:
+  after_clarify:
+    command: "speckit.specflow.gate"
+    optional: false
+    description: "Write the feature's clarify marker once no NEEDS CLARIFICATION marker is left"
+  after_analyze:
+    command: "speckit.specflow.gate"
+    optional: false
+    description: "Write the feature's analyze marker once the report holds no CRITICAL row"
   after_tasks:
     command: "speckit.specflow.tasks"
     optional: true

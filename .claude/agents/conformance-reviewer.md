@@ -19,7 +19,7 @@ criterion directly from the spec, not from the implementation.
 
 ## Output
 
-Write one JSON object that conforms to `.claude/review/schema.json`:
+Write one JSON object that conforms to `specflow/references/findings-schema.json`:
 
 ```json
 {"schema_version":"1.0","reviewer":"conformance-reviewer","stage":"conformance","verdict":"BLOCK","findings":[{"id":"C-001","severity":"Important","location":"spec.md:12","evidence":"No test exercises criterion 2","fix":"Add a test for the rejected input"}]}

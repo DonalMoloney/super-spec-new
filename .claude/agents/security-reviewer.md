@@ -13,5 +13,5 @@ chain risks. Check trust boundaries and failure paths, not only the happy path.
 
 Cite the OWASP category and `file:line`. Prefer a reproduced exploit or a focused
 test. Mark an unproven suspicion as `UNCERTAIN` in `evidence`. Output one JSON object
-conforming to `.claude/review/schema.json` with `stage: "security"` and verdict
+conforming to `specflow/references/findings-schema.json` with `stage: "security"` and verdict
 `BLOCK`, `CONCERNS`, or `CLEAN`.

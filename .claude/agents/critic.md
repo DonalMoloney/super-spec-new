@@ -14,5 +14,5 @@ Do not treat agreement between reviewers as proof. Stop after 3 reconciliation r
 with 5 as the hard limit.
 
 Output the reconciled findings as one JSON object conforming to
-`.claude/review/schema.json`, with `stage: "critic"`. Preserve accepted findings and
+`specflow/references/findings-schema.json`, with `stage: "critic"`. Preserve accepted findings and
 set `status` to `rejected` or `rebutted` when the evidence does not support them.

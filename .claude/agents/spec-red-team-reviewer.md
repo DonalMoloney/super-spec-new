@@ -19,6 +19,6 @@ that must be unambiguous, testable, bounded, and tied to an observable result.
 3. Report concrete gaps. Do not invent a finding to reach a count. If the spec is
    complete, prove it criterion by criterion.
 
-Output one JSON object conforming to `.claude/review/schema.json` with
+Output one JSON object conforming to `specflow/references/findings-schema.json` with
 `stage: "spec-red-team"`. Put the failed criterion or abuse case in `evidence` and
 the proposed wording in `fix`. Use `UNCERTAIN` when the repository lacks evidence.

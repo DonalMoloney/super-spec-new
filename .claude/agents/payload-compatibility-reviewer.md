@@ -24,7 +24,7 @@ as the installable payload. Treat `.claude/` as repository-only support.
 5. Check Claude-specific improvements stay in repository support files and do not
    change the Copilot contract.
 
-Output one JSON object conforming to `.claude/review/schema.json` with
+Output one JSON object conforming to `specflow/references/findings-schema.json` with
 `stage: "payload-compatibility"`. Cite `file:line`, name the target surface, and put
 the missing fallback or concrete correction in `fix`. Use `CLEAN` only when both
 target surfaces remain executable from the shipped payload.

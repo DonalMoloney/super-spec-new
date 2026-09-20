@@ -60,7 +60,10 @@ def test_dispatcher_owns_completion_and_has_todo_tool():
 
 
 def test_repo_reviewers_use_declared_schema_stages():
-    schema = json.loads((AGENTS_DIR.parent / "review" / "schema.json").read_text())
+    schema_path = (
+        AGENTS_DIR.parents[1] / "specflow" / "references" / "findings-schema.json"
+    )
+    schema = json.loads(schema_path.read_text())
     stages = set(schema["properties"]["stage"]["enum"])
     expected = {
         "payload-compatibility-reviewer": "payload-compatibility",
@@ -70,4 +73,6 @@ def test_repo_reviewers_use_declared_schema_stages():
         metadata = frontmatter(AGENTS_DIR / f"{agent}.md")
         assert f"stage: {stage}" in metadata
         assert stage in stages
-        assert ".claude/review/schema.json" in (AGENTS_DIR / f"{agent}.md").read_text()
+        assert "specflow/references/findings-schema.json" in (
+            AGENTS_DIR / f"{agent}.md"
+        ).read_text()
