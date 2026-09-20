@@ -34,17 +34,34 @@ of that code yourself.
    exist without a scenario (or an explicit, stated reason) requiring it.
 4. Flag real sequencing needs (schema before query, interface before implementer)
    as explicit dependencies, not by reordering silently.
+5. Classify every item as `SIMPLE`, `MEDIUM`, or `COMPLEX` so the implementation
+   phase can choose the matching implementation agent.
 
 ## Process
 
 1. List every distinct piece of behavior the failing steps require.
 2. Draft one checklist item per piece; split anything that reads like two outcomes.
-3. Order items by dependency, marking any that can be done in parallel.
-4. Record the checklist via `TodoWrite` so `implementation-engineer` and later phases
+3. Order items by dependency, marking only dependency-free items as parallel.
+4. Classify each item with the highest applicable complexity:
+   - `SIMPLE`: one established code seam, one observable behavior, and no new
+     persistence, external service, permission boundary, or concurrency rule.
+   - `MEDIUM`: several files or one integration boundary, with a known design pattern
+     and no irreversible data or security decision.
+   - `COMPLEX`: cross-cutting behavior, a new boundary, a migration, authorization,
+     concurrency, an external contract, or a dependency chain that needs a design
+     checkpoint.
+5. Record the checklist via `TodoWrite` so `implementation-engineer` and later phases
    can track progress against it.
 
 ## Output format
 
-A numbered checklist, each item one line, each mapped to its source scenario(s) in
-parentheses, with dependency notes where real ones exist. No item should need a
-sub-bullet to explain what "done" means. If it does, split it further.
+A numbered checklist using this shape:
+
+```text
+1. [SIMPLE] Reject an empty email with a 400 response (scenarios: S2; depends on: none; verify: test name or command)
+```
+
+Each item must contain exactly one complexity label, its source scenario ids, its
+dependencies, and one concrete verification. Use `[SIMPLE]`, `[MEDIUM]`, or
+`[COMPLEX]` as the label that `implementation-engineer` parses. No item should need
+a sub-bullet to explain what "done" means. If it does, split it further.
