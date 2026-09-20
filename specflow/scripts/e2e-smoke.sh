@@ -61,28 +61,61 @@ assert_file()    { if [ -f "$2" ]; then pass "$1";   else fail "$1 (missing: $2)
 assert_dir()     { if [ -d "$2" ]; then pass "$1";   else fail "$1 (missing: $2)"; fi; }
 # Assert a directory does not exist at path.
 assert_no_dir()  { if [ ! -d "$2" ]; then pass "$1"; else fail "$1 (unexpected: $2)"; fi; }
+# Print the decoded TEMPLATE_CONTENT string of the resolver's one-line JSON
+# object, and exit 1 when the object carries no such field. awk decodes it
+# because the resolver treats jq as optional and this script must too.
+decode_template_content() {
+  awk '
+    {
+      key = "\"TEMPLATE_CONTENT\":\""
+      start = index($0, key)
+      if (start == 0) next
+      found = 1
+      escaped = substr($0, start + length(key))
+      for (i = 1; i <= length(escaped); i++) {
+        c = substr(escaped, i, 1)
+        if (c == "\"") break
+        if (c != "\\") { printf "%s", c; continue }
+        i++
+        e = substr(escaped, i, 1)
+        if      (e == "n") printf "\n"
+        else if (e == "t") printf "\t"
+        else if (e == "r") printf "\r"
+        else               printf "%s", e
+      }
+    }
+    END { exit found ? 0 : 1 }
+  ' "$1"
+}
+
 # specify init writes core's templates before an extension installs, so
 # asserting that .specify/templates/spec-template.md exists proves nothing
-# about specflow. Resolve the template the way a command does and check the
-# sections only specflow's copy carries. Runs per surface, because a shipped
-# file must work on the Copilot CLI as well as Claude Code.
+# about specflow. Every command file instructs the --json form and reads
+# TEMPLATE_CONTENT, so the assertion runs that form and checks the sections
+# only specflow's copy carries. Runs per surface, because a shipped file must
+# work on the Copilot CLI as well as Claude Code.
 assert_resolved_template() {
   local surface="$1" workdir="$2"
-  local resolved="$workdir/.resolved-spec-template.md"
+  local resolver_json="$workdir/.resolve-template.json"
   local resolver_error="$workdir/.resolve-template.err"
-  if ! ( cd "$workdir" && bash .specify/scripts/bash/resolve-template.sh spec-template ) \
-         >"$resolved" 2>"$resolver_error"; then
+  if ! ( cd "$workdir" && bash .specify/scripts/bash/resolve-template.sh spec-template --json ) \
+         >"$resolver_json" 2>"$resolver_error"; then
     # The resolver names the layer it could not resolve on stderr. Dropping it
     # leaves a CI failure with no cause.
     local detail
     detail="$(tail -n "$RESOLVER_ERROR_LINES" "$resolver_error" | tr '\n' ' ')"
     detail="${detail% }"
-    fail "$surface: resolve-template.sh spec-template did not run in the installed project: ${detail:-no stderr output}"
+    fail "$surface: resolve-template.sh spec-template --json did not run in the installed project: ${detail:-no stderr output}"
+    return
+  fi
+  local resolved="$workdir/.resolved-spec-template.md"
+  if ! decode_template_content "$resolver_json" >"$resolved"; then
+    fail "$surface: resolve-template.sh spec-template --json printed no TEMPLATE_CONTENT field"
     return
   fi
   local section
   for section in "## Open Questions" "## Threat Model" "## Traceability" "## Brainstorm Log"; do
-    assert_grep "$surface: resolved spec-template carries '$section'" "$section" "$resolved"
+    assert_grep "$surface: resolved TEMPLATE_CONTENT carries '$section'" "$section" "$resolved"
   done
 }
 
