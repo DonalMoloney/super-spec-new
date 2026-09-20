@@ -48,6 +48,15 @@ exits 1 when a Critical or
 Important finding is neither fixed nor rebutted. A branch carrying no findings
 file passes and leaves `.claude/review/.merge-approved` behind.
 
+`test-gate.sh` runs on `Edit|Write` and blocks a task ticked `[x]` in
+`tasks.md` when the project's test command fails. It picks the command in
+this order: `SPECFLOW_TEST_CMD` when set, else the text after `Test command:`
+in `.specify/memory/constitution.md` when that file exists and carries the
+line, else it prints a message to stderr and exits 0 without running
+anything. A consuming project names its command with a `Test command:` line
+under the constitution's Code Review Rules section; `constitution-template.md`
+carries the placeholder.
+
 `mutation-gate.sh` runs mutmut 3 on a project directory and exits 1 when the
 share of mutants the tests kill is below `MUTATION_THRESHOLD`, which defaults
 to 80. No workflow calls it yet. Run it on the sample project to see it pass:

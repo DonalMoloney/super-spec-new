@@ -122,3 +122,5 @@ An amendment requires:
 - **Security rules**: Enforce [SECURITY_RULES].
 - **Spec approved**: Require human approval before implementation. Record [SPEC_APPROVAL_EVIDENCE].
 - **Merge approved**: Require human approval before merging. Record [MERGE_APPROVAL_EVIDENCE].
+
+Test command: [TEST_COMMAND]

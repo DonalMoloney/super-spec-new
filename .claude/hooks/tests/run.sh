@@ -55,6 +55,28 @@ printf -- '- [ ] T001 first\n- [ ] T002 second\n' > tasks.md
 check "task added but not ticked -> allow" 0 "$(SPECFLOW_TEST_CMD=false run_hook test-gate.sh "$J")"
 cd /
 
+r="$(fresh_repo feature)"; cd "$r" || exit 1
+mkdir -p .specify/memory
+printf -- '## Code Review Rules\n\nTest command: true\n' > .specify/memory/constitution.md
+printf -- '- [ ] T001 first\n' > tasks.md
+git add tasks.md .specify/memory/constitution.md
+git -c user.email=t@t -c user.name=t commit -q -m init
+printf -- '- [x] T001 first\n' > tasks.md
+J="{\"tool_input\":{\"file_path\":\"$r/tasks.md\"}}"
+check "constitution's Test command: true allows the ticked task" 0 "$(run_hook test-gate.sh "$J")"
+printf -- '## Code Review Rules\n\nTest command: false\n' > .specify/memory/constitution.md
+check "constitution's Test command: false blocks the ticked task" 2 "$(run_hook test-gate.sh "$J")"
+cd /
+
+r="$(fresh_repo feature)"; cd "$r" || exit 1
+printf -- '- [ ] T001 first\n' > tasks.md
+git add tasks.md
+git -c user.email=t@t -c user.name=t commit -q -m tasks
+printf -- '- [x] T001 first\n' > tasks.md
+J="{\"tool_input\":{\"file_path\":\"$r/tasks.md\"}}"
+check "no constitution and no specflow dir skips the gate" 0 "$(run_hook test-gate.sh "$J")"
+cd /
+
 # --- artifact-lint.sh (PostToolUse: Edit|Write) ---
 r="$(fresh_repo feature)"; mkdir -p "$r/specs/001-x"; cd "$r/specs/001-x" || exit 1
 lint() { run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$PWD/$1\"}}"; }
