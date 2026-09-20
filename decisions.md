@@ -159,8 +159,8 @@ deleting them; prune anything older than a quarter that no longer guides work.
   status, so a claimed divergence bullet was stated twice and the copies
   drifted. Five entries were stale on `main` at `ff774c2`, including a task
   PR #70 had already done.
-- Decision: `imporvements/roadmap.md` holds every open item and is the only
-  place a claim or a checkbox lives. `imporvements/reference.md` holds the
+- Decision: `improvements/roadmap.md` holds every open item and is the only
+  place a claim or a checkbox lives. `improvements/reference.md` holds the
   option space, the measured divergence, and the names table, and names a
   roadmap item instead of repeating its tasks. `docs/review-research.md` holds
   the review evidence moved out of the v2 playbook.
@@ -181,7 +181,7 @@ deleting them; prune anything older than a quarter that no longer guides work.
   current state or historical record, and moves only the current ones.
   `divergence-auditor` still measures and runs the guards afterward.
 - Consequences: a rename with a stated old and new value has a dispatch
-  target. `imporvements/reference.md`'s Names table cites it for G-30.
+  target. `improvements/reference.md`'s Names table cites it for G-30.
 
 ## ADR-0019: A missing template resolver stops the command; it has no fallback
 
@@ -190,7 +190,7 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Context: G-24 repointed `commands/tasks.md` and five `SKILL.md` steps at
   spec-kit's `resolve-template` script. T242 specified reading
   `.specify/templates/<name>.md` when the resolver is absent, citing
-  constraint 2 in `imporvements/reference.md`.
+  constraint 2 in `improvements/reference.md`.
 - Decision: no fallback. The command stops and reports. Constraint 2 scopes to
   superpowers skills, not to spec-kit's own scripts, and
   `requires.speckit_version: ">=0.16.2"` is enforced at install:
@@ -208,7 +208,7 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Context: G-28 settles what a spec-kit catalog entry says. The community
   catalog lists `superpowers-bridge`, `speckit-superpowers-bridge`, and
   `superspec`, so `specflow` collides with no listed id.
-  `imporvements/reference.md` prices a rename at 27 files and calls it not an
+  `improvements/reference.md` prices a rename at 27 files and calls it not an
   option.
 - Decision: the id stays. Namespace lock-step ties it to all five command
   names and all three hook names, so a rename renames every command a user has

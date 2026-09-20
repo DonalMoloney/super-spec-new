@@ -163,7 +163,7 @@ def test_excluded_directories_are_skipped_on_a_directory_walk():
         root = Path(tmp)
         files = [
             write(root / "specflow" / "examples" / "run.md", "A — dash.\n"),
-            write(root / "imporvements" / "plan.md", "A — dash.\n"),
+            write(root / "improvements" / "plan.md", "A — dash.\n"),
             write(root / "standards" / "documentation.md", "A — dash.\n"),
         ]
         git_repo(root, *files)
@@ -174,7 +174,7 @@ def test_excluded_directories_are_skipped_on_a_directory_walk():
 def test_explicit_file_under_an_excluded_directory_is_skipped():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
-        path = write(root / "imporvements" / "notes.md", "A \u2014 dash.\n")
+        path = write(root / "improvements" / "notes.md", "A \u2014 dash.\n")
         git_repo(root)
         result = lint(str(path), cwd=root)
     assert result.returncode == 0, result.stdout

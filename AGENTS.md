@@ -70,7 +70,7 @@ there, so a workflow under `specflow/` never runs.
 - `presentation/`: currently empty; this is where the Marp slide deck giving a
   project overview will go once written. Author it as a single `.md` file with Marp
   front matter (`marp: true`) so it renders via the Marp CLI/VS Code extension. Don't
-  add a build step or framework for it. Draw its content from `imporvements/roadmap.md`
+  add a build step or framework for it. Draw its content from `improvements/roadmap.md`
   and this file, not from re-deriving the project's purpose from scratch.
 
 ## Gotchas
@@ -102,7 +102,7 @@ Four agents rewrite shipped files without changing their contracts: `prose-rephr
 for prose, `script-refactorer` for scripts, `divergence-renamer` for a name cited in
 more than one file, and `divergence-auditor` to measure the change against upstream
 and run the guards. The file table and dispatch order live in
-`imporvements/reference.md` under "Rewrite status".
+`improvements/reference.md` under "Rewrite status".
 
 ## Task decomposition
 
@@ -192,7 +192,7 @@ this is the one place both surfaces read:
 - Each group = one worktree in `~/PycharmProjects/worktrees/<group-name>` with its own agent run.
 - After completion, worktree is deleted and the PR is merged to main.
 
-**Coordination:** Before creating a worktree for a group, mark it as "working on" in `imporvements/roadmap.md`:
+**Coordination:** Before creating a worktree for a group, mark it as "working on" in `improvements/roadmap.md`:
 - Append `(working on)` to the end of the group's header line
 - Commit this change to main immediately so other worktrees see it
 - When the group completes and merges, remove "(working on)" marker
@@ -205,7 +205,7 @@ this is the one place both surfaces read:
 - User remains on `main` and can continue to other worktrees or tasks
 - Pull latest when ready; clean up worktree after merge
 
-See `imporvements/roadmap.md` for item definitions, executors, and Verify conditions.
+See `improvements/roadmap.md` for item definitions, executors, and Verify conditions.
 
 ## Claude Code
 

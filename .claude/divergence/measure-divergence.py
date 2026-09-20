@@ -3,7 +3,7 @@
 
 Prints one line per file: the raw changed-line rate and the real rate, where real
 maps the rebrand tokens back to upstream's names before diffing. The method is the
-one imporvements/reference.md records for its measured state.
+one improvements/reference.md records for its measured state.
 """
 
 import argparse

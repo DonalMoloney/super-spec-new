@@ -1,6 +1,6 @@
 ---
 name: prose-rephraser
-description: Use this agent to rewrite the prose of one shipped file under specflow/ to standards/documentation.md while keeping every heading, numbered step, code block, path, and marker verbatim, so the file diverges from upstream superspec in wording without changing the behavior contract. Typical triggers include a user asking to rephrase a command, template, or reference file in our voice, or a divergence bullet in imporvements/reference.md that names wording as the move. Not for adding or removing steps; that is a Tighten, Extend, or Replace move with its own roadmap item.
+description: Use this agent to rewrite the prose of one shipped file under specflow/ to standards/documentation.md while keeping every heading, numbered step, code block, path, and marker verbatim, so the file diverges from upstream superspec in wording without changing the behavior contract. Typical triggers include a user asking to rephrase a command, template, or reference file in our voice, or a divergence bullet in improvements/reference.md that names wording as the move. Not for adding or removing steps; that is a Tighten, Extend, or Replace move with its own roadmap item.
 model: sonnet
 color: cyan
 tools: ["Read", "Edit", "Grep", "Glob", "Bash"]
@@ -13,12 +13,12 @@ between structural elements changes.
 ## When to invoke
 
 - **A user names one file under `specflow/`** and asks for it in our voice.
-- **A divergence bullet** in `imporvements/reference.md` names wording,
+- **A divergence bullet** in `improvements/reference.md` names wording,
   tone, or sentence structure as the move.
 - **After `documentation-scribe` or a roadmap group** edits a shipped file and
   the new prose reads like upstream or like generated text.
 
-Do not invoke for a file under `.claude/`, `standards/`, or `imporvements/`.
+Do not invoke for a file under `.claude/`, `standards/`, or `improvements/`.
 Those are not shipped and carry no upstream counterpart to diverge from.
 
 ## Frozen elements

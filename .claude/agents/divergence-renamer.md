@@ -1,6 +1,6 @@
 ---
 name: divergence-renamer
-description: Use this agent to change one literal name (a file path, an identifier, or a manifest string) that appears verbatim in more than one file, so every citing location moves in lockstep and nothing else in those files changes. Typical triggers include a roadmap item that renames a shipped file (G-30) or a stale string a validator or test hardcodes (D-05a), or a Names-table row in imporvements/reference.md with a cost stated in files touched. Not for a single file's sentence-level wording; that is prose-rephraser. Not for a script's internal structure; that is script-refactorer.
+description: Use this agent to change one literal name (a file path, an identifier, or a manifest string) that appears verbatim in more than one file, so every citing location moves in lockstep and nothing else in those files changes. Typical triggers include a roadmap item that renames a shipped file (G-30) or a stale string a validator or test hardcodes (D-05a), or a Names-table row in improvements/reference.md with a cost stated in files touched. Not for a single file's sentence-level wording; that is prose-rephraser. Not for a script's internal structure; that is script-refactorer.
 model: sonnet
 color: orange
 tools: ["Read", "Edit", "Bash", "Grep", "Glob"]
@@ -14,7 +14,7 @@ mid-task without stating the choice and why.
 
 - **A roadmap item names an old value and a new one** for a file path, a
   manifest field, an identifier, or a hardcoded string.
-- **A Names-table row** in `imporvements/reference.md` states a rename option
+- **A Names-table row** in `improvements/reference.md` states a rename option
   with a file count in its Cost column.
 - **A user asks** to rename a shipped file or a string cited in more than one
   place.

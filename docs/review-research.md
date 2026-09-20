@@ -6,8 +6,8 @@ stages and personas under `.claude/agents/` were chosen. Read it when changing
 a reviewer persona, the critic loop, or the risk thresholds, so a change argues
 against the evidence rather than around it.
 
-This is reference material, not a tracker. `imporvements/roadmap.md` holds the
-open work and `imporvements/reference.md` holds the divergence option space.
+This is reference material, not a tracker. `improvements/roadmap.md` holds the
+open work and `improvements/reference.md` holds the divergence option space.
 Parts 3, 6, and 7 and the glossary and sources below were moved here from
 `imporvements/imporvements2.md`, which was the v2 playbook; the rest of that
 file was either implemented or duplicated `specflow/README.md`. Text is carried

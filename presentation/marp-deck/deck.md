@@ -77,7 +77,7 @@ A model can answer the same request differently on successive runs. Asking it to
 
 Determinism belongs to the check, not to the generated code. The same recorded inputs should produce the same gate decision. A passing check still does not prove that a product requirement was complete. Governance makes the decision inspectable and repeatable.
 
-Sources: imporvements/roadmap.md; specflow/commands/execute.md; .claude/hooks/merge-gate.sh.
+Sources: improvements/roadmap.md; specflow/commands/execute.md; .claude/hooks/merge-gate.sh.
 -->
 
 ---
@@ -157,7 +157,7 @@ The count covers the first roadmap wave, G-01 through G-18, merged between PR #8
 
 Gate hooks belong to G-01 and G-06; review agents to G-05; the continuous integration (CI) merge gate to G-09; Agent Teams to G-14; cost governance to G-16; logging to G-07. Merged means those implementation groups landed. A consuming repository still needs to install and configure the checks it intends to enforce.
 
-Sources: imporvements/roadmap.md, first-wave record; git log --merges --first-parent main. This retains the roadmap correction merged into the original deck.
+Sources: improvements/roadmap.md, first-wave record; git log --merges --first-parent main. This retains the roadmap correction merged into the original deck.
 -->
 
 ---

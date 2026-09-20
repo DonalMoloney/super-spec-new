@@ -388,7 +388,7 @@ in the file equals `ls .claude/agents/*.md | wc -l`. Closes N-22.
 Executor: `general-purpose`. Model: opus. Move: Replace. Effort: high.
 Depends on: G-24 T242. Diverges: yes.
 
-N-07 in `imporvements/new-improvements/scoped-improvements.md` asks whether
+N-07 in `improvements/new-improvements/scoped-improvements.md` asks whether
 the five templates become a preset. The question is open, and it needs an ADR
 before any file moves. Both mechanisms resolve: spec-kit reads an installed
 preset at priority 2 and an extension's templates at priority 3 of the stack
@@ -697,7 +697,7 @@ required by name in `scripts/validate-extension-metadata.py` line 105 and
 `scripts/tests/test_validate_release_archive.py`, so the `references/`
 section's claim that "nothing asserts against these structurally" does not
 hold for this file. Sixteen files cite the path outright:
-`AGENTS.md`, `presentation/marp-deck/deck.md`, both `imporvements/` files,
+`AGENTS.md`, `presentation/marp-deck/deck.md`, both `improvements/` files,
 `specflow/README.md`, `specflow/SKILL.md`, `specflow/references/workflow-guide.md`,
 all five `specflow/commands/*.md` files, and the three script/test paths above.
 
@@ -943,7 +943,7 @@ beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
 - **A Copilot CLI run snapshot** under `examples/`: needs the Copilot e2e
   script, backlog item 27.
 - **A spec-kit workflow file** (N-06 in
-  `imporvements/new-improvements/scoped-improvements.md`): deferred on
+  `improvements/new-improvements/scoped-improvements.md`): deferred on
   2026-09-20. Most of its stated value was running the gates on the Copilot
   CLI, which the `events:` block in G-26 buys for less. Reprice it after G-26.
 - **A spec-kit bundle** (N-08): deferred on 2026-09-20. It composes the

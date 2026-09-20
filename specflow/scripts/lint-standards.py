@@ -28,7 +28,7 @@ BANNED_HEADING = "## Banned words and phrases"
 EM_DASH = "—"
 
 # Examples, the roadmap, and the standards themselves quote the banned words.
-EXCLUDED_DIRS = ("specflow/examples", "imporvements", "standards")
+EXCLUDED_DIRS = ("specflow/examples", "improvements", "standards")
 
 # Research notes quote their sources verbatim, banned words and em-dashes included.
 EXCLUDED_FILES = ("docs/review-research.md",)
