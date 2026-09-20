@@ -145,6 +145,57 @@ check "skipping a file outside the repository is reported"  0 \
 rm -rf "$outside"
 cd / || exit 1
 
+# --- validate-progress.py (the progress.yml resumability contract) ---
+PROGRESS="$HOOKS/../review/validate-progress.py"
+validate_progress() { # -> exit code of the validator on ./progress.yml
+  python3 "$PROGRESS" progress.yml >/dev/null 2>&1; echo $?
+}
+write_progress() { # current_phase task_id task_status [trailing block]
+  printf 'spec: 001-x\nstatus: in_progress\ncurrent_phase: %s\nphases:\n  - phase: 1\n    name: Setup\n    status: in_progress\n    tasks:\n      %s: %s\n%s' \
+    "$1" "$2" "$3" "${4:-}" > progress.yml
+}
+r="$(fresh_repo feature)"; mkdir -p "$r/specs/001-x"; cd "$r/specs/001-x" || exit 1
+printf '# Tasks\n- [x] T001 Write the parser\n- [ ] T002 Write the report\n' > tasks.md
+write_progress 1 T001 complete
+check "valid progress.yml passes"                          0 "$(validate_progress)"
+write_progress 9 T001 complete
+check "current_phase outside the listed phases blocked"    1 "$(validate_progress)"
+write_progress 1 T099 complete
+check "completed task id absent from tasks.md blocked"     1 "$(validate_progress)"
+write_progress 1 T099 pending
+check "unstarted task id absent from tasks.md passes"      0 "$(validate_progress)"
+write_progress 1 T001 complete 'gates:
+  clarified: 2026-09-14
+  analyze_attempts: 2
+'
+check "gate names from the workflow guide table pass"      0 "$(validate_progress)"
+write_progress 1 T001 complete 'gates:
+  clarifed: 2026-09-14
+'
+check "gate name outside the workflow guide table blocked" 1 "$(validate_progress)"
+write_progress 1 T001 complete 'notes: a stray key
+'
+check "unknown top-level key blocked"                      1 "$(validate_progress)"
+printf 'spec: 001-x\nstatus: in_progress\ncurrent_phse: 1\nphases:\n  - phase: 1\n    name: Setup\n    status: in_progress\n' > progress.yml
+check "misspelled current_phase blocked"                   1 "$(validate_progress)"
+printf 'spec: 001-x\nstatus: in_progress\ncurrent_phase: 1\nphases: [{phase: 1}]\n' > progress.yml
+check "flow sequence outside the parsed subset blocked"    1 "$(validate_progress)"
+lint_progress() { run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$PWD/progress.yml\"}}"; }
+write_progress 1 T001 complete
+check "artifact-lint passes a valid progress.yml"          0 "$(lint_progress)"
+write_progress 1 T099 complete
+check "artifact-lint blocks an unknown task id"            2 "$(lint_progress)"
+rm -f tasks.md
+write_progress 1 T001 complete
+check "completed task blocked when tasks.md is missing"    1 "$(validate_progress)"
+write_progress 1 T001 pending
+check "unstarted task passes when tasks.md is missing"     0 "$(validate_progress)"
+cd / || exit 1
+for f in "$HOOKS"/../../specflow/examples/*/specs/*/progress.yml; do
+  check "shipped example passes: $(basename "$(dirname "$f")")/progress.yml" 0 \
+    "$(python3 "$PROGRESS" "$f" >/dev/null 2>&1; echo $?)"
+done
+
 # --- session-start.sh (SessionStart) ---
 session_start_out() { # json -> stdout
   printf '%s' "$1" | bash "$HOOKS/session-start.sh" 2>/dev/null
