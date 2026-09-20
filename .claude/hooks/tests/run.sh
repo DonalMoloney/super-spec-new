@@ -4,10 +4,13 @@
 #   bash .claude/hooks/tests/run.sh
 set -u
 HOOKS="$(cd "$(dirname "$0")/.." && pwd)"
-pass=0; fail=0
+pass=0; fail=0; skipped=0
 check() { # name expected_exit actual_exit
   if [ "$2" -eq "$3" ]; then pass=$((pass+1)); echo "ok   $1"
   else fail=$((fail+1)); echo "FAIL $1 (expected exit $2, got $3)"; fi
+}
+skip() { # name reason
+  skipped=$((skipped+1)); echo "skip $1 ($2)"
 }
 status_of() { # command... -> prints its exit code
   "$@"; echo $?
@@ -533,6 +536,17 @@ SAMPLE="$HOOKS/../../specflow/examples/mutation-gate-sample"
 mutation_gate() { # project-dir -> exit code
   bash "$HOOKS/mutation-gate.sh" "$1" >/dev/null 2>&1; echo $?
 }
+# CI installs mutmut from requirements-dev.txt; a plain checkout has no mutmut,
+# and the cases that measure a score report skipped rather than failed there.
+MUTMUT_ABSENT="mutmut is not on PATH; see requirements-dev.txt"
+has_mutmut=1
+command -v mutmut >/dev/null 2>&1 || has_mutmut=0
+check_scored() { # name expected_exit actual_exit
+  if [ "$has_mutmut" -eq 1 ]; then check "$1" "$2" "$3"; else skip "$1" "$MUTMUT_ABSENT"; fi
+}
+check_has_scored() { # name haystack needle
+  if [ "$has_mutmut" -eq 1 ]; then check_has "$1" "$2" "$3"; else skip "$1" "$MUTMUT_ABSENT"; fi
+}
 survivor_copy() { # -> copy of the sample with the free-shipping boundary test removed
   local d; d="$(mktemp -d)/sample"
   # The copy keeps the mutants/ cache the passing run left, so its first run is the stale-cache case.
@@ -558,20 +572,20 @@ ln -s "$(command -v bash)" "$shim/bash"
 ln -s "$(command -v mutmut)" "$shim/mutmut"
 check "jq missing from PATH fails"           2 "$(PATH="$shim" mutation_gate "$SAMPLE")"
 out="$(bash "$HOOKS/mutation-gate.sh" "$SAMPLE" 2>&1)"; st=$?
-check "the sample passes the gate"           0 "$st"
-check_has "the sample reports a full score"  "$out" "mutation score 100%; expected >= 80%"
+check_scored "the sample passes the gate"           0 "$st"
+check_has_scored "the sample reports a full score"  "$out" "mutation score 100%; expected >= 80%"
 s="$(survivor_copy)"
 out="$(MUTATION_THRESHOLD=100 bash "$HOOKS/mutation-gate.sh" "$s" 2>&1)"; st=$?
-check "a surviving mutant fails the gate at threshold 100" 1 "$st"
-check_has "the failing run prints the score line" "$out" "mutation score 95%; expected >= 100%"
-check_has "the failing run counts the survivors" "$out" "22 of 23 mutants killed; 1 survived, 0 uncovered or timed out"
-check "a surviving mutant passes at the default threshold" 0 "$(mutation_gate "$s")"
+check_scored "a surviving mutant fails the gate at threshold 100" 1 "$st"
+check_has_scored "the failing run prints the score line" "$out" "mutation score 95%; expected >= 100%"
+check_has_scored "the failing run counts the survivors" "$out" "22 of 23 mutants killed; 1 survived, 0 uncovered or timed out"
+check_scored "a surviving mutant passes at the default threshold" 0 "$(mutation_gate "$s")"
 u="$(mktemp -d)/sample"
 cp -R "$SAMPLE" "$u"
 printf '\n\ndef tax_cents(subtotal_cents: int, rate_percent: int) -> int:\n    return subtotal_cents * rate_percent // 100\n' >> "$u/pricing.py"
 out="$(MUTATION_THRESHOLD=100 bash "$HOOKS/mutation-gate.sh" "$u" 2>&1)"; st=$?
-check "an untested function fails the gate at threshold 100" 1 "$st"
-check_has "the failing run counts the uncovered mutants" "$out" "23 of 26 mutants killed; 0 survived, 3 uncovered or timed out"
+check_scored "an untested function fails the gate at threshold 100" 1 "$st"
+check_has_scored "the failing run counts the uncovered mutants" "$out" "23 of 26 mutants killed; 0 survived, 3 uncovered or timed out"
 
 # --- .claude/review/schema.json (findings contract read by the reviewer agents) ---
 cd "$HOOKS/../.." || exit 1
@@ -598,5 +612,5 @@ check "merge gate workflow honors the findings-rebutted label" 0 \
 check "merge gate workflow runs the rebuttal hook under .claude" 0 \
   "$(printf '%s' "$gate_src" | grep -Fq '.claude/hooks/rebut-findings.sh'; echo $?)"
 
-echo "$pass passed, $fail failed"
+echo "$pass passed, $fail failed, $skipped skipped"
 [ "$fail" -eq 0 ]
