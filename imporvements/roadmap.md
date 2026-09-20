@@ -54,12 +54,9 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
 | G-24 | Six command lines read a template path instead of resolving it | medium | See the nine checks under G-24 |
 | G-26 | The gates cannot run on the Copilot CLI | medium | `grep -c '^events:' specflow/extension.yml` prints 0 |
-| G-30 | `superpowers-bridge.md` is named for a banned metaphor | medium | 16 files cite the path |
 | G-35 | Local verification and CI verification check different things | low | `pytest scripts/tests` does not collect on the default python3 |
 | G-33 | The word-choice table is enforced by reading, not a check | medium | `lint-standards.py` checks em-dashes and the banned table only |
-| C-01 | 44 merged remote branches | low | `git branch -r` |
 | C-03 | The `imporvements/` directory name is a typo | low | 13 files cite it |
-| C-05 | Both e2e scripts leave a work directory behind | low | `Workdir kept at` prints unconditionally |
 
 ## D-01 — `after-tasks.md` reads the progress file (merged: `8fb7813`)
 
@@ -426,7 +423,7 @@ Run this task only when T251 adopts the preset. Verify: `specify preset
 resolve spec-template` names core's file plus our addendum, and the golden
 scores 100 on sections.
 
-## G-26 — Register the gates as agent-native hooks
+## G-26 — Register the gates as agent-native hooks (working on)
 
 Executor: `bdd-orchestrator`. Model: opus. Move: Add. Effort: medium. Depends
 on: G-24. Diverges: yes.
@@ -586,7 +583,7 @@ omits, the way `EXPECTED_PROCESS_STEPS` compares step counts. Verify: adding a
 write to a command's Process fails the smoke test until its phase names the
 same artifact, and the five rows above pass once T341 and T342 land.
 
-## G-35 — Local verification and CI verification check different things
+## G-35 — Local verification and CI verification check different things (working on)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Add. Effort: low.
 Depends on: none. Diverges: no.
@@ -680,7 +677,7 @@ Verify: the split is written down with a reason per excluded row.
 Verify: a "Not" column word in a shipped document fails the linter and names
 its "Write" replacement, an excluded row does not fire, and the suite passes.
 
-## G-30 — Drop the "bridge" metaphor from `superpowers-bridge.md`'s name
+## G-30 — Drop the "bridge" metaphor from `superpowers-bridge.md`'s name (merged: `68ade5b`)
 
 Executor: `divergence-renamer`. Model: sonnet. Effort: medium. Depends on: none.
 `standards/documentation.md`'s word-choice table bans "bridges" as a metaphor
@@ -696,7 +693,7 @@ hold for this file. Sixteen files cite the path outright:
 `specflow/README.md`, `specflow/SKILL.md`, `specflow/references/workflow-guide.md`,
 all five `specflow/commands/*.md` files, and the three script/test paths above.
 
-- [ ] T301 Rename the file and update every citing path
+- [x] T301 Rename the file and update every citing path
 
 Pick a name that states what the file does (for example
 `references/superpowers-mapping.md`), rename it, and update all sixteen
@@ -726,11 +723,12 @@ Hygiene debt: work that needs no design, only a session short enough to run one
 `Verify:` line. C-02 (stale local branches) and C-07 (the playbook split)
 closed on 2026-09-20.
 
-- [ ] **C-01** Delete the merged remote branches. 44 remain. Match them with
-  `gh pr list --state merged --json headRefName`, and turn on "Automatically
-  delete head branches" in the repository settings so the list stops growing.
-  Verify: `git branch -r` lists only `origin/main`, `origin/HEAD`, and
-  branches with an open PR.
+- [x] **C-01** Delete the merged remote branches. 46 were deleted on
+  2026-09-20, not the 44 this line estimated. Each was checked first: 19 were
+  ancestors of `origin/main` and 27 had a merged pull request, squash-merged so
+  their tips were not ancestors. None had an open PR. `delete_branch_on_merge`
+  is now true on the repository, so the list stops growing. Verify:
+  `git branch -r` lists only `origin/main` and `origin/HEAD`.
 - [ ] **C-03** Rename the `imporvements/` directory to `improvements/`. The
   typo is cited from `AGENTS.md`, `CLAUDE.md`, `decisions.md`, two agent
   files, `measure-divergence.py`, `lint-standards.py` and its test, the deck's
@@ -741,7 +739,7 @@ closed on 2026-09-20.
 - [x] **C-04** Retitle `presentation/use-guide/use-guide.md`. The H1 is a path.
   Verify: the H1 is a noun phrase and no header carries a capital after its
   first word except a proper noun.
-- [ ] **C-05** Delete the e2e work directory on a passing run. Both
+- [x] **C-05** Delete the e2e work directory on a passing run. Both
   `e2e-smoke.sh` and `e2e-agent-claude.sh` print "Workdir kept at" and leave a
   directory under `$TMPDIR` every time they pass. Keep it only on failure or
   when `KEEP_WORKDIR=1`. Verify: after a passing run the printed path does not
