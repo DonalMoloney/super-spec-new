@@ -153,7 +153,7 @@ the same id, so pass `--force`:
 specify extension add specflow --from <new release asset URL> --force
 ```
 
-The install replaces `.specify/extensions/specflow/` along with the five
+The install replaces `.specify/extensions/specflow/` along with the six
 registered skill directories. It leaves the project's own files untouched: the
 constitution, the feature directories under `specs/`, and
 `.specify/superpowers.yml`.
