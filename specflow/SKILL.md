@@ -433,18 +433,30 @@ user's explicit approval. **Never skip a checkpoint.**
 The recommended path from start to finish:
 
 ```
-Phase 0: /speckit.constitution     → Establish project governance
-Phase 1: /speckit.specify          → Define feature requirements
-Phase 2: /speckit.specflow.brainstorm       → Clarify edge cases (iterate)
-Phase 3: /speckit.plan             → Design technical approach
-Phase 4: /speckit.specflow.tasks            → Decompose into executable tasks
-Phase 5: /speckit.specflow.execute          → Implement with TDD + subagents
-Phase 6: /speckit.specflow.review           → Verify against spec
+Phase 0: /speckit.constitution          → Establish project governance
+Phase 1: /speckit.specify               → Define feature requirements
+Gate:    /speckit.clarify               → Writes specs/NNN-feature-name/.clarified
+Phase 2: /speckit.specflow.brainstorm   → Clarify edge cases (iterate)
+Phase 3: /speckit.plan                  → Design technical approach
+Phase 4: /speckit.specflow.tasks        → Decompose into executable tasks
+Gate:    /speckit.analyze               → Writes specs/NNN-feature-name/.analyzed
+Phase 5: /speckit.specflow.execute      → Reads .analyzed, implements with TDD + subagents
+Phase 6: /speckit.specflow.review       → Verify against spec
 ```
 
 Every phase carries an explicit **gate**: the agent checks its prerequisites before
-moving on. Run `/speckit.specflow.brainstorm` as many times as it takes for the spec
-to hold up. The user decides when to advance to the next phase.
+moving on. Two of those gates leave a marker file beside the spec, and the agent
+writes both itself.
+
+`/speckit.clarify` writes `.clarified` once no `NEEDS CLARIFICATION` is left in the
+spec. `/speckit.analyze` writes `.analyzed` only when the analysis reports zero
+critical inconsistencies. Execution stops with `ANALYZE_REQUIRED` while that marker
+is absent. Remove a marker before rerunning the command that wrote it.
+
+`/speckit.checklist` runs at any point in the workflow and writes
+`checklist-*.md` into the feature directory. Run `/speckit.specflow.brainstorm` as
+many times as it takes for the spec to hold up. The user decides when to advance to
+the next phase.
 
 ## Additional Resources
 
