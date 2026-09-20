@@ -65,7 +65,7 @@ your-project/
 │   ├── memory/
 │   │   └── constitution.md      # Project governance principles
 │   ├── superpowers.yml          # Superpowers detection status (auto-managed)
-│   ├── scripts/bash/            # Spec-kit's scripts, including the template resolver
+│   ├── scripts/                 # Spec-kit's scripts, including the template resolver
 │   └── templates/               # Core templates, written by `specify init`
 └── specs/
     └── NNN-feature-name/
