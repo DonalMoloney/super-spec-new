@@ -164,6 +164,14 @@ write_progress_fixture 1 T099 complete
 check "completed task id absent from tasks.md blocked"     1 "$(validate_progress)"
 write_progress_fixture 1 T099 pending
 check "unstarted task id absent from tasks.md passes"      0 "$(validate_progress)"
+write_progress_fixture 1 T001 skipped
+check "skipped task status passes"                         0 "$(validate_progress)"
+write_progress_fixture 1 T001 manual-browser-only
+check "task status outside the settled set blocked"        1 "$(validate_progress)"
+printf 'spec: 001-x\nstatus: in_progress\ncurrent_phase: 1\nphases:\n  - phase: 1\n    name: Setup\n    status: done\n' > progress.yml
+check "phase status outside the settled set blocked"       1 "$(validate_progress)"
+printf 'spec: 001-x\nstatus: done\ncurrent_phase: 1\nphases:\n  - phase: 1\n    name: Setup\n    status: complete\n' > progress.yml
+check "top-level status outside the settled set blocked"   1 "$(validate_progress)"
 write_progress_fixture 1 T001 complete 'gates:
   clarified: 2026-09-14
   analyze_attempts: 2

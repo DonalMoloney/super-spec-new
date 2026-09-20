@@ -40,6 +40,7 @@ TOP_LEVEL = {
     "gates": dict,
 }
 TOP_LEVEL_REQUIRED = ("spec", "status", "current_phase", "phases")
+STATUS_VALUES = ("pending", "in_progress", "complete", "skipped")
 BRAINSTORM = {"sessions": int, "last_session": str}
 PHASE = {"phase": int, "name": str, "status": str, "tasks": dict}
 PHASE_REQUIRED = ("phase", "name", "status")
@@ -195,6 +196,16 @@ def check_gates(gates, names):
         )
 
 
+def check_status(state, where):
+    """Check one status field against the four values the workflow guide names."""
+    if state not in STATUS_VALUES:
+        allowed = ", ".join(STATUS_VALUES)
+        raise ProgressError(
+            f"{where}: {state!r} is not a status. The workflow guide names {allowed}. "
+            f"A task the run cannot automate is 'skipped'; its tasks.md line says why."
+        )
+
+
 def check_mapping(mapping, contract, required, where):
     """Check a mapping's keys and scalar types against contract, naming the first failure."""
     for key in required:
@@ -246,6 +257,7 @@ def check_completed(completed, tasks_path):
 def check(document, tasks_path):
     """Check a parsed progress document against the contract, raising on the first failure."""
     check_mapping(document, TOP_LEVEL, TOP_LEVEL_REQUIRED, "")
+    check_status(document["status"], "status")
     if "brainstorm" in document:
         check_mapping(document["brainstorm"], BRAINSTORM, (), "brainstorm.")
     if "gates" in document:
@@ -258,13 +270,12 @@ def check(document, tasks_path):
         if not isinstance(phase, dict):
             raise ProgressError(f"phases[{index}]: expected a mapping of phase keys")
         check_mapping(phase, PHASE, PHASE_REQUIRED, where)
+        check_status(phase["status"], f"{where}status")
         numbers.append(phase["phase"])
         for task_id, state in phase.get("tasks", {}).items():
             if not TASK_ID.match(task_id):
                 raise ProgressError(f"{where}tasks.{task_id}: not a task ID. Expected T001.")
-            if not isinstance(state, str):
-                found = type(state).__name__
-                raise ProgressError(f"{where}tasks.{task_id}: expected str, found {found}")
+            check_status(state, f"{where}tasks.{task_id}")
             if state == "complete":
                 completed.setdefault(task_id, f"{where}tasks.{task_id}")
 
