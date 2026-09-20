@@ -639,6 +639,31 @@ validators, the hook suite and the smoke test, in CI's order, exiting nonzero
 on the first failure. Verify: the script's steps match `ci.yml` step for step,
 and deleting a step from `ci.yml` without changing the script fails a test.
 
+## G-40 — The merge gate judges a findings file it never validates (working on)
+
+Executor: `bdd-orchestrator`. Model: sonnet. Move: Tighten. Effort: low.
+Depends on: none. Diverges: no. Found by G-37 on 2026-09-20.
+
+`merge-gate.sh` counts findings with `jq` and never runs
+`.claude/review/validate-findings.py` against the file it is judging. A file
+that is valid JSON but violates `schema.json` passes silently. Reproduced on
+`main`: a finding with `"severity": "critical"` in lowercase, which the schema
+enumerates as `Critical`, counts zero and prints `MERGE GATE PASSED.` with
+exit 0.
+
+ADR-0006 says a Critical or Important finding blocks unless fixed or rebutted.
+A gate that cannot read the severity cannot apply that rule, and the failure is
+silent rather than loud, so the reviewer who wrote the file learns nothing.
+`/speckit.specflow.review` writes these files on both surfaces, and only the
+CI headless step validates its own file today.
+
+- [ ] T401 Validate a findings file before judging it
+
+Run the existing validator on each file the globs match, and fail loudly on a
+file that does not conform rather than counting zero. Verify: a hook test with
+`"severity": "critical"` in lowercase blocks the merge and names the schema
+violation, and a conforming file still blocks and passes as it did before.
+
 ## G-36 — No check runs on a release tag before users pull it (working on)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Add. Effort: low.
