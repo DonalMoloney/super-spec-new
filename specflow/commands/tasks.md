@@ -29,11 +29,13 @@ The command builds a phased task breakdown with the writing-plans skill.
    - `[TDD]`: follows RED-GREEN-REFACTOR discipline
    - `[REVIEW]`: needs a code review before the next task starts
    - `[SUBAGENT]`: may be handed to a subagent
-6. **Keep each task singular**: one outcome per task line. When a description
-   needs "and" to state its outcome, split it into two tasks. A reader must be
-   able to check whether a task is done without asking a follow-up question. A
-   fix, a refactor, and a test count as three tasks, even when they touch one
-   file
+6. **Keep each task singular and checkable**: one outcome per task line. When a
+   description needs "and" to state its outcome, split it into two tasks. A
+   reader must be able to check whether a task is done without asking a
+   follow-up question. A fix, a refactor, and a test count as three tasks, even
+   when they touch one file. Give every task a row in the template's
+   `## Task Verification` table, whose Verify cell names the command or the
+   observation that proves the task is done
 7. Define phase dependencies and checkpoint gates
 8. **Preserve stable IDs**: if `specs/NNN-feature-name/tasks.md` already exists,
    read every `TNNN` ID in it before writing. Match each regenerated task to an
