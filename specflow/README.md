@@ -144,6 +144,77 @@ progress. Run `/speckit.specflow.status` in a new session to see where the
 last one stopped. Each command reads the recorded progress first and skips
 completed work, so re-running a command after an interruption is safe.
 
+## Upgrade
+
+Install the new release over the old one. Spec-kit refuses a second install of
+the same id, so pass `--force`:
+
+```bash
+specify extension add specflow --from <new release asset URL> --force
+```
+
+The install replaces `.specify/extensions/specflow/` and the five registered
+skill directories. It leaves the project's own files alone: the constitution,
+the feature directories under `specs/`, and `.specify/superpowers.yml`.
+
+## Remove
+
+```bash
+specify extension remove specflow --force
+```
+
+Without `--force` the command asks for confirmation and stops when the answer
+is no. It deletes `.specify/extensions/specflow/` and each
+`speckit-specflow-*` skill directory, then copies the config to
+`.specify/extensions/.backup/specflow/`.
+
+Three things stay behind, because spec-kit treats them as the project's own:
+the feature directories under `specs/`, the `.clarified` and `.analyzed`
+markers inside them, and `.specify/superpowers.yml`. Delete them by hand when
+you want a clean project.
+
+## Troubleshooting
+
+### `CONSTITUTION_REQUIRED`
+
+Every command reads `.specify/memory/constitution.md` first and stops when the
+file is absent. Run `/speckit.constitution` to write it, then run the original
+command again.
+
+### The template resolver fails
+
+Each command that writes a document resolves its template through the script
+spec-kit installs under `.specify/scripts/`, and stops and reports the error
+when that script fails. There is no fallback, because reading
+`.specify/templates/<name>.md` returns the core layer alone and drops
+specflow's sections. Spec-kit 0.16.2 is the first release carrying the
+resolver, and `requires.speckit_version` in `extension.yml` holds that floor,
+so an older host refuses the install rather than reaching this error.
+
+### `ANALYZE_REQUIRED`
+
+The execute command stops when the target feature carries no `.analyzed`
+marker:
+
+```
+ANALYZE_REQUIRED
+  Feature: specs/001-link-audit
+  Missing: specs/001-link-audit/.analyzed
+```
+
+Run `/speckit.analyze` for that feature. The analysis has to report zero
+critical inconsistencies before the marker is written. Then run
+`/speckit.specflow.execute` again.
+
+### `Superpowers <skill> not detected, using built-in fallback`
+
+The command found no `SKILL.md` for that skill under `.agents/skills/` or
+`~/.agents/skills/`, so it ran the built-in protocol instead. Nothing is
+broken. To get the superpowers protocol, install the skill under one of those
+two paths and run the command again. The directory name is case-sensitive and
+has to match the name in the
+[superpowers-mapping.md](references/superpowers-mapping.md) table.
+
 ## Getting started
 
 1. Create the constitution.
