@@ -48,11 +48,21 @@ def bash_array(script_text: str, name: str) -> list[str]:
 
 
 def script_steps(script_text: str) -> list[tuple[str, str]]:
-    """Return a (working directory, command) pair per step verify.sh runs, in its order."""
+    """Return a (working directory, command) pair per step verify.sh carries, in its order."""
     pairs = []
     for entry in bash_array(script_text, "STEPS"):
-        _name, workdir, command = entry.split("|", 2)
+        _name, _tool, workdir, command = entry.split("|", 3)
         pairs.append((workdir, command))
+    return pairs
+
+
+def script_tool_gated_steps(script_text: str) -> list[tuple[str, str]]:
+    """Return a (tool, command) pair per step verify.sh runs only when that tool is installed."""
+    pairs = []
+    for entry in bash_array(script_text, "STEPS"):
+        _name, tool, _workdir, command = entry.split("|", 3)
+        if tool:
+            pairs.append((tool, command))
     return pairs
 
 
@@ -65,8 +75,9 @@ def divergences(workflow_text: str, script_text: str) -> list[str]:
     """Return one line per way verify.sh and the workflow disagree.
 
     Steps are matched on their working directory and command, so renaming a step
-    CI runs changes nothing. A skipped step is matched on its name, because the
-    reason recorded beside it is written about that name.
+    CI runs changes nothing. A step verify.sh gates on a tool is matched the same
+    way, so gating one does not exempt it. A skipped step is matched on its name,
+    because the reason recorded beside it is written about that name.
     """
     ci_steps = ci_run_steps(workflow_text)
     skipped = script_skip_names(script_text)
@@ -147,6 +158,38 @@ def test_reordering_two_ci_steps_is_reported():
         steps[first], steps[second] = steps[second], steps[first]
 
     assert divergences(workflow_with(swap), SCRIPT_TEXT) != []
+
+
+def test_changing_the_command_of_a_tool_gated_ci_step_is_reported():
+    def retarget(steps):
+        steps[index_of(steps, "Ruff")]["run"] = "ruff check specflow/scripts"
+
+    assert divergences(workflow_with(retarget), SCRIPT_TEXT) != []
+
+
+def test_changing_the_working_directory_of_a_tool_gated_ci_step_is_reported():
+    def relocate(steps):
+        steps[index_of(steps, "Shellcheck")]["working-directory"] = "specflow"
+
+    assert divergences(workflow_with(relocate), SCRIPT_TEXT) != []
+
+
+def test_reordering_two_tool_gated_ci_steps_is_reported():
+    def swap(steps):
+        first = index_of(steps, "Shellcheck")
+        second = index_of(steps, "Ruff")
+        steps[first], steps[second] = steps[second], steps[first]
+
+    assert divergences(workflow_with(swap), SCRIPT_TEXT) != []
+
+
+def test_each_tool_gated_step_probes_the_program_its_command_runs():
+    mismatched = [
+        (tool, command)
+        for tool, command in script_tool_gated_steps(SCRIPT_TEXT)
+        if command.split()[0] != tool
+    ]
+    assert mismatched == []
 
 
 def test_deleting_a_skipped_ci_step_is_reported():
