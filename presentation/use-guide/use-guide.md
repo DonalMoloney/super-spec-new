@@ -1,8 +1,8 @@
-# presentation/marp-deck use guide
+# Rendering and editing the Marp deck
 
 How to view, edit, and export the Marp slide deck at `presentation/marp-deck/deck.md`.
 
-## Prerequisites and Install
+## Prerequisites and install
 
 Rendering or exporting the deck needs the Marp CLI (`@marp-team/marp-cli` on npm).
 Run it through `npx` with no install, or install it globally or as a dev dependency.
@@ -20,7 +20,7 @@ npx @marp-team/marp-cli@latest presentation/marp-deck/deck.md -o deck.html
 npm install -g @marp-team/marp-cli
 ```
 
-## Rendering the Deck
+## Rendering the deck
 
 Export `presentation/marp-deck/deck.md` to PDF or PowerPoint with the Marp CLI's
 `--pdf` or `--pptx` flag plus `-o` for the output path. PDF and PPTX export render
@@ -36,7 +36,7 @@ npx @marp-team/marp-cli@latest presentation/marp-deck/deck.md --pdf -o deck.pdf
 npx @marp-team/marp-cli@latest presentation/marp-deck/deck.md --pptx -o deck.pptx
 ```
 
-## Live Preview / Editing Workflow
+## Live preview / editing workflow
 
 While writing `presentation/marp-deck/deck.md`, run the Marp CLI in watch mode to
 get a browser preview that reloads on every save. If you already edit in VS Code,
@@ -48,7 +48,7 @@ with no build step and no framework.
 npx @marp-team/marp-cli@latest -w presentation/marp-deck/deck.md
 ```
 
-## Deck Conventions Used in This File
+## Deck conventions used in this file
 
 Conventions `presentation/marp-deck/deck.md` follows. Keep these when editing it:
 
@@ -67,7 +67,7 @@ Conventions `presentation/marp-deck/deck.md` follows. Keep these when editing it
 Common problems rendering or exporting `presentation/marp-deck/deck.md`, and fixes:
 
 - **PDF/PPTX export fails, Chrome/Chromium not found**: see the
-  `PUPPETEER_EXECUTABLE_PATH`/`CHROME_PATH` fix under "Rendering the Deck" above.
+  `PUPPETEER_EXECUTABLE_PATH`/`CHROME_PATH` fix under "Rendering the deck" above.
 - **Front matter not picked up (deck renders as plain markdown, no slide breaks)**:
   `marp: true` is missing or malformed in the YAML front matter, or the front
   matter is not the first thing in the file. No blank line or content may precede

@@ -11,11 +11,11 @@ The guide has two flows worth a picture. Everything else in it is a command
 or a list of conventions and stays as text.
 
 - The edit loop: edit `deck.md`, watch it in the browser, export to PDF or
-  PPTX. Four nodes, one direction. It belongs under "Live Preview / Editing
-  Workflow", where a reader decides which of the three tools to open.
+  PPTX. Four nodes, one direction. It belongs under "Live preview / editing
+  workflow", where a reader decides which of the three tools to open.
 - The file path from diagram source to slide: a `.mmd` file rendered by the
   Mermaid CLI to an SVG that the deck embeds and the Marp CLI renders. Five
-  nodes. It belongs under "Deck Conventions", beside the front-matter rules,
+  nodes. It belongs under "Deck conventions", beside the front-matter rules,
   because it is the one convention the guide cannot state in a sentence.
 
 Do not diagram the install steps or the troubleshooting list. A numbered
