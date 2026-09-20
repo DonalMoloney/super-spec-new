@@ -415,11 +415,11 @@ State what an extension template can do, what a preset can do, and which of
 the two this repository adopts, with the reason. Verify: the ADR is in
 `decisions.md`, dated, with a status.
 
-- [ ] T252 Move the five templates to a preset
+- [x] T252 Move the five templates to a preset
 
-Run this task only when T251 adopts the preset. Verify: `specify preset
-resolve spec-template` names core's file plus our addendum, and the golden
-scores 100 on sections.
+Not run, and it will not be: T251 rejected the preset, so this task's own
+precondition never held. ADR-0021 records the reason. Reopen it only by
+superseding that ADR, not by reviving this line.
 
 ## G-26 — Register the gates as agent-native hooks (blocked: ADR-0022)
 
