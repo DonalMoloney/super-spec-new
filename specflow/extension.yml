@@ -12,6 +12,8 @@ extension:
   author: "Specflow Contributors"
   repository: "https://github.com/DonalMoloney/super-spec-new"
   license: "MIT"
+  category: "process"
+  effect: "read-write"
   homepage: "https://github.com/DonalMoloney/super-spec-new#readme"
 requires:
   speckit_version: ">=0.16.2"
@@ -71,16 +73,19 @@ hooks:
   after_tasks:
     command: "speckit.specflow.tasks"
     optional: true
+    priority: 10
     prompt: "Run Superpowers task decomposition and add execution markers?"
     description: "Check task coverage and add Superpowers execution markers after core task generation"
   before_implement:
     command: "speckit.specflow.execute"
     optional: true
+    priority: 10
     prompt: "Run Superpowers-guided implementation with TDD and checkpoints?"
     description: "Enforce TDD discipline and follow Superpowers execution guidance before core implementation"
   after_implement:
     command: "speckit.specflow.review"
     optional: true
+    priority: 10
     prompt: "Run Superpowers review against the specification and implementation?"
     description: "Review implementation against the spec, plan, tasks, and constitution"
 tags: ["superpowers", "brainstorming", "tdd", "code-review", "subagent", "workflow", "claude-code", "copilot"]
