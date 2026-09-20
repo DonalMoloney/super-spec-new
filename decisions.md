@@ -269,3 +269,19 @@ deleting them; prune anything older than a quarter that no longer guides work.
   already carry the reason, so those five tasks become `skipped`.
 - Consequences: `validate-progress.py` enumerates the four values, so a
   sixth reason word is rejected on write instead of stored.
+
+## ADR-0024: The first tag is 1.1.0, and the floor raise is minor this once
+
+- Date: 2026-09-20
+- Status: accepted
+- Context: the `[Unreleased]` set holds two changed Process steps, which
+  `CHANGELOG.md`'s rule calls minor, and a rename that moves `extension.name`
+  and the descriptions rather than an id, command or file. Raising
+  `requires.speckit_version` to `>=0.16.2` is the one entry that rule does not
+  classify: spec-kit refuses the install below that floor, so the break lands
+  on the host, not on a citing project.
+- Decision: the first tag is `v1.1.0`. A floor raise counts as minor while no
+  id, command, hook or file is renamed with it. The next floor raise is major.
+- Consequences: the version question leaves `open-questions.md`.
+  `extension.yml` carries `1.1.0` and every `[Unreleased]` entry moves under
+  that heading. A later floor raise needs a major bump and a migration note.

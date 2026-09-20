@@ -17,6 +17,8 @@ A release that carries more than one of these takes the highest part.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-20
+
 ### Changed
 
 - The extension needs spec-kit 0.16.2 or later. On an older spec-kit,
