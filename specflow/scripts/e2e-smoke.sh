@@ -33,6 +33,7 @@ done < <(awk '/^provides:/{p=1} p&&/^  commands:/{c=1;next} c&&/^  [a-z]/{c=0} c
 EXPECTED_COMMAND_COUNT=${#SPECFLOW_COMMANDS[@]}
 EXPECTED_HOOK_COUNT=$(awk '/^hooks:/{h=1;next} h&&/^[a-z]/{h=0} h&&/^  [a-z_]+:/{n++} END{print n+0}' "$MANIFEST")
 LOG_TAIL_LINES=30
+RESOLVER_ERROR_LINES=3
 
 if [ -t 1 ]; then
   C_GREEN=$'\033[32m'; C_RED=$'\033[31m'; C_DIM=$'\033[2m'; C_BOLD=$'\033[1m'; C_RST=$'\033[0m'
@@ -68,9 +69,15 @@ assert_no_dir()  { if [ ! -d "$2" ]; then pass "$1"; else fail "$1 (unexpected: 
 assert_resolved_template() {
   local surface="$1" workdir="$2"
   local resolved="$workdir/.resolved-spec-template.md"
+  local resolver_error="$workdir/.resolve-template.err"
   if ! ( cd "$workdir" && bash .specify/scripts/bash/resolve-template.sh spec-template ) \
-         >"$resolved" 2>/dev/null; then
-    fail "$surface: resolve-template.sh spec-template did not run in the installed project"
+         >"$resolved" 2>"$resolver_error"; then
+    # The resolver names the layer it could not resolve on stderr. Dropping it
+    # leaves a CI failure with no cause.
+    local detail
+    detail="$(tail -n "$RESOLVER_ERROR_LINES" "$resolver_error" | tr '\n' ' ')"
+    detail="${detail% }"
+    fail "$surface: resolve-template.sh spec-template did not run in the installed project: ${detail:-no stderr output}"
     return
   fi
   local section
