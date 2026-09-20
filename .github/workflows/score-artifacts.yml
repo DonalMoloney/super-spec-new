@@ -49,11 +49,12 @@ jobs:
           pip install pytest
           python3 -m pytest scripts/tests/test_score_artifacts.py -q
 
-      - name: Score both goldens
+      - name: Score every golden
         run: |
           set -euo pipefail
           python3 scripts/score-artifacts.py examples/static-landing-page/specs/001-static-landing-page > landing-page.json
           python3 scripts/score-artifacts.py examples/seeded-bug > seeded-bug.json
+          python3 scripts/score-artifacts.py examples/link-audit/specs/001-link-audit > link-audit.json
 
       - name: Assert golden scores held
         run: |
@@ -62,10 +63,17 @@ jobs:
           import json
           from pathlib import Path
 
-          # The landing page is the clean golden and must stay perfect; the
+          # link-audit is this fork's golden, built from the current templates,
+          # so it carries no clarification marker at all. The landing page is
+          # upstream's golden and must stay perfect until it is removed. The
           # seeded-bug golden carries one deliberate untraced criterion, so an
           # empty `untraced` there means the scorer stopped reporting the gap.
           EXPECTATIONS = (
+              ("link-audit.json", "spec_sections.score", 100.0),
+              ("link-audit.json", "traceability.score", 100.0),
+              ("link-audit.json", "task_ids.score", 100.0),
+              ("link-audit.json", "traceability.untraced", []),
+              ("link-audit.json", "needs_clarification.count", 0),
               ("landing-page.json", "spec_sections.score", 100.0),
               ("landing-page.json", "traceability.score", 100.0),
               ("landing-page.json", "task_ids.score", 100.0),
