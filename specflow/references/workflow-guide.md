@@ -78,7 +78,8 @@ matching section while it runs a command.
    - Measurable success criteria
    - Any assumptions
 
-5. **Generate the spec** from `spec-template.md`.
+5. **Generate the spec** from `spec-template`, resolved through the resolver
+   named in Phase 0 and read from `TEMPLATE_CONTENT`.
    - Write each user story's acceptance scenarios in Given/When/Then form
    - Mark each functional requirement MUST/SHOULD/MAY
    - Flag an unclear item as `[NEEDS CLARIFICATION]`
@@ -208,7 +209,8 @@ This phase may run more than once. Each session:
 6. **Superpowers integration**: When the `writing-plans` skill is found, read
    it and follow its blueprint process to sharpen the execution strategy section.
 
-7. **Generate plan** from `plan-template.md`, filling every section.
+7. **Generate plan** from `plan-template`, resolved through the resolver named
+   in Phase 0 and read from `TEMPLATE_CONTENT`, filling every section.
 
 8. **Write** the plan to `specs/NNN-feature-name/plan.md`
 
@@ -233,7 +235,8 @@ This phase may run more than once. Each session:
 
 2. **Superpowers integration**: When the `writing-plans` skill is detected, read it
    and follow its task decomposition process. Structure the output with the
-   `tasks-template.md` format.
+   `tasks-template` format, resolved through the resolver named in Phase 0 and
+   read from `TEMPLATE_CONTENT`.
 
 3. **Split the plan** into phases:
    - Phase 1: Setup (project structure and dependencies)
