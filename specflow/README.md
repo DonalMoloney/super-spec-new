@@ -214,7 +214,7 @@ To list the extension in the
    ```json
    {
      "id": "specflow",
-     "name": "Superpowers Bridge",
+     "name": "Specflow",
      "version": "1.0.2",
      "description": "Adds brainstorming, task decomposition, TDD execution, and spec review to spec-kit, following obra/superpowers skills when installed",
      "author": "Specflow Contributors",
