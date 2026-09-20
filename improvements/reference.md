@@ -45,7 +45,6 @@ item named in the rewrite status below.
 | File | Real | Last moved by |
 |------|------|---------------|
 | `extension.yml` | 0% | D-05 holds it |
-| `CHANGELOG.md` | 1% | D-05 holds it |
 | `references/superpowers-mapping.md` | 4% | nothing since the rename |
 | `templates/plan-template.md` | 20% | PR #69 |
 | `scripts/validate-release-archive.py` | 29% | `script-refactorer` |
@@ -65,6 +64,7 @@ item named in the rewrite status below.
 | `commands/hooks/after-execute.md` | 65% | PR #70 |
 | `commands/hooks/before-execute.md` | 70% | PR #70 |
 | `commands/review.md` | 76% | PR #67 |
+| `CHANGELOG.md` | 77% | `prose-rephraser` |
 | `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` |
 | `README.md` | 100% | PR #59 |
 
@@ -247,7 +247,7 @@ standards-compliance pass D-05 gates.
 |------|------|-------|------------|
 | `commands/hooks/after-tasks.md` | 60% | `prose-rephraser` | |
 | `extension.yml` | 0% | `prose-rephraser` | D-05 |
-| `CHANGELOG.md` | 1% | `prose-rephraser` | D-05 |
+| `CHANGELOG.md` | 77% | `prose-rephraser` | |
 | `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` | |
 | `references/superpowers-mapping.md` | 4% | `prose-rephraser` | G-22 |
 | `README.md` | 100% | `prose-rephraser` | D-05 |
