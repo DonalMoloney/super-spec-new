@@ -285,3 +285,20 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Consequences: the version question leaves `open-questions.md`.
   `extension.yml` carries `1.1.0` and every `[Unreleased]` entry moves under
   that heading. A later floor raise needs a major bump and a migration note.
+
+## ADR-0026: `verify.sh` states the tool versions it does not match
+
+- Date: 2026-09-20
+- Status: accepted
+- Context: `verify.sh` runs the commands `ci.yml` runs, and
+  `tests/test_ci_parity.py` holds the two together. Neither pins a tool
+  version: `ci.yml` takes the shellcheck the runner image carries, and
+  `requirements-dev.txt` floors ruff at 0.14. Local shellcheck 0.11.0 lacks
+  SC2218, so `verify.sh` reported clean while CI failed, and main was red for
+  three pushes.
+- Decision: state the limit instead of pinning. The header comment names both
+  unpinned tools, and each run prints the local shellcheck and ruff versions
+  before the steps that call them.
+- Consequences: the gap is visible on every run rather than learned from a red
+  main. A check the CI build implements and the local build lacks still passes
+  here. Pinning stays open at the cost of an install step per contributor.

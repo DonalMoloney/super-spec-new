@@ -2,6 +2,12 @@
 # Runs the checks .github/workflows/ci.yml runs, in its order, stopping at the
 # first failure. tests/test_ci_parity.py compares the tables below with that
 # workflow and fails when the two drift apart.
+# The commands match the workflow; the tool versions do not.
+# ci.yml pins no shellcheck version and runs the build the ubuntu-latest image
+# carries; requirements-dev.txt floors ruff at 0.14 rather than pinning it.
+# A check the CI build implements and the local build lacks passes here and
+# fails there: shellcheck below 0.11.1 lacks SC2218.
+# The version lines printed below name the local builds.
 set -uo pipefail
 
 PYTHON_FLOOR_MAJOR=3
@@ -52,7 +58,17 @@ if ! python3 -c "import sys; raise SystemExit(0 if sys.version_info[:2] >= ($PYT
   exit 1
 fi
 
-printf 'python3 %s, against %s in CI.\n\n' "$python_version" "$CI_PYTHON_VERSION"
+printf 'python3 %s, against %s in CI.\n' "$python_version" "$CI_PYTHON_VERSION"
+
+# ci.yml pins no version for either tool, so the local build is the only
+# version there is to print.
+if command -v shellcheck >/dev/null 2>&1; then
+  shellcheck --version | head -2
+fi
+if command -v ruff >/dev/null 2>&1; then
+  ruff --version
+fi
+printf '\n'
 
 skipped_for_tool=()
 

@@ -192,6 +192,15 @@ def test_each_tool_gated_step_probes_the_program_its_command_runs():
     assert mismatched == []
 
 
+def test_each_tool_gated_step_prints_the_local_version_of_its_tool():
+    missing = [
+        tool
+        for tool, _command in script_tool_gated_steps(SCRIPT_TEXT)
+        if f"{tool} --version" not in SCRIPT_TEXT
+    ]
+    assert missing == []
+
+
 def test_deleting_a_skipped_ci_step_is_reported():
     mutated = workflow_with(lambda steps: steps.pop(index_of(steps, "Ruff")))
     assert divergences(mutated, SCRIPT_TEXT) != []
