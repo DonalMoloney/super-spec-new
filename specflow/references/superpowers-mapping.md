@@ -142,9 +142,11 @@ After the superpowers skill's process completes:
   boundary is where `progress.yml` is written and where a user can still
   redirect cheaply.
 
+The Copilot CLI has no subagents, so it runs a task marked `[SUBAGENT]` in order
+in its one session. On Claude Code the `subagent-driven-development` dispatch
+protocol covers that marker.
+
 **Combined with**:
-- `subagent-driven-development`: For tasks marked `[SUBAGENT]`, follow this skill's
-  dispatch protocol to delegate work to subagents
 - `test-driven-development`: For tasks marked `[TDD]`, follow this skill's
   RED-GREEN-REFACTOR discipline
 
