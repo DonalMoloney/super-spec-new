@@ -5,9 +5,10 @@ extension:
   version: "1.0.2"
   description: >-
     Adds brainstorming, task decomposition, TDD execution, and spec review to
-    spec-kit, following obra/superpowers skills when they are installed and a
-    built-in protocol when they are not. Every command resumes after an
-    interruption.
+    spec-kit, following obra/superpowers skills when they are installed. The
+    execute command refuses to run until /speckit.analyze reports zero critical
+    inconsistencies. The same command files run on Claude Code and on the
+    GitHub Copilot CLI.
   author: "Specflow Contributors"
   repository: "https://github.com/DonalMoloney/super-spec-new"
   license: "MIT"

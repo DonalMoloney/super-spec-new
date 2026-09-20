@@ -7,8 +7,9 @@ installed and a built-in protocol when it is not. Spec-kit owns the documents:
 constitution, spec, plan, tasks, checklist. Specflow adds edge-case
 brainstorming on the spec, task decomposition with execution markers,
 implementation with test-driven development and checkpoints, and a review of
-the implementation against the spec. It runs on Claude Code and on the GitHub
-Copilot CLI.
+the implementation against the spec. The execute command refuses to run until
+`/speckit.analyze` reports zero critical inconsistencies. The same command
+files run on Claude Code and on the GitHub Copilot CLI.
 
 ## Installation
 
@@ -216,7 +217,7 @@ To list the extension in the
      "id": "specflow",
      "name": "Specflow",
      "version": "1.0.2",
-     "description": "Adds brainstorming, task decomposition, TDD execution, and spec review to spec-kit, following obra/superpowers skills when installed",
+     "description": "Adds brainstorming, task decomposition, TDD execution, and spec review to spec-kit, following obra/superpowers skills when they are installed. The execute command refuses to run until /speckit.analyze reports zero critical inconsistencies. The same command files run on Claude Code and on the GitHub Copilot CLI.",
      "author": "Specflow Contributors",
      "repository": "https://github.com/DonalMoloney/super-spec-new",
      "verified": false,
