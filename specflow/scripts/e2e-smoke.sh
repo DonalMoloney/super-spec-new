@@ -35,6 +35,18 @@ EXPECTED_HOOK_COUNT=$(awk '/^hooks:/{h=1;next} h&&/^[a-z]/{h=0} h&&/^  [a-z_]+:/
 LOG_TAIL_LINES=30
 RESOLVER_ERROR_LINES=3
 
+# Process steps per command file, counted on 2026-09-20. A command file's
+# numbered Process list is its behavior contract, so a step dropped by a bad
+# merge or an edit has to fail here rather than pass unnoticed. bash 3.2 has no
+# associative arrays, so each row is "<command> <count>".
+EXPECTED_PROCESS_STEPS=(
+  "status 7"
+  "brainstorm 7"
+  "tasks 10"
+  "execute 9"
+  "review 8"
+)
+
 if [ -t 1 ]; then
   C_GREEN=$'\033[32m'; C_RED=$'\033[31m'; C_DIM=$'\033[2m'; C_BOLD=$'\033[1m'; C_RST=$'\033[0m'
 else
@@ -117,6 +129,29 @@ assert_resolved_template() {
   for section in "## Open Questions" "## Threat Model" "## Traceability" "## Brainstorm Log"; do
     assert_grep "$surface: resolved TEMPLATE_CONTENT carries '$section'" "$section" "$resolved"
   done
+}
+
+# Print the number of top-level numbered steps in a command file's Process
+# section. A nested list is indented, so the anchored pattern skips it.
+count_process_steps() {
+  awk '
+    /^## Process$/ { inside = 1; next }
+    inside && /^## /  { exit }
+    inside && /^[0-9]+\. / { steps++ }
+    END { print steps + 0 }
+  ' "$1"
+}
+
+# Print the counted step total for a command name, or exit 1 when the
+# EXPECTED_PROCESS_STEPS table holds no row for it.
+expected_process_steps() {
+  local name="$1" row
+  for row in "${EXPECTED_PROCESS_STEPS[@]}"; do
+    case "$row" in
+      "$name "*) printf '%s' "${row##* }"; return 0 ;;
+    esac
+  done
+  return 1
 }
 
 # Assert a file exists and contains pattern.
@@ -281,6 +316,22 @@ assert_grep "review.md reads review-scope.md"          'review-scope\.md'     "$
 assert_grep "review.md writes review-findings.json"    'review-findings\.json' "$REPO_ROOT/commands/review.md"
 # The tasks command carries the singular-task rule from AGENTS.md.
 assert_grep "tasks.md states the one-outcome-per-task rule" 'one outcome per task' "$REPO_ROOT/commands/tasks.md"
+
+# Every command extension.yml declares is counted, so a new command without a
+# row in the table fails here instead of shipping with its steps unchecked.
+for cmd in "${SPECFLOW_COMMANDS[@]}"; do
+  command_file="$REPO_ROOT/commands/$cmd.md"
+  if ! expected=$(expected_process_steps "$cmd"); then
+    fail "commands/$cmd.md has no row in the EXPECTED_PROCESS_STEPS table in scripts/e2e-smoke.sh; count its Process steps and add one"
+    continue
+  fi
+  actual=$(count_process_steps "$command_file")
+  if [ "$actual" = "$expected" ]; then
+    pass "commands/$cmd.md has $expected Process steps"
+  else
+    fail "commands/$cmd.md has $actual Process steps, expected $expected. Restore the missing step, or change the $cmd row of the EXPECTED_PROCESS_STEPS table in scripts/e2e-smoke.sh when the step count moved on purpose"
+  fi
+done
 
 step "5/5" "Generated artifacts (for human review)"
 cd "$WORK" || exit 1
