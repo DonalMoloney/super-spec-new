@@ -338,8 +338,8 @@ when Superpowers skills are unavailable.
 
 ### Steps
 
-1. **Confirm the gates**: Require the constitution first, then the target
-   feature's `.analyzed` marker. Stop with `ANALYZE_REQUIRED` when the marker
+1. **Confirm the gates**: Require `.specify/memory/constitution.md` first, then
+   the target feature's `.analyzed` marker. Stop with `ANALYZE_REQUIRED` when the marker
    is absent. Read tasks, plan, spec, and constitution once both checks pass.
 
 2. **Detect superpowers**: Check whether the `executing-plans`,
@@ -385,10 +385,15 @@ when Superpowers skills are unavailable.
    - Summarize the work completed
    - Run the applicable tests
    - Report the results
+   - Write `specs/NNN/handoff.md`, capped at 5 lines, so a resumed session
+     picks up the checkpoint state without reading the full task history
    - Ask: "Phase [N] complete. Proceed to Phase [N+1]?"
    - Wait for the user's explicit approval
 
 5. **Check off each task** in `tasks.md` as it completes.
+
+6. **Update `progress.yml`** for the target feature with the current execution
+   state, using the fields the Writing `progress.yml` table below names.
 
 ### Human Checkpoint Protocol
 
@@ -604,9 +609,8 @@ Every specflow command runs this check first:
 6. **Resume** work from the detected point; see the phase-specific rules below
 
 `.claude/hooks/session-start.sh` prints `specs/NNN/handoff.md` at session start,
-when the feature has one, before any command runs its own resume check.
-`handoff.md` stays at 5 lines or fewer; `/speckit.specflow.execute` writes it at
-each phase checkpoint under that limit.
+when the feature has one, before any command runs its own resume check. Phase 5,
+step 4 writes that file at each phase checkpoint.
 
 ### Phase-Specific Resume Rules
 
