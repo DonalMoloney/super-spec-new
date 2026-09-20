@@ -60,7 +60,6 @@ assert_file()    { if [ -f "$2" ]; then pass "$1";   else fail "$1 (missing: $2)
 assert_dir()     { if [ -d "$2" ]; then pass "$1";   else fail "$1 (missing: $2)"; fi; }
 # Assert a directory does not exist at path.
 assert_no_dir()  { if [ ! -d "$2" ]; then pass "$1"; else fail "$1 (unexpected: $2)"; fi; }
-# Assert a file exists and contains pattern.
 # specify init writes core's templates before an extension installs, so
 # asserting that .specify/templates/spec-template.md exists proves nothing
 # about specflow. Resolve the template the way a command does and check the
@@ -80,6 +79,7 @@ assert_resolved_template() {
   done
 }
 
+# Assert a file exists and contains pattern.
 assert_grep()    {
   local desc="$1" pattern="$2" file="$3"
   if [ -f "$file" ] && grep -q -- "$pattern" "$file"; then
