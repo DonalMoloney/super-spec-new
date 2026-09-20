@@ -170,14 +170,21 @@ completed work, so re-running a command after an interruption is safe.
    The agent asks one question at a time about boundaries, errors, security,
    and user experience, and writes the answers back into the spec.
 
-4. Plan, decompose, implement, review.
+4. Clarify, plan, decompose, analyze, implement, review.
 
    ```
+   /speckit.clarify
    /speckit.plan
    /speckit.specflow.tasks
+   /speckit.analyze
    /speckit.specflow.execute
    /speckit.specflow.review
    ```
+
+   The two spec-kit gates are not optional here. `/speckit.clarify` writes the
+   `.clarified` marker and `/speckit.analyze` writes `.analyzed`;
+   `/speckit.specflow.execute` stops with `ANALYZE_REQUIRED` until the second
+   marker exists.
 
 ## A complete run
 
