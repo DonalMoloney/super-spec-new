@@ -25,6 +25,19 @@ SEEDED_BUG_FEATURE_DIR = (
 SEEDED_BUG_EXTRA_FILE = Path("README.md")
 SEEDED_BUG_REMOVED_SPEC_ROW = "| SC-003 | `checklists/review.md::AS3.4` | Passing |"
 
+SEEDED_THREAT_MODEL_FEATURE_DIR = (
+    Path(__file__).resolve().parents[2] / "examples" / "seeded-threat-model"
+)
+SEEDED_OPEN_QUESTION_FEATURE_DIR = (
+    Path(__file__).resolve().parents[2] / "examples" / "seeded-open-question"
+)
+SEEDED_NO_CHANGELOG_FEATURE_DIR = (
+    Path(__file__).resolve().parents[2] / "examples" / "seeded-no-changelog"
+)
+SEEDED_MISSING_TEST_FEATURE_DIR = (
+    Path(__file__).resolve().parents[2] / "examples" / "seeded-missing-test"
+)
+
 SPECFLOW_DIR = Path(__file__).resolve().parents[2]
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -729,3 +742,131 @@ def test_directory_named_like_markdown_does_not_hide_a_later_marker():
     assert report["needs_clarification"]["locations"] == [
         {"file": "zz-notes.md", "line": 1}
     ]
+
+
+def test_golden_run_all_threat_model_rows_are_mitigated():
+    report = score_json(GOLDEN_FEATURE_DIR)
+    assert report["threat_model"] == {
+        "rows": 6,
+        "mitigated": 6,
+        "missing_mitigation": [],
+        "score": 100.0,
+    }
+
+
+def test_golden_run_scores_open_questions_full_without_a_clarified_marker():
+    report = score_json(GOLDEN_FEATURE_DIR)
+    assert report["open_questions"]["clarified"] is False
+    assert report["open_questions"]["questions"] == 3
+    assert report["open_questions"]["score"] == 100.0
+
+
+def test_golden_run_has_no_changelog_section_and_scores_full():
+    report = score_json(GOLDEN_FEATURE_DIR)
+    assert report["changelog"] == {"present": False, "rows": 0, "score": 100.0}
+
+
+def test_golden_run_every_traceability_test_reference_resolves():
+    report = score_json(GOLDEN_FEATURE_DIR)
+    assert report["test_exists"] == {
+        "tests": 23,
+        "found": 23,
+        "missing": [],
+        "score": 100.0,
+    }
+
+
+def test_seeded_threat_model_leaves_spoofing_unmitigated():
+    report = score_json(SEEDED_THREAT_MODEL_FEATURE_DIR)
+    assert report["threat_model"] == {
+        "rows": 6,
+        "mitigated": 5,
+        "missing_mitigation": ["Spoofing"],
+        "score": 83.3,
+    }
+
+
+def test_seeded_threat_model_matches_the_golden_on_every_other_dimension():
+    golden = score_json(GOLDEN_FEATURE_DIR)
+    report = score_json(SEEDED_THREAT_MODEL_FEATURE_DIR)
+    assert report["spec_sections"]["score"] == golden["spec_sections"]["score"]
+    assert report["traceability"]["score"] == golden["traceability"]["score"]
+    assert report["open_questions"] == golden["open_questions"]
+    assert report["changelog"] == golden["changelog"]
+    assert report["test_exists"] == golden["test_exists"]
+    assert report["task_ids"]["score"] == golden["task_ids"]["score"]
+    assert (
+        report["needs_clarification"]["count"]
+        == golden["needs_clarification"]["count"]
+    )
+
+
+def test_seeded_open_question_leaves_two_questions_unresolved():
+    report = score_json(SEEDED_OPEN_QUESTION_FEATURE_DIR)
+    assert report["open_questions"] == {
+        "clarified": True,
+        "questions": 3,
+        "resolved": 1,
+        "unresolved": ["OQ-001", "OQ-002"],
+        "score": 33.3,
+    }
+
+
+def test_seeded_open_question_matches_the_golden_on_every_other_dimension():
+    golden = score_json(GOLDEN_FEATURE_DIR)
+    report = score_json(SEEDED_OPEN_QUESTION_FEATURE_DIR)
+    assert report["spec_sections"]["score"] == golden["spec_sections"]["score"]
+    assert report["traceability"]["score"] == golden["traceability"]["score"]
+    assert report["threat_model"] == golden["threat_model"]
+    assert report["changelog"] == golden["changelog"]
+    assert report["test_exists"] == golden["test_exists"]
+    assert report["task_ids"]["score"] == golden["task_ids"]["score"]
+    assert (
+        report["needs_clarification"]["count"]
+        == golden["needs_clarification"]["count"]
+    )
+
+
+def test_seeded_no_changelog_scores_zero_rows():
+    report = score_json(SEEDED_NO_CHANGELOG_FEATURE_DIR)
+    assert report["changelog"] == {"present": True, "rows": 0, "score": 0.0}
+
+
+def test_seeded_no_changelog_matches_the_golden_on_every_other_dimension():
+    golden = score_json(GOLDEN_FEATURE_DIR)
+    report = score_json(SEEDED_NO_CHANGELOG_FEATURE_DIR)
+    assert report["spec_sections"]["score"] == golden["spec_sections"]["score"]
+    assert report["traceability"]["score"] == golden["traceability"]["score"]
+    assert report["threat_model"] == golden["threat_model"]
+    assert report["open_questions"] == golden["open_questions"]
+    assert report["test_exists"] == golden["test_exists"]
+    assert report["task_ids"]["score"] == golden["task_ids"]["score"]
+    assert (
+        report["needs_clarification"]["count"]
+        == golden["needs_clarification"]["count"]
+    )
+
+
+def test_seeded_missing_test_leaves_fr_001_unresolved():
+    report = score_json(SEEDED_MISSING_TEST_FEATURE_DIR)
+    assert report["test_exists"] == {
+        "tests": 23,
+        "found": 22,
+        "missing": ["FR-001"],
+        "score": 95.7,
+    }
+
+
+def test_seeded_missing_test_matches_the_golden_on_every_other_dimension():
+    golden = score_json(GOLDEN_FEATURE_DIR)
+    report = score_json(SEEDED_MISSING_TEST_FEATURE_DIR)
+    assert report["spec_sections"]["score"] == golden["spec_sections"]["score"]
+    assert report["traceability"]["score"] == golden["traceability"]["score"]
+    assert report["threat_model"] == golden["threat_model"]
+    assert report["open_questions"] == golden["open_questions"]
+    assert report["changelog"] == golden["changelog"]
+    assert report["task_ids"]["score"] == golden["task_ids"]["score"]
+    assert (
+        report["needs_clarification"]["count"]
+        == golden["needs_clarification"]["count"]
+    )
