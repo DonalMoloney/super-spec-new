@@ -610,6 +610,50 @@ out="$(MUTATION_THRESHOLD=100 bash "$HOOKS/mutation-gate.sh" "$u" 2>&1)"; st=$?
 check_scored "an untested function fails the gate at threshold 100" 1 "$st"
 check_has_scored "the failing run counts the uncovered mutants" "$out" "23 of 26 mutants killed; 0 survived, 3 uncovered or timed out"
 
+# --- check-upstream.sh (compares the vendored commit to upstream HEAD) ---
+CHECK_UPSTREAM="$HOOKS/../divergence/check-upstream.sh"
+# A stub git answers ls-remote from two variables, so no case reaches the
+# network. It is first on PATH and forwards nothing else.
+STUB_BIN="$(mktemp -d)"
+cat > "$STUB_BIN/git" <<'STUB'
+#!/usr/bin/env bash
+if [ "${1:-}" = "ls-remote" ]; then
+  printf '%s\n' "${STUB_LS_REMOTE_OUT:-}"
+  exit "${STUB_LS_REMOTE_EXIT:-0}"
+fi
+echo "stub git refuses $*" >&2
+exit 127
+STUB
+chmod +x "$STUB_BIN/git"
+check_upstream_out() { # ls-remote-stdout ls-remote-exit -> stdout and stderr
+  PATH="$STUB_BIN:$PATH" STUB_LS_REMOTE_OUT="$1" STUB_LS_REMOTE_EXIT="$2" \
+    bash "$CHECK_UPSTREAM" 2>&1
+}
+check_upstream_exit() { # ls-remote-stdout ls-remote-exit -> exit code
+  PATH="$STUB_BIN:$PATH" STUB_LS_REMOTE_OUT="$1" STUB_LS_REMOTE_EXIT="$2" \
+    bash "$CHECK_UPSTREAM" >/dev/null 2>&1
+  echo $?
+}
+ls_remote_line() { printf '%s\tHEAD' "$1"; } # sha -> one ls-remote answer
+# The drifted run names the pinned commit, so no case has to repeat the pin.
+MOVED_HEAD="0123456789abcdef0123456789abcdef01234567"
+drift_out="$(check_upstream_out "$(ls_remote_line "$MOVED_HEAD")" 0)"
+vendored="$(printf '%s\n' "$drift_out" | awk '/^vendored /{print $2}')"
+check "a moved upstream HEAD exits 1" 1 \
+  "$(check_upstream_exit "$(ls_remote_line "$MOVED_HEAD")" 0)"
+check_has "the drifted run prints the vendored commit" "$drift_out" "vendored "
+check_has "the drifted run prints the upstream commit" "$drift_out" "upstream $MOVED_HEAD"
+check "the drifted run read a vendored commit of at least 7 characters" 0 \
+  "$(status_of [ "${#vendored}" -ge 7 ])"
+same_head="$(printf '%s%040d' "$vendored" 0)"; same_head="${same_head:0:40}"
+check "an unmoved upstream HEAD exits 0" 0 \
+  "$(check_upstream_exit "$(ls_remote_line "$same_head")" 0)"
+check_has "the unmoved run prints the vendored commit" \
+  "$(check_upstream_out "$(ls_remote_line "$same_head")" 0)" "vendored $vendored"
+check "a failing ls-remote exits 2" 2 "$(check_upstream_exit "" 1)"
+check_has "a failing ls-remote names the remote" "$(check_upstream_out "" 1)" "superspec"
+check "an empty ls-remote answer exits 2" 2 "$(check_upstream_exit "" 0)"
+
 # --- .claude/review/schema.json (findings contract read by the reviewer agents) ---
 cd "$HOOKS/../.." || exit 1
 python3 -c 'import json;json.load(open(".claude/review/schema.json"))' >/dev/null 2>&1
