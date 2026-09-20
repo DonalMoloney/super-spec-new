@@ -121,20 +121,27 @@ Each feature's spec directory holds a `progress.yml` file that tracks the status
 
 ```yaml
 # specs/NNN-feature-name/progress.yml
-feature: feature-name
-created: 2026-04-22
-current_phase: brainstorm
+spec: NNN-feature-name
+status: in_progress
+current_phase: 2
 phases:
-  constitution: { status: complete, updated: 2026-04-22 }
-  specify:      { status: complete, updated: 2026-04-22 }
-  brainstorm:   { status: in_progress, updated: 2026-04-22, sessions: 1 }
-  plan:         { status: pending }
-  tasks:        { status: pending }
-  execute:      { status: pending }
-  review:       { status: pending }
+  - phase: 1
+    name: Setup
+    status: complete
+    tasks:
+      T001: complete
+      T002: complete
+  - phase: 2
+    name: Foundational
+    status: in_progress
+    tasks:
+      T003: pending
 ```
 
 **Status values**: `pending`, `in_progress`, `complete`, `skipped`
+
+`brainstorm` (`sessions`, `last_session`) and `gates` are optional top-level
+mappings; copy their shape from `examples/link-audit/specs/001-link-audit/progress.yml`.
 
 Every command marks `progress.yml` `in_progress` on start and `complete` on finish.
 

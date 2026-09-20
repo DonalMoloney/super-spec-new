@@ -660,7 +660,7 @@ The agent writes to `progress.yml` at these points:
 | Command starts | Set phase to `in_progress`, update timestamp |
 | Command completes successfully | Set phase to `complete`, update timestamp |
 | Brainstorm session ends | Increment `sessions` counter |
-| Task checkbox toggled during execute | Update `completed_tasks` and `current_task` |
+| Task checkbox toggled during execute | Set the task's entry under its phase's `tasks:` mapping |
 | User explicitly skips a phase | Set phase to `skipped` |
 
 Every `status` field, at the top level, on a phase, and on a task, holds one of
