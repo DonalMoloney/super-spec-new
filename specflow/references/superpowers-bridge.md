@@ -150,6 +150,33 @@ After the superpowers skill's process completes:
 | Findings JSON | `specs/NNN/review-findings.json` |
 | Checklist | Optional: `specs/NNN/checklist-review.md` |
 
+**Review personas**:
+
+Claude Code can split the review across separate contexts, one persona per
+dimension. The Copilot CLI has one session and covers the same ground from the
+review command's own Process steps. "Review step 4" below names step 4 of
+`/speckit.specflow.review`, whose five dimensions are spec compliance, edge case
+coverage, constitution compliance, code quality, and test coverage. Neither
+surface drops a dimension.
+
+| Persona | Dimension it covers | Step the Copilot CLI runs instead |
+|---------|---------------------|-----------------------------------|
+| `spec-red-team-reviewer` | Tests every acceptance criterion for ambiguity before code exists | The questioning protocol in [workflow-guide.md](workflow-guide.md) Phase 2, before `/speckit.plan` |
+| `threat-model-reviewer` | STRIDE pass over the trust boundaries the spec names | The security and privacy category of that same Phase 2 protocol |
+| `conformance-reviewer` | One observable check per acceptance criterion, from the spec and the diff alone | Review step 4, spec compliance |
+| `correctness-reviewer` | Logic bugs, boundary values, error propagation, resource cleanup | Review step 4, code quality |
+| `security-reviewer` | Injection, authentication, authorization, secret exposure, supply chain | Review step 4, code quality |
+| `maintainability-reviewer` | Names, coupling, duplication, test isolation | Review step 4, code quality |
+| `performance-reviewer` | Complexity, query count, repeated IO, unbounded retries | Review step 4, code quality |
+| `code-reviewer` | One pass over a whole change set: tests, implementation, refactors | Review step 4, all five dimensions in order |
+| `payload-compatibility-reviewer` | A change to specflow's own payload, read against both target surfaces | None. The row covers the extension, not a feature |
+| `release-archive-reviewer` | The install archive after a manifest or payload change | None. The row covers the extension, not a feature |
+
+The personas are Claude Code support files in specflow's own repository. The
+install archive leaves them out, so a project that installs specflow gets the
+review command and its built-in protocol on either surface. The last two rows
+check the extension itself and have no counterpart in a feature review.
+
 ## Graceful Degradation
 
 Every superpowers integration has a built-in fallback. The skill NEVER hard-fails
