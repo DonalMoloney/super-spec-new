@@ -639,6 +639,34 @@ validators, the hook suite and the smoke test, in CI's order, exiting nonzero
 on the first failure. Verify: the script's steps match `ci.yml` step for step,
 and deleting a step from `ci.yml` without changing the script fails a test.
 
+## G-42 — The catalog entry we publish cannot install anything (working on)
+
+Executor: `general-purpose`. Model: sonnet. Move: Tighten. Effort: low.
+Depends on: none. Diverges: no. Found by G-39 on 2026-09-20.
+
+`specflow/README.md` tells a maintainer to paste a `catalog.community.json`
+entry that carries no `download_url`. Spec-kit raises
+`Extension 'specflow' has no download URL` at
+`extensions/__init__.py:4384` before it fetches anything, so the entry is
+unusable as written and backlog item 23 would submit it that way.
+
+The URL that looks obvious is also wrong. `install_from_archive` at the same
+file's line 2756 wants `extension.yml` at the archive root or inside its single
+top-level directory. The repository tag ZIP unpacks to
+`super-spec-new-<tag>/specflow/extension.yml`, two levels down, and aborts with
+`No extension.yml found in archive`. Upstream superspec cites that URL safely
+because its repository root is the extension; this fork nested the extension
+under `specflow/`.
+
+The installable artifact is the release asset `specflow-vX.Y.Z.zip` that
+`release.yml` now builds and uploads, which is the same archive
+`validate-release-archive.py` checks.
+
+- [ ] T421 Give the catalog entry a working download URL
+
+Verify: the snippet carries a `download_url` naming the release asset, and the
+entry's fields match `extension.yml` field for field.
+
 ## G-41 — The guide and the goldens disagree on progress vocabulary (working on)
 
 Executor: `general-purpose`. Model: sonnet. Move: Tighten. Effort: low.
