@@ -57,8 +57,9 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | G-25 | An extension template always replaces, so core's changes are lost | high | Core `tasks-template.md` is 252 lines against our 210 |
 | G-26 | The gates cannot run on the Copilot CLI | medium | `grep -c '^events:' specflow/extension.yml` prints 0 |
 | G-28 | Upstream superspec is catalogued under our summary | low | `docs/community/extensions.md` lists three bridges, none of them specflow |
-| G-29 | Two free naming/wording moves nobody claimed | low | See the two checks under G-29 |
 | G-30 | `superpowers-bridge.md` is named for a banned metaphor | medium | 16 files cite the path |
+| G-32 | The standards linter reads no YAML string | low | `lint-standards.py` collects `.md` only |
+| G-33 | The word-choice table is enforced by reading, not a check | medium | `lint-standards.py` checks em-dashes and the banned table only |
 | C-01 | 44 merged remote branches | low | `git branch -r` |
 | C-03 | The `imporvements/` directory name is a typo | low | 13 files cite it |
 | C-05 | Both e2e scripts leave a work directory behind | low | `Workdir kept at` prints unconditionally |
@@ -488,14 +489,14 @@ and in the `description` field of `extension.yml`, worded the same.
 Record the answer beside backlog item 23 so the catalog work does not reopen
 it. Verify: the answer is recorded with a date.
 
-## G-29 — Two free wording moves reference.md priced but nobody claimed (working on)
+## G-29 — Two free wording moves reference.md priced but nobody claimed (merged: `525e172`)
 
 Executor: `general-purpose`. Model: sonnet. Effort: low. Depends on: none.
 Both rows come from the Names table in `reference.md`, marked `Free` with
 `Claimed by: none`. Neither touches a file a validator, the smoke test, or a
 test fixture reads.
 
-- [ ] T291 Drop "enhanced" from the `after_tasks` hook prompt
+- [x] T291 Drop "enhanced" from the `after_tasks` hook prompt
 
 `extension.yml`'s `after_tasks` hook reads `prompt: "Run enhanced Superpowers
 task decomposition and validation?"`. "Enhanced" is banned filler in
@@ -504,7 +505,7 @@ task decomposition and validation?"`. "Enhanced" is banned filler in
 specflow/extension.yml` prints nothing and
 `python3 scripts/validate-extension-metadata.py` passes.
 
-- [ ] T292 Add the two tags nothing lists
+- [x] T292 Add the two tags nothing lists
 
 `extension.yml`'s `tags:` list carries `superpowers`, `brainstorming`, `tdd`,
 `code-review`, `subagent`, `workflow`. Neither target surface appears.
@@ -537,6 +538,64 @@ Give Phase 4 an unconditional step that resolves `tasks-template` and reads
 `writing-plans` branch to describe only what that skill adds. Verify: Phase 4
 names `tasks-template` on a line that no skill-detection condition governs,
 and `e2e-smoke.sh` passes.
+
+## G-32 — The standards linter reads no YAML string
+
+Executor: `bdd-orchestrator`. Model: sonnet. Move: Tighten. Effort: low.
+Depends on: none. Diverges: no.
+
+`scripts/lint-standards.py` collects tracked `.md` files only, so `.yml`, `.py`
+and `.sh` are never opened and `extension.yml` has never been in scope. The
+manifest is the file spec-kit's catalog shows a user, and it carried
+"Superpowers Bridge", "Enhanced" five times, "Deep-dive" twice and
+"Intelligent" once until D-05d and G-29 removed them by reading. The linter
+reported 0 findings before and after each of those fixes, so an identical
+string lands silently tomorrow.
+
+Measured by G-29 on 2026-09-20: the file is 160 lines; the matching engine
+already does the work and the gap is input, not logic. The design work is
+deciding which strings are user-facing. `extension.description`, the five
+command and five template `description:` fields, and the three hook `prompt:`
+and `description:` fields are. `id`, `name`, `file`, `command`, and the
+`optional_skills` ids are identifiers and must be exempt, or every
+`test-driven-development` trips a match.
+
+- [ ] T321 Lint the manifest's user-facing strings
+
+`findings_for` assumes text lines for its fenced-block and line-number
+handling, so the YAML path reports through its own function rather than
+reusing it. Verify: a banned word planted in `extension.yml`'s `description`
+fails the linter, the same word in its `id` does not, and the suite passes.
+
+## G-33 — The word-choice table is enforced by reading, not by a check
+
+Executor: `bdd-orchestrator`. Model: sonnet. Move: Tighten. Effort: medium.
+Depends on: G-32. Diverges: no.
+
+`lint-standards.py` checks two rules: em-dashes, and the banned-words table it
+parses out of `standards/documentation.md` at run time. The word-choice table,
+the sentence-structure rules, and the per-document rules are checked nowhere.
+"Verify task coverage" sat in `extension.yml` until G-29 read it; "verify that"
+is a word-choice row, not a banned-table row, so no guard would have caught it
+even once G-32 lands.
+
+Harder than G-32, which is why it is separate. The banned table is a category
+and a list; the word-choice table is two columns, so a check matches the "Not"
+column and reports the "Write" suggestion. Its exclusions are contextual
+(`execute (unless the command is execute)`, `issue (unless a tracker issue)`,
+`update (unless a version bump)`), and `banned_entries` already drops
+qualifier-carrying rows rather than guessing at them.
+
+- [ ] T331 Decide which word-choice rows a check can hold
+
+A row whose exclusion needs the sentence's meaning is not checkable. Sort the
+table into rows a matcher can judge and rows it cannot, and record the split.
+Verify: the split is written down with a reason per excluded row.
+
+- [ ] T332 Check the rows that survive T331
+
+Verify: a "Not" column word in a shipped document fails the linter and names
+its "Write" replacement, an excluded row does not fire, and the suite passes.
 
 ## G-30 — Drop the "bridge" metaphor from `superpowers-bridge.md`'s name
 
