@@ -271,7 +271,19 @@ This phase may run more than once. Each session:
 
 8. **Record the dependencies** and the execution order.
 
-9. **Write the result** to `specs/NNN-feature-name/tasks.md`
+9. **Preserve stable IDs**: when `specs/NNN-feature-name/tasks.md` already
+   exists, read every `TNNN` ID in it before writing. Match each regenerated
+   task to an existing task by the outcome it names, not by its wording and not
+   by its position in the list. A matched task keeps its existing ID. A task
+   with no match gets the next ID above the highest ID the file has ever used.
+   A retired ID never goes to a different task.
+
+10. **Print a diff summary** of the regeneration before writing: the IDs added,
+    the IDs removed, and the IDs renumbered. When
+    `specs/NNN-feature-name/progress.yml` marks a removed or renumbered ID
+    complete, stop and ask the user to confirm. Otherwise write the file.
+
+11. **Write the result** to `specs/NNN-feature-name/tasks.md`
 
 ### Verification
 
@@ -439,13 +451,19 @@ The agent MUST:
 
 6. **Group** the findings by severity, highest first.
 
-7. **Write** the findings to `specs/NNN-feature-name/review-findings.json`, in
+7. **Append each spec gap** to the spec. For every Critical or Important
+   finding that reports a missing, ambiguous, or contradicted requirement, add
+   a row to the `## Open Questions` table in `specs/NNN-feature-name/spec.md`
+   and open its Question column with the finding ID.
+
+8. **Write** the findings to `specs/NNN-feature-name/review-findings.json`, in
    the shape `commands/review.md` defines under Findings File.
 
-8. **Join** each finding to the checklist item it fails. For every checklist
-   the feature has that carries a `## Review Findings` table, add a row with
-   the `CHK` id, the finding's `R-NNN` id, and the finding's status. A feature
-   with no checklist skips this step.
+9. **Join** each finding to the checklist item it fails. For every checklist
+   the feature has, under `specs/NNN-feature-name/checklists/` or in the
+   `checklist-review.md` this run writes, that carries a `## Review Findings`
+   table, add a row with the `CHK` id, the finding's `R-NNN` id, and the
+   finding's status. A feature with no checklist skips this step.
 
 ---
 
@@ -616,7 +634,7 @@ each phase checkpoint under that limit.
 **Tasks** (`in_progress`):
 - Re-read `tasks.md`
 - Check that every user story in `spec.md` maps to a task
-- Add any missing task without disturbing the existing numbering
+- Add any missing task under the stable-ID rule in Phase 4, step 9
 
 **Execute** (`in_progress`):
 - Re-read `tasks.md` and parse its checkboxes
