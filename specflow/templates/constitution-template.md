@@ -81,6 +81,20 @@ This project follows **specification-driven development** through the specflow p
 - [ ] **Security review**: [REQUIRED/OPTIONAL], [scope description]
 - [ ] **Performance review**: [REQUIRED/OPTIONAL], [benchmarks or targets]
 
+### Review Stages
+
+<!--
+  Set which review stages this project runs and how strong a model each needs.
+  Name a model class, never a specific model or agent: the class has to resolve
+  on whichever agent CLI the project uses.
+-->
+
+| Stage | When it runs | Model class |
+|-------|--------------|-------------|
+| Pre-mortem | Before implementation starts, against plan.md | fast |
+| Single reviewer | On every change | standard |
+| Panel | On a change the risk rules mark high | strongest |
+
 ### Deployment Gates
 
 - [ ] All tests pass
