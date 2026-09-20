@@ -158,6 +158,7 @@ and **stable across sessions**, so no command re-runs detection.
 ```yaml
 # .specify/superpowers.yml
 last_checked: 2026-04-22T14:30:00
+version: 6.4.1
 skills:
   brainstorming:
     detected: true
@@ -174,7 +175,23 @@ skills:
     path: .agents/skills/test-driven-development/SKILL.md
   requesting-code-review:
     detected: false
+  systematic-debugging:
+    detected: false
+  verification-before-completion:
+    detected: false
+  using-git-worktrees:
+    detected: false
+  dispatching-parallel-agents:
+    detected: false
+  receiving-code-review:
+    detected: false
+  finishing-a-development-branch:
+    detected: false
 ```
+
+The file carries one entry per skill the Skill Mapping table in
+`references/superpowers-mapping.md` names, and `version` holds the superpowers
+release status read from the plugin manifest.
 
 **When this file is updated**:
 - On `/speckit.constitution`, at initial creation
