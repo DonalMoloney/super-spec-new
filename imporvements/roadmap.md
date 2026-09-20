@@ -65,7 +65,8 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | C-01 | 44 merged remote branches | low | `git branch -r` |
 | C-03 | The `imporvements/` directory name is a typo | low | 13 files cite it |
 | C-05 | Both e2e scripts leave a work directory behind | low | `Workdir kept at` prints unconditionally |
-| C-06 | The dry run's assertion count is not its last line | low | The API-key hint trails it |
+| C-08 | A hook case passes for the wrong reason without mutmut | low | The `jq missing` case exits on the mutmut check |
+| C-09 | `artifact-lint.sh` lints a command file as a task list | low | Editing `commands/tasks.md` trips the stable-ID rule |
 
 ## D-01 — `after-tasks.md` reads the progress file (merged: `8fb7813`)
 
@@ -578,10 +579,24 @@ closed on 2026-09-20.
   directory under `$TMPDIR` every time they pass. Keep it only on failure or
   when `KEEP_WORKDIR=1`. Verify: after a passing run the printed path does not
   exist.
-- [ ] **C-06** Make the assertion count the last line of the agent dry run.
+- [x] **C-06** Make the assertion count the last line of the agent dry run.
   The run prints the count already; the API-key hint follows it, so a reader
   sees the hint and not the result. Verify: the last line of `E2E_DRY_RUN=1
-  bash scripts/e2e-agent-claude.sh` reads `N assertions, 0 failed`.
+  bash scripts/e2e-agent-claude.sh` reads `N assertions, 0 failed`. Merged in
+  `069a384`. The hint was not the real trailer: the `cleanup` EXIT trap printed
+  `workdir kept:` after it, so the count now prints from the trap.
+- [ ] **C-08** Fix the vacuous pass in the `jq missing from PATH fails` hook
+  case. Its setup runs `ln -s "$(command -v mutmut)" "$shim/mutmut"`, which
+  errors when mutmut is absent, so the case exits 2 on the mutmut check and
+  never reaches the jq check it names. It passes for the wrong reason on any
+  machine without mutmut. Verify: the case fails when jq is on `PATH` and
+  mutmut is not.
+- [ ] **C-09** Stop `artifact-lint.sh` treating `specflow/commands/tasks.md` as
+  a generated artifact. The lint matches on the basename `tasks.md`, so editing
+  the command contract trips `no task lines with stable IDs (expected '- [ ]
+  T001 ...')`. A command file is a behavior contract, not a feature's task
+  list. Verify: an edit to `specflow/commands/tasks.md` passes the lint, and a
+  `specs/NNN-*/tasks.md` with no stable IDs still fails it.
 
 ## Backlog: items 23 to 36
 
