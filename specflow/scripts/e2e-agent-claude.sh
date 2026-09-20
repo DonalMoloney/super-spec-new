@@ -82,17 +82,20 @@ else
 fi
 LOGS="$WORK/.logs"; mkdir -p "$LOGS"
 
+# The EXIT trap runs after every exit path, so the result line prints here to
+# land last.
 cleanup() {
   if [ "$KEEP_WORKDIR" = "1" ]; then
     printf '\n%sworkdir kept:%s %s\n' "$C_DIM" "$C_RST" "$WORK"
   else
     rm -rf "$WORK"
   fi
+  printf '\n%d assertions, %d failed\n' "$PASS" "$FAIL"
 }
-trap cleanup EXIT
 
 # output helpers
 PASS=0; FAIL=0; FAILED_STAGE=""
+trap cleanup EXIT
 pass()  { printf '    %sok%s   %s\n' "$C_GREEN" "$C_RST" "$1"; PASS=$((PASS+1)); }
 miss()  { printf '    %sFAIL%s %s\n' "$C_RED"   "$C_RST" "$1"; FAIL=$((FAIL+1)); }
 note()  { printf '    %s-%s    %s\n' "$C_DIM"   "$C_RST" "$1"; }
