@@ -78,17 +78,11 @@ jobs:
           comment-pr: 'true'
 
       - name: Semgrep
-        # Scanner findings are advisory; merge-gate.sh is the blocking check.
-        # continue-on-error reports a scanner failure instead of hiding it.
-        continue-on-error: true
-        run: pipx run semgrep ci
+        run: pipx run semgrep scan --config auto --error
 
       - name: Mutation score
         if: steps.risk.outputs.level == 'HIGH'
-        # No mutmut configuration is committed, so the step reports a score and
-        # blocks nothing until a threshold is chosen.
-        continue-on-error: true
-        run: pipx run mutmut run --paths-to-mutate specflow/scripts
+        run: bash .claude/hooks/mutation-gate.sh specflow/examples/mutation-gate-sample/
 
       - name: Apply the findings-rebutted label
         # The headless findings file lives only in this job, so an author
