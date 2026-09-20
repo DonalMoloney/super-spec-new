@@ -262,8 +262,10 @@ This phase may run more than once. Each session:
    - `[SUBAGENT]` for an independent work stream
    - `[P]` for tasks in the same phase that can run in parallel
 
-6. **Keep each task singular**: one outcome per line; split a task description
-   that needs "and".
+6. **Keep each task singular and checkable**: one outcome per line; split a task
+   description that needs "and". Give every task a row in the
+   `## Task Verification` table, whose Verify cell names the command or the
+   observation that proves the task is done.
 
 7. **Add a checkpoint** at each phase boundary.
 
@@ -439,6 +441,11 @@ The agent MUST:
 
 7. **Write** the findings to `specs/NNN-feature-name/review-findings.json`, in
    the shape `commands/review.md` defines under Findings File.
+
+8. **Join** each finding to the checklist item it fails. For every checklist
+   the feature has that carries a `## Review Findings` table, add a row with
+   the `CHK` id, the finding's `R-NNN` id, and the finding's status. A feature
+   with no checklist skips this step.
 
 ---
 
