@@ -639,7 +639,7 @@ validators, the hook suite and the smoke test, in CI's order, exiting nonzero
 on the first failure. Verify: the script's steps match `ci.yml` step for step,
 and deleting a step from `ci.yml` without changing the script fails a test.
 
-## G-42 — The catalog entry we publish cannot install anything (working on)
+## G-42 — The catalog entry we publish cannot install anything (merged: `82cb8cc`)
 
 Executor: `general-purpose`. Model: sonnet. Move: Tighten. Effort: low.
 Depends on: none. Diverges: no. Found by G-39 on 2026-09-20.
@@ -662,12 +662,12 @@ The installable artifact is the release asset `specflow-vX.Y.Z.zip` that
 `release.yml` now builds and uploads, which is the same archive
 `validate-release-archive.py` checks.
 
-- [ ] T421 Give the catalog entry a working download URL
+- [x] T421 Give the catalog entry a working download URL
 
 Verify: the snippet carries a `download_url` naming the release asset, and the
 entry's fields match `extension.yml` field for field.
 
-## G-41 — The guide and the goldens disagree on progress vocabulary (working on)
+## G-41 — The guide and the goldens disagree on progress vocabulary (merged: `a61b5dd`, ADR-0023)
 
 Executor: `general-purpose`. Model: sonnet. Move: Tighten. Effort: low.
 Depends on: none. Diverges: no. Found by G-38 on 2026-09-20.
@@ -683,18 +683,18 @@ picks up. A command following the guide looks for a value no artifact carries.
 G-38's validator type-checks the field rather than enumerating it, because
 enumerating either set rejects real files, so nothing catches the drift today.
 
-- [ ] T411 Settle which vocabulary is canonical
+- [x] T411 Settle which vocabulary is canonical
 
 Decide from what reads the field, not from which document is older. Verify: the
 guide's table and both goldens use one set of values, and the choice is
 recorded.
 
-- [ ] T412 Enumerate the settled values in the validator
+- [x] T412 Enumerate the settled values in the validator
 
 Verify: `validate-progress.py` rejects a status outside the settled set, both
 goldens still validate clean, and the hook suite passes.
 
-## G-40 — The merge gate judges a findings file it never validates (working on)
+## G-40 — The merge gate judges a findings file it never validates (merged: `59d8912`)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Tighten. Effort: low.
 Depends on: none. Diverges: no. Found by G-37 on 2026-09-20.
@@ -712,14 +712,56 @@ silent rather than loud, so the reviewer who wrote the file learns nothing.
 `/speckit.specflow.review` writes these files on both surfaces, and only the
 CI headless step validates its own file today.
 
-- [ ] T401 Validate a findings file before judging it
+- [x] T401 Validate a findings file before judging it
 
 Run the existing validator on each file the globs match, and fail loudly on a
 file that does not conform rather than counting zero. Verify: a hook test with
 `"severity": "critical"` in lowercase blocks the merge and names the schema
 violation, and a conforming file still blocks and passes as it did before.
 
-## G-36 — No check runs on a release tag before users pull it (working on)
+## G-43 — SKILL.md documents a progress file the validator rejects
+
+Executor: `general-purpose`. Model: sonnet. Move: Tighten. Effort: low.
+Depends on: none. Diverges: no. Found by G-41 on 2026-09-20. Not started.
+
+`specflow/SKILL.md` lines 120 to 134 document a different `progress.yml` schema
+from the one the goldens carry and `validate-progress.py` enforces: `feature`
+and `created` keys, `current_phase` holding a phase name rather than a number,
+and `phases` as a mapping of command name to `{status, updated}`. An agent
+following that block writes a file the validator rejects on four counts.
+
+`workflow-guide.md` line 663 has a smaller version of the same problem: it tells
+an agent to update `completed_tasks` and `current_task`, neither of which is in
+the schema, so the validator rejects both as unknown keys.
+
+G-41 settled the vocabulary and deliberately left the schema alone, because
+changing a documented shape is a different move from changing a word.
+
+- [ ] T431 Make SKILL.md and the guide document the schema the goldens carry
+
+Verify: a `progress.yml` written by following `SKILL.md` alone validates clean,
+and `grep` for `completed_tasks` and `current_task` in `workflow-guide.md`
+prints nothing.
+
+## G-39 — The release validator's docstring named an uninstallable URL (merged: `e561dca`)
+
+Executor: `general-purpose`. Effort: low. Raised as a suspected archive-shape
+mismatch; the suspicion did not hold and the investigation found a worse defect
+in its place.
+
+`validate-release-archive.py` measures the artifact users receive. Its docstring
+named `archive/refs/tags/vX.Y.Z.zip`, which cannot install this fork at all:
+spec-kit's `install_from_archive` wants `extension.yml` at the archive root or
+in its single top-level directory, and that ZIP puts it two levels down. The
+wording was inherited from upstream, whose repository root is its extension.
+
+- [x] T391 Name the artifact the validator actually checks
+
+`REPO_ROOT` also became `EXTENSION_ROOT`, since it resolves to `specflow/`. No
+test was added, because nothing behavioural changed and a wrongly rooted archive
+already fails the existing required-member check. G-42 came out of this.
+
+## G-36 — No check runs on a release tag before users pull it (merged: `a588bf9`)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Add. Effort: low.
 Depends on: none. Diverges: no. Was backlog item 24.
@@ -729,20 +771,20 @@ nothing validates a tag before a user installs from it. Upstream issue #6 was
 exactly this failure: a 12 MiB PNG took the archive over spec-kit's per-member
 limit and broke install for everyone.
 
-- [ ] T361 Validate the archive on a `v*` tag
+- [x] T361 Validate the archive on a `v*` tag
 
 `release.yml` on a `v*` tag runs `validate-release-archive.py <tag>` and
 attaches the `git archive` ZIP and the validator output to the GitHub release.
 Verify: the workflow is tag-triggered, and a dry run of its steps against the
 current HEAD produces both assets.
 
-- [ ] T362 Adopt a version rule for a prompt contract
+- [x] T362 Adopt a version rule for a prompt contract
 
 A changed Process step or template section is minor, a renamed marker, command
 or file is major, wording is patch. Verify: the rule is written in
 `specflow/CHANGELOG.md`'s header or beside it, and names the three cases.
 
-## G-37 — The merge gate never reads a feature's findings (working on)
+## G-37 — The merge gate never reads a feature's findings (merged: `f520a35`)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Tighten. Effort: low.
 Depends on: none. Diverges: no. Was backlog item 29.
@@ -752,13 +794,13 @@ Depends on: none. Diverges: no. Was backlog item 29.
 CLI writes findings the gate never reads, so a Critical finding blocks nothing
 there.
 
-- [ ] T371 Read the feature findings file in the merge gate
+- [x] T371 Read the feature findings file in the merge gate
 
 Verify: a hook test with a Critical finding in
 `specs/001-x/review-findings.json` prints `MERGE BLOCKED`, and `merge-gate.yml`
 passes both globs.
 
-## G-38 — Nothing validates the resumability contract (working on)
+## G-38 — Nothing validates the resumability contract (merged: `25962db`)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Add. Effort: low.
 Depends on: none. Diverges: no. Was backlog item 30.
@@ -766,7 +808,7 @@ Depends on: none. Diverges: no. Was backlog item 30.
 `progress.yml` is the file every command reads to resume, and nothing checks
 it. A misspelled phase resumes at the wrong step with no message.
 
-- [ ] T381 Add a progress-file validator
+- [x] T381 Add a progress-file validator
 
 `.claude/review/validate-progress.py`, dependency-free like
 `validate-findings.py`, checking the keys of `progress.yml`, phase names
