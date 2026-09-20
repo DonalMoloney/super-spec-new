@@ -152,6 +152,8 @@ Ask about points of confusion, accessibility, and use the design did not intend.
 ### Process
 
 1. **Read the spec** and find the sections with thin coverage or a placeholder edge case.
+   Read `decisions.md` at the project root when it exists, and skip a question
+   its entries already settle.
 
 2. **Ask one question at a time**. Wait for the user's answer before the next question.
    Prefer multiple-choice form when possible, for faster exploration.
