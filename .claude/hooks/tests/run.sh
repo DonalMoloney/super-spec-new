@@ -113,13 +113,36 @@ for f in "$EX"/*/spec.md "$EX"/*/plan.md "$EX"/*/tasks.md; do
 done
 
 # --- artifact-lint.sh runs the Markdown lint when the script is present ---
-cd "$HOOKS/../.." || exit 1
-md="$(mktemp -d)"
+REPO="$(cd "$HOOKS/../.." && pwd -P)"
+cd "$REPO" || exit 1
+md="$(mktemp -d "$REPO/.artifact-lint-md.XXXXXX")"
 printf 'Second \xe2\x80\x94 line.\n' > "$md/dash.md"
 printf 'A plain sentence.\n' > "$md/clean.md"
 check "markdown with an em-dash is blocked from the repo root" 2 "$(run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$md/dash.md\"}}")"
 check "markdown without findings passes from the repo root"    0 "$(run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$md/clean.md\"}}")"
-check "markdown with an em-dash passes where the lint script is absent" 0 "$(cd "$md" && run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$md/dash.md\"}}")"
+rm -rf "$md"
+consumer="$(fresh_repo main)"
+printf 'Second \xe2\x80\x94 line.\n' > "$consumer/dash.md"
+check "markdown with an em-dash passes where the lint script is absent" 0 "$(cd "$consumer" && run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$consumer/dash.md\"}}")"
+cd / || exit 1
+
+# --- artifact-lint.sh decides by path and stops at the repository boundary ---
+r="$(fresh_repo feature)"; mkdir -p "$r/specs/001-x" "$r/specflow/commands" "$r/docs"; cd "$r" || exit 1
+in_repo() { run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$r/$1\"}}"; }
+printf '# Tasks\n\nThe command writes `tasks.md` from the plan.\n\n## Process\n\n1. Read the plan.\n' > "$r/specflow/commands/tasks.md"
+check "command contract named tasks.md is not a task list"  0 "$(in_repo specflow/commands/tasks.md)"
+printf '# Tasks\n- [ ] do a without an id\n' > "$r/specs/001-x/tasks.md"
+check "feature tasks.md without T-ids still blocked"        2 "$(in_repo specs/001-x/tasks.md)"
+printf '# Plan\n## Summary\n' > "$r/docs/plan.md"
+check "plan.md outside a feature directory is not an artifact" 0 "$(in_repo docs/plan.md)"
+printf '# Spec\n## User Scenarios & Testing\n## Requirements\n' > "$r/specs/001-x/spec.md"
+check "feature spec missing a mandatory section still blocked" 2 "$(in_repo specs/001-x/spec.md)"
+outside="$(mktemp -d)"; mkdir -p "$outside/specs/001-x"
+printf '# Spec\n## Requirements\n' > "$outside/specs/001-x/spec.md"
+check "file outside the repository is not linted"           0 "$(run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$outside/specs/001-x/spec.md\"}}")"
+check "skipping a file outside the repository is reported"  0 \
+  "$(printf '%s' "{\"tool_input\":{\"file_path\":\"$outside/specs/001-x/spec.md\"}}" | bash "$HOOKS/artifact-lint.sh" 2>&1 >/dev/null | grep -qF 'outside'; echo $?)"
+rm -rf "$outside"
 cd / || exit 1
 
 # --- session-start.sh (SessionStart) ---
