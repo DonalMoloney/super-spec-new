@@ -581,6 +581,29 @@ r22="$(mktemp -d)"
 check "missing .claude directory exits 0" 0 "$(log_phase "$r22" '{"session_id":"abc"}')"
 check "missing .claude directory is not created" 0 "$(status_of [ ! -e "$r22/.claude" ])"
 
+# --- cost-report.sh (Stop; sums the headless spend each feature recorded) ---
+write_spend() { # dir feature cost... -> one telemetry line per cost
+  local d="$1" feature="$2" cost
+  shift 2
+  mkdir -p "$d/.claude"
+  for cost in "$@"; do
+    printf '{"ts":"2026-09-20T00:00:00Z","event":"headless","feature":"%s","total_cost_usd":%s}\n' \
+      "$feature" "$cost" >> "$d/.claude/telemetry.jsonl"
+  done
+}
+cost_report() { # dir -> prints exit code, leaving the ceiling at its default
+  ( cd "$1" && bash "$HOOKS/cost-report.sh" >/dev/null 2>&1 ); echo $?
+}
+
+budget_over="$(mktemp -d)"; write_spend "$budget_over" 001-x 0.75 0.75
+check "a feature summing past the ceiling exits 1" 1 "$(cost_report "$budget_over")"
+check_has "the over-budget report names the feature" \
+  "$( ( cd "$budget_over" && bash "$HOOKS/cost-report.sh" 2>&1 ) )" "001-x"
+budget_under="$(mktemp -d)"; write_spend "$budget_under" 001-x 0.25 0.25
+check "a feature summing below the ceiling exits 0" 0 "$(cost_report "$budget_under")"
+check "a non-numeric ceiling reports no sum" 3 \
+  "$( ( cd "$budget_under" && SPECFLOW_BUDGET_USD=abc bash "$HOOKS/cost-report.sh" >/dev/null 2>&1 ); echo $?)"
+
 # --- diff-impl.sh (sets up the two worktrees a differential run implements in) ---
 diff_impl_repo() { # -> temp repo holding a committed spec directory
   local d; d="$(fresh_repo main)"

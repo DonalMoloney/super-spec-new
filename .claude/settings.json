@@ -35,6 +35,10 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/log-phase.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/cost-report.sh"
           }
         ]
       }
