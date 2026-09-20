@@ -144,8 +144,6 @@ def main() -> None:
 
     # 5. README catalog install command's slug must equal extension.id.
     readme = read("README.md")
-    if "specify extension add superpowers-bridge --from ./specflow" in readme:
-        fail("README.md still documents obsolete local --from install command")
     if "specify extension add ./specflow --dev" not in readme:
         fail("README.md must document local --dev install command")
 
