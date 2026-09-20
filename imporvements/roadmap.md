@@ -53,17 +53,13 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 |---|---|---|---|
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
 | G-24 | Six command lines read a template path instead of resolving it | medium | See the nine checks under G-24 |
-| G-25 | An extension template always replaces, so core's changes are lost | high | Core `tasks-template.md` is 252 lines against our 210 |
 | G-26 | The gates cannot run on the Copilot CLI | medium | `grep -c '^events:' specflow/extension.yml` prints 0 |
-| G-28 | Upstream superspec is catalogued under our summary | low | `docs/community/extensions.md` lists three bridges, none of them specflow |
 | G-30 | `superpowers-bridge.md` is named for a banned metaphor | medium | 16 files cite the path |
-| G-34 | The fallback guide freezes when a command gains a step | medium | Five phase/command mismatches, audited 2026-09-20 |
-| G-32 | The standards linter reads no YAML string | low | `lint-standards.py` collects `.md` only |
+| G-35 | Local verification and CI verification check different things | low | `pytest scripts/tests` does not collect on the default python3 |
 | G-33 | The word-choice table is enforced by reading, not a check | medium | `lint-standards.py` checks em-dashes and the banned table only |
 | C-01 | 44 merged remote branches | low | `git branch -r` |
 | C-03 | The `imporvements/` directory name is a typo | low | 13 files cite it |
 | C-05 | Both e2e scripts leave a work directory behind | low | `Workdir kept at` prints unconditionally |
-| C-08 | A hook case passes for the wrong reason without mutmut | low | The `jq missing` case exits on the mutmut check |
 
 ## D-01 — `after-tasks.md` reads the progress file (merged: `8fb7813`)
 
@@ -391,7 +387,7 @@ Line 64 says the squad holds 17 agents. `.claude/agents/` holds 28, across the
 BDD squad, the review panel, and the three rewrite agents. Verify: the number
 in the file equals `ls .claude/agents/*.md | wc -l`. Closes N-22.
 
-## G-25 — Decide the template mechanism in an ADR
+## G-25 — Decide the template mechanism in an ADR (merged: `41b33e5`)
 
 Executor: `general-purpose`. Model: opus. Move: Replace. Effort: high.
 Depends on: G-24 T242. Diverges: yes.
@@ -408,15 +404,17 @@ lost the moment specflow ships its own copy. A preset takes `append`, which
 adds our sections (Open Questions, Threat Model, Traceability, Brainstorm Log,
 Changelog, Code Review Rules, Execution Strategy, Superpowers Execution) on
 top of whatever core ships. The cost of replace is already visible: core's
-`tasks-template.md` is 252 lines against our 210, so the fork is losing
-content it never decided to drop.
+`tasks-template.md` is 252 lines against our 225. G-25 measured the rest and
+the framing did not survive: ours is the larger file for the other four
+templates, and core's extra task lines are User Story 3 boilerplate and an
+`## Implementation Strategy` section this fork replaced deliberately.
 
 The price of moving: `provides.templates` leaves the manifest,
 `validate-release-archive.py` and `e2e-smoke.sh` lose five assertions, and the
 scorer golden is regenerated. Backlog item 25 is the alternative, which
 reports the drift instead of ending it.
 
-- [ ] T251 Record the template mechanism as an ADR
+- [x] T251 Record the template mechanism as an ADR
 
 State what an extension template can do, what a preset can do, and which of
 the two this repository adopts, with the reason. Verify: the ADR is in
@@ -462,7 +460,7 @@ validators pass.
 Verify: the Copilot leg of `e2e-smoke.sh` finds the hook file the install
 wrote and names the events in it.
 
-## G-28 — Settle the name before submitting a catalog entry (working on)
+## G-28 — Settle the name before submitting a catalog entry (merged: `0cd7dd0`)
 
 Executor: `general-purpose`. Model: opus. Move: Add. Effort: low. Depends on:
 none. Diverges: no. No code.
@@ -476,13 +474,13 @@ WangX0111, which is the upstream this repository forked.
 catalog. A fourth entry carrying our current description reads as a duplicate
 of the third, under a near-identical summary.
 
-- [ ] T281 Write the one line that separates specflow from the three
+- [x] T281 Write the one line that separates specflow from the three
 
 Name what a reader gets here and nowhere else: the gate markers, the review
 panel, the two-surface contract. Verify: the line is in `specflow/README.md`
 and in the `description` field of `extension.yml`, worded the same.
 
-- [ ] T282 Decide whether the extension id changes
+- [x] T282 Decide whether the extension id changes
 
 `reference.md` prices the id at 27 files and calls a rename not an option.
 Record the answer beside backlog item 23 so the catalog work does not reopen
@@ -538,7 +536,7 @@ Give Phase 4 an unconditional step that resolves `tasks-template` and reads
 names `tasks-template` on a line that no skill-detection condition governs,
 and `e2e-smoke.sh` passes.
 
-## G-34 — The fallback guide freezes when a command gains a step (working on)
+## G-34 — The fallback guide freezes when a command gains a step (merged: `00f2fc9`)
 
 Executor: `bdd-orchestrator`. Model: opus. Move: Tighten. Effort: medium.
 Depends on: none. Diverges: yes.
@@ -569,17 +567,17 @@ Five instances across three of the four mirrored phases, all the same shape.
 `/speckit.specflow.status` is excluded by design: the guide is phase-structured
 and status is not a phase.
 
-- [ ] T341 Mirror the three absent instructions
+- [x] T341 Mirror the three absent instructions
 
 Verify: Phase 4 names the stable-ID rule and the diff summary, Phase 6 names
 the Open Questions append, and `e2e-smoke.sh` passes.
 
-- [ ] T342 Move the two misplaced instructions into their phase
+- [x] T342 Move the two misplaced instructions into their phase
 
 Verify: Phase 5's Steps list names `handoff.md` and the `progress.yml` update,
 and each still appears once, not twice.
 
-- [ ] T343 Check the mirror mechanically
+- [x] T343 Check the mirror mechanically
 
 A prose diff is not checkable, but an artifact set is. Every path, marker, and
 file name a command's Process steps write is a set; the phase that mirrors that
@@ -588,7 +586,43 @@ omits, the way `EXPECTED_PROCESS_STEPS` compares step counts. Verify: adding a
 write to a command's Process fails the smoke test until its phase names the
 same artifact, and the five rows above pass once T341 and T342 land.
 
-## G-32 — The standards linter reads no YAML string (working on)
+## G-35 — Local verification and CI verification check different things
+
+Executor: `bdd-orchestrator`. Model: sonnet. Move: Add. Effort: low.
+Depends on: none. Diverges: no.
+
+`main` was red from `a8ffd71` to `6871486`, five pushes, and every branch that
+landed in between reported green. Nothing was wrong with the branches: the
+suite that failed is the one nobody ran.
+
+`.github/workflows/ci.yml` runs `pytest scripts/tests`, `.claude/review/tests`
+and `.claude/divergence/tests` on Python 3.12. The default `python3` on a
+developer machine here is 3.9.6, which cannot collect
+`test_lint_standards.py` or `test_validate_release_archive.py` because they
+annotate `Path | None` at module scope. So `pytest scripts/tests` is not in
+anyone's local routine, and the habitual local set, the hook suite, the smoke
+test, both validators and the scorer, omits the one suite that caught the
+break.
+
+The failure itself was a golden pair drifting apart, which the scorer's own
+test defends. The reason it reached `main` is that no single command answers
+"did this pass what CI runs".
+
+- [ ] T351 Raise the annotations to the floor the tests already assume
+
+Either add `from __future__ import annotations` to the two files or state a
+Python floor and enforce it, so the suite collects on the interpreter a
+contributor has. Verify: `python3 -m pytest specflow/scripts/tests -q`
+collects every file on 3.9.
+
+- [ ] T352 Add one command that runs what CI runs
+
+A script at the repository root running the three pytest targets, both
+validators, the hook suite and the smoke test, in CI's order, exiting nonzero
+on the first failure. Verify: the script's steps match `ci.yml` step for step,
+and deleting a step from `ci.yml` without changing the script fails a test.
+
+## G-32 — The standards linter reads no YAML string (merged: `7cafc62`)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Tighten. Effort: low.
 Depends on: none. Diverges: no.
@@ -609,7 +643,7 @@ and `description:` fields are. `id`, `name`, `file`, `command`, and the
 `optional_skills` ids are identifiers and must be exempt, or every
 `test-driven-development` trips a match.
 
-- [ ] T321 Lint the manifest's user-facing strings
+- [x] T321 Lint the manifest's user-facing strings
 
 `findings_for` assumes text lines for its fenced-block and line-number
 handling, so the YAML path reports through its own function rather than
@@ -683,7 +717,7 @@ re-verify it when picking up G-24 to G-28.
 | Hook events a core command fires | 20: `before_` and `after_` for each of the 10 core commands, in `templates/commands/*.md` |
 | Workflow step types | 12, listed at `workflows/engine.py` line 142 |
 | Core `spec-template.md` against ours | 131 lines against 197 |
-| Core `tasks-template.md` against ours | 252 lines against 210, so core is now the larger file and the fork is losing content |
+| Core `tasks-template.md` against ours | 252 against 225. Core is larger for this one template only; ours is larger for the other four (constitution 123/50, spec 197/131, plan 130/113, checklist 120/45). Core's extra lines are User Story 3 boilerplate and an Implementation Strategy section this fork replaced on purpose, measured under G-25 |
 | Agents under `.claude/agents/` | 28, against the 17 that `.github/copilot-instructions.md` line 64 states |
 
 ## Cleanup
@@ -718,7 +752,7 @@ closed on 2026-09-20.
   bash scripts/e2e-agent-claude.sh` reads `N assertions, 0 failed`. Merged in
   `069a384`. The hint was not the real trailer: the `cleanup` EXIT trap printed
   `workdir kept:` after it, so the count now prints from the trap.
-- [ ] **C-08** (working on) Fix the vacuous pass in the `jq missing from PATH fails` hook
+- [x] **C-08** Fix the vacuous pass in the `jq missing from PATH fails` hook
   case. Its setup runs `ln -s "$(command -v mutmut)" "$shim/mutmut"`, which
   errors when mutmut is absent, so the case exits 2 on the mutmut check and
   never reaches the jq check it names. It passes for the wrong reason on any
