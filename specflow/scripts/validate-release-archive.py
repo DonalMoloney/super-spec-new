@@ -46,7 +46,7 @@ REQUIRED_MEMBERS = (
     "CHANGELOG.md",
     "SKILL.md",
     # commands/*.md link to these at runtime ("See references/...").
-    "references/superpowers-bridge.md",
+    "references/superpowers-mapping.md",
     "references/workflow-guide.md",
 )
 

@@ -80,4 +80,4 @@ Never skip a checkpoint.
 | `test-driven-development` | Follows its RED-GREEN-REFACTOR discipline for `[TDD]` tasks |
 
 If no superpowers are available, all three fall back to built-in sequential execution
-with manual confirmation. See `references/superpowers-bridge.md` for details.
+with manual confirmation. See `references/superpowers-mapping.md` for details.

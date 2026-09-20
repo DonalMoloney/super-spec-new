@@ -125,7 +125,7 @@ Test-driven development, or TDD, starts with a failing behavior check. Implement
 
 Specflow maps commands to the relevant superpowers skills. Detection chooses the protocol; governance sets the prerequisites. The workflow guide supplies the fallback when a skill is absent. Optional skills must never become an installation gate.
 
-Sources: specflow/references/superpowers-bridge.md; specflow/references/workflow-guide.md; AGENTS.md, Gotchas.
+Sources: specflow/references/superpowers-mapping.md; specflow/references/workflow-guide.md; AGENTS.md, Gotchas.
 -->
 
 ---

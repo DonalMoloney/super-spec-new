@@ -116,4 +116,4 @@ skill's outputs:
 - Output location → report to the user, and optionally write it to the
   checklist file
 
-See `references/superpowers-bridge.md` for the full adaptation rules.
+See `references/superpowers-mapping.md` for the full adaptation rules.

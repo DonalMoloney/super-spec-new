@@ -199,7 +199,7 @@ adapts only the input and output locations to spec-kit's layout.
 | `execute` | `executing-plans`, `subagent-driven-development`, `test-driven-development` | Sequential walk with manual checkpoints |
 | `review` | `requesting-code-review` | Built-in review checklist |
 
-[superpowers-bridge.md](references/superpowers-bridge.md) states the detection
+[superpowers-mapping.md](references/superpowers-mapping.md) states the detection
 paths, the adaptation rules, and each fallback.
 [copilot-cli.md](references/copilot-cli.md) lists, per command, what runs
 differently on the GitHub Copilot CLI.

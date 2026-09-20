@@ -102,7 +102,7 @@ def main() -> None:
     docs = [
         "README.md",
         "SKILL.md",
-        "references/superpowers-bridge.md",
+        "references/superpowers-mapping.md",
         "references/workflow-guide.md",
         "examples/sample-workflow.md",
         "templates/constitution-template.md",

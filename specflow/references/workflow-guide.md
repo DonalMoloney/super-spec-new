@@ -110,7 +110,7 @@ matching section while it runs a command.
 
 ### Superpowers Integration
 
-When the `brainstorming` skill is detected (see [superpowers-bridge.md](superpowers-bridge.md)), follow this process:
+When the `brainstorming` skill is detected (see [superpowers-mapping.md](superpowers-mapping.md)), follow this process:
 - Read the skill's SKILL.md file and follow its questioning protocol
 - Write findings into the spec file rather than a separate document
 - Ask one question at a time, in multiple-choice form where it fits, per the skill's session structure

@@ -60,4 +60,4 @@ When the `brainstorming` skill produces output, redirect it:
 - Design documents → merge their insights into the existing `spec.md`
 - Output location → save results to `specs/NNN/spec.md`, never `docs/superpowers/`
 
-See `references/superpowers-bridge.md` for the full adaptation rules.
+See `references/superpowers-mapping.md` for the full adaptation rules.

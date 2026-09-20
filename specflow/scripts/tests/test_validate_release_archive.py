@@ -55,7 +55,7 @@ MINIMAL_LAYOUT = {
     "LICENSE": "MIT\n",
     "CHANGELOG.md": "# Changelog\n",
     "SKILL.md": "# Skill\n",
-    "references/superpowers-bridge.md": "# Bridge\n",
+    "references/superpowers-mapping.md": "# Mapping\n",
     "references/workflow-guide.md": "# Guide\n",
     "commands/status.md": "# status\n",
     "templates/spec-template.md": "# spec\n",

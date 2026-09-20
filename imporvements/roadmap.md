@@ -686,7 +686,7 @@ Executor: `divergence-renamer`. Model: sonnet. Effort: medium. Depends on: none.
 `standards/documentation.md`'s word-choice table bans "bridges" as a metaphor
 that "says less than the literal term," yet the file the fork's own bridging
 logic lives in is named for it. `reference.md` priced this rename at "about 8
-files"; the real count is higher. `references/superpowers-bridge.md` is
+files"; the real count is higher. `references/superpowers-mapping.md` is
 required by name in `scripts/validate-extension-metadata.py` line 105 and
 `scripts/validate-release-archive.py` line 49, and by a fixture in
 `scripts/tests/test_validate_release_archive.py`, so the `references/`
@@ -902,7 +902,7 @@ Effort: medium. Depends on: G-19.
 
 **35. A tested superpowers version range.** `superpowers.yml` records the
 installed superpowers version from the plugin manifest,
-`superpowers-bridge.md` states the tested range, and status warns outside it.
+`superpowers-mapping.md` states the tested range, and status warns outside it.
 Superpowers v6.0 rewrote `subagent-driven-development` and v6.2 moved the SDD
 workspace; the bridge assumes a skill shape and nothing says which. Verify: a
 dry-run fixture with `version: 5.0.0` prints the warning. Effort: low. Depends

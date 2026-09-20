@@ -57,4 +57,4 @@ Check for skills at these paths:
 2. Check `~/.agents/skills/{skill-name}/SKILL.md` second, the user-global path.
 
 The command writes the result to `.specify/superpowers.yml`. Read
-`references/superpowers-bridge.md` for the detection and adaptation rules.
+`references/superpowers-mapping.md` for the detection and adaptation rules.

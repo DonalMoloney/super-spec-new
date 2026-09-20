@@ -34,7 +34,7 @@ flowchart LR
 
 **Optional (enhanced)**: Install the [obra/superpowers](https://github.com/obra/superpowers)
 skills under `~/.agents/skills/` or `.agents/skills/` for deeper brainstorming,
-planning, and execution. See [superpowers-bridge.md](references/superpowers-bridge.md)
+planning, and execution. See [superpowers-mapping.md](references/superpowers-mapping.md)
 for how specflow detects and wires them in.
 
 ## Target surface
@@ -297,7 +297,7 @@ and new brainstorm log entries.
 **Process**:
 1. Read the target spec file
 2. Read the constitution for the project's constraints
-3. **Superpowers detection**: Look for the `brainstorming` skill (see [superpowers-bridge.md](references/superpowers-bridge.md))
+3. **Superpowers detection**: Look for the `brainstorming` skill (see [superpowers-mapping.md](references/superpowers-mapping.md))
    - **If found**: Read the brainstorming SKILL.md and follow its questioning protocol,
      fitting every output to the target spec file
    - **If not found**: Follow the built-in questioning protocol instead (see [workflow-guide.md](references/workflow-guide.md) Phase 2)
@@ -335,7 +335,7 @@ session adds its own entry to the brainstorm log.
 
 **Superpowers bridge**: When the `writing-plans` skill is detected, read it and use
 its blueprint process to sharpen the plan's task structure section. See
-[superpowers-bridge.md](references/superpowers-bridge.md).
+[superpowers-mapping.md](references/superpowers-mapping.md).
 
 ---
 
@@ -461,5 +461,5 @@ the next phase.
 ## Additional Resources
 
 - A phase-by-phase walkthrough: [workflow-guide.md](references/workflow-guide.md)
-- How the superpowers integration works: [superpowers-bridge.md](references/superpowers-bridge.md)
+- How the superpowers integration works: [superpowers-mapping.md](references/superpowers-mapping.md)
 - A full worked example: [sample-workflow.md](https://github.com/DonalMoloney/super-spec-new/blob/main/specflow/examples/sample-workflow.md), which the install archive leaves out

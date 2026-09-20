@@ -58,7 +58,7 @@ there, so a workflow under `specflow/` never runs.
   resolver layers project overrides, presets, extension templates, then core,
   so these win over core without replacing `.specify/templates/`.
 - `specflow/references/`: `workflow-guide.md` (built-in fallback protocols) and
-  `superpowers-bridge.md` (skill detection/mapping details).
+  `superpowers-mapping.md` (skill detection/mapping details).
 - `specflow/examples/`: a full real-run snapshot (`static-landing-page/`) and
   `sample-workflow.md`; teaching material, not runtime payload.
 - `specflow/assets/`: workflow diagrams (~12 MiB); documentation media, not runtime payload.
@@ -204,7 +204,7 @@ See `imporvements/roadmap.md` for item definitions, executors, and Verify condit
 
 ## Claude Code
 
-@specflow/references/superpowers-bridge.md is the map between this project's
+@specflow/references/superpowers-mapping.md is the map between this project's
 5 commands and the obra/superpowers skills they bridge to. Read it before editing
 any command file's superpowers-detection logic.
 

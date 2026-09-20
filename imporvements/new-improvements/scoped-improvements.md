@@ -179,7 +179,7 @@ Findings from this survey that `roadmap.md` already carries. Work them there.
 
 ## N-11 to N-14: follow superpowers 6.3
 
-- **N-11** Route execute by surface in `superpowers-bridge.md`. Superpowers
+- **N-11** Route execute by surface in `superpowers-mapping.md`. Superpowers
   6.x reserves `executing-plans` for a runtime without subagents and requires
   `subagent-driven-development` where subagents exist. The mapping table
   lists both for execute with no rule. Add a surface column: Claude Code takes

@@ -71,4 +71,4 @@ Adapt the output of the `writing-plans` skill this way:
 - Task dependencies map to the Dependencies section
 - Parallel opportunities get the `[P]` and `[SUBAGENT]` markers
 
-See `references/superpowers-bridge.md` for the full adaptation rules.
+See `references/superpowers-mapping.md` for the full adaptation rules.

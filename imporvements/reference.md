@@ -47,7 +47,7 @@ item named in the rewrite status below.
 | `commands/hooks/after-tasks.md` | 0% | D-01 holds it |
 | `extension.yml` | 0% | D-05 holds it |
 | `CHANGELOG.md` | 1% | D-05 holds it |
-| `references/superpowers-bridge.md` | 4% | nothing since the rename |
+| `references/superpowers-mapping.md` | 4% | nothing since the rename |
 | `scripts/validate-extension-metadata.py` | 7% | D-05 holds it |
 | `templates/plan-template.md` | 20% | PR #69 |
 | `scripts/validate-release-archive.py` | 29% | `script-refactorer` |
@@ -134,11 +134,11 @@ reads first.
 ## references/
 
 Content is cheap to diverge; the file names are not. Both validators require
-`references/superpowers-bridge.md` and `references/workflow-guide.md` to
+`references/superpowers-mapping.md` and `references/workflow-guide.md` to
 exist by that exact path, so a content rewrite is free but a rename is not.
 See G-30 for the cost of renaming `superpowers-bridge.md`.
 
-- **Extend** `superpowers-bridge.md` to map the review personas under
+- **Extend** `superpowers-mapping.md` to map the review personas under
   `.claude/agents/` to the `requesting-code-review` skill, so Claude Code
   prefers the squad and Copilot the skill. Claimed by: G-22. This is the last
   shipped reference still close to upstream, at 4 percent.
@@ -249,7 +249,7 @@ standards-compliance pass D-05 gates.
 | `extension.yml` | 0% | `prose-rephraser` | D-05 |
 | `CHANGELOG.md` | 1% | `prose-rephraser` | D-05 |
 | `scripts/validate-extension-metadata.py` | 7% | `script-refactorer` | D-05 |
-| `references/superpowers-bridge.md` | 4% | `prose-rephraser` | G-22 |
+| `references/superpowers-mapping.md` | 4% | `prose-rephraser` | G-22 |
 | `README.md` | 100% | `prose-rephraser` | D-05 |
 
 A command rewrite runs `e2e-smoke.sh` through the auditor, because the smoke
