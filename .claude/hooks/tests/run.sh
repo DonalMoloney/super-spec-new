@@ -396,9 +396,10 @@ check "blocked merge clears a stale marker"      0 "$(status_of [ ! -f "$d/$MARK
 merge_gate_glob() { # dir glob -> exit code
   ( cd "$1" && bash "$HOOKS/merge-gate.sh" "$2" >/dev/null 2>&1 ); echo $?
 }
-write_review_findings() { # dir severity status -> writes the file the review command produces
-  mkdir -p "$1/specs/001-x"
-  cat > "$1/specs/001-x/review-findings.json" <<JSON
+write_review_findings() { # dir severity status [feature] -> writes the file the review command produces
+  local feature="${4:-001-x}"
+  mkdir -p "$1/specs/$feature"
+  cat > "$1/specs/$feature/review-findings.json" <<JSON
 {"schema_version":"1.0","reviewer":"speckit.specflow.review","verdict":"BLOCK","findings":[{"id":"R-001","severity":"$2","location":"a.sh:1","evidence":"failing test","fix":"do the thing","status":"$3"}]}
 JSON
 }
@@ -406,6 +407,26 @@ d="$(review_dir)"; write_review_findings "$d" Critical open
 check "review command findings under specs/ block the merge" 1 "$(merge_gate_glob "$d" 'specs/*/review-findings.json')"
 d="$(review_dir)"; write_review_findings "$d" Critical fixed
 check "fixed review command findings clear the merge"        0 "$(merge_gate_glob "$d" 'specs/*/review-findings.json')"
+merge_gate_message() { # dir [glob...] -> prints what the gate wrote to stderr
+  local d="$1"; shift
+  ( cd "$d" && bash "$HOOKS/merge-gate.sh" "$@" 2>&1 >/dev/null )
+}
+d="$(review_dir)"; write_review_findings "$d" Critical open
+check "review command findings block the default glob"       1 "$(merge_gate "$d")"
+d="$(review_dir)"; write_review_findings "$d" Critical fixed
+check "fixed review command findings clear the default glob" 0 "$(merge_gate "$d")"
+d="$(review_dir)"; write_review_findings "$d" Minor open
+check "Minor review command findings never block"            0 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Critical open; write_review_findings "$d" Critical open
+check_out "the default globs count each location once" \
+  "MERGE BLOCKED: Critical findings unresolved: 2. Expected 0. Fix or rebut each finding, then rerun." \
+  "$(merge_gate_message "$d")"
+d="$(review_dir)"; write_review_findings "$d" Critical open 001-x; write_review_findings "$d" Critical open 002-y
+check_out "one glob sums every feature it matches" \
+  "MERGE BLOCKED: Critical findings unresolved: 2. Expected 0. Fix or rebut each finding, then rerun." \
+  "$(merge_gate_message "$d")"
+d="$(review_dir)"; write_findings "$d" claude Critical open
+check "a caller's glob replaces the defaults" 0 "$(merge_gate_glob "$d" 'specs/*/review-findings.json')"
 
 # --- rebut-findings.sh (CI; marks a findings document rebutted when the PR carries the label) ---
 rebut() { # dir file reason -> exit code
