@@ -7,10 +7,24 @@ set -euo pipefail
 input="$(cat)"
 path="$(printf '%s' "$input" | jq -r '.tool_input.file_path // ""')"
 [ -n "$path" ] && [ -f "$path" ] || exit 0
+project_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd -P)"
+project_root="$(cd "$project_root" && pwd -P)"
+resolved="$(cd "$(dirname "$path")" && pwd -P)/$(basename "$path")"
+case "$resolved" in
+  "$project_root"/*) ;;
+  *) echo "ARTIFACT LINT: skipped $path; it sits outside $project_root." >&2; exit 0 ;;
+esac
+relative="${resolved#"$project_root"/}"
 fail=0
 err(){ echo "ARTIFACT LINT ($(basename "$path")): $1" >&2; fail=1; }
 require_sections(){ for s in "$@"; do grep -qF "$s" "$path" || err "missing section: $s"; done; }
-case "$(basename "$path")" in
+# spec-kit generates an artifact into specs/NNN-name/. A file elsewhere carrying
+# one of those names, such as the commands/tasks.md contract, is not one.
+case "$relative" in
+  specs/[0-9][0-9][0-9]-*/*|*/specs/[0-9][0-9][0-9]-*/*) artifact_name="$(basename "$path")" ;;
+  *) artifact_name="" ;;
+esac
+case "$artifact_name" in
   spec.md)
     require_sections "## User Scenarios & Testing" "## Requirements" "## Success Criteria"
     if [ -f "$(dirname "$path")/.clarified" ] && grep -q 'NEEDS CLARIFICATION' "$path"; then
