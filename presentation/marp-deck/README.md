@@ -2,9 +2,9 @@
 
 `deck.md` contains 18 Marp slides with presenter notes and sourced claims.
 The talk opens with why self-review can't prove independence, then moves
-through governance mechanics, implementation proof, and adoption. The
-presentation omits dates. Repository checks qualify historical claims in
-the notes.
+through governance mechanics, implementation proof, and adoption. The title
+slide is dated 20 September 2026. Repository checks qualify historical claims
+in the notes.
 
 ## Slide sequence
 
@@ -18,7 +18,7 @@ the notes.
 | 6 | The constitution gates every command. | `artifacts.svg` |
 | 7 | Execution skills work inside agreed rules. | `skills.svg` |
 | 8 | Checks confirm compliance, not product correctness. | `correctness-gap.svg` |
-| 9 | All 18 roadmap groups have merged. | `roadmap.svg` |
+| 9 | The first 18 roadmap groups have merged. | `roadmap.svg` |
 | 10 | Four default layers precede additional review. | `review-stack.svg` |
 | 11 | Risk rises above the size limits. | `risk.svg` |
 | 12 | Findings make decisions inspectable. | Text |

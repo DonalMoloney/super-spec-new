@@ -1,7 +1,7 @@
 ---
 marp: true
 theme: specflow
-paginate: false
+paginate: true
 size: 16:9
 title: Specflow
 author: Donal Moloney
@@ -21,6 +21,8 @@ lang: en
 Spec-kit governance with superpowers execution skills and adversarial review.
 
 Donal Moloney
+
+20 September 2026
 
 <!--
 Specflow connects the artifacts that define a change to the skills that implement it. Spec-kit owns governance; superpowers supplies optional execution skills. Specflow adds commands, saved state, and checks between those responsibilities.
@@ -146,7 +148,7 @@ Sources: specflow/commands/execute.md; .claude/hooks/artifact-lint.sh; .claude/h
 
 ---
 
-## All 18 roadmap groups have merged
+## The first 18 roadmap groups have merged
 
 ![w:1080](roadmap.svg)
 
@@ -217,7 +219,7 @@ Sources: .claude/review/schema.json; .claude/review/validate-findings.py; .claud
 Copy the Claude kit separately from the extension.
 
 <!--
-Count direct shell scripts in .claude/hooks and Markdown definitions in .claude/agents: 10 and 28 respectively. The schema and validator live in .claude/review. The dispatcher routes new work, fixes, refactors, and rule changes. The three delivery workflows are ci.yml, merge-gate.yml, and score-artifacts.yml; presentation.yml separately renders the deck.
+Count direct shell scripts in .claude/hooks and Markdown definitions in .claude/agents: 10 and 34 respectively. The schema and validator live in .claude/review. The dispatcher routes new work, fixes, refactors, and rule changes. The repository has six workflows: ci.yml, merge-gate.yml, release.yml, score-artifacts.yml, upstream-drift.yml, and presentation.yml; presentation.yml renders the deck.
 
 ADR-0001 keeps Claude-specific hooks outside the spec-kit archive. Copy and configure the companion kit deliberately for a consuming project. The extension targets Claude Code and GitHub Copilot CLI, but .claude settings are a Claude Code integration. Those settings are not a portable Copilot hook setup.
 

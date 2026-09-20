@@ -5,6 +5,8 @@ wave of groups, the spec-kit 1.0 decay groups, the hygiene debt, and the
 scoped backlog behind them. Read it to pick the next thing to build. `reference.md` holds the divergence option
 space each group draws from and the measured distance to upstream;
 `docs/review-research.md` holds the evidence behind the review stack.
+`priority.md` ranks every open item here and in the scoped backlog for the
+first tagged release; it holds no checkbox.
 
 The first wave, G-01 to G-18, merged between PR #8 and PR #53. The first
 cleanup wave, Q-01 to Q-28, merged in PR #53. Neither appears below. Every
