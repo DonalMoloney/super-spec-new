@@ -173,7 +173,7 @@ grep prints nothing.
 grep -r 'static-landing-page\|sample-workflow' specflow/ README.md
 ```
 
-## G-20 — Brainstorm writes decisions
+## G-20 — Brainstorm writes decisions (working on)
 
 Executor: `general-purpose`. Model: sonnet. Effort: medium. Depends on: none.
 
@@ -192,7 +192,7 @@ and `e2e-smoke.sh` passes.
 Verify: the brainstorm stage assertion checks that a resolved fixture row
 lands in `decisions.md`.
 
-## G-21 — Templates carry their own checks
+## G-21 — Templates carry their own checks (working on)
 
 Executor: `general-purpose`. Model: sonnet. Effort: medium. Depends on: none.
 
@@ -214,7 +214,7 @@ nothing.
 Joins the `CHK` row ids to review finding ids. Verify: the column exists and
 the dry run's checklist assertion passes.
 
-## G-22 — `SKILL.md` and the bridge name the gates and the personas
+## G-22 — `SKILL.md` and the bridge name the gates and the personas (working on)
 
 Executor: `general-purpose`. Model: sonnet. Effort: low. Depends on: none.
 D-03 (PR #59) added the Target surface section. PR #70 rewrote the prose, so
@@ -235,7 +235,7 @@ One row per `.claude/agents/*-reviewer.md` file, naming the
 `requesting-code-review` step it replaces on Claude Code and the skill step
 Copilot runs instead. Verify: eight rows.
 
-## G-23 — The smoke test catches a dropped step, and CI watches upstream
+## G-23 — The smoke test catches a dropped step, and CI watches upstream (working on)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Effort: low. Depends on: none.
 T231 absorbs the step-count half of the old D-04, which PR #53 left open when
@@ -490,7 +490,7 @@ and in the `description` field of `extension.yml`, worded the same.
 Record the answer beside backlog item 23 so the catalog work does not reopen
 it. Verify: the answer is recorded with a date.
 
-## G-29 — Two free wording moves reference.md priced but nobody claimed
+## G-29 — Two free wording moves reference.md priced but nobody claimed (working on)
 
 Executor: `general-purpose`. Model: sonnet. Effort: low. Depends on: none.
 Both rows come from the Names table in `reference.md`, marked `Free` with
@@ -514,7 +514,7 @@ Verify: `grep -c '"claude-code"' specflow/extension.yml` and
 `grep -c '"copilot"' specflow/extension.yml` each print 1, and
 `python3 scripts/validate-extension-metadata.py` passes.
 
-## G-31 — The fallback guide names a template only on the superpowers path
+## G-31 — The fallback guide names a template only on the superpowers path (working on)
 
 Executor: `general-purpose`. Model: sonnet. Move: Tighten. Effort: low.
 Depends on: none. Diverges: yes.
