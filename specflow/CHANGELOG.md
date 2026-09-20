@@ -11,13 +11,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The extension needs spec-kit 0.16.2 or later. On an older spec-kit,
   `specify extension add specflow` refuses the install.
-- `/speckit.specflow.tasks` resolves `tasks-template` through the resolver
-  spec-kit installs under `.specify/scripts/`. The generated tasks carry this
-  extension's execution markers; before, only the core layer was read. The
-  command stops and reports when the resolver is absent.
+- Every command resolves its template through the resolver spec-kit installs
+  under `.specify/scripts/`, in the bash, PowerShell, or python variant the
+  project was initialized with. Generated artifacts carry this extension's
+  sections; before, only the core layer was read, so an artifact could come out
+  without Open Questions, Threat Model, Traceability, or Brainstorm Log and
+  nothing reported it. A command stops and reports when the resolver is absent.
+- `/speckit.constitution` no longer copies this extension's templates over
+  `.specify/templates/`. That copy overwrote the core templates in place and
+  discarded whatever a preset contributed.
+
 - The extension is listed as Specflow, not Superpowers Bridge. Its catalog
   description, and the description of every command and template, state what
   the command or template does instead of calling it enhanced.
+
+### Fixed
+
+- `SKILL.md` no longer links `assets/workflow-overview-en.png` or
+  `examples/sample-workflow.md`. Both directories are `export-ignore`d, so an
+  installed user followed both links to nothing.
 
 ## [1.0.2] - 2026-08-07
 

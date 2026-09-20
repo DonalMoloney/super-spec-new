@@ -313,10 +313,12 @@ every assertion with no script edit.
 Done in `0f60186`.
 
 Six lines read a template path directly: `commands/tasks.md` line 14, and
-`SKILL.md` lines 239, 256, 302, 325, and 399. Each becomes a call to
-`.specify/scripts/bash/resolve-template.sh <name>`, falling back to reading
-`.specify/templates/<name>.md` when the script is absent, per constraint 2 in
-`reference.md`. Verify: in a real install `resolve-template.sh spec-template`
+`SKILL.md` lines 239, 256, 302, 325, and 399. Each becomes a call to the
+resolver spec-kit installs under `.specify/scripts/`. The command stops and
+reports when the resolver fails; it does not fall back to reading
+`.specify/templates/<name>.md`, which returns only the core layer. ADR-0019
+records why, and supersedes this task's original fallback clause. Verify: in a
+real install `resolve-template.sh spec-template`
 returns our content while `.specify/templates/spec-template.md` still holds
 core's, and no command file reads a template path without the resolver.
 

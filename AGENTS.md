@@ -53,8 +53,10 @@ there, so a workflow under `specflow/` never runs.
   `brainstorm`, `tasks`, `execute`, `review`). Each is a behavior contract of Input,
   Output, and numbered Process steps, not code.
 - `specflow/commands/hooks/*.md`: the 3 optional hook prompts.
-- `specflow/templates/*.md`: document templates copied into a consuming project's
-  `.specify/templates/` on `/speckit.constitution`.
+- `specflow/templates/*.md`: document templates spec-kit installs to
+  `.specify/extensions/specflow/templates/` and resolves at command time. The
+  resolver layers project overrides, presets, extension templates, then core,
+  so these win over core without replacing `.specify/templates/`.
 - `specflow/references/`: `workflow-guide.md` (built-in fallback protocols) and
   `superpowers-bridge.md` (skill detection/mapping details).
 - `specflow/examples/`: a full real-run snapshot (`static-landing-page/`) and

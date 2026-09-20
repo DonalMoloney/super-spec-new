@@ -182,3 +182,21 @@ deleting them; prune anything older than a quarter that no longer guides work.
   `divergence-auditor` still measures and runs the guards afterward.
 - Consequences: a rename with a stated old and new value has a dispatch
   target. `imporvements/reference.md`'s Names table cites it for G-30.
+
+## ADR-0019: A missing template resolver stops the command; it has no fallback
+
+- Date: 2026-09-20
+- Status: accepted
+- Context: G-24 repointed `commands/tasks.md` and five `SKILL.md` steps at
+  spec-kit's `resolve-template` script. T242 specified reading
+  `.specify/templates/<name>.md` when the resolver is absent, citing
+  constraint 2 in `imporvements/reference.md`.
+- Decision: no fallback. The command stops and reports. Constraint 2 scopes to
+  superpowers skills, not to spec-kit's own scripts, and
+  `requires.speckit_version: ">=0.16.2"` is enforced at install:
+  `install_from_directory` calls `check_compatibility`, which raises
+  `CompatibilityError`. Spec-kit 0.16.2 is the first release carrying all three
+  resolver variants and the priority-3 layer.
+- Consequences: the raised floor replaces the fallback. Reading the raw path
+  returns only the core layer and drops this fork's sections, which is the bug
+  G-24 fixed. T242's fallback clause is superseded.
