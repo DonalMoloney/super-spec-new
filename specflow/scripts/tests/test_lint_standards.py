@@ -24,6 +24,41 @@ def write(path: Path, text: str) -> Path:
     return path
 
 
+def write_manifest(
+    path: Path,
+    *,
+    extension_id: str = "specflow",
+    name: str = "Specflow",
+    description: str = "Adds brainstorming to spec-kit.",
+    command_name: str = "speckit.specflow.status",
+    command_description: str = "Show current progress.",
+    prompt: str = "Run task decomposition?",
+) -> Path:
+    return write(
+        path,
+        f"""schema_version: "1.0"
+extension:
+  id: "{extension_id}"
+  name: "{name}"
+  description: "{description}"
+requires:
+  optional_skills:
+    - id: "test-driven-development"
+      source: "obra/superpowers"
+provides:
+  commands:
+    - name: "{command_name}"
+      file: "commands/status.md"
+      description: "{command_description}"
+hooks:
+  after_tasks:
+    command: "speckit.specflow.tasks"
+    prompt: "{prompt}"
+    description: "Check task coverage."
+""",
+    )
+
+
 def git_repo(root: Path, *tracked: Path) -> None:
     subprocess.run(["git", "-C", str(root), "init", "-q"], check=True)
     for path in tracked:
@@ -176,3 +211,83 @@ def test_explicit_quoting_file_is_skipped():
         result = lint(str(path), cwd=root)
     assert result.returncode == 0, result.stdout
     assert result.stdout.strip() == "OK: 0 files checked, 0 findings"
+
+
+def test_clean_manifest_passes():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = write_manifest(Path(tmp) / "extension.yml")
+        result = lint(str(path))
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.strip() == "OK: 1 file checked, 0 findings"
+
+
+def test_banned_word_in_the_manifest_description_names_its_key_path():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = write_manifest(
+            Path(tmp) / "extension.yml",
+            description="Leverage spec-kit.",
+        )
+        result = lint(str(path))
+    assert result.returncode == 1, result.stdout
+    assert f"{path}:extension.description: banned word 'leverage'" in result.stdout
+
+
+def test_banned_word_in_the_manifest_id_is_not_reported():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = write_manifest(Path(tmp) / "extension.yml", extension_id="leverage")
+        result = lint(str(path))
+    assert result.returncode == 0, result.stdout
+
+
+def test_banned_word_in_a_command_name_is_not_reported():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = write_manifest(
+            Path(tmp) / "extension.yml",
+            command_name="speckit.specflow.robust",
+        )
+        result = lint(str(path))
+    assert result.returncode == 0, result.stdout
+
+
+def test_banned_word_in_the_manifest_display_name_is_reported():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = write_manifest(Path(tmp) / "extension.yml", name="Seamless Specflow")
+        result = lint(str(path))
+    assert result.returncode == 1, result.stdout
+    assert f"{path}:extension.name: banned word 'seamless'" in result.stdout
+
+
+def test_em_dash_in_a_command_description_names_its_list_position():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = write_manifest(
+            Path(tmp) / "extension.yml",
+            command_description="Show progress — and detection status.",
+        )
+        result = lint(str(path))
+    assert result.returncode == 1, result.stdout
+    assert f"{path}:provides.commands[0].description: em-dash" in result.stdout
+
+
+def test_banned_word_in_a_hook_prompt_is_reported():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = write_manifest(
+            Path(tmp) / "extension.yml",
+            prompt="Run a comprehensive decomposition?",
+        )
+        result = lint(str(path))
+    assert result.returncode == 1, result.stdout
+    assert f"{path}:hooks.after_tasks.prompt: banned word 'comprehensive'" in result.stdout
+
+
+def test_directory_walk_checks_the_tracked_manifest():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        manifest = write_manifest(
+            root / "specflow" / "extension.yml",
+            description="Leverage spec-kit.",
+        )
+        git_repo(root, manifest)
+        result = lint(".", cwd=root)
+    assert result.returncode == 1, result.stdout
+    assert "extension.yml:extension.description: banned word 'leverage'" in result.stdout
+    assert result.stdout.strip().endswith("1 file checked, 1 findings")
