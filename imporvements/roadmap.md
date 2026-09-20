@@ -53,8 +53,7 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 |---|---|---|---|
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
 | G-24 | Six command lines read a template path instead of resolving it | medium | See the nine checks under G-24 |
-| G-26 | The gates cannot run on the Copilot CLI | medium | `grep -c '^events:' specflow/extension.yml` prints 0 |
-| G-35 | Local verification and CI verification check different things | low | `pytest scripts/tests` does not collect on the default python3 |
+| G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 done, T262 and T263 behind three prerequisites |
 | G-33 | The word-choice table is enforced by reading, not a check | medium | `lint-standards.py` checks em-dashes and the banned table only |
 | C-03 | The `imporvements/` directory name is a typo | low | 13 files cite it |
 
@@ -423,7 +422,7 @@ Run this task only when T251 adopts the preset. Verify: `specify preset
 resolve spec-template` names core's file plus our addendum, and the golden
 scores 100 on sections.
 
-## G-26 — Register the gates as agent-native hooks (working on)
+## G-26 — Register the gates as agent-native hooks (blocked: ADR-0022)
 
 Executor: `bdd-orchestrator`. Model: opus. Move: Add. Effort: medium. Depends
 on: G-24. Diverges: yes.
@@ -440,7 +439,7 @@ mechanism. Settle this group before N-03, which ships the same gates the long
 way as `provides.scripts` under `gates/`, and before backlog item 28, which
 writes a second hook config by hand.
 
-- [ ] T261 Write the event mapping
+- [x] T261 Write the event mapping
 
 One row per gate script, naming the spec-kit event it registers on and the
 adapter each surface needs from exit code to deny JSON. Verify: the table
@@ -448,6 +447,15 @@ names an event for `block-main-commit.sh`, `test-gate.sh`, `artifact-lint.sh`,
 and `session-start.sh`.
 
 - [ ] T262 Declare the block in `extension.yml`
+
+Blocked by ADR-0022. Three prerequisites, each verified by G-26 against
+spec-kit 1.0.9.dev0: our command files need YAML frontmatter with a `scripts:`
+block, since none has any today and the dispatcher resolves the script through
+it; Copilot's tool-payload field names need recording, because the gates read
+`.tool_input.command` and `.tool_input.file_path` and a wrong key passes
+everything; and the four gates need moving under `specflow/`, which reverses
+ADR-0001 and adds `jq` as an install-time dependency. Copilot also drops the
+`matcher` field Claude Code keeps, so a gate filters by tool name itself.
 
 Verify: `grep -c '^events:' specflow/extension.yml` prints 1 and both
 validators pass.
@@ -583,7 +591,7 @@ omits, the way `EXPECTED_PROCESS_STEPS` compares step counts. Verify: adding a
 write to a command's Process fails the smoke test until its phase names the
 same artifact, and the five rows above pass once T341 and T342 land.
 
-## G-35 — Local verification and CI verification check different things (working on)
+## G-35 — Local verification and CI verification check different things (merged: `c23528e`)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Add. Effort: low.
 Depends on: none. Diverges: no.
@@ -605,14 +613,14 @@ The failure itself was a golden pair drifting apart, which the scorer's own
 test defends. The reason it reached `main` is that no single command answers
 "did this pass what CI runs".
 
-- [ ] T351 Raise the annotations to the floor the tests already assume
+- [x] T351 Raise the annotations to the floor the tests already assume
 
 Either add `from __future__ import annotations` to the two files or state a
 Python floor and enforce it, so the suite collects on the interpreter a
 contributor has. Verify: `python3 -m pytest specflow/scripts/tests -q`
 collects every file on 3.9.
 
-- [ ] T352 Add one command that runs what CI runs
+- [x] T352 Add one command that runs what CI runs
 
 A script at the repository root running the three pytest targets, both
 validators, the hook suite and the smoke test, in CI's order, exiting nonzero

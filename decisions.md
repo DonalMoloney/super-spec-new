@@ -233,3 +233,22 @@ deleting them; prune anything older than a quarter that no longer guides work.
   so the extension stays either way.
 - Consequences: a core template improvement reaches this fork only when
   someone ports it. Backlog item 25 reports that drift.
+
+## ADR-0022: The gates stay under `.claude/`; the `events:` block waits
+
+- Date: 2026-09-20
+- Status: accepted, amends nothing
+- Context: G-26 asked whether spec-kit's `events:` block should register this
+  repository's four gates so they run on the Copilot CLI. An `events:` entry
+  names a command, not a script: the dispatcher reads that command's
+  frontmatter `scripts:` block. Our five command files carry no frontmatter, so
+  a block added today is a silent no-op. Pointing a command's script at
+  `../../../.claude/hooks/` resolves in this checkout and returns 0 wherever
+  `.claude/` is absent, which is every catalog install.
+- Decision: keep the gates under `.claude/` per ADR-0001 and ship no `events:`
+  block. Shipping them under `specflow/` is the only route that works, and it
+  is blocked on two unknowns: Copilot's tool-payload field names are recorded
+  nowhere, and a wrong key yields a gate that passes everything; and the gates
+  need `jq` at install time.
+- Consequences: G-26 keeps T262 and T263 open behind those prerequisites. A
+  gate that cannot be shown to fire is worse than no gate.
