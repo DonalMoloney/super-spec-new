@@ -22,8 +22,16 @@ ADD_LOG="$WORK/.add.log"
 FEAT_LOG="$WORK/.feat.log"
 
 SPEC_KIT_GIT_URL="https://github.com/github/spec-kit.git"
-SPECFLOW_COMMANDS=(status brainstorm tasks execute review)
-EXPECTED_HOOK_COUNT=3
+MANIFEST="$REPO_ROOT/extension.yml"
+# extension.yml is the only place that declares what ships. Deriving the
+# command list and the hook count from it keeps every assertion below correct
+# when a command or a hook is added.
+SPECFLOW_COMMANDS=()
+while IFS= read -r command_name; do
+  SPECFLOW_COMMANDS+=("$command_name")
+done < <(awk '/^provides:/{p=1} p&&/^  commands:/{c=1;next} c&&/^  [a-z]/{c=0} c&&/-[ ]*name:/{sub(/.*speckit\.specflow\./,"");gsub(/["'"'"']/,"");print}' "$MANIFEST")
+EXPECTED_COMMAND_COUNT=${#SPECFLOW_COMMANDS[@]}
+EXPECTED_HOOK_COUNT=$(awk '/^hooks:/{h=1;next} h&&/^[a-z]/{h=0} h&&/^  [a-z_]+:/{n++} END{print n+0}' "$MANIFEST")
 LOG_TAIL_LINES=30
 
 if [ -t 1 ]; then
@@ -122,8 +130,8 @@ fi
 LIST_LOG="$WORK/.list.log"
 run_specify extension list \
     </dev/null >"$LIST_LOG" 2>&1 || true
-assert_grep "extension list shows 'Commands: 5 | Hooks: 3'" \
-            "Commands: 5 | Hooks: 3" \
+assert_grep "extension list shows 'Commands: $EXPECTED_COMMAND_COUNT | Hooks: $EXPECTED_HOOK_COUNT'" \
+            "Commands: $EXPECTED_COMMAND_COUNT | Hooks: $EXPECTED_HOOK_COUNT" \
             "$LIST_LOG"
 
 step "2b/5" "Install specflow for the GitHub Copilot CLI"

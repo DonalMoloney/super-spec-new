@@ -82,8 +82,13 @@ jobs:
           uvx --from git+https://github.com/github/spec-kit.git specify init --here --integration claude --ignore-agent-tools --force
           uvx --from git+https://github.com/github/spec-kit.git specify extension add "$GITHUB_WORKSPACE/specflow" --dev
           uvx --from git+https://github.com/github/spec-kit.git specify extension list | tee extension-list.txt
-          grep -q "Commands: 5 | Hooks: 3" extension-list.txt
+          # extension.yml declares what ships, so the counts and the hook
+          # target commands are read from it rather than repeated here.
+          manifest="$GITHUB_WORKSPACE/specflow/extension.yml"
+          expected_commands=$(awk '/^provides:/{p=1} p&&/^  commands:/{c=1;next} c&&/^  [a-z]/{c=0} c&&/-[ ]*name:/{n++} END{print n+0}' "$manifest")
+          expected_hooks=$(awk '/^hooks:/{h=1;next} h&&/^[a-z]/{h=0} h&&/^  [a-z_]+:/{n++} END{print n+0}' "$manifest")
+          grep -q "Commands: $expected_commands | Hooks: $expected_hooks" extension-list.txt
           test -f .specify/extensions.yml
-          grep -q "speckit.specflow.tasks" .specify/extensions.yml
-          grep -q "speckit.specflow.execute" .specify/extensions.yml
-          grep -q "speckit.specflow.review" .specify/extensions.yml
+          for hook_command in $(awk '/^hooks:/{h=1;next} h&&/^[a-z]/{h=0} h&&/command:/{sub(/.*command:[ ]*/,"");gsub(/"/,"");print}' "$manifest" | sort -u); do
+            grep -q "$hook_command" .specify/extensions.yml
+          done
