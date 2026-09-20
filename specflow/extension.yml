@@ -70,7 +70,7 @@ hooks:
   after_tasks:
     command: "speckit.specflow.tasks"
     optional: true
-    prompt: "Run enhanced Superpowers task decomposition and validation?"
+    prompt: "Run Superpowers task decomposition and add execution markers?"
     description: "Verify task coverage and add Superpowers execution markers after core task generation"
   before_implement:
     command: "speckit.specflow.execute"
