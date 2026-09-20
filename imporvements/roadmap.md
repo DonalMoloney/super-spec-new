@@ -52,19 +52,18 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | Item | What it closes | Effort | Verified open by |
 |---|---|---|---|
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
-| G-23 | The smoke test misses a dropped step, and nothing watches upstream | low | No step-count table, no `check-upstream.sh`, no scheduled workflow |
 | G-24 | Six command lines read a template path instead of resolving it | medium | See the nine checks under G-24 |
 | G-25 | An extension template always replaces, so core's changes are lost | high | Core `tasks-template.md` is 252 lines against our 210 |
 | G-26 | The gates cannot run on the Copilot CLI | medium | `grep -c '^events:' specflow/extension.yml` prints 0 |
 | G-28 | Upstream superspec is catalogued under our summary | low | `docs/community/extensions.md` lists three bridges, none of them specflow |
 | G-30 | `superpowers-bridge.md` is named for a banned metaphor | medium | 16 files cite the path |
+| G-34 | The fallback guide freezes when a command gains a step | medium | Five phase/command mismatches, audited 2026-09-20 |
 | G-32 | The standards linter reads no YAML string | low | `lint-standards.py` collects `.md` only |
 | G-33 | The word-choice table is enforced by reading, not a check | medium | `lint-standards.py` checks em-dashes and the banned table only |
 | C-01 | 44 merged remote branches | low | `git branch -r` |
 | C-03 | The `imporvements/` directory name is a typo | low | 13 files cite it |
 | C-05 | Both e2e scripts leave a work directory behind | low | `Workdir kept at` prints unconditionally |
 | C-08 | A hook case passes for the wrong reason without mutmut | low | The `jq missing` case exits on the mutmut check |
-| C-09 | `artifact-lint.sh` lints a command file as a task list | low | Editing `commands/tasks.md` trips the stable-ID rule |
 
 ## D-01 — `after-tasks.md` reads the progress file (merged: `8fb7813`)
 
@@ -234,25 +233,25 @@ Copilot runs instead. Verify: one row per `.claude/agents/*-reviewer.md` file.
 Measured 10 on 2026-09-20; an earlier revision of this line said eight, which
 went stale when reviewers were added.
 
-## G-23 — The smoke test catches a dropped step, and CI watches upstream (working on)
+## G-23 — The smoke test catches a dropped step, and CI watches upstream (merged: `d34d637`)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Effort: low. Depends on: none.
 T231 absorbs the step-count half of the old D-04, which PR #53 left open when
 it landed the gate-marker half.
 
-- [ ] T231 Assert the Process-step count of each command file
+- [x] T231 Assert the Process-step count of each command file
 
 Read the counts from a table at the top of `e2e-smoke.sh`. Counted on
 2026-09-20: status 7, brainstorm 7, tasks 10, execute 9, review 8. Verify:
 deleting one step from any command fails the smoke test.
 
-- [ ] T232 Add `.claude/divergence/check-upstream.sh`
+- [x] T232 Add `.claude/divergence/check-upstream.sh`
 
 Print the vendored commit, `git ls-remote` upstream `HEAD`, and exit 1 when
 they differ. Upstream `HEAD` was `c20ac6c` on 2026-09-11. Verify: a hook test
 stubs `git ls-remote` and checks both exits.
 
-- [ ] T233 Run the drift check weekly in CI
+- [x] T233 Run the drift check weekly in CI
 
 A scheduled workflow that opens one issue when the script exits 1 and none
 when an open issue already exists. Verify: the workflow file exists and is
@@ -463,7 +462,7 @@ validators pass.
 Verify: the Copilot leg of `e2e-smoke.sh` finds the hook file the install
 wrote and names the events in it.
 
-## G-28 — Settle the name before submitting a catalog entry
+## G-28 — Settle the name before submitting a catalog entry (working on)
 
 Executor: `general-purpose`. Model: opus. Move: Add. Effort: low. Depends on:
 none. Diverges: no. No code.
@@ -539,7 +538,57 @@ Give Phase 4 an unconditional step that resolves `tasks-template` and reads
 names `tasks-template` on a line that no skill-detection condition governs,
 and `e2e-smoke.sh` passes.
 
-## G-32 — The standards linter reads no YAML string
+## G-34 — The fallback guide freezes when a command gains a step (working on)
+
+Executor: `bdd-orchestrator`. Model: opus. Move: Tighten. Effort: medium.
+Depends on: none. Diverges: yes.
+
+`references/workflow-guide.md` is the protocol an agent follows when no
+superpowers skill is installed, which is what constraint 2 in `reference.md`
+requires. It lags its command files, and nothing catches it: the smoke test
+greps this file only for the gate-marker table.
+
+Two instances were fixed on 2026-09-20 after being found by accident during
+unrelated work. Phase 4 named its template only inside a skill-conditional
+step, so the fallback path never resolved one (G-31). Phase 2 never described
+the `decisions.md` write that `brainstorm.md` gained (G-20), and then briefly
+described the write without the read, which is worse than neither.
+
+An audit then found three more genuinely absent, plus two stated outside the
+phase's Steps list where a reader walking the phase misses them.
+
+| Phase | Command step | State |
+|---|---|---|
+| 4 | `tasks.md` step 8, stable `TNNN` IDs | absent; Session Resumability line 612 is weaker and elsewhere |
+| 4 | `tasks.md` step 9, diff summary before writing | absent from the file |
+| 6 | `review.md` step 7, append a spec gap to Open Questions | absent; the only Open Questions append is unrelated |
+| 5 | `execute.md` step 7, the `handoff.md` write | stated in Session Resumability, not in Phase 5 |
+| 5 | `execute.md` step 9, the `progress.yml` update | stated in a table, not in Phase 5 |
+
+Five instances across three of the four mirrored phases, all the same shape.
+`/speckit.specflow.status` is excluded by design: the guide is phase-structured
+and status is not a phase.
+
+- [ ] T341 Mirror the three absent instructions
+
+Verify: Phase 4 names the stable-ID rule and the diff summary, Phase 6 names
+the Open Questions append, and `e2e-smoke.sh` passes.
+
+- [ ] T342 Move the two misplaced instructions into their phase
+
+Verify: Phase 5's Steps list names `handoff.md` and the `progress.yml` update,
+and each still appears once, not twice.
+
+- [ ] T343 Check the mirror mechanically
+
+A prose diff is not checkable, but an artifact set is. Every path, marker, and
+file name a command's Process steps write is a set; the phase that mirrors that
+command must name the same set. Compare the two and fail on a member the phase
+omits, the way `EXPECTED_PROCESS_STEPS` compares step counts. Verify: adding a
+write to a command's Process fails the smoke test until its phase names the
+same artifact, and the five rows above pass once T341 and T342 land.
+
+## G-32 — The standards linter reads no YAML string (working on)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Tighten. Effort: low.
 Depends on: none. Diverges: no.
@@ -669,13 +718,13 @@ closed on 2026-09-20.
   bash scripts/e2e-agent-claude.sh` reads `N assertions, 0 failed`. Merged in
   `069a384`. The hint was not the real trailer: the `cleanup` EXIT trap printed
   `workdir kept:` after it, so the count now prints from the trap.
-- [ ] **C-08** Fix the vacuous pass in the `jq missing from PATH fails` hook
+- [ ] **C-08** (working on) Fix the vacuous pass in the `jq missing from PATH fails` hook
   case. Its setup runs `ln -s "$(command -v mutmut)" "$shim/mutmut"`, which
   errors when mutmut is absent, so the case exits 2 on the mutmut check and
   never reaches the jq check it names. It passes for the wrong reason on any
   machine without mutmut. Verify: the case fails when jq is on `PATH` and
   mutmut is not.
-- [ ] **C-09** Scope `artifact-lint.sh` by path instead of by basename. Two
+- [x] **C-09** Scope `artifact-lint.sh` by path instead of by basename. Two
   symptoms, one cause. Editing `specflow/commands/tasks.md` trips `no task
   lines with stable IDs (expected '- [ ] T001 ...')`, because the lint matches
   the basename `tasks.md`; a command file is a behavior contract, not a
