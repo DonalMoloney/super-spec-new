@@ -1,13 +1,21 @@
 #!/usr/bin/env python3
 """Validate the ZIP that spec-kit's catalog downloads.
 
-`specify extension add specflow` resolves to GitHub's generated tag archive
-(https://github.com/DonalMoloney/super-spec-new/archive/refs/tags/vX.Y.Z.zip).
-GitHub builds it with `git archive`, which applies the `export-ignore` rules in
-.gitattributes. This script rebuilds that archive locally and checks it against
-the limits spec-kit enforces in `src/specify_cli/_download_security.py` before
-extracting an untrusted archive, so a regression fails CI instead of failing
-users at install time (issue #6).
+`specify extension add specflow` downloads the catalog entry's `download_url`,
+extracts the whole archive, then reads `extension.yml` from the archive root or
+from its single top-level directory (spec-kit
+`src/specify_cli/extensions/__init__.py`, `install_from_archive`). The extension
+lives under `specflow/` here, so the archive users receive is the release asset
+`specflow-vX.Y.Z.zip` that `.github/workflows/release.yml` builds with
+`git archive --prefix=specflow/` from this directory. GitHub's generated tag
+archive holds the whole repository and carries no `extension.yml` one level
+down, so it fails install with "No extension.yml found in archive".
+
+`git archive` applies the `export-ignore` rules in .gitattributes. The checks
+below rebuild the release asset locally and measure it against the limits
+spec-kit enforces in `src/specify_cli/_download_security.py` before extracting
+an untrusted archive, so a regression fails CI instead of failing users at
+install time (issue #6).
 
 Usage:
     python3 scripts/validate-release-archive.py [git-ref]
