@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Tests for lint-standards.py, the em-dash and banned-word check."""
 
+from __future__ import annotations
+
 import os
 import subprocess
 import sys

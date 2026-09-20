@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Tests for validate-release-archive.py, the spec-kit install-limit check."""
 
+from __future__ import annotations
+
 import os
 import shutil
 import subprocess
