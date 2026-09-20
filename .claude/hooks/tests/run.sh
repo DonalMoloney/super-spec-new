@@ -478,6 +478,17 @@ check_out "one glob sums every feature it matches" \
   "$(merge_gate_message "$d")"
 d="$(review_dir)"; write_findings "$d" claude Critical open
 check "a caller's glob replaces the defaults" 0 "$(merge_gate_glob "$d" 'specs/*/review-findings.json')"
+d="$(review_dir)"; write_findings "$d" claude critical open
+check "a severity the schema does not enumerate blocks the merge" 1 "$(merge_gate "$d")"
+check "the blocked merge names the schema violation" 0 \
+  "$(printf '%s' "$(merge_gate_message "$d")" | grep -Fq "severity: 'critical' is not one of 'Critical', 'Important', 'Minor'"; echo $?)"
+d="$(review_dir)"
+printf '%s\n' '{"schema_version":"1.0","reviewer":"claude","verdict":"BLOCK","findings":[{"id":"F1","severity":"Minor","location":"a.sh:1","evidence":"failing test"}]}' > "$d/.claude/review/claude.json"
+check "a finding missing a required key blocks the merge" 1 "$(merge_gate "$d")"
+d="$(review_dir)"; write_findings "$d" claude Minor open; write_findings "$d" critic critical open
+check "a schema violation in a later file blocks the merge" 1 "$(merge_gate "$d")"
+d="$(review_dir)"; write_review_findings "$d" critical open
+check "a schema violation under specs/ blocks the merge" 1 "$(merge_gate_glob "$d" 'specs/*/review-findings.json')"
 
 # --- rebut-findings.sh (CI; marks a findings document rebutted when the PR carries the label) ---
 rebut() { # dir file reason -> exit code
