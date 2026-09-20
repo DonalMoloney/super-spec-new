@@ -66,7 +66,7 @@ item named in the rewrite status below.
 | `commands/review.md` | 76% | PR #67 |
 | `CHANGELOG.md` | 77% | `prose-rephraser` |
 | `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` |
-| `README.md` | 100% | PR #59 |
+| `README.md` | 134% | `prose-rephraser` |
 
 The installable payload has moved a long way from upstream in wording and very
 little in shape. The fork's behavioral divergence still lives in `.claude/`,
@@ -235,14 +235,13 @@ and flag. `divergence-auditor` measures the result with
 `.claude/divergence/measure-divergence.py` and runs the guards.
 
 Every shipped text file with an upstream counterpart has had its dedicated
-`prose-rephraser` or `script-refactorer` pass except the three below whose
+`prose-rephraser` or `script-refactorer` pass except the two below whose
 Waiting on cell names an item. An empty cell means the pass has run and the
 Real column records what it measured. Mark a row `(working on)` before
 dispatching, and commit that mark to `main`. The Real column is the raw
 divergence measured above, not a proxy for whether the pass has run:
-`README.md` is already 100% different from upstream in content (Copilot CLI
-support, the five-command structure) without having gone through the
-standards-compliance pass D-05 gates.
+`README.md` measured 134% both before and after its pass, because its content
+had already diverged from upstream.
 
 | File | Real | Agent | Waiting on |
 |------|------|-------|------------|
@@ -251,7 +250,7 @@ standards-compliance pass D-05 gates.
 | `CHANGELOG.md` | 77% | `prose-rephraser` | |
 | `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` | |
 | `references/superpowers-mapping.md` | 4% | `prose-rephraser` | G-22 |
-| `README.md` | 100% | `prose-rephraser` | D-05 |
+| `README.md` | 134% | `prose-rephraser` | |
 
 A command rewrite runs `e2e-smoke.sh` through the auditor, because the smoke
 test greps command prose.
