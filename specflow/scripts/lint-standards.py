@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""Check Markdown and the extension manifest for em-dashes and the banned words in the documentation standard.
+"""Check Markdown and the extension manifest against the documentation standard.
 
 Usage:
     python3 scripts/lint-standards.py [path ...]
+
+Three rules run: em-dashes, the banned words the standard tables, and, on the
+shipped contracts under WORD_CHOICE_PATHS, the "Not" column of the standard's
+word-choice table.
 
 A path that is a directory is walked through `git ls-files`, so only tracked
 Markdown and a tracked `extension.yml` are checked. A path that is a file is
@@ -10,7 +14,8 @@ checked whether or not it is tracked. Either way a file under one of
 EXCLUDED_DIRS, or named in EXCLUDED_FILES, relative to the git top level, is
 skipped. A manifest is checked field by field, so only the strings a catalog
 user reads count and its ids do not. With no path the current directory is
-walked. Exit 0 with no findings, 1 with findings, 2 when a path is missing.
+walked. Exit 0 with no findings, 1 with findings, 2 when a path is missing or
+an exclusion is stale.
 """
 
 from __future__ import annotations
@@ -20,10 +25,13 @@ import subprocess
 import sys
 from collections.abc import Iterator
 from pathlib import Path
+from typing import NamedTuple
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 STANDARD = REPO_ROOT / "standards" / "documentation.md"
 BANNED_HEADING = "## Banned words and phrases"
+WORD_CHOICE_HEADING = "## Word choice"
+EXCLUSIONS = Path(__file__).resolve().parent / "word-choice-exclusions.txt"
 
 EM_DASH = "—"
 
@@ -43,29 +51,101 @@ USER_FACING_KEYS = ("description", "prompt")
 # `name` holds a command or template id everywhere else in the manifest.
 USER_FACING_PATHS = ("extension.name",)
 
+# The word-choice rule runs on the contracts a consuming agent reads every run
+# and on the manifest a catalog user reads. The rest of the repository still
+# carries findings the table would report.
+WORD_CHOICE_PATHS = ("specflow/commands", "specflow/extension.yml")
 
-def banned_entries(standard_text: str) -> list[str]:
-    """Return the unqualified entries of the banned table in the standard.
+
+class StaleExclusionError(Exception):
+    """An exclusion names an entry the word-choice table does not check."""
+
+
+class WordChoice(NamedTuple):
+    """The word-choice pattern and the word to write for each entry it matches."""
+
+    pattern: re.Pattern[str]
+    replacement: dict[str, str]
+
+
+def table_rows(standard_text: str, heading: str, header: str) -> Iterator[tuple[str, list[str]]]:
+    """Yield the first cell and the unqualified second-cell entries of each row under `heading`.
 
     An entry followed by a parenthetical qualifier names a judgment call the
     reader makes, so it is left out of the mechanical check.
     """
-    section = standard_text.partition(BANNED_HEADING)[2]
-    entries: list[str] = []
+    section = standard_text.partition(heading)[2]
     for line in section.splitlines():
         if line.startswith("## "):
             break
         cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
-        if len(cells) != 2 or cells[0] in ("Category", "") or set(cells[1]) <= {"-"}:
+        if len(cells) != 2 or cells[0] in (header, "") or set(cells[1]) <= {"-"}:
             continue
+        entries: list[str] = []
         for raw in cells[1].split(","):
             entry = raw.strip().strip('"').strip().lower()
             if entry and "(" not in entry:
                 entries.append(entry)
+        if entries:
+            yield cells[0], entries
+
+
+def banned_entries(standard_text: str) -> list[str]:
+    """Return the unqualified entries of the banned table in the standard."""
+    entries: list[str] = []
+    for _, row in table_rows(standard_text, BANNED_HEADING, "Category"):
+        entries.extend(row)
     return entries
 
 
-def banned_pattern(entries: list[str]) -> re.Pattern[str]:
+def word_choice_exclusions(exclusions_text: str) -> set[str]:
+    """Return the entries the exclusions file leaves to a reader.
+
+    Raises `StaleExclusionError` when a line states no reason.
+    """
+    entries: set[str] = set()
+    for line in exclusions_text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        entry, separator, reason = stripped.partition(":")
+        if not separator or not reason.strip():
+            raise StaleExclusionError(
+                f"the word-choice exclusion '{stripped}' states no reason; "
+                f"expected 'entry: reason'. Edit {EXCLUSIONS.name}."
+            )
+        entries.add(entry.strip().lower())
+    return entries
+
+
+def word_choice_rule(standard_text: str, exclusions_text: str) -> WordChoice:
+    """Build the word-choice rule from the standard's table and the exclusions file.
+
+    Raises `StaleExclusionError` when an exclusion names an entry the table does
+    not carry, or carries only with a qualifier.
+    """
+    excluded = word_choice_exclusions(exclusions_text)
+    table: dict[str, str] = {}
+    for write, entries in table_rows(standard_text, WORD_CHOICE_HEADING, "Write"):
+        for entry in entries:
+            table[entry] = write
+    stale = sorted(excluded - set(table))
+    if stale:
+        raise StaleExclusionError(
+            f"the word-choice exclusions name {', '.join(stale)}; the Word choice "
+            f"table in {STANDARD.name} does not check that entry. Edit {EXCLUSIONS.name}."
+        )
+    banned = set(banned_entries(standard_text))
+    # An entry in both tables is reported once, by the banned rule.
+    replacement = {
+        entry: write
+        for entry, write in table.items()
+        if entry not in excluded and entry not in banned
+    }
+    return WordChoice(entry_pattern(sorted(replacement)), replacement)
+
+
+def entry_pattern(entries: list[str]) -> re.Pattern[str]:
     """Compile one pattern that matches any entry as a whole word or phrase."""
     alternatives = [re.escape(entry).replace(r"\ ", r"\s+") for entry in entries]
     return re.compile(
@@ -74,7 +154,30 @@ def banned_pattern(entries: list[str]) -> re.Pattern[str]:
     )
 
 
-def findings_for(path: Path, pattern: re.Pattern[str]) -> list[str]:
+def as_tabled(matched: str) -> str:
+    """Return a matched entry as the table spells it: lower case, one space between words."""
+    return re.sub(r"\s+", " ", matched.lower())
+
+
+def findings_in(
+    text: str, place: str, banned: re.Pattern[str], word_choice: WordChoice | None
+) -> Iterator[str]:
+    """Yield one line per banned-word and word-choice finding in `text`, prefixed by `place`.
+
+    `word_choice` is None for a file the word-choice rule does not cover.
+    """
+    for match in banned.finditer(text):
+        yield f"{place}: banned word '{as_tabled(match.group(1))}'"
+    if word_choice is None:
+        return
+    for match in word_choice.pattern.finditer(text):
+        entry = as_tabled(match.group(1))
+        yield f"{place}: word choice '{entry}'; write '{word_choice.replacement[entry]}'"
+
+
+def findings_for(
+    path: Path, banned: re.Pattern[str], word_choice: WordChoice | None
+) -> list[str]:
     """Return one line per finding in `path`."""
     lines: list[str] = []
     in_fence = False
@@ -86,8 +189,7 @@ def findings_for(path: Path, pattern: re.Pattern[str]) -> list[str]:
             continue
         if in_fence:
             continue
-        for match in pattern.finditer(line):
-            lines.append(f"{path}:{number}: banned word '{match.group(1).lower()}'")
+        lines.extend(findings_in(line, f"{path}:{number}", banned, word_choice))
     return lines
 
 
@@ -111,7 +213,9 @@ def user_facing_strings(node: object, key_path: str = "") -> Iterator[tuple[str,
         yield key_path, node
 
 
-def manifest_findings(path: Path, pattern: re.Pattern[str]) -> list[str]:
+def manifest_findings(
+    path: Path, banned: re.Pattern[str], word_choice: WordChoice | None
+) -> list[str]:
     """Return one line per finding in the user-facing fields of the manifest `path`.
 
     Raises `ModuleNotFoundError` when PyYAML is absent.
@@ -129,16 +233,12 @@ def manifest_findings(path: Path, pattern: re.Pattern[str]) -> list[str]:
     for key_path, text in user_facing_strings(document):
         if EM_DASH in text:
             lines.append(f"{path}:{key_path}: em-dash")
-        for match in pattern.finditer(text):
-            lines.append(f"{path}:{key_path}: banned word '{match.group(1).lower()}'")
+        lines.extend(findings_in(text, f"{path}:{key_path}", banned, word_choice))
     return lines
 
 
-def is_excluded(path: Path) -> bool:
-    """Return whether `path` is excluded in its git checkout.
-
-    A file outside any git checkout is never excluded.
-    """
+def repo_relative(path: Path) -> str | None:
+    """Return `path` relative to the top level of its git checkout, or None outside one."""
     toplevel = subprocess.run(
         ["git", "rev-parse", "--show-toplevel"],
         cwd=path.resolve().parent,
@@ -146,11 +246,34 @@ def is_excluded(path: Path) -> bool:
         text=True,
     )
     if toplevel.returncode != 0:
+        return None
+    return path.resolve().relative_to(Path(toplevel.stdout.strip()).resolve()).as_posix()
+
+
+def is_excluded(path: Path) -> bool:
+    """Return whether `path` is excluded in its git checkout.
+
+    A file outside any git checkout is never excluded.
+    """
+    relative = repo_relative(path)
+    if relative is None:
         return False
-    relative = path.resolve().relative_to(Path(toplevel.stdout.strip()).resolve()).as_posix()
     if relative in EXCLUDED_FILES:
         return True
     return any(relative.startswith(prefix + "/") for prefix in EXCLUDED_DIRS)
+
+
+def in_word_choice_scope(path: Path) -> bool:
+    """Return whether the word-choice rule covers `path` in its git checkout.
+
+    A file outside any git checkout is covered: it was named on the command line.
+    """
+    relative = repo_relative(path)
+    if relative is None:
+        return True
+    return any(
+        relative == prefix or relative.startswith(prefix + "/") for prefix in WORD_CHOICE_PATHS
+    )
 
 
 def tracked_files(directory: Path) -> list[Path]:
@@ -198,13 +321,20 @@ def main(arguments: list[str]) -> int:
             file=sys.stderr,
         )
         return 2
-    pattern = banned_pattern(banned_entries(STANDARD.read_text(encoding="utf-8")))
+    standard_text = STANDARD.read_text(encoding="utf-8")
+    banned = entry_pattern(banned_entries(standard_text))
+    try:
+        word_choice = word_choice_rule(standard_text, EXCLUSIONS.read_text(encoding="utf-8"))
+    except StaleExclusionError as stale:
+        print(f"lint-standards: {stale}", file=sys.stderr)
+        return 2
     findings: list[str] = []
     for path in files:
+        rule = word_choice if in_word_choice_scope(path) else None
         if path.name == MANIFEST_NAME:
-            findings.extend(manifest_findings(path, pattern))
+            findings.extend(manifest_findings(path, banned, rule))
         else:
-            findings.extend(findings_for(path, pattern))
+            findings.extend(findings_for(path, banned, rule))
     for finding in findings:
         print(finding)
     noun = "file" if len(files) == 1 else "files"

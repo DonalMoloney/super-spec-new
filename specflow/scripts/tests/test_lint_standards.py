@@ -1,15 +1,26 @@
 #!/usr/bin/env python3
-"""Tests for lint-standards.py, the em-dash and banned-word check."""
+"""Tests for lint-standards.py, the em-dash, banned-word and word-choice check."""
 
 from __future__ import annotations
 
+import importlib.util
 import os
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
+import pytest
+
 SCRIPT = Path(__file__).resolve().parents[1] / "lint-standards.py"
+
+
+def load_script():
+    """Import lint-standards.py as a module, so a parsing function can be called directly."""
+    spec = importlib.util.spec_from_file_location("lint_standards", SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def lint(
@@ -316,6 +327,88 @@ def test_manifest_without_a_yaml_parser_asks_for_pyyaml():
         result = lint(str(path), python_path=without_yaml(root))
     assert result.returncode != 0
     assert "PyYAML, which is not installed" in result.stderr
+
+
+def test_word_choice_word_in_a_command_file_names_its_replacement():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        path = write(
+            root / "specflow" / "commands" / "status.md",
+            "Verify that the constitution exists.\n",
+        )
+        git_repo(root, path)
+        result = lint(".", cwd=root)
+    assert result.returncode == 1, result.stdout
+    assert "status.md:1: word choice 'verify that'; write 'check, test'" in result.stdout
+
+
+def test_word_choice_outside_the_shipped_contracts_is_not_reported():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        path = write(root / "docs" / "guide.md", "Verify that the constitution exists.\n")
+        git_repo(root, path)
+        result = lint(".", cwd=root)
+    assert result.returncode == 0, result.stdout
+
+
+def test_qualified_word_choice_entry_is_not_reported():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        path = write(root / "specflow" / "commands" / "tasks.md", "Update the stamp.\n")
+        git_repo(root, path)
+        result = lint(".", cwd=root)
+    assert result.returncode == 0, result.stdout
+
+
+def test_excluded_word_choice_entry_is_not_reported():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        path = write(root / "specflow" / "commands" / "review.md", "Name the target surface.\n")
+        git_repo(root, path)
+        result = lint(".", cwd=root)
+    assert result.returncode == 0, result.stdout
+
+
+def test_word_choice_inside_fenced_code_is_ignored():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        path = write(
+            root / "specflow" / "commands" / "execute.md",
+            "```bash\n# verify that the gate holds\n```\n",
+        )
+        git_repo(root, path)
+        result = lint(".", cwd=root)
+    assert result.returncode == 0, result.stdout
+
+
+def test_word_choice_in_the_manifest_description_names_its_key_path():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = write_manifest(
+            Path(tmp) / "extension.yml",
+            description="Verify that every task is covered.",
+        )
+        result = lint(str(path))
+    assert result.returncode == 1, result.stdout
+    assert (
+        f"{path}:extension.description: word choice 'verify that'; write 'check, test'"
+        in result.stdout
+    )
+
+
+def test_a_stale_exclusion_names_the_entry_the_table_no_longer_carries():
+    module = load_script()
+    standard = "## Word choice\n\n| Write | Not |\n|---|---|\n| use | employ |\n\n## Next\n"
+    with pytest.raises(module.StaleExclusionError) as error:
+        module.word_choice_rule(standard, "surface: a noun in this repository\n")
+    assert "surface" in str(error.value)
+
+
+def test_an_exclusion_without_a_reason_is_rejected():
+    module = load_script()
+    standard = "## Word choice\n\n| Write | Not |\n|---|---|\n| use | employ |\n\n## Next\n"
+    with pytest.raises(module.StaleExclusionError) as error:
+        module.word_choice_rule(standard, "employ\n")
+    assert "employ" in str(error.value)
 
 
 def test_directory_walk_checks_the_tracked_manifest():
