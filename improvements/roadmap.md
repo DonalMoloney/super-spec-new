@@ -52,8 +52,8 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | Item | What it closes | Effort | Verified open by |
 |---|---|---|---|
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
-| G-24 | Six command lines read a template path instead of resolving it | medium | See the nine checks under G-24 |
 | G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 done, T262 and T263 behind three prerequisites |
+| G-43 | `SKILL.md` documents a `progress.yml` schema the validator rejects | low | Not started; see G-43 below |
 
 ## D-01 — `after-tasks.md` reads the progress file (merged: `8fb7813`)
 
