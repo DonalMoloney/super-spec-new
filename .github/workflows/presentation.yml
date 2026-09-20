@@ -27,7 +27,7 @@ jobs:
 
       # ubuntu-latest ships Google Chrome, which Marp uses for PDF export.
       - name: Render to PDF
-        run: npx --yes @marp-team/marp-cli@4.2.3 --pdf presentation/marp-deck/deck.md -o deck.pdf
+        run: npx --yes @marp-team/marp-cli@4.2.3 --theme-set presentation/marp-deck/global.css --pdf --allow-local-files presentation/marp-deck/deck.md -o deck.pdf
 
       - name: Lint the deck against the documentation standard
         run: python3 specflow/scripts/lint-standards.py presentation

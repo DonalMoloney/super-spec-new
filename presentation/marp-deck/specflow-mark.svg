@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 112" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Specflow</title>
+  <desc id="desc">A specification passes through a governance check into code.</desc>
+  <g stroke="#526071" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M23 28h32l12 12v44H23z" fill="#ffffff"/>
+    <path d="M55 28v14h12M33 53h23M33 64h23M33 75h14"/>
+    <path d="M76 56h13m-5-5 5 5-5 5M151 56h13m-5-5 5 5-5 5"/>
+    <rect x="173" y="28" width="48" height="56" rx="4" fill="#ffffff"/>
+    <path d="m188 47-7 9 7 9m18-18 7 9-7 9m-7-19-5 20"/>
+  </g>
+  <rect x="96" y="32" width="48" height="48" rx="12" fill="#174ea6"/>
+  <path d="m108 56 8 8 16-17" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

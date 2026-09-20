@@ -10,3 +10,9 @@ __pycache__/
 .claude/claude-md-drift.json
 .venv/
 mutants/
+
+# Marp render artifacts and local tool scratch
+presentation/marp-deck/deck.html
+presentation/marp-deck/archive/
+.playwright-cli/
+output/
