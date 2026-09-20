@@ -76,7 +76,7 @@ hooks:
     command: "speckit.specflow.execute"
     optional: true
     prompt: "Run Superpowers-guided implementation with TDD and checkpoints?"
-    description: "Enforce TDD discipline and Superpowers execution guidance before core implementation"
+    description: "Enforce TDD discipline and follow Superpowers execution guidance before core implementation"
   after_implement:
     command: "speckit.specflow.review"
     optional: true
