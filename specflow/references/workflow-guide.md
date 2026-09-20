@@ -40,8 +40,9 @@ matching section while it runs a command.
    - Development workflow preferences (which quality gates to enforce)
    - Governance rules
 
-4. **Generate constitution** using `constitution-template.md` as skeleton.
-   Fill in every section from the user's responses. Populate the "Development Workflow"
+4. **Generate constitution** from `constitution-template`, resolved through the
+   resolver named at step 2 and read from `TEMPLATE_CONTENT`. Fill in every
+   section from the user's responses. Populate the "Development Workflow"
    and "Quality Gates" sections.
 
 5. **Write** to `.specify/memory/constitution.md`
