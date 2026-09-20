@@ -95,19 +95,6 @@ section footer {
   border-top: 1px solid var(--deck-line);
 }
 
-section::after {
-  position: absolute;
-  inset: auto 88px 29px auto;
-  padding: 0;
-  color: var(--deck-muted);
-  background: var(--deck-paper);
-  font-size: 28px;
-  font-weight: 400;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  content: attr(data-marpit-pagination) " / " attr(data-marpit-pagination-total);
-}
-
 /* Diagram slides reserve a common panel and caption position. */
 section:not(.lead):has(img) h2 {
   min-height: 122px;

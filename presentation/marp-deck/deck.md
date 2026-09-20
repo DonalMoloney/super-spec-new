@@ -1,112 +1,306 @@
 ---
 marp: true
-theme: gaia
-paginate: true
+theme: specflow
+paginate: false
 size: 16:9
+title: Specflow
+author: Donal Moloney
+description: Spec-kit governance with superpowers execution skills and adversarial review.
+header: Specflow
+footer: Governance / Execution / Review
+lang: en
 ---
 
 <!-- _class: lead -->
+<!-- _header: Governance with evidence -->
+
+![Specflow: a specification passes through a check into code](specflow-mark.svg)
 
 # Specflow
 
 Spec-kit governance with superpowers execution skills and adversarial review.
 
-2026-09-11
-
 Donal Moloney
 
-<!-- speaker notes: Specflow is a spec-kit extension. Spec-kit owns the governance artifacts and superpowers owns the execution skills; specflow connects the two and adds deterministic gates around them. The deck covers what specflow is, where the roadmap stands, the adversarial-review design, the kit under .claude/, and the adoption path. Scope is Claude Code and the GitHub Copilot CLI only, per AGENTS.md. Source: AGENTS.md, first section. -->
+<!--
+Specflow connects the artifacts that define a change to the skills that implement it. Spec-kit owns governance; superpowers supplies optional execution skills. Specflow adds commands, saved state, and checks between those responsibilities.
+
+Follow the boundary from the constitution through review and adoption. Scripts enforce explicit rules; they cannot guarantee that a spec describes the right product behavior. The target surfaces are Claude Code and GitHub Copilot CLI. The companion .claude kit is specific to Claude Code.
+
+Source: AGENTS.md, Architecture and Target surface.
+-->
 
 ---
 
-## Specflow adds five commands to a spec-kit project
+## Self-review can't prove independence
 
-- Spec-kit owns constitution, spec, plan, tasks, and checklist.
-- Superpowers skills run brainstorming, planning, TDD, and code review.
-- Specflow connects the two through five commands.
-- Every command falls back when a skill is missing.
-- State lives in plain YAML, so a run resumes.
+![w:1080](review-independence.svg)
 
-<!-- speaker notes: The five commands are status, brainstorm, tasks, execute, and review, each under the speckit.specflow prefix. extension.yml declares five commands, five templates, and three hooks. The constitution at .specify/memory/constitution.md is a hard gate before any command runs. Fallback protocols live in specflow/references/workflow-guide.md. Resumable state is progress.yml per feature and .specify/superpowers.yml for skill detection. Superpowers current version is v6.3.0. Sources: AGENTS.md Architecture and Gotchas; imporvements/imporvements2.md Part 1. -->
+External evidence, not agreement, closes the review loop.
 
----
+<!--
+A writer can explain a broken implementation convincingly. Give the reviewer the spec and diff in fresh context, then ask for evidence tied to a requirement, and route to a different model where the policy allows it. Different model routing is a review policy, not proof that errors become independent.
 
-## All 18 roadmap groups have merged as of 2026-09-11
+The reviewer must report a finding or demonstrate that the named failure checks are absent. A critic then reviews the review: it rejects unsupported claims and flags understated severity, so agreement alone is never the acceptance signal.
 
-- Deterministic gate hooks replaced prompt-level asks.
-- Adversarial review agents and a findings schema landed.
-- A CI merge gate reviews every pull request headlessly.
-- Agent Teams run parallel tasks in separate worktrees.
-- Cost governance and per-phase logging record every run.
+Research motivates the design rather than measuring it. Panickssery, Bowman, and Feng document self-preference even when humans rate alternatives as equally good. Zheng and colleagues document position and verbosity bias in model judging. Huang and colleagues find that reasoning self-correction without external feedback can fail or reduce performance. None of these studies measure Specflow's defect reduction or claim every model behaves identically; combining reviewers with failing tests is an engineering inference from their observed limits.
 
-<!-- speaker notes: The count of 18 is the number of G-NN groups in the first roadmap wave, each merged by a PR between #8 and #53. Gate hooks are G-01 and G-06, review agents G-05, the CI merge gate G-09, Agent Teams G-14, cost governance G-16, and logging G-07. Source: git log --merges --first-parent main; imporvements/tasks.md names the wave. -->
+Sources: .claude/agents/code-reviewer.md; .claude/agents/critic.md; docs/review-research.md, sections 3.3 and 3.11. Research: Panickssery et al., LLM Evaluators Recognize and Favor Their Own Generations (2024), https://arxiv.org/abs/2404.13076; Zheng et al., Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena (NeurIPS 2023), https://arxiv.org/abs/2306.05685; Huang et al., Large Language Models Cannot Self-Correct Reasoning Yet (2023 preprint; ICLR 2024), https://arxiv.org/abs/2310.01798. The deck README retains these references.
+-->
 
 ---
 
-## A single LLM reviewer approves its own mistakes
+## Specflow connects governance to execution
 
-- A lone reviewer approves by default and invents findings.
-- Models score their own output higher than others' output.
-- The reviewing model must differ from the writing model.
-- Mandatory findings and a fresh context block empty approvals.
+![w:1080](workflow.svg)
 
-<!-- speaker notes: The default requesting-code-review skill is one fresh-context reviewer with severity buckets, which is prone to rubber-stamping, hallucinated issues, and false consensus. Self-preference bias: Panickssery, Bowman and Feng, NeurIPS 2024, arXiv 2404.13076, found evaluators score their own generations higher while humans rate them equal. Position and verbosity bias: Wang et al. 2024 and Saito et al. 2023. Self-correction without an external verifier does not fix this (Huang 2023). Sources: imporvements/imporvements2.md sections 3.1, 3.3, 3.4. -->
+Saved state lets interrupted work resume.
 
----
+<!--
+Read the diagram as a division of responsibility. Spec-kit produces the constitution, spec, plan, tasks, and checklist. Specflow checks prerequisites and chooses the next command. Superpowers supplies skills when detection finds them; built-in protocols cover missing skills.
 
-## Four review layers run by default and three on risk
+Delegation to superpowers is optional. Feature progress lives in progress.yml, and skill detection lives in .specify/superpowers.yml. A resumed command reads this state before continuing. The workflow does not depend on remembering the previous conversation.
 
-- Every change runs the four default layers.
-- A critic loop runs only on high-risk changes.
-- Cross-model review and SAST run in CI before merge.
-- Risk escalates on touched paths, diff size, or dependency changes.
-- Scorecards track finding precision per reviewer persona.
-
-<!-- speaker notes: The four default layers are the spec pre-mortem gate, the hardened single reviewer, the multi-persona panel, and the reviewer-writes-failing-tests step. Layer five is the critic loop at about 4.5 times the tokens. Layers six and seven are cross-model review and test amplification with SAST. Diff-size thresholds are 400 changed lines or 15 changed files, set in .claude/hooks/risk-classifier.sh and recorded in ADR-0005. Precision is accepted findings divided by all findings; a persona below 0.5 is over-flagging. Sources: imporvements/imporvements2.md sections 3.7, 3.9, 3.10; decisions.md ADR-0005. -->
+Sources: AGENTS.md, Architecture and Gotchas; specflow/extension.yml; specflow/references/workflow-guide.md.
+-->
 
 ---
 
-## The kit under .claude is ready to copy
+## Without gates, approval depends on model judgment
 
-- Nine hook scripts gate commits, tests, artifacts, and merges.
-- 28 agent definitions cover the BDD squad and review personas.
-- A findings schema and validator structure every review.
-- A dispatcher skill routes new, fix, refactor, and rules work.
-- Three workflows run CI, the merge gate, and scoring.
+![w:1080](gates.svg)
 
-<!-- speaker notes: Counts come from the worktree on 2026-09-11: nine shell scripts in .claude/hooks, 28 files in .claude/agents, schema.json and validate-findings.py in .claude/review, the specflow-dispatcher skill in .claude/skills, and ci.yml, merge-gate.yml, and score-artifacts.yml in .github/workflows. Hooks are not part of the spec-kit archive, so a consuming project copies them deliberately (ADR-0001). Check hook event names, budget flags, and model IDs against the installed versions before adopting. Sources: repository listing; decisions.md ADR-0001; imporvements/imporvements2.md Part 4. -->
+A recorded pass makes the next step auditable.
+
+<!--
+A model can answer the same request differently on successive runs. Asking it to remember a rule leaves that rule dependent on interpretation. A gate instead checks an explicit condition, such as an analysis marker or the status of a blocking finding.
+
+Determinism belongs to the check, not to the generated code. The same recorded inputs should produce the same gate decision. A passing check still does not prove that a product requirement was complete. Governance makes the decision inspectable and repeatable.
+
+Sources: imporvements/roadmap.md; specflow/commands/execute.md; .claude/hooks/merge-gate.sh.
+-->
 
 ---
 
-## Install takes three commands and a status check
+## Five commands connect the workflow
 
-The status command confirms the constitution and skill detection.
+![w:1080](commands.svg)
 
-```bash
-specify init . --ai claude
+Each command can use a built-in fallback.
+
+<!--
+All five names share the /speckit.specflow. prefix. Status reports readiness and can run again between steps. Brainstorm develops the design; tasks decomposes the plan; execute drives implementation; review checks the result.
+
+This diagram orders Specflow entry points, not every required step. Spec-kit commands create the constitution and spec, clarify requirements, write the plan, analyze artifacts, and check readiness between these points. Missing skills never remove the built-in workflow. Saved YAML state lets interrupted work continue.
+
+Sources: specflow/extension.yml, commands; AGENTS.md, Gotchas; specflow/commands/status.md. The manifest declares five commands.
+-->
+
+---
+
+## The constitution gates every command
+
+![w:1080](artifacts.svg)
+
+Each artifact gives the next step a checkable input.
+
+<!--
+The constitution must exist before any Specflow command runs. It gives later reviews a stable rule to cite instead of asking reviewers to invent standards during implementation. A team should approve it before using the workflow on a feature.
+
+Spec-kit owns these artifacts. They record the rules, desired behavior, implementation choices, remaining work, and readiness evidence. Feature artifacts live under specs/NNN-*/ at the consuming project root. The constitution lives at .specify/memory/constitution.md.
+
+Sources: AGENTS.md, Architecture and Gotchas; specflow/commands/execute.md; specflow/templates/tasks-template.md.
+-->
+
+---
+
+## Execution skills work inside the agreed rules
+
+![w:1080](skills.svg)
+
+Missing skills use the built-in workflow protocol.
+
+<!--
+Test-driven development, or TDD, starts with a failing behavior check. Implementation passes that check, and refactoring preserves it. This connects acceptance criteria to observable behavior rather than to a model saying that work is complete.
+
+Specflow maps commands to the relevant superpowers skills. Detection chooses the protocol; governance sets the prerequisites. The workflow guide supplies the fallback when a skill is absent. Optional skills must never become an installation gate.
+
+Sources: specflow/references/superpowers-bridge.md; specflow/references/workflow-guide.md; AGENTS.md, Gotchas.
+-->
+
+---
+
+## Specflow enforces checks, not product correctness
+
+![w:1080](correctness-gap.svg)
+
+Checks confirm compliance; only humans confirm correctness.
+
+<!--
+The enforcement points differ. Constitution and analysis checks live in command contracts. The artifact hook examines edited spec, plan, task, and checklist files. Once a feature has its .clarified marker, unresolved clarification text causes that hook to stop the workflow.
+
+Do not describe all governance as one pre-execution hook. Some checks happen after an edit; others run inside a command or in CI. The merge gate blocks Critical and Important findings until fixed or rebutted. These checks constrain the agent at named boundaries without proving that the implementation meets every product need.
+
+Sources: specflow/commands/execute.md; .claude/hooks/artifact-lint.sh; .claude/hooks/merge-gate.sh; decisions.md, ADR-0006 and ADR-0012.
+-->
+
+---
+
+## All 18 roadmap groups have merged
+
+![w:1080](roadmap.svg)
+
+The first roadmap wave is merged. Adoption still needs configuration.
+
+<!--
+The count covers the first roadmap wave, G-01 through G-18, merged between PR #8 and PR #53. The current roadmap records the completed first wave before listing open work. The diagram groups adjacent group numbers for readability; it does not claim dated merge order.
+
+Gate hooks belong to G-01 and G-06; review agents to G-05; the continuous integration (CI) merge gate to G-09; Agent Teams to G-14; cost governance to G-16; logging to G-07. Merged means those implementation groups landed. A consuming repository still needs to install and configure the checks it intends to enforce.
+
+Sources: imporvements/roadmap.md, first-wave record; git log --merges --first-parent main. This retains the roadmap correction merged into the original deck.
+-->
+
+---
+
+## Four default layers precede additional review
+
+![w:1080](review-stack.svg)
+
+Risk triggers the critic; CI hosts additional checks.
+
+<!--
+The proposed stack has seven layers. The four defaults are a spec pre-mortem, a hardened reviewer, a multi-persona panel, and reviewer-written tests. The remaining layers are a critic loop, cross-model review, and test amplification with static application security testing (SAST).
+
+The roadmap assigns the critic to high-risk changes and places cross-model review and SAST in CI. These are adoption policies, not a claim that the committed workflow runs every layer. Current CI runs headless Claude review when credentials exist, adds security review and mutation checks for HIGH risk, and treats Semgrep and mutation results as advisory. It does not automatically establish different-vendor review.
+
+Sources: docs/review-research.md, sections 3.7 and 3.10; .github/workflows/merge-gate.yml. The four-plus-three count comes from the proposed seven-layer stack.
+-->
+
+---
+
+## Risk rises above 400 lines or 15 files
+
+![w:1080](risk.svg)
+
+Sensitive paths and recognized dependency files also trigger HIGH.
+
+<!--
+The classifier compares the base ref with HEAD. Changed lines are additions plus deletions. The comparisons are strictly greater than 400 lines or 15 files: exactly those counts stay STANDARD unless a path rule triggers HIGH. A binary file contributes to the file count without contributing lines.
+
+Sensitive paths include auth, payments, billing, migrations, infra, secrets, and crypto. Dependency matching covers the filenames listed in the script, not every possible manifest. Reviewer precision scorecards are a separate calibration proposal. Finding events are not yet emitted, so do not present scorecards as populated operational metrics.
+
+Sources: .claude/hooks/risk-classifier.sh; decisions.md, ADR-0005; .claude/hooks/README.md; docs/review-research.md, section 3.9.
+-->
+
+---
+
+## Findings make review decisions inspectable
+
+Every finding names its severity, location, evidence, and fix.
+
+**Schema checks structure; reviewers check the evidence.**
+
+<!--
+The envelope needs schema_version, reviewer, verdict, and findings. Each finding needs id, severity, location, evidence, and fix. Severity is Critical, Important, or Minor. Verdict is BLOCK, CONCERNS, or CLEAN. The shared shape lets a script read review output without interpreting prose.
+
+Schema validity cannot prove that evidence is true. The merge gate applies a separate policy: Critical and Important findings block unless fixed or rebutted; Minor findings do not block. CI rebuttals use the documented pull-request label path. Committed findings can carry per-finding status.
+
+Sources: .claude/review/schema.json; .claude/review/validate-findings.py; .claude/hooks/merge-gate.sh; decisions.md, ADR-0006 and ADR-0012.
+-->
+
+---
+
+## The companion kit needs deliberate installation
+
+![w:1080](kit.svg)
+
+Copy the Claude kit separately from the extension.
+
+<!--
+Count direct shell scripts in .claude/hooks and Markdown definitions in .claude/agents: 10 and 28 respectively. The schema and validator live in .claude/review. The dispatcher routes new work, fixes, refactors, and rule changes. The three delivery workflows are ci.yml, merge-gate.yml, and score-artifacts.yml; presentation.yml separately renders the deck.
+
+ADR-0001 keeps Claude-specific hooks outside the spec-kit archive. Copy and configure the companion kit deliberately for a consuming project. The extension targets Claude Code and GitHub Copilot CLI, but .claude settings are a Claude Code integration. Those settings are not a portable Copilot hook setup.
+
+Sources: .claude/hooks/; .claude/agents/; .claude/review/schema.json; .claude/skills/specflow-dispatcher/SKILL.md; .github/workflows/; decisions.md, ADR-0001. The outline counted nine hooks; the current checkout adds mutation-gate.sh, making 10. Counts match the local inventory checked for this deck.
+-->
+
+---
+
+## Checks run at distinct workflow boundaries
+
+![w:1080](hooks.svg)
+
+Match each check to its actual event.
+
+<!--
+Read this as the developer's sequence of work, not a chain of hook events. The Bash PreToolUse hook checks commits to main. After Edit or Write, PostToolUse runs artifact linting and the test gate. The merge gate runs in the pull-request workflow. A commit does not itself trigger Edit or Write hooks.
+
+SessionStart reloads context on resume or compaction, and Stop records activity. Check event names against the installed Claude Code version before copying settings. Check model identifiers, budgets, and credentials in CI. Scripts on disk provide no protection until the intended event or workflow invokes them.
+
+Sources: .claude/settings.json; .claude/hooks/test-gate.sh; .claude/hooks/block-main-commit.sh; .github/workflows/merge-gate.yml.
+-->
+
+---
+
+## Install the extension, then check readiness
+
+```text
+specify init . --integration claude
 /plugin install superpowers@claude-plugins-official
 specify extension add specflow
 /speckit.specflow.status
 ```
 
-<!-- speaker notes: Install specify-cli first with uv tool install specify-cli from the spec-kit git URL. The extension id is specflow, so the command and status names carry that prefix; the roadmap document still shows an older extension name. Source: imporvements/imporvements2.md Appendix A, with the extension name corrected to match specflow/extension.yml. -->
+<!--
+This mixes terminal and Claude Code commands; it is not a shell script. Run specify init and specify extension add in the terminal. Run /plugin install and /speckit.specflow.status inside Claude Code. The plugin step is optional because built-in fallback protocols cover missing skills.
+
+The sequence assumes specify-cli is installed and the configured catalog contains this extension. The README also documents local development installation from the specflow directory. Before checking status, create or approve the constitution with /speckit.constitution if it is missing. Status checks readiness and skill detection; it cannot waive the constitution gate. Installing the extension does not copy the companion kit.
+
+Sources: specflow/README.md, Installation; specflow/extension.yml; specflow/commands/status.md; decisions.md, ADR-0001. These audience instructions are not commands run while editing the deck.
+-->
 
 ---
 
-## Adoption runs in three 30-day steps
+## Adopt the workflow in three 30-day steps
 
-- The first 30 days land constitution and gate hooks.
-- Days 30 to 60 add Agent Teams and persona reviewers.
-- Days 60 to 90 add CI gating and critic review.
-- Keep the two human gates: spec approval and merge approval.
-- Add heavy orchestrators only after native primitives fail.
+![w:1080](adoption.svg)
 
-<!-- speaker notes: Days 0 to 30 also cover the Code Review Rules section, the clarify, analyze, and checklist gates, and one hardened reviewer with mandatory findings. Days 30 to 60 add the STRIDE spec lens, model routing, and a mutation-testing gate on core modules. Days 60 to 90 add SAST in CI, PR automation, and differential implementation for high-ambiguity specs. Do not run five or more reviewers or unbounded debate, and do not let the model that wrote the code be its sole reviewer. Source: imporvements/imporvements2.md Part 8. -->
+Each step adds a check the team can operate.
+
+<!--
+Days 0 to 30 establish the constitution, gate hooks, and a hardened reviewer. Include clarify, analyze, and checklist habits. Use a real feature to see whether the team can explain why a gate blocked and what evidence clears it.
+
+Days 30 to 60 add Agent Teams and persona reviewers where work can proceed independently. Days 60 to 90 add CI gating and risk-triggered critic review. These intervals are a proposed schedule, not measured delivery times. Advance when the team can operate the preceding checks, rather than treating elapsed time as evidence of readiness.
+
+Source: docs/review-research.md, Part 8, the proposed 30-60-90 day adoption plan.
+-->
 
 ---
 
-## Start this week with the constitution rewrite and gate hooks
+## Humans approve; review stays bounded
 
-Everything after day 30 builds on those two changes.
+Spec approval accepts intent. Merge approval accepts the evidence for shipping.
 
-<!-- speaker notes: The constitution rewrite is the first item of the day 0 to 30 step, and the gate hooks are the second. Source: imporvements/imporvements2.md Part 8. -->
+**Add heavier review only when native primitives prove insufficient.**
+
+<!--
+The adoption policy keeps two human approvals: spec approval confirms the behavior the team wants to build, and merge approval confirms that the implementation and its evidence satisfy that decision. Neither approval follows automatically from a model verdict; treat both as team policy that must be configured and practiced, since a command prompt alone does not establish branch protection.
+
+More reviewers create more text, not automatic independence. The roadmap advises against panels of five or more reviewers and unbounded debate; a smaller panel with explicit lenses makes evidence and duplicate findings easier to trace. Choose a finite critic budget before starting, and add costly review only when risk or observed defects justify it. Try the CLI's own agents and worktrees before adopting another orchestrator.
+
+Sources: docs/review-research.md, Part 8 and its human-gate rules; docs/review-research.md, section 3.12; the operating limits in the supplied deck outline. The count of two refers to spec approval and merge approval; the panel limit is a project recommendation, not a universal research threshold.
+-->
+
+---
+
+## Start this week
+
+Adopt the constitution-and-hooks baseline on one feature.
+
+<!--
+Start with a constitution rewrite that names the rules reviewers will enforce. Then install the hooks that check those rules at the relevant boundaries. Use one feature to demonstrate a rejected action, the evidence that clears it, and a successful resume after interruption.
+
+That exercise gives the team a concrete adoption decision. Keep the baseline when its rules and failure messages are understandable. Add later review layers against problems observed in that run. The immediate action is to adopt and exercise the baseline on one feature.
+
+Source: docs/review-research.md, Part 8, days 0 to 30; AGENTS.md, Gotchas. One feature is the proposed starting scope.
+-->

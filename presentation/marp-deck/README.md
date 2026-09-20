@@ -1,78 +1,98 @@
-# Marp deck: what to show and how to diagram it
+# Present the Specflow workflow
 
-This folder holds `deck.md`, the nine-slide Marp deck that gives a project
-overview, and the SVG diagrams it embeds. Read this file before editing the
-deck or adding a diagram. The rules in `standards/presentations.md` apply in
-full; this file says how they land on this deck.
+`deck.md` contains 18 Marp slides with presenter notes and sourced claims.
+The talk opens with why self-review can't prove independence, then moves
+through governance mechanics, implementation proof, and adoption. The
+presentation omits dates. Repository checks qualify historical claims in
+the notes.
 
-## What each slide shows
+## Slide sequence
 
-Every title is a claim, and every slide carries one visual or none. The deck
-runs in this order:
+| Slide | Message | Visual |
+|-------|---------|--------|
+| 1 | Specflow connects governance and execution. | `specflow-mark.svg` |
+| 2 | Self-review can't prove independence. | `review-independence.svg` |
+| 3 | Specflow assigns responsibility across the workflow. | `workflow.svg` |
+| 4 | Without a recorded gate, approval depends on judgment. | `gates.svg` |
+| 5 | Five commands connect the workflow. | `commands.svg` |
+| 6 | The constitution gates every command. | `artifacts.svg` |
+| 7 | Execution skills work inside agreed rules. | `skills.svg` |
+| 8 | Checks confirm compliance, not product correctness. | `correctness-gap.svg` |
+| 9 | All 18 roadmap groups have merged. | `roadmap.svg` |
+| 10 | Four default layers precede additional review. | `review-stack.svg` |
+| 11 | Risk rises above the size limits. | `risk.svg` |
+| 12 | Findings make decisions inspectable. | Text |
+| 13 | The companion kit needs deliberate installation. | `kit.svg` |
+| 14 | Checks run at distinct workflow boundaries. | `hooks.svg` |
+| 15 | Installation ends with a readiness check. | CLI sequence |
+| 16 | Adoption proceeds in three 30-day steps. | `adoption.svg` |
+| 17 | Humans approve intent; review stays bounded. | Text |
+| 18 | Adopt the constitution-and-hooks baseline on one feature. | Action |
 
-| Slide | Claim | Visual |
-|-------|-------|--------|
-| 1 | Title, one-line claim, date, author | none |
-| 2 | Specflow adds five commands to a spec-kit project | `workflow.svg` |
-| 3 | All 18 roadmap groups have merged | none, five bullets |
-| 4 | A single LLM reviewer approves its own mistakes | none, four bullets |
-| 5 | Four review layers run by default and three on risk | `review-stack.svg` |
-| 6 | The kit under .claude is ready to copy | none, five bullets |
-| 7 | Install takes three commands and a status check | code block |
-| 8 | Adoption runs in three 30-day steps | none, five bullets |
-| 9 | Start this week with the constitution rewrite and gate hooks | none |
+The roadmap diagram groups adjacent group numbers; it does not imply dated
+merge order. The review diagram describes the proposed policy. Its notes
+separate that policy from the committed CI behavior. The hook diagram shows
+work boundaries, not a literal chain of hook events. Slide 2 merges the two
+review-independence slides from the earlier outline; slide 17 merges the two
+closing-principles slides. Slides 4 and 8 replace their earlier text-only
+form with a diagram, so each now shows the contrast it argues for instead of
+asserting it.
 
-Slides 2 and 5 are the two that earn a diagram: each describes a flow the
-bullets can only list. The other slides state counts or steps and stay as
-text. Do not add a diagram to a slide that already has a table or code block.
+## Edit and render
 
-## How to form a diagram for impact
+Keep diagram sources beside their SVG exports. Each diagram uses labeled
+edges, a neutral scale, and one blue emphasis. The custom Specflow theme lives in `global.css`.
+It sets typography, spacing, diagram panels, and the print layout. Slides carry the
+claim; notes carry the explanation, limitations, and sources.
 
-Write the source as Mermaid in a `.mmd` file beside the deck, render it to
-SVG with the Mermaid CLI, and embed the SVG. Marp does not render a Mermaid
-fence, and the CI render step fails on an image it cannot find, so commit
-both the source and the SVG.
+Render a changed diagram from its matching Mermaid source:
 
 ```bash
-npx @mermaid-js/mermaid-cli -i presentation/marp-deck/workflow.mmd -o presentation/marp-deck/workflow.svg
-npx @marp-team/marp-cli@4.2.3 --pdf presentation/marp-deck/deck.md -o deck.pdf
+npx @mermaid-js/mermaid-cli -i presentation/marp-deck/workflow.mmd -o presentation/marp-deck/workflow.svg -b transparent
 ```
 
-Embed with a width so the diagram stops short of the slide edge:
-`![w:1000](workflow.svg)`.
+Render the deck with local SVG access and presenter notes:
 
-Six rules decide whether a diagram helps or hurts:
-
-- One direction of flow, left to right for a pipeline and top to bottom for
-  a gate sequence. A diagram that turns a corner reads as two diagrams.
-- At most ten nodes. Slide 2 has seven stages; slide 5 has four layers, one
-  risk branch, and one critic node.
-- Every edge carries a label that names the artifact or the condition
-  crossing it: `spec.md`, `.analyzed`, `HIGH`. An unlabeled arrow is a
-  guess the audience has to make.
-- One accent color, on the one thing the slide is about. On slide 2 that is
-  the four specflow commands in the flow; the spec-kit stages stay neutral.
-  On slide 5 it is the critic node the risk branch reaches.
-- Node text is the command or file name, not a sentence. The claim is the
-  slide title; the diagram shows the mechanism behind it.
-- No icons, shadows, gradients, or a second font. The `gaia` theme's
-  neutral scale and one accent are the whole palette.
-
-The Mermaid source for slide 2, as a starting point:
-
-```mermaid
-flowchart LR
-  C[constitution] -->|constitution.md| S[specify]
-  S -->|spec.md| B[brainstorm]
-  B -->|spec.md| P[plan]
-  P -->|plan.md| T[tasks]
-  T -->|tasks.md, .analyzed| E[execute]
-  E -->|review-scope.md| R[review]
-  classDef flow fill:#0b5fff,color:#fff,stroke:none
-  class B,T,E,R flow
+```bash
+marp --theme-set presentation/marp-deck/global.css --pdf --pdf-notes --allow-local-files presentation/marp-deck/deck.md -o /tmp/specflow-deck.pdf
+python3 specflow/scripts/lint-standards.py presentation/marp-deck/deck.md presentation/marp-deck/README.md
 ```
 
-Check the render before handing off: open `deck.pdf`, confirm the diagram
-sits inside the slide margin, and confirm the accent is distinguishable from
-the neutral nodes under a colorblind simulation. Put the source of every
-node name in that slide's speaker note.
+Check all 18 rendered pages for clipping and readable labels. Keep the body
+to two short statements plus one visual. Follow the full rules in
+`standards/presentations.md`. The install slide mixes terminal commands and
+Claude Code slash commands; its notes explain where each runs.
+
+## HTML presentation
+
+Open `deck.html` in a browser. Keep `global.css` beside the HTML when sharing
+it. The diagrams are embedded, and the presentation needs no network access.
+The centered title icon represents a spec passing through a check into code.
+Arrow keys change slides; the presentation controls provide fullscreen and
+presenter views. The source remains `deck.md`.
+
+Regenerate HTML with the same theme:
+
+```bash
+marp --theme-set presentation/marp-deck/global.css --bespoke.transition=false presentation/marp-deck/deck.md -o presentation/marp-deck/deck.html
+```
+
+Marp embeds the theme in its export. The delivered HTML also links the local
+stylesheet and embeds the diagram SVGs; a raw re-export references the SVGs
+beside the deck. Regenerate after changing the stylesheet to keep Marp's
+scoped theme in sync.
+
+## Research references
+
+The self-review slide retains these primary sources in its presenter notes.
+These studies motivate review choices; they do not measure Specflow's
+performance. The model-separation rule is an engineering recommendation,
+not a guarantee of independent errors.
+
+- [Zheng et al., Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena](https://arxiv.org/abs/2306.05685), NeurIPS 2023. Documents position, verbosity, and self-enhancement biases in model evaluation.
+- [Panickssery, Bowman, and Feng, LLM Evaluators Recognize and Favor Their Own Generations](https://arxiv.org/abs/2404.13076), 2024. Studies self-recognition and preference for a model's own generated text.
+- [Huang et al., Large Language Models Cannot Self-Correct Reasoning Yet](https://arxiv.org/abs/2310.01798), 2023 preprint, ICLR 2024. Studies the limits of reasoning self-correction without external feedback.
+
+Zheng et al. supplies the traceable citation for position and verbosity bias.
+The requested outline named Wang and Saito without paper titles. Use the
+linked primary source rather than repeating an ambiguous attribution.
