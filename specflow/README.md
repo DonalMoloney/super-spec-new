@@ -220,7 +220,7 @@ To list the extension in the
      "author": "Specflow Contributors",
      "repository": "https://github.com/DonalMoloney/super-spec-new",
      "verified": false,
-     "tags": ["superpowers", "brainstorming", "tdd", "code-review", "subagent", "workflow"]
+     "tags": ["superpowers", "brainstorming", "tdd", "code-review", "subagent", "workflow", "claude-code", "copilot"]
    }
    ```
 

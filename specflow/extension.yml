@@ -82,4 +82,4 @@ hooks:
     optional: true
     prompt: "Run Superpowers review against the specification and implementation?"
     description: "Review implementation against the spec, plan, tasks, and constitution"
-tags: ["superpowers", "brainstorming", "tdd", "code-review", "subagent", "workflow"]
+tags: ["superpowers", "brainstorming", "tdd", "code-review", "subagent", "workflow", "claude-code", "copilot"]
