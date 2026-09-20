@@ -22,7 +22,12 @@ agent-facing docs this repo needs.
 
 ## Commands
 
-All run from inside `specflow/` (script paths are relative to that directory):
+Run `bash verify.sh` from the repository root before pushing. It walks the steps
+`.github/workflows/ci.yml` runs, in that order, stops at the first failure, and
+prints the four steps it leaves to CI. `tests/test_ci_parity.py` fails when the
+script and the workflow drift apart, so the script cannot fall behind silently.
+
+The rest run from inside `specflow/` (script paths are relative to that directory):
 
 | Command | Description |
 |---------|-------------|

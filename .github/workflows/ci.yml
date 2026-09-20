@@ -51,6 +51,11 @@ jobs:
       - name: Divergence measurer tests
         run: python3 -m pytest .claude/divergence/tests -q
 
+      # verify.sh carries a copy of the steps below. These tests fail when this
+      # file gains, loses, reorders or retargets one and the copy stands still.
+      - name: CI parity tests
+        run: python3 -m pytest tests -q
+
       - name: Hook tests
         run: bash .claude/hooks/tests/run.sh
 
@@ -61,7 +66,7 @@ jobs:
         run: python3 specflow/scripts/lint-standards.py
 
       - name: Shellcheck
-        run: shellcheck -S warning .claude/hooks/*.sh .claude/hooks/tests/run.sh specflow/scripts/*.sh
+        run: shellcheck -S warning verify.sh .claude/hooks/*.sh .claude/hooks/tests/run.sh specflow/scripts/*.sh
 
       - name: Ruff
         run: ruff check specflow/scripts .claude/review .claude/divergence
