@@ -761,6 +761,26 @@ wording was inherited from upstream, whose repository root is its extension.
 test was added, because nothing behavioural changed and a wrongly rooted archive
 already fails the existing required-member check. G-42 came out of this.
 
+## G-44 — The mutation-gate hook cases fail without mutmut, not skip (merged: `5745362`, `2c80922`, `c816aec`)
+
+Executor: none, committed directly. Effort: low. Was backlog item N-23. Found
+already merged with no roadmap claim while auditing this folder for currency
+on 2026-09-20; ADR-0017 says a claim lives here, so this section is that claim
+written after the fact.
+
+`.claude/hooks/tests/run.sh`'s mutation-gate cases reported failed, not
+skipped, on any checkout that had not installed `requirements-dev.txt`, so a
+contributor without `mutmut` on `PATH` read a red suite as a regression.
+
+- [x] T441 Skip the mutation cases when mutmut is absent
+
+The suite now prints `skip <name> (mutmut is not on PATH; see
+requirements-dev.txt)` for each mutation-score case and keeps the one case
+that asserts exit 2 when `mutmut` is missing from `PATH`. Verify:
+`PATH=/usr/bin:/bin bash .claude/hooks/tests/run.sh` reports 0 failed and
+names the skipped cases. Confirmed on 2026-09-20: 223 passed, 0 failed, 8
+skipped.
+
 ## G-36 — No check runs on a release tag before users pull it (merged: `a588bf9`)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Add. Effort: low.
@@ -991,18 +1011,10 @@ JSON files with a schema version, listed with name, url, priority, and
 in your spec-kit version. G-28 settles the naming collision with the three
 bridges already listed, so run it first. Verify: a CI step runs
 `SPECKIT_CATALOG_URL=<raw url> specify extension search specflow` and greps the
-id. Effort: low. Depends on: 24.
+id. Effort: low. Depends on: G-36 (merged).
 
-**24. A release workflow that runs the archive validator.** `release.yml` on a
-`v*` tag runs `validate-release-archive.py <tag>` and attaches the `git archive`
-ZIP and the validator output to the GitHub release. The last tag is v1.0.2
-(2026-08-07), the catalog downloads the tag ZIP, and no check runs on a tag
-before users pull it; upstream issue #6 was exactly that. Adopt a version rule
-for a prompt contract: a changed Process step or template section is minor, a
-renamed marker, command, or file is major, wording is patch. Verify: pushing a
-tag produces a release with two assets, and `specify extension add specflow
---from <release zip>` installs in a fresh project. Effort: low. Depends on:
-D-05c for the CHANGELOG input.
+**24. A release workflow that runs the archive validator.** Done as G-36
+(merged: `a588bf9`).
 
 **25. A template drift report in status.** A stamp comment in every shipped
 template (`<!-- specflow template: spec-template 1.1.0 -->`) and a Doctor
@@ -1015,13 +1027,14 @@ copy step, and an extension upgrade rewrites
 copy is left to report. Write it as a prose Process step
 so it runs on the Copilot CLI. Verify: the smoke test greps the stamp, and a
 dry-run fixture with an old stamp prints the stale line. Effort: low. Depends
-on: 24.
+on: G-36 (merged).
 
 **26. An upgrade path the smoke test walks.** `e2e-smoke.sh` installs the
 v1.0.2 release ZIP, installs the checkout over it with `--dev`, and asserts no
 stale command file or `extensions.yml` entry remains. Every user who installed
 1.0.2 upgrades through this path and it has never run. Verify: the smoke test
-reports the upgrade assertions and passes. Effort: low. Depends on: 24.
+reports the upgrade assertions and passes. Effort: low. Depends on: G-36
+(merged).
 
 ### Prove it on both runtimes
 
@@ -1053,22 +1066,10 @@ code. Verify: a hook test runs the adapter on a blocked command and asserts the
 deny JSON; a live Copilot session refuses `git commit` on main. Effort: medium.
 Depends on: 27 for the live check.
 
-**29. The merge gate reads the feature's findings file.** `merge-gate.sh`
-includes `specs/*/review-findings.json` in its default glob, the file
-`review.md` writes since PR #57, and `merge-gate.yml` passes both globs. A
-review on the Copilot CLI writes findings the gate never reads, so a Critical
-finding blocks nothing there. Verify: a hook test with a Critical finding in
-`specs/001-x/review-findings.json` prints `MERGE BLOCKED`. Effort: low. Depends
-on: none.
+**29. The merge gate reads the feature's findings file.** Done as G-37
+(merged: `f520a35`).
 
-**30. A contract for the progress file.**
-`.claude/review/validate-progress.py`, dependency-free like
-`validate-findings.py`, checking the keys of `progress.yml`, phase names against
-the Gate markers table, and that every task ID marked complete exists in
-`tasks.md`; `artifact-lint.sh` calls it on write. `progress.yml` is the
-resumability contract and nothing validates it, so a misspelled phase resumes at
-the wrong step without a message. Verify: three tests: an unknown phase, an
-unknown task ID, and a valid file. Effort: low. Depends on: none.
+**30. A contract for the progress file.** Done as G-38 (merged: `25962db`).
 
 ### Operate it
 
@@ -1134,9 +1135,10 @@ beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
 - **Replace `execute.md` with a squad dispatcher**: the one Replace move worth
   taking, and only after G-19 gives it a snapshot to assert against on both
   runtimes.
-- **A `before_tasks` hook** that stops on unresolved Open Questions: same cost
-  class as a sixth command, because `e2e-smoke.sh`, `ci.yml`, and the hook
-  tuple in `validate-extension-metadata.py` all assert the hook count.
+- **A `before_tasks` hook** that stops on unresolved Open Questions: cheaper
+  than a sixth command now that G-24 T241 derives `e2e-smoke.sh`'s and
+  `ci.yml`'s hook counts from `extension.yml`; only the manifest entry and the
+  hook's own prompt remain to write.
 - **A Copilot CLI run snapshot** under `examples/`: needs the Copilot e2e
   script, backlog item 27.
 - **A spec-kit workflow file** (N-06 in
@@ -1149,20 +1151,18 @@ beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
 
 ## Suggested order
 
-1. G-24 first. Its worktree is open, and no other group corrects a statement
-   an agent acts on every run.
-2. D-01 and D-05 next. Both are low effort and five rewrite rows in
-   `reference.md` wait on them.
-3. G-20, G-21, G-22, and G-23 in parallel worktrees. None touches a file
-   another holds.
-4. G-26 before N-03 and before backlog item 28, both of which it may shrink.
-5. C-05 and C-06 before the next script change, so the change lands on a clean
-   base. C-01 and C-04 fit any short session.
-6. C-03 in its own PR, once no worktree is open.
-7. G-25 after G-24 T242, so the ADR is written against commands that call
-   the resolver.
-8. G-19 last, so its snapshot records every gate the other groups add.
-9. Backlog item 24, then G-28, then backlog items 23 and 26.
+D-01, D-05, G-20 through G-25, G-28 through G-42, G-44, and C-01 through C-09
+are merged or closed. What is left, in order:
+
+1. G-43. Low effort, and it is the second `SKILL.md` schema inaccuracy G-41
+   found in the same file; the drift compounds the longer it sits.
+2. G-26 T262 and T263, once the three ADR-0022 prerequisites clear.
+3. Backlog items 23, 25, and 26 next; each depended only on G-36, now merged.
+4. Backlog item 27, then 28, which depends on it for the live check.
+5. Backlog items 31 through 36 whenever a session is short; none depends on
+   another still open.
+6. G-19 whenever a live agent run is available; this environment has no API
+   key to make one.
 
 Pick the item whose `Verify:` line you can run before you start. An item whose
 check you cannot run today is a design task, not a roadmap task.

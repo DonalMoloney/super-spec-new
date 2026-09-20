@@ -4,8 +4,10 @@ This file lists changes that make specflow better as a product and, where
 marked, move it further from upstream superspec. It holds only work that
 `roadmap.md` does not: every finding the roadmap already covers is mapped to
 its item in the table under "Already on the roadmap" and not repeated. Read it
-beside `roadmap.md` when picking the next group after D-01, D-05, and G-19 to
-G-23. Every number below was measured on 2026-09-20 at commit `ff774c2`.
+beside `roadmap.md` when picking the next group; as of 2026-09-20, D-01, D-05,
+and G-20 to G-42 have merged, leaving G-19, G-26, and G-43 open there. Every
+number below was measured on 2026-09-20 at commit `ff774c2`, except the
+"Measured state" table, refreshed the same day against `4404835`.
 
 Each item is one outcome. It carries a Move tag from `reference.md` (Tighten,
 Extend, Add, Replace, Remove), an effort, its dependencies, whether it changes
@@ -16,22 +18,23 @@ group carries the claim.
 
 ## Measured state
 
-| Check | Result at `ff774c2` |
+| Check | Result at `4404835` |
 |-------|---------------------|
 | `validate-extension-metadata.py` | OK |
 | `validate-release-archive.py` | within every limit, 26 entries |
-| `.claude/hooks/tests/run.sh` | 159 passed, 8 failed; all eight are `mutation-gate.sh` cases and fail only because mutmut is not installed here, see N-23 |
-| `pytest` over the four test dirs | 103 passed |
-| `lint-standards.py` | 19 files, 0 findings |
+| `.claude/hooks/tests/run.sh` | 223 passed, 0 failed, 8 skipped; the eight are `mutation-gate.sh` cases, now skipped rather than failed when mutmut is absent, closed as G-44 |
+| `pytest` over the four test dirs | 113 passed |
+| `lint-standards.py` | 67 files, 0 findings |
 | `shellcheck -S warning` | 0 findings |
-| `E2E_DRY_RUN=1 e2e-agent-claude.sh` | 28 assertions against the snapshot |
-| `e2e-smoke.sh` | not run locally; CI runs it |
-| `ruff check` | not run locally; CI runs it |
+| `E2E_DRY_RUN=1 e2e-agent-claude.sh` | 30 assertions against the snapshot |
+| `e2e-smoke.sh` | 55/55 passed |
+| `ruff check` | not run locally, `ruff` not installed here; CI runs it |
 
 The first wave, G-01 to G-18, and the cleanup wave, Q-01 to Q-28, are merged.
-`roadmap.md` defines the second wave: D-01 and D-05 unclaimed, G-19 to G-23
-defined, C-01 to C-06 hygiene, and a scoped backlog numbered 23 to 36. The
-zero-commit worktrees for D-01 and D-05 were removed on 2026-09-20.
+`roadmap.md` now carries D-01, D-05, G-20 to G-25, G-28 to G-42, and G-44 as
+merged, G-19, G-26, and G-43 as open, C-01 to C-09 as closed hygiene, and a
+scoped backlog of items 23, 25 to 28, and 31 to 36 (24, 29, and 30 promoted
+to G-36, G-37, and G-38 and merged).
 
 `reference.md` carries the per-file divergence table measured for PR #72.
 Re-measured at `ff774c2` the numbers match. Three shipped files stay at 0%
@@ -74,11 +77,17 @@ Findings from this survey that `roadmap.md` already carries. Work them there.
 | The snapshot predates the gates and `sample-workflow.md` walks the upstream flow | G-19 |
 | The bridge does not name the review personas | G-22 T222 |
 | The smoke test misses a dropped Process step | G-23 T231 |
-| A `before_tasks` hook on open questions | Deferred; N-10 removes the cost it was deferred on |
+| A `before_tasks` hook on open questions | Deferred; N-10 closed as G-24 T241, so the cost it was deferred on is gone |
 | Gate hooks on the Copilot CLI | Backlog 28; N-03 ships the scripts it would register |
 | A reviewer scorecard | Backlog 31 |
-| Cost per feature against the Budgets table | Backlog 32; it reads `.specify/telemetry.jsonl`, which N-21 corrects |
+| Cost per feature against the Budgets table | Backlog 32; it reads `.specify/telemetry.jsonl`, which N-21 already corrected (G-24 T247) |
 | The mutation step in `merge-gate.yml` uses a mutmut 2 flag | Deferred |
+| Command and hook counts hard-coded in four files | N-10, closed as G-24 T241 |
+| Two install-time breaks in `SKILL.md` (a stripped asset link, `description_zh`) | N-19, closed as G-24 T248 |
+| `SKILL.md` and `workflow-guide.md` describe copying templates into `.specify/templates/` | N-20, closed as G-24 T242 to T244 |
+| The Budgets section of `workflow-guide.md` names a TBD flag and the wrong telemetry path | N-21, closed as G-24 T247 |
+| `.github/copilot-instructions.md` states the wrong agent count | N-22, closed as G-24 T249 |
+| Mutation-gate hook cases fail rather than skip without mutmut | N-23, closed as G-44 |
 
 ## N-01 to N-10: follow spec-kit 1.0
 
@@ -88,7 +97,7 @@ Findings from this survey that `roadmap.md` already carries. Work them there.
   Register it on `after_clarify` and `after_analyze` with `optional: false`.
   Today the markers exist only as a prose rule in the workflow guide that the
   agent has to remember; spec-kit fires both events and nothing listens.
-  Move: Add. Effort: medium. Depends on: N-10. Diverges: yes.
+  Move: Add. Effort: medium. Depends on: N-10 (done). Diverges: yes.
   Verify: `e2e-smoke.sh` installs the command on both surfaces and the manifest
   lists five hooks.
 - **N-02** Register the same command on `before_tasks` so it stops with
@@ -138,44 +147,26 @@ Findings from this survey that `roadmap.md` already carries. Work them there.
   workflow. Move: Add. Effort: medium. Depends on: N-03. Diverges: yes.
   Verify: `specify workflow add ./specflow/workflow --dev` then
   `specify workflow validate specflow` exit 0 in CI.
-- **N-07** Decide whether the five templates become a preset. Core
-  `spec-template.md` is 131 lines and ours is 196; core `tasks-template.md`
-  carries an Implementation Strategy section and a parallel example that ours
-  lacks, because ours forks an older core. An extension template always
-  replaces core, so every core template change is lost. A preset with
-  `strategy: append` would add only the specflow sections (Open Questions,
-  Threat Model, Traceability, Brainstorm Log, Changelog, Code Review Rules,
-  Execution Strategy, Superpowers Execution) on top of whatever core ships.
-  The cost: `provides.templates` leaves the manifest, the archive validator
-  and `e2e-smoke.sh` lose five assertions, and the golden must be regenerated.
-  Backlog item 25 is the alternative: keep replacing and report drift in
-  status. Record the answer as an ADR before any file moves. Move: Replace.
-  Effort: high. Depends on: N-05. Diverges: yes. Verify: the ADR exists; if
-  adopted, `specify preset resolve spec-template` names the core file plus
-  the addendum and the golden scores 100 on sections.
-- **N-08** Ship `specflow/bundle.yml` composing the extension, the workflow
-  from N-06, and the preset from N-07 if adopted, with `role: developer`. Add
-  `specify bundle validate --path specflow --offline` and
+- **N-07** Settled as G-25 (merged: `41b33e5`). ADR-0021 keeps the five
+  templates full replacements; the preset was measured and rejected. Backlog
+  item 25 is the standing alternative, reporting drift instead of ending it.
+- **N-08** Ship `specflow/bundle.yml` composing the extension and the workflow
+  from N-06, with `role: developer`. No preset to compose: ADR-0021 (N-07)
+  rejected it. Add `specify bundle validate --path specflow --offline` and
   `specify bundle build` to CI, and check the built ZIP against
   `validate-release-archive.py`'s limits. Move: Add. Effort: low. Depends on:
-  N-06, backlog 24. Diverges: yes. Verify: both bundle commands exit 0 in CI
-  and the artifact stays under 50 MiB.
+  N-06, G-36 (merged, formerly backlog item 24). Diverges: yes. Verify: both
+  bundle commands exit 0 in CI and the artifact stays under 50 MiB.
 - **N-09** Register `after_converge` on `speckit.specflow.tasks`, optional.
   Spec-kit's `converge` command appends unbuilt work to `tasks.md`; the
   singular-task rule at step 6 and the stable-ID rule at steps 8 and 9 of
   `tasks.md` then apply to the appended lines. Without it a Copilot run gets
   unchecked compound tasks after every converge. Move: Extend. Effort: low.
-  Depends on: N-10. Diverges: yes. Verify: a fixture `tasks.md` with one
+  Depends on: N-10 (done). Diverges: yes. Verify: a fixture `tasks.md` with one
   converge-appended compound line is split by the dry-run tasks stage.
 
-- **N-10** Derive the command and hook counts from the manifest instead of
-  literals. `e2e-smoke.sh` line 26 and line 126, `ci.yml` line 85, and the
-  tuple at `validate-extension-metadata.py` line 86 each hard-code the
-  counts, so N-01, N-02, and N-09 would each pay the same four-file edit, and
-  G-23 T231 is about to add a fifth literal table. Read `extension.yml` once
-  in each script and assert against what it declares. Move: Tighten. Effort:
-  low. Depends on: none. Diverges: no. Verify: adding a hook to a scratch copy
-  of the manifest changes every assertion without a script edit.
+- **N-10** Closed as G-24 T241 (merged, `f68f45c`). `e2e-smoke.sh` and
+  `ci.yml` now read `extension.yml` instead of repeating its counts.
 
 ## N-11 to N-14: follow superpowers 6.3
 
@@ -252,50 +243,17 @@ Findings from this survey that `roadmap.md` already carries. Work them there.
 
 ## N-19 to N-22: docs that state something false
 
-- **N-19** Fix the two install-time breaks in `SKILL.md`: line 25 links
-  `assets/workflow-overview-en.png`, which the archive strips, and line 11
-  still carries `description_zh` against the English-only rule. Replace the
-  image with the README's Mermaid block and delete the field. PR #70 rewrote
-  the prose and kept both. Move: Remove. Effort: low. Depends on: none.
-  Diverges: yes. Verify: `git archive HEAD:specflow | tar -t` lists every
-  path `SKILL.md` links and `grep -c '_zh' specflow/SKILL.md` prints 0.
+All four closed as G-24 tasks, merged. See the "Already on the roadmap" table.
 
-- **N-20** Rewrite Phase 0 in `SKILL.md` (line 238) and `workflow-guide.md`
-  (lines 23 and 24). Both say the constitution command copies the templates
-  into `.specify/templates/`. Spec-kit resolves templates at command time
-  through the stack, and an extension's templates live at
-  `.specify/extensions/specflow/templates/`. The Project Structure trees in
-  both files show the old layout, and backlog item 25 builds on the same
-  wrong premise. Move: Tighten. Effort: low. Depends on: none. Diverges: yes.
-  Verify: `e2e-smoke.sh` asserts
-  `.specify/extensions/specflow/templates/spec-template.md` and neither file
-  says "Copy" in Phase 0.
-- **N-21** Fix the Budgets section of `workflow-guide.md`. Line 436 says the
-  budget flag's "name [is] not yet confirmed; see G-09 T092" while
-  `merge-gate.yml` passes `--max-budget-usd`; line 448 carries
-  `[budget-flag-TBD]`; line 450 names `.specify/telemetry.jsonl` while the
-  hook writes `.claude/telemetry.jsonl`. Move: Tighten. Effort: low. Depends
-  on: none. Diverges: yes. Verify: this grep prints 0.
+- **N-19** Closed as G-24 T248 (`4d9d3f1`).
+- **N-20** Closed as G-24 T242 to T244 (`0f60186`).
+- **N-21** Closed as G-24 T247 (`0c7ff4a`).
+- **N-22** Closed as G-24 T249 (`9509fa8`).
 
-  ```bash
-  grep -c 'TBD\|not yet confirmed\|specify/telemetry' specflow/references/workflow-guide.md
-  ```
+## N-24 to N-25: repository hygiene
 
-- **N-22** Fix the agent count in `.github/copilot-instructions.md` line 64,
-  which says 17 agents; `.claude/agents/` holds 28 across the BDD squad, the
-  review panel, and the three rewrite agents. Move: Tighten. Effort: low.
-  Depends on: none. Diverges: no. Verify: the count in the file equals
-  `ls .claude/agents/*.md | wc -l`.
+N-23 closed as G-44 (merged: `5745362`, `2c80922`, `c816aec`).
 
-## N-23 to N-25: repository hygiene
-
-- **N-23** Skip the mutation-gate cases with a named reason when mutmut is
-  absent. `run.sh` reports 8 failures on a checkout that has not installed
-  `requirements-dev.txt`, and the hooks README does not say the suite needs
-  it. Keep the one case that asserts exit 2 when mutmut is missing from
-  `PATH`. Move: Tighten. Effort: low. Depends on: none. Diverges: no. Verify:
-  `PATH=/usr/bin:/bin bash .claude/hooks/tests/run.sh` reports 0 failed and
-  names the skipped cases.
 - **N-24** Pin `@anthropic-ai/claude-code` in `merge-gate.yml`, which
   installs `latest` on every run while the action beside it is pinned to a
   commit. Move: Tighten. Effort: low. Depends on: none. Diverges: no. Verify:
@@ -316,17 +274,16 @@ consuming project receives, and upstream has no counterpart for any of them.
    them. Cheapest large move in the list.
 2. **N-01 with N-03, deterministic gate markers.** Turns the marker protocol
    from a paragraph in a reference file into a registered hook plus a shipped
-   script. Changes the hook contract, so N-10 goes first.
-3. **N-07, templates as a preset.** The one Replace. It ends the drift between
-   our forked templates and spec-kit's core templates, at the cost of the
-   template half of the manifest. Needs an ADR first.
+   script. Changes the hook contract; N-10, which it needed first, is done.
+3. **N-07, templates as a preset.** Settled, not taken: ADR-0021 keeps the
+   templates full replacements. Backlog item 25 reports the drift instead.
 
 ## Decisions this file needs
 
 Promote any of these to `open-questions.md` once an item is claimed.
 
-- Whether N-07 is adopted, or the templates stay full replacements and
-  backlog item 25 reports drift instead.
+- N-07 is settled: ADR-0021 keeps the templates full replacements, so backlog
+  item 25 is the standing alternative, reporting drift instead of ending it.
 - Whether the `.clarified` marker stays, or the clarify gate reads spec-kit's
   own `checklists/requirements.md` checkbox state, which `implement` already
   treats as a gate. Reading it would remove one bespoke file per feature.
@@ -337,20 +294,19 @@ Promote any of these to `open-questions.md` once an item is claimed.
 
 ## Suggested order
 
-These slot in after step 1 of the order in `roadmap.md`, since N-04 and N-05
-wait on D-05.
+D-05 is merged, so N-04 and N-05 no longer wait on it, and N-10 and N-19
+through N-23 are all closed.
 
-1. N-10, N-19, N-20, N-21, N-22, N-23. Each is one short session and none
-   changes behavior.
-2. N-05, N-03, N-04, N-01, N-02, N-09. The manifest, the shipped scripts,
+1. N-05, N-03, N-04, N-01, N-02, N-09. The manifest, the shipped scripts,
    then the hooks that call them.
-3. N-11, N-12, N-13, N-14 in one worktree; they touch the bridge file and the
-   three commands it describes. Run G-22 first, since it holds the bridge.
-4. N-15, N-16, N-17, N-18. Tooling and measurement, no shipped change except
+2. N-11, N-12, N-13, N-14 in one worktree; they touch the bridge file and the
+   three commands it describes. G-22, which held the bridge, is merged.
+3. N-15, N-16, N-17, N-18. Tooling and measurement, no shipped change except
    the reviewer agents' schema path.
-5. N-06 after G-19, so the workflow has a snapshot to assert against.
-6. N-07 after its ADR, then N-08 after backlog item 24.
-7. N-24 and N-25 whenever a session is short.
+4. N-06 after G-19, so the workflow has a snapshot to assert against.
+5. N-08 after N-06; N-07's ADR is already recorded (ADR-0021, via G-25) and
+   its dependency on backlog item 24 is satisfied (G-36, merged).
+6. N-24 and N-25 whenever a session is short.
 
 Run every `Verify:` line before starting an item. A line you cannot run today
 marks a design task and belongs in `roadmap.md` with its own group.

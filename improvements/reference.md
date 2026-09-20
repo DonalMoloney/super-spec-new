@@ -94,9 +94,11 @@ Three hook prompts spec-kit runs around its own commands.
   `before-execute.md` does at step 6. Claimed by: D-01.
 - **Add** a `before_tasks` hook that stops when the spec's Open Questions table
   has unresolved rows. Spec-kit fires `hooks.before_tasks`; upstream never
-  registered one. Not cheap: it changes the hook count `e2e-smoke.sh`,
-  `ci.yml`, and the hook tuple in `validate-extension-metadata.py` assert.
-  Verify: all three assertions updated and green. Claimed by: none, deferred in
+  registered one. Cheaper than it was: G-24 T241 made `e2e-smoke.sh` and
+  `ci.yml` derive their hook count from `extension.yml`, and the hook tuple in
+  `validate-extension-metadata.py` already passes a fourth hook unedited. Only
+  the manifest and the hook's own prompt need writing. Verify: all three checks
+  stay green with no manual count edit. Claimed by: none, deferred in
   `roadmap.md`.
 - **Extend** `after-execute.md` to write a findings file `review.md` reads.
   Done, PR #57.
@@ -235,8 +237,9 @@ and flag. `divergence-auditor` measures the result with
 `.claude/divergence/measure-divergence.py` and runs the guards.
 
 Every shipped text file with an upstream counterpart has had its dedicated
-`prose-rephraser` or `script-refactorer` pass except the five below, each
-waiting on the item that holds it. Mark a row `(working on)` before
+`prose-rephraser` or `script-refactorer` pass except the six below. D-01,
+D-05, and G-22 have merged since these rows were written, so none is held any
+longer; the six are free for their pass. Mark a row `(working on)` before
 dispatching, and commit that mark to `main`. The Real column is the raw
 divergence measured above, not a proxy for whether the pass has run:
 `README.md` is already 100% different from upstream in content (Copilot CLI
@@ -245,12 +248,12 @@ standards-compliance pass D-05 gates.
 
 | File | Real | Agent | Waiting on |
 |------|------|-------|------------|
-| `commands/hooks/after-tasks.md` | 0% | `prose-rephraser` | D-01 |
-| `extension.yml` | 0% | `prose-rephraser` | D-05 |
-| `CHANGELOG.md` | 1% | `prose-rephraser` | D-05 |
-| `scripts/validate-extension-metadata.py` | 7% | `script-refactorer` | D-05 |
-| `references/superpowers-mapping.md` | 4% | `prose-rephraser` | G-22 |
-| `README.md` | 100% | `prose-rephraser` | D-05 |
+| `commands/hooks/after-tasks.md` | 0% | `prose-rephraser` | none, free since D-01 merged |
+| `extension.yml` | 0% | `prose-rephraser` | none, free since D-05 merged |
+| `CHANGELOG.md` | 1% | `prose-rephraser` | none, free since D-05 merged |
+| `scripts/validate-extension-metadata.py` | 7% | `script-refactorer` | none, free since D-05 merged |
+| `references/superpowers-mapping.md` | 4% | `prose-rephraser` | none, free since G-22 merged |
+| `README.md` | 100% | `prose-rephraser` | none, free since D-05 merged |
 
 A command rewrite runs `e2e-smoke.sh` through the auditor, because the smoke
 test greps command prose.
