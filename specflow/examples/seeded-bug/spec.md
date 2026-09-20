@@ -167,7 +167,7 @@ Each criterion maps to the validation reference that confirms it.
 |---|----------|--------|-------|
 | OQ-001 | What is the final destination URL for the "Get Started" button? | Open | Placeholder anchor (`#`) or scroll-to-install used until a documentation URL is confirmed. Must be resolved before production deployment. |
 | OQ-002 | What is the exact install command to display in the snippet? | Open | Assumed `npm install -g specflow` but must be confirmed against actual package publish name and registry. |
-| OQ-003 | Should the workflow diagram use CSS-drawn arrows or a CSS-only step indicator (numbered circles with connecting lines)? | Open | CSS-drawn arrows may have rendering differences across browsers. A simpler step-indicator pattern (numbered circles + horizontal rule) is more robust but less visually expressive. |
+| OQ-003 | Should the workflow diagram use CSS-drawn arrows or a CSS-only step indicator (numbered circles with connecting lines)? | Resolved | Numbered steps joined by a horizontal rule, recorded as ADR-0001 in `decisions.md`. CSS-drawn arrows render differently across browsers and cost more CSS against the 64 KB budget. |
 
 ## Brainstorm Log
 
