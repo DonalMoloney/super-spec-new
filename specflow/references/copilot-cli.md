@@ -12,6 +12,25 @@ does instead.
 | The reviewer definitions and `model:` frontmatter under `.claude/agents/`, in this repository only | One agent runs every review dimension; there is no panel and no critic |
 | The repository-only hooks, such as `test-gate.sh` and `artifact-lint.sh` | The command applies the prose rule the script encodes |
 
+## Invoking a command
+
+Spec-kit registers each command as a Copilot CLI skill at
+`.github/skills/speckit-specflow-<name>/SKILL.md`, and a skill name carries
+hyphens where the Claude Code command carries dots. GitHub's
+[skills documentation](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills)
+states the rule: to run a specific skill, put its name in the prompt behind a
+forward slash.
+
+| Command | What to type on the Copilot CLI |
+|---------|---------------------------------|
+| `/speckit.specflow.status` | `/speckit-specflow-status` |
+| `/speckit.specflow.brainstorm` | `/speckit-specflow-brainstorm` |
+| `/speckit.specflow.tasks` | `/speckit-specflow-tasks` |
+| `/speckit.specflow.execute` | `/speckit-specflow-execute` |
+| `/speckit.specflow.review` | `/speckit-specflow-review` |
+
+The right column repeats the skill directory name spec-kit creates at install.
+
 ## Fallback per command
 
 | Command | On the Copilot CLI |

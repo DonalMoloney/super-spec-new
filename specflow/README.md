@@ -110,6 +110,10 @@ Suggested next step: /speckit.specflow.execute 001
 | `/speckit.specflow.review` | Review the implementation against the spec |
 | `/speckit.specflow.gate` | Write a feature's clarify or analyze marker once its gate passes |
 
+The table names the Claude Code form; on the GitHub Copilot CLI each command is
+a skill whose name replaces the dots with hyphens, so a user types
+`/speckit-specflow-status` there.
+
 The six commands sit beside the core spec-kit commands
 (`/speckit.constitution`, `/speckit.specify`, `/speckit.plan`,
 `/speckit.tasks`, `/speckit.checklist`), which spec-kit provides.
