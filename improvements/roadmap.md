@@ -639,6 +639,33 @@ validators, the hook suite and the smoke test, in CI's order, exiting nonzero
 on the first failure. Verify: the script's steps match `ci.yml` step for step,
 and deleting a step from `ci.yml` without changing the script fails a test.
 
+## G-41 — The guide and the goldens disagree on progress vocabulary (working on)
+
+Executor: `general-purpose`. Model: sonnet. Move: Tighten. Effort: low.
+Depends on: none. Diverges: no. Found by G-38 on 2026-09-20.
+
+`workflow-guide.md`'s "Writing `progress.yml`" table says a command sets its
+phase to `in_progress` on start and `done` on success. Both goldens write
+`status: complete`, and `static-landing-page` also carries
+`manual-browser-only`. So the document that defines the resumability contract
+and the artifacts that implement it use different vocabularies.
+
+`progress.yml` is the file every command reads to decide where a resumed run
+picks up. A command following the guide looks for a value no artifact carries.
+G-38's validator type-checks the field rather than enumerating it, because
+enumerating either set rejects real files, so nothing catches the drift today.
+
+- [ ] T411 Settle which vocabulary is canonical
+
+Decide from what reads the field, not from which document is older. Verify: the
+guide's table and both goldens use one set of values, and the choice is
+recorded.
+
+- [ ] T412 Enumerate the settled values in the validator
+
+Verify: `validate-progress.py` rejects a status outside the settled set, both
+goldens still validate clean, and the hook suite passes.
+
 ## G-40 — The merge gate judges a findings file it never validates (working on)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Tighten. Effort: low.
