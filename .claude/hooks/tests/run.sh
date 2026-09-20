@@ -553,13 +553,19 @@ check "telemetry line parses as JSON" 0 "$(jq -e . "$r17/.claude/telemetry.jsonl
 check_has "telemetry line carries the session id" "$(jq -r '.session' "$r17/.claude/telemetry.jsonl")" "abc"
 check_has "telemetry line names the stop event"   "$(jq -r '.event'   "$r17/.claude/telemetry.jsonl")" "stop"
 
-r18="$(telemetry_repo)"; printf 'implement\n' > "$r18/.claude/.current-phase"
+r18="$(telemetry_repo)"; mkdir -p "$r18/specs/001-x"
+printf 'spec: 001-x\nstatus: in_progress\ncurrent_phase: 3\n' > "$r18/specs/001-x/progress.yml"
 log_phase "$r18" '{"session_id":"abc"}' >/dev/null
-check_has "phase is read from .current-phase" "$(jq -r '.phase' "$r18/.claude/telemetry.jsonl")" "implement"
+check_out "phase is read from the newest progress.yml"   3     "$(jq -r '.phase'   "$r18/.claude/telemetry.jsonl")"
+check_out "feature is read from the newest progress.yml" 001-x "$(jq -r '.feature' "$r18/.claude/telemetry.jsonl")"
 
 r19="$(telemetry_repo)"
 log_phase "$r19" '{"session_id":"abc"}' >/dev/null
-check_has "absent .current-phase logs unknown" "$(jq -r '.phase' "$r19/.claude/telemetry.jsonl")" "unknown"
+check_has "absent progress.yml logs unknown" "$(jq -r '.phase' "$r19/.claude/telemetry.jsonl")" "unknown"
+
+r19b="$(telemetry_repo)"; printf 'implement\n' > "$r19b/.claude/.current-phase"
+log_phase "$r19b" '{"session_id":"abc"}' >/dev/null
+check_out "a leftover .current-phase file does not set the phase" unknown "$(jq -r '.phase' "$r19b/.claude/telemetry.jsonl")"
 
 r20="$(telemetry_repo)"
 log_phase "$r20" '{"session_id":"abc"}' >/dev/null

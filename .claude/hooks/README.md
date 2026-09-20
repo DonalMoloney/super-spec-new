@@ -4,7 +4,9 @@
 
 `log-phase.sh` runs on `Stop` and appends one JSON line per turn to
 `.claude/telemetry.jsonl`. That file is gitignored, so every checkout builds its
-own history. Query it with `jq`.
+own history. Each line carries the `phase` and the `feature` read from the
+newest `specs/*/progress.yml`, or `unknown` when the project has none. Query it
+with `jq`.
 
 Count the turns spent in each phase:
 
