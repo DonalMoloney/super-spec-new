@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Tests for lint-standards.py, the em-dash and banned-word check."""
 
+import os
 import subprocess
 import sys
 import tempfile
@@ -9,12 +10,20 @@ from pathlib import Path
 SCRIPT = Path(__file__).resolve().parents[1] / "lint-standards.py"
 
 
-def lint(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
+def lint(
+    *args: str,
+    cwd: Path | None = None,
+    python_path: Path | None = None,
+) -> subprocess.CompletedProcess:
+    environment = None
+    if python_path is not None:
+        environment = {**os.environ, "PYTHONPATH": str(python_path)}
     return subprocess.run(
         [sys.executable, str(SCRIPT), *args],
         capture_output=True,
         text=True,
         cwd=cwd,
+        env=environment,
     )
 
 
@@ -57,6 +66,16 @@ hooks:
     description: "Check task coverage."
 """,
     )
+
+
+def without_yaml(root: Path) -> Path:
+    """Write a `yaml` module that refuses to import and return the directory holding it.
+
+    Passed as PYTHONPATH it shadows PyYAML, so a run behaves as it would on a
+    machine where PyYAML was never installed.
+    """
+    write(root / "stub" / "yaml.py", "raise ModuleNotFoundError(\"No module named 'yaml'\")\n")
+    return root / "stub"
 
 
 def git_repo(root: Path, *tracked: Path) -> None:
@@ -277,6 +296,24 @@ def test_banned_word_in_a_hook_prompt_is_reported():
         result = lint(str(path))
     assert result.returncode == 1, result.stdout
     assert f"{path}:hooks.after_tasks.prompt: banned word 'comprehensive'" in result.stdout
+
+
+def test_markdown_is_checked_without_a_yaml_parser():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        path = write(root / "clean.md", "The validator rejects a mismatched id.\n")
+        result = lint(str(path), python_path=without_yaml(root))
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert result.stdout.strip() == "OK: 1 file checked, 0 findings"
+
+
+def test_manifest_without_a_yaml_parser_asks_for_pyyaml():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        path = write_manifest(root / "extension.yml")
+        result = lint(str(path), python_path=without_yaml(root))
+    assert result.returncode != 0
+    assert "PyYAML, which is not installed" in result.stderr
 
 
 def test_directory_walk_checks_the_tracked_manifest():
