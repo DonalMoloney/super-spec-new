@@ -80,12 +80,18 @@ Spec-kit resolves a template at command time rather than reading one path. The
 resolver layers project overrides, then presets, then an extension's templates,
 then core, so specflow's copies win over core without replacing the files under
 `.specify/templates/`. Every command below resolves through
-`.specify/scripts/bash/resolve-template.sh <name> --json` and reads
-`TEMPLATE_CONTENT`, or `.specify/scripts/powershell/resolve-template.ps1
-<name> -Json` where PowerShell is the shell. Spec-kit installs whichever
-matches the platform. When the resolver fails, stop and report the error. Do
-not fall back to reading `.specify/templates/<name>.md`, which holds only the
-core layer and silently drops the others.
+the resolver spec-kit installed under `.specify/scripts/` and reads
+`TEMPLATE_CONTENT` from its output. Spec-kit writes one variant per project,
+picked by `--script` at init and defaulting to PowerShell on Windows and bash
+elsewhere:
+
+- `bash/resolve-template.sh <name> --json`
+- `powershell/resolve-template.ps1 <name> -Json`
+- `python/resolve_template.py <name> --json`
+
+When the resolver fails, stop and report the error. Do not fall back to
+reading `.specify/templates/<name>.md`, which holds only the core layer and
+silently drops the others.
 
 ## Commands
 

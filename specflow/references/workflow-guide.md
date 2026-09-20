@@ -24,9 +24,11 @@ matching section while it runs a command.
    ```
 
 2. **Resolve templates** through spec-kit's stack rather than copying them.
-   Run `.specify/scripts/bash/resolve-template.sh <name> --json` and read
-   `TEMPLATE_CONTENT`, or `.specify/scripts/powershell/resolve-template.ps1
-   <name> -Json` where PowerShell is the shell. The resolver layers project overrides, presets,
+   Run the resolver spec-kit installed under `.specify/scripts/` and read
+   `TEMPLATE_CONTENT`. One variant exists per project:
+   `bash/resolve-template.sh <name> --json`,
+   `powershell/resolve-template.ps1 <name> -Json`, or
+   `python/resolve_template.py <name> --json`. The resolver layers project overrides, presets,
    extension templates, then core, so specflow's copies win without
    overwriting `.specify/templates/`. Stop and report when it fails.
 
