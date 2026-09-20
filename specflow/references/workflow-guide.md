@@ -234,31 +234,32 @@ This phase may run more than once. Each session:
 
 1. **Read inputs**: plan, spec, constitution.
 
-2. **Superpowers integration**: When the `writing-plans` skill is detected, read it
-   and follow its task decomposition process. Structure the output with the
-   `tasks-template` format, resolved through the resolver named in Phase 0 and
-   read from `TEMPLATE_CONTENT`.
+2. **Resolve `tasks-template`** through the resolver named in Phase 0 and read
+   `TEMPLATE_CONTENT`. Its structure holds the output the steps below fill.
 
-3. **Split the plan** into phases:
+3. **Superpowers integration**: When the `writing-plans` skill is detected, read
+   it and follow its task decomposition process to sharpen the split below.
+
+4. **Split the plan** into phases:
    - Phase 1: Setup (project structure and dependencies)
    - Phase 2: Foundational (prerequisites that block later phases)
    - Phase 3+: one phase per user story, ordered by priority
    - Final phase: Polish, plus concerns that cut across every phase
 
-4. **Add the execution markers** from the plan's execution strategy:
+5. **Add the execution markers** from the plan's execution strategy:
    - `[TDD]` for a component that needs tests first
    - `[REVIEW]` for a component that needs a review gate
    - `[SUBAGENT]` for an independent work stream
    - `[P]` for tasks in the same phase that can run in parallel
 
-5. **Keep each task singular**: one outcome per line; split a task description
+6. **Keep each task singular**: one outcome per line; split a task description
    that needs "and".
 
-6. **Add a checkpoint** at each phase boundary.
+7. **Add a checkpoint** at each phase boundary.
 
-7. **Record the dependencies** and the execution order.
+8. **Record the dependencies** and the execution order.
 
-8. **Write the result** to `specs/NNN-feature-name/tasks.md`
+9. **Write the result** to `specs/NNN-feature-name/tasks.md`
 
 ### Verification
 
