@@ -61,6 +61,25 @@ assert_dir()     { if [ -d "$2" ]; then pass "$1";   else fail "$1 (missing: $2)
 # Assert a directory does not exist at path.
 assert_no_dir()  { if [ ! -d "$2" ]; then pass "$1"; else fail "$1 (unexpected: $2)"; fi; }
 # Assert a file exists and contains pattern.
+# specify init writes core's templates before an extension installs, so
+# asserting that .specify/templates/spec-template.md exists proves nothing
+# about specflow. Resolve the template the way a command does and check the
+# sections only specflow's copy carries. Runs per surface, because a shipped
+# file must work on the Copilot CLI as well as Claude Code.
+assert_resolved_template() {
+  local surface="$1" workdir="$2"
+  local resolved="$workdir/.resolved-spec-template.md"
+  if ! ( cd "$workdir" && bash .specify/scripts/bash/resolve-template.sh spec-template ) \
+         >"$resolved" 2>/dev/null; then
+    fail "$surface: resolve-template.sh spec-template did not run in the installed project"
+    return
+  fi
+  local section
+  for section in "## Open Questions" "## Threat Model" "## Traceability" "## Brainstorm Log"; do
+    assert_grep "$surface: resolved spec-template carries '$section'" "$section" "$resolved"
+  done
+}
+
 assert_grep()    {
   local desc="$1" pattern="$2" file="$3"
   if [ -f "$file" ] && grep -q -- "$pattern" "$file"; then
@@ -98,19 +117,7 @@ fi
 
 assert_file ".specify/extensions.yml created" "$WORK/.specify/extensions.yml"
 
-# specify init writes core's templates before the extension installs, so
-# asserting that .specify/templates/spec-template.md exists proves nothing
-# about specflow. Resolve the template the way a command does and check the
-# sections only specflow's copy carries.
-RESOLVED="$WORK/.resolved-spec-template.md"
-if ( cd "$WORK" && bash .specify/scripts/bash/resolve-template.sh spec-template ) \
-       >"$RESOLVED" 2>/dev/null; then
-  for section in "## Open Questions" "## Threat Model" "## Traceability" "## Brainstorm Log"; do
-    assert_grep "resolved spec-template carries '$section'" "$section" "$RESOLVED"
-  done
-else
-  fail "resolve-template.sh spec-template did not run in the installed project"
-fi
+assert_resolved_template "claude" "$WORK"
 
 # Every specflow command is advertised in the install output (spec-kit prints them).
 for cmd in "${SPECFLOW_COMMANDS[@]}"; do
@@ -165,6 +172,7 @@ for cmd in "${SPECFLOW_COMMANDS[@]}"; do
   assert_file "Copilot command file for speckit.specflow.$cmd" \
               "$WORK_COPILOT/.github/skills/speckit-specflow-$cmd/SKILL.md"
 done
+assert_resolved_template "copilot" "$WORK_COPILOT"
 
 step "3/5" "Simulate /speckit.specify (calls create-new-feature.sh directly)"
 cd "$WORK" || exit 1

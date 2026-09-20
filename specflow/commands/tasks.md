@@ -11,7 +11,11 @@ The command builds a phased task breakdown with the writing-plans skill.
 ## Process
 
 1. Read the spec, plan, and constitution for the target feature
-2. Resolve `tasks-template` by running `.specify/scripts/bash/resolve-template.sh tasks-template --json` and parsing `TEMPLATE_CONTENT`
+2. Resolve `tasks-template` with `.specify/scripts/bash/resolve-template.sh
+   tasks-template --json`, or `.specify/scripts/powershell/resolve-template.ps1
+   tasks-template -Json` where PowerShell is the shell, then parse
+   `TEMPLATE_CONTENT`. Stop and report when the resolver fails; reading
+   `.specify/templates/tasks-template.md` returns only the core layer.
 3. **Superpowers detection**: Check for the `writing-plans` skill
    - **If found**: Read `SKILL.md` for `writing-plans` and follow its task
      decomposition process. Adapt the output to the tasks template structure
