@@ -8,11 +8,6 @@ description: >-
   feature specifications, brainstorm edge cases, plan implementations, decompose
   tasks, execute with TDD discipline, or request code reviews within a structured
   development workflow.
-description_zh: >-
-  通过结合 spec-kit 项目治理（宪章、规格、计划、任务）与 obra/superpowers 能力
-  （头脑风暴、计划编写、TDD、子代理驱动开发、代码审查）来编排规格驱动开发。
-  当用户需要创建项目宪章、编写功能规格、头脑风暴边界情况、规划实现方案、
-  拆解任务、以 TDD 纪律执行开发或请求代码审查时使用。
 ---
 
 # Specflow
@@ -22,7 +17,16 @@ workflow with [obra/superpowers](https://github.com/obra/superpowers) agent skil
 pipeline. Spec-kit supplies the document structure and the governance gates; superpowers
 adds deeper questioning, task breakdown, and execution discipline.
 
-![AI-Powered: End-to-End Development Workflow (SDD)](assets/workflow-overview-en.png)
+```mermaid
+flowchart LR
+  A[Constitution] --> B[Specify]
+  B --> C[Brainstorm]
+  C -->|open questions| B
+  C --> D[Plan]
+  D --> E[Tasks]
+  E --> F[Execute]
+  F --> G[Review]
+```
 
 ## Prerequisites
 
@@ -426,4 +430,4 @@ to hold up. The user decides when to advance to the next phase.
 
 - A phase-by-phase walkthrough: [workflow-guide.md](references/workflow-guide.md)
 - How the superpowers integration works: [superpowers-bridge.md](references/superpowers-bridge.md)
-- A full worked example: [sample-workflow.md](examples/sample-workflow.md)
+- A full worked example: [sample-workflow.md](https://github.com/DonalMoloney/super-spec-new/blob/main/specflow/examples/sample-workflow.md), which the install archive leaves out
