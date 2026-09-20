@@ -56,6 +56,7 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
 | G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 done, T262 and T263 behind three prerequisites |
 | G-43 | `SKILL.md` documents a `progress.yml` schema the validator rejects | low | Not started; see G-43 below |
+| G-44 | No CI job installs the spec-kit version the manifest floors at | low | Every spec-kit install in `ci.yml` names git main |
 
 ## D-01 — `after-tasks.md` reads the progress file (merged: `8fb7813`)
 
@@ -908,6 +909,38 @@ citing paths, including the two validators and the test fixture. Verify:
 scripts/validate-extension-metadata.py` and `python3
 scripts/validate-release-archive.py` both pass, and `bash
 scripts/e2e-smoke.sh` passes.
+
+## G-44 — No CI job installs the spec-kit version the manifest floors at
+
+Executor: `bdd-orchestrator`. Model: sonnet. Move: Extend. Effort: low.
+Depends on: none. Diverges: no. Raised as `priority.md` item 21 on 2026-09-20.
+
+`extension.yml` declares `requires.speckit_version: ">=0.16.2"` with no upper
+bound, and every `ci.yml` job installs spec-kit from git main, so the floor the
+install refuses below has never been installed against.
+
+- [ ] T441 Let the environment pick the spec-kit ref the smoke test installs
+
+`e2e-smoke.sh` line 27 assigns `SPEC_KIT_GIT_URL` outright, so a caller cannot
+point one run at a tag. Verify: the line reads `${SPEC_KIT_GIT_URL:-...}`, and
+`bash scripts/e2e-smoke.sh` still installs from git main with the variable
+unset.
+
+- [ ] T442 Add a `smoke-floor` job pinned to the floor tag
+
+Verify: `grep -c '0.16.2' .github/workflows/ci.yml` prints at least 1, the
+`smoke-floor` job runs `e2e-smoke.sh` from `specflow/` against
+`spec-kit.git@v0.16.2`, and `yaml.safe_load` parses the workflow.
+
+- [ ] T443 Run the parity tests after the step that installs uv
+
+`tests/test_readme_commands.py` skips when neither `specify` nor `uvx` is on
+PATH, and "CI parity tests" runs before "Install uv", so that suite has never
+run in CI. `tests/test_ci_parity.py` reads step order, so `ci.yml` and
+`verify.sh` move together or the test fails between the two edits. Verify:
+"CI parity tests" follows "Install uv" in `ci.yml`, `verify.sh` carries the
+same relative order, `python3 -m pytest tests/test_ci_parity.py` passes, and
+`bash verify.sh` reaches its summary line with no failed step.
 
 ## Checked on 2026-09-20, no work needed
 

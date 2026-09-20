@@ -24,7 +24,7 @@ INIT_LOG="$WORK/.init.log"
 ADD_LOG="$WORK/.add.log"
 FEAT_LOG="$WORK/.feat.log"
 
-SPEC_KIT_GIT_URL="https://github.com/github/spec-kit.git"
+SPEC_KIT_GIT_URL="${SPEC_KIT_GIT_URL:-https://github.com/github/spec-kit.git}"
 MANIFEST="$REPO_ROOT/extension.yml"
 # extension.yml is the only place that declares what ships. Deriving the
 # command list and the hook count from it keeps every assertion below correct

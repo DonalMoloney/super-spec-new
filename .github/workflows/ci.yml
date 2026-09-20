@@ -99,3 +99,27 @@ jobs:
           for hook_command in $(awk '/^hooks:/{h=1;next} h&&/^[a-z]/{h=0} h&&/command:/{sub(/.*command:[ ]*/,"");gsub(/"/,"");print}' "$manifest" | sort -u); do
             grep -q "$hook_command" .specify/extensions.yml
           done
+
+  smoke-floor:
+    name: Smoke test the declared spec-kit floor
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      # extension.yml declares requires.speckit_version ">=0.16.2", and the
+      # validate job installs spec-kit from git main. The step below is the
+      # only one that installs the oldest host the manifest accepts.
+      - name: Structural smoke test against the floor
+        working-directory: specflow
+        run: SPEC_KIT_GIT_URL=https://github.com/github/spec-kit.git@v0.16.2 bash scripts/e2e-smoke.sh
