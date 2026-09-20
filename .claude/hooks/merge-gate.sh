@@ -13,6 +13,9 @@ else
 fi
 MARKER=".claude/review/.merge-approved"
 SCHEMA_FILE="schema.json" # the findings contract shares the directory with the reports
+# The gate runs from the consuming project's root, so the validator is found
+# beside this script rather than under the working directory.
+VALIDATOR="$(cd "$(dirname "$0")/../review" && pwd)/validate-findings.py"
 count_unresolved() { # severity file -> number of findings that still block
   jq --arg severity "$1" '
     [ .findings[]
@@ -30,6 +33,10 @@ for findings_glob in "${findings_globs[@]}"; do
     if [ "$(basename "$file")" = "$SCHEMA_FILE" ]; then continue; fi
     if ! critical_in_file="$(count_unresolved Critical "$file")"; then
       echo "merge-gate: $file does not parse as a findings document; expected an object with a findings array matching .claude/review/schema.json. Fix the file or move it out of the review directory." >&2
+      exit 1
+    fi
+    if ! schema_violation="$(python3 "$VALIDATOR" "$file" 2>&1 >/dev/null)"; then
+      echo "merge-gate: $schema_violation; expected a document matching .claude/review/schema.json. Fix the finding, then rerun the gate." >&2
       exit 1
     fi
     important_in_file="$(count_unresolved Important "$file")"
