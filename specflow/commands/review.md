@@ -47,6 +47,13 @@ Run code review against spec requirements using review skills.
    `specs/NNN-feature-name/review-findings.json` in the shape the Findings
    File section defines below. Overwrite the file on each run. A run with no
    findings writes an empty `findings` array and the verdict `CLEAN`
+9. **Join each finding to its checklist item**: for each checklist the feature
+   has, under `specs/NNN-feature-name/checklists/` or in the
+   `checklist-review.md` this run writes, fill the `## Review Findings` table.
+   Add one row per finding that fails an item in that checklist: the `CHK` id
+   of the item, the finding's `R-NNN` id, and the finding's status. Skip a
+   checklist that carries no `## Review Findings` table, and skip the step
+   when the feature has no checklist
 
 ## Output
 
@@ -56,6 +63,9 @@ The command reports findings to the user and writes them to
 
 The command also adds spec gaps among the Critical and Important findings to
 the `## Open Questions` table in `specs/NNN-feature-name/spec.md`.
+
+It fills the `## Review Findings` table in each checklist the feature has,
+joining a failed `CHK` id to the `R-NNN` id that reported it.
 
 ## Finding Format
 
