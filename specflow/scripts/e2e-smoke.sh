@@ -35,6 +35,12 @@ while IFS= read -r command_name; do
 done < <(awk '/^provides:/{p=1} p&&/^  commands:/{c=1;next} c&&/^  [a-z]/{c=0} c&&/-[ ]*name:/{sub(/.*speckit\.specflow\./,"");gsub(/["'"'"']/,"");print}' "$MANIFEST")
 EXPECTED_COMMAND_COUNT=${#SPECFLOW_COMMANDS[@]}
 EXPECTED_HOOK_COUNT=$(awk '/^hooks:/{h=1;next} h&&/^[a-z]/{h=0} h&&/^  [a-z_]+:/{n++} END{print n+0}' "$MANIFEST")
+# The template stamp check reads the same manifest, so a template added to
+# extension.yml gets a stamp assertion below without a second edit.
+SPECFLOW_TEMPLATES=()
+while IFS= read -r template_name; do
+  SPECFLOW_TEMPLATES+=("$template_name")
+done < <(awk '/^provides:/{p=1} p&&/^  templates:/{t=1;next} t&&/^  [a-z]/{t=0} t&&/-[ ]*name:/{sub(/.*name:[ ]*/,"");gsub(/["'"'"']/,"");print}' "$MANIFEST")
 LOG_TAIL_LINES=30
 RESOLVER_ERROR_LINES=3
 
@@ -43,7 +49,7 @@ RESOLVER_ERROR_LINES=3
 # merge or an edit has to fail here rather than pass unnoticed. bash 3.2 has no
 # associative arrays, so each row is "<command> <count>".
 EXPECTED_PROCESS_STEPS=(
-  "status 7"
+  "status 8"
   "brainstorm 8"
   "tasks 10"
   "execute 9"
@@ -302,6 +308,14 @@ assert_file ".specify/extensions.yml created" "$WORK/.specify/extensions.yml"
 
 assert_resolved_template "claude" "$WORK"
 
+# Every shipped template stamps its own name and the extension version it
+# installed with, so status.md can grep each installed copy for drift.
+for tmpl in "${SPECFLOW_TEMPLATES[@]}"; do
+  assert_grep "claude: $tmpl.md installed copy carries the version stamp" \
+              "specflow template:" \
+              "$WORK/.specify/extensions/specflow/templates/$tmpl.md"
+done
+
 # Every specflow command is advertised in the install output (spec-kit prints them).
 for cmd in "${SPECFLOW_COMMANDS[@]}"; do
   assert_grep "command speckit.specflow.$cmd advertised on install" \
@@ -357,6 +371,12 @@ for cmd in "${SPECFLOW_COMMANDS[@]}"; do
               "$WORK_COPILOT/.github/skills/speckit-specflow-$cmd/SKILL.md"
 done
 assert_resolved_template "copilot" "$WORK_COPILOT"
+
+for tmpl in "${SPECFLOW_TEMPLATES[@]}"; do
+  assert_grep "copilot: $tmpl.md installed copy carries the version stamp" \
+              "specflow template:" \
+              "$WORK_COPILOT/.specify/extensions/specflow/templates/$tmpl.md"
+done
 
 step "3/5" "Simulate /speckit.specify (calls create-new-feature.sh directly)"
 cd "$WORK" || exit 1

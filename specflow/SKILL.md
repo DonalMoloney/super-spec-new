@@ -234,6 +234,13 @@ Specflow Project Status
 Constitution: Done (2026-04-22)
 Superpowers:  brainstorming (detected), writing-plans (not found)
 
+Templates:
+  template constitution-template: 1.0.2 (installed 1.0.2)
+  template spec-template: 1.0.2 (installed 1.0.2)
+  template plan-template: 1.0.2 (installed 1.0.2)
+  template tasks-template: 1.0.1 (installed 1.0.2) stale
+  template checklist-template: 1.0.2 (installed 1.0.2)
+
 Features:
   001-user-auth    [####------] execute (Phase 5/6), gates: clarified, analyzed, T012/T019 tasks done
   002-photo-upload [##--------] brainstorm (Phase 2/6), gates: none, 2 open questions

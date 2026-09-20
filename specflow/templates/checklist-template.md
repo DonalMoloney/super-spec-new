@@ -1,3 +1,4 @@
+<!-- specflow template: checklist-template 1.0.2 -->
 # [CHECKLIST TYPE] Checklist: [FEATURE NAME]
 
 **Purpose**: [Brief description of what this checklist covers]
