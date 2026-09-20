@@ -117,24 +117,38 @@ marker, the Threat Model and Traceability sections, and the Changelog section.
 is the upstream snapshot, and `e2e-agent-claude.sh` line 223 seeds its dry run
 from it.
 
-- [ ] T191 Record a fresh run of the current pipeline
+- [x] T191 Record a fresh run of the current pipeline
 
 Drive `e2e-agent-claude.sh` live on a feature of this fork's choosing, not a
 landing page, and snapshot it under `examples/<feature>/`. Verify: the
 snapshot carries `.clarified`, `.analyzed`, `## Threat Model`,
 `## Traceability`, and `## Changelog`.
 
-- [ ] T192 Point the scorer golden at the new snapshot
+- [x] T192 Point the scorer golden at the new snapshot
 
 Verify: `score-artifacts.py` passes on the new snapshot and
 `score-artifacts.yml` replays it.
 
-- [ ] T193 Add a failing-gate snapshot
+- [x] T193 Add a failing-gate snapshot
 
 Record a run that stops with `ANALYZE_REQUIRED` and the rerun that clears it.
 Verify: the snapshot contains the stop code and the rerun.
 
 - [ ] T194 Delete `static-landing-page/` and `sample-workflow.md`
+
+Deferred on 2026-09-20, and not for its blast radius. T191 was meant to replace
+upstream's snapshot with a run of this fork's pipeline. No API key exists in
+this environment, so `link-audit/` was constructed from the templates and gate
+rules instead, and says so in its own README. `static-landing-page/` is the
+only recorded run in the repository. Deleting it would leave the examples
+directory holding nothing that any pipeline actually produced, which is a worse
+state than holding one stale recording beside one honest reconstruction.
+
+Run T194 after a live run replaces `link-audit/`'s constructed artifacts with
+recorded ones. The move then costs what the notes below say: the hook suite
+reads `static-landing-page/specs` at `run.sh:110`, `test_score_artifacts.py`
+defines the seeded-bug golden as that snapshot minus one row, and
+`e2e-agent-claude.sh` seeds its 30 dry-run assertions from it.
 
 Update `README.md` and the dry run, which seeds from the snapshot.
 

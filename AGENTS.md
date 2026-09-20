@@ -64,17 +64,15 @@ there, so a workflow under `specflow/` never runs.
   so these win over core without replacing `.specify/templates/`.
 - `specflow/references/`: `workflow-guide.md` (built-in fallback protocols) and
   `superpowers-mapping.md` (skill detection/mapping details).
-- `specflow/examples/`: a full real-run snapshot (`static-landing-page/`) and
-  `sample-workflow.md`; teaching material, not runtime payload.
+- `specflow/examples/`: teaching material, not runtime payload. `link-audit/`
+  is this fork's artifact set, constructed rather than recorded and labelled as
+  such in its README. `static-landing-page/` is upstream's real-run snapshot and
+  the only recorded one, which is why G-19 T194 does not delete it yet.
+  `seeded-bug/` is that snapshot minus one traceability row, and
+  `mutation-gate-sample/` feeds the mutation gate.
 - `specflow/assets/`: workflow diagrams (~12 MiB); documentation media, not runtime payload.
-- `presentation/`: currently empty; this is where the Marp slide deck giving a
-  project overview will go once written. Author it as a single `.md` file with Marp
-  front matter (`marp: true`) so it renders via the Marp CLI/VS Code extension. Don't
-  add a build step or framework for it. Draw its content from `improvements/roadmap.md`
-  and this file, not from re-deriving the project's purpose from scratch.
-
-## Gotchas
-
+- `presentation/`: the Marp deck (`marp-deck/`) with its Mermaid and SVG
+  diagram sources, and `use-guide/` explaining how to render it.
 - **Namespace lock-step**: `extension.yml`'s `extension.id` must equal the prefix on
   every command/hook name (`speckit.<id>.*`). Drift fails
   `validate-extension-metadata.py` and CI, and breaks catalog install.
