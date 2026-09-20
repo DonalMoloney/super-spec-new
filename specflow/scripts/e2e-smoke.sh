@@ -47,6 +47,25 @@ EXPECTED_PROCESS_STEPS=(
   "review 9"
 )
 
+# The workflow guide phase that mirrors each command, as
+# "<command>|<phase heading>|<steps heading>". The guide is the protocol an
+# agent follows when no superpowers skill is installed, so a phase that names
+# fewer artifacts than its command does tells that agent to write less. The
+# names do not line up on their own, so each pair is declared here.
+MIRRORED_PHASES=(
+  "brainstorm|## Phase 2: Brainstorming|### Process"
+  "tasks|## Phase 4: Task Decomposition|### Steps"
+  "execute|## Phase 5: Execution|### Steps"
+  "review|## Phase 6: Review|### Steps"
+)
+# The guide is phase-structured and status is not a phase, so status mirrors
+# nothing. Any other command missing from MIRRORED_PHASES fails below.
+UNMIRRORED_COMMANDS=("status")
+# Backticked names that match the artifact shape but name no project state.
+# SKILL.md is the superpowers skill file a command reads; package-lock.json is
+# one of the lock files review.md lists to classify risk.
+NON_ARTIFACT_NAMES="SKILL.md package-lock.json"
+
 if [ -t 1 ]; then
   C_GREEN=$'\033[32m'; C_RED=$'\033[31m'; C_DIM=$'\033[2m'; C_BOLD=$'\033[1m'; C_RST=$'\033[0m'
 else
@@ -152,6 +171,82 @@ expected_process_steps() {
     esac
   done
   return 1
+}
+
+# Print the MIRRORED_PHASES row for a command name, or exit 1 when the table
+# holds no row for it.
+mirrored_phase() {
+  local name="$1" row
+  for row in "${MIRRORED_PHASES[@]}"; do
+    case "$row" in
+      "$name|"*) printf '%s' "${row#*|}"; return 0 ;;
+    esac
+  done
+  return 1
+}
+
+# Exit 0 when UNMIRRORED_COMMANDS lists the command name.
+is_unmirrored_command() {
+  local name="$1" entry
+  for entry in "${UNMIRRORED_COMMANDS[@]}"; do
+    [ "$entry" = "$name" ] && return 0
+  done
+  return 1
+}
+
+# Print the lines of a numbered-step section: the command file's Process list,
+# or one phase's step list in the workflow guide. An empty third argument scans
+# from the top of the file.
+step_section() {
+  awk -v phase="${3:-}" -v steps="$2" '
+    BEGIN { in_phase = (phase == "") ? 1 : 0 }
+    !in_phase   { if (index($0, phase) == 1) in_phase = 1; next }
+    !in_section { if ($0 == steps) in_section = 1; next }
+    /^#/        { exit }
+    { print }
+  ' "$1"
+}
+
+# Print one artifact name per line for a numbered-step section: every
+# backticked path, gate marker, execution marker, task or finding ID form, and
+# `##` section heading the steps name, sorted and deduplicated. A path under
+# references/, commands/, templates/, .specify/templates/, .specify/scripts/ or
+# .claude/ names the extension's own payload or a tool a step runs rather than
+# state the run writes, so it is skipped, as is every NON_ARTIFACT_NAMES entry.
+artifact_names() {
+  step_section "$@" | awk -v exempt="$NON_ARTIFACT_NAMES" '
+    function words(span,   count, word, i, base) {
+      count = split(span, word, /[ \t]+/)
+      for (i = 1; i <= count; i++) {
+        if (word[i] ~ /^\[[A-Z]+\]$/) { print word[i]; continue }
+        sub(/[,.;:)]+$/, "", word[i])
+        if (word[i] ~ /^\.[a-z]+$/)        { print word[i]; continue }
+        if (word[i] ~ /^[A-Z]+-?N{3,4}$/)  { print word[i]; continue }
+        if (word[i] !~ /\.(md|yml|json)$/) continue
+        if (word[i] ~ /^(references|commands|templates)\//) continue
+        if (word[i] ~ /^\.specify\/(templates|scripts)\//) continue
+        if (word[i] ~ /^\.claude\//) continue
+        base = word[i]
+        sub(/.*\//, "", base)
+        if (base in skip) continue
+        print base
+      }
+    }
+    BEGIN {
+      count = split(exempt, entry, " ")
+      for (i = 1; i <= count; i++) skip[entry[i]] = 1
+    }
+    /^```/ { fenced = !fenced }
+    fenced { next }
+    {
+      count = split($0, part, "`")
+      for (i = 2; i <= count; i += 2) {
+        if (part[i] == "") continue
+        if (substr(part[i], 1, 3) == "## ") { print part[i]; continue }
+        words(part[i])
+      }
+    }
+  ' | sort -u
 }
 
 # Assert a file exists and contains pattern.
@@ -330,6 +425,45 @@ for cmd in "${SPECFLOW_COMMANDS[@]}"; do
     pass "commands/$cmd.md has $expected Process steps"
   else
     fail "commands/$cmd.md has $actual Process steps, expected $expected. Restore the missing step, or change the $cmd row of the EXPECTED_PROCESS_STEPS table in scripts/e2e-smoke.sh when the step count moved on purpose"
+  fi
+done
+
+# A command's Process steps and the guide phase that mirrors them must name the
+# same artifacts. An artifact the phase omits is one an agent running the
+# built-in fallback never writes.
+GUIDE="references/workflow-guide.md"
+for cmd in "${SPECFLOW_COMMANDS[@]}"; do
+  is_unmirrored_command "$cmd" && continue
+  if ! mirror_row=$(mirrored_phase "$cmd"); then
+    fail "commands/$cmd.md has no row in the MIRRORED_PHASES table in scripts/e2e-smoke.sh; name the $GUIDE phase that mirrors it, or list the command in UNMIRRORED_COMMANDS"
+    continue
+  fi
+  phase_heading="${mirror_row%%|*}"
+  steps_heading="${mirror_row##*|}"
+  phase_steps=$(step_section "$REPO_ROOT/$GUIDE" "$steps_heading" "$phase_heading")
+  if [ -z "$phase_steps" ]; then
+    fail "$GUIDE has no '$steps_heading' list under '$phase_heading', the phase the $cmd row of MIRRORED_PHASES names"
+    continue
+  fi
+  command_artifacts=$(artifact_names "$REPO_ROOT/commands/$cmd.md" "## Process")
+  if [ -z "$command_artifacts" ]; then
+    fail "no artifact name was read from the Process steps of commands/$cmd.md; the artifact_names extractor in scripts/e2e-smoke.sh no longer matches the file"
+    continue
+  fi
+  missing=""
+  while IFS= read -r artifact; do
+    [ -n "$artifact" ] || continue
+    case "$phase_steps" in
+      *"$artifact"*) ;;
+      *) missing="$missing, $artifact" ;;
+    esac
+  done <<EOF
+$command_artifacts
+EOF
+  if [ -z "$missing" ]; then
+    pass "$GUIDE '$phase_heading' names every artifact commands/$cmd.md writes"
+  else
+    fail "$GUIDE '$phase_heading' does not name ${missing#, }, which the Process steps of commands/$cmd.md name. Add each one to the phase's '$steps_heading' list, so an agent without superpowers writes it too"
   fi
 done
 
