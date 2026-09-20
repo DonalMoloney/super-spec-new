@@ -51,16 +51,18 @@ jobs:
       - name: Divergence measurer tests
         run: python3 -m pytest .claude/divergence/tests -q
 
-      # verify.sh carries a copy of the steps below. These tests fail when this
-      # file gains, loses, reorders or retargets one and the copy stands still.
-      - name: CI parity tests
-        run: python3 -m pytest tests -q
-
       - name: Hook tests
         run: bash .claude/hooks/tests/run.sh
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
+
+      # verify.sh carries a copy of this file's run steps. These tests fail when
+      # this file gains, loses, reorders or retargets one and the copy stands
+      # still. tests/test_readme_commands.py reaches specify through uvx, so
+      # this step follows the one that installs uv.
+      - name: CI parity tests
+        run: python3 -m pytest tests -q
 
       - name: Lint Markdown against the documentation standard
         run: python3 specflow/scripts/lint-standards.py
