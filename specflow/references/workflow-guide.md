@@ -12,16 +12,22 @@ matching section while it runs a command.
 
 ### Steps
 
-1. **Create directory structure**:
+1. **Create directory structure**. Feature artifacts live in `specs/` at the
+   project root, not under `.specify/`:
    ```
-   .specify/
-   ├── memory/
-   ├── specs/
-   └── templates/
+   your-project/
+   ├── .specify/
+   │   ├── extensions/specflow/templates/
+   │   ├── memory/
+   │   └── templates/
+   └── specs/
    ```
 
-2. **Copy templates** from the specflow skill's `templates/` directory into
-   `.specify/templates/`. The project keeps its own copy to customize.
+2. **Resolve templates** through spec-kit's stack rather than copying them.
+   Run `.specify/scripts/bash/resolve-template.sh <name> --json` and read
+   `TEMPLATE_CONTENT`. The resolver layers project overrides, presets,
+   extension templates, then core, so specflow's copies win without
+   overwriting `.specify/templates/`. Stop and report when it fails.
 
 3. **Interview the user** about:
    - Project name and purpose

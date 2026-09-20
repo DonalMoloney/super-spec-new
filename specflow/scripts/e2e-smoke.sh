@@ -98,6 +98,20 @@ fi
 
 assert_file ".specify/extensions.yml created" "$WORK/.specify/extensions.yml"
 
+# specify init writes core's templates before the extension installs, so
+# asserting that .specify/templates/spec-template.md exists proves nothing
+# about specflow. Resolve the template the way a command does and check the
+# sections only specflow's copy carries.
+RESOLVED="$WORK/.resolved-spec-template.md"
+if ( cd "$WORK" && bash .specify/scripts/bash/resolve-template.sh spec-template ) \
+       >"$RESOLVED" 2>/dev/null; then
+  for section in "## Open Questions" "## Threat Model" "## Traceability" "## Brainstorm Log"; do
+    assert_grep "resolved spec-template carries '$section'" "$section" "$RESOLVED"
+  done
+else
+  fail "resolve-template.sh spec-template did not run in the installed project"
+fi
+
 # Every specflow command is advertised in the install output (spec-kit prints them).
 for cmd in "${SPECFLOW_COMMANDS[@]}"; do
   assert_grep "command speckit.specflow.$cmd advertised on install" \

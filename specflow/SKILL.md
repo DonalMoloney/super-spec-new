@@ -59,10 +59,14 @@ artifacts.
 ```
 your-project/
 ├── .specify/
+│   ├── extensions/
+│   │   └── specflow/
+│   │       └── templates/       # Specflow's templates, resolved at command time
 │   ├── memory/
 │   │   └── constitution.md      # Project governance principles
 │   ├── superpowers.yml          # Superpowers detection status (auto-managed)
-│   └── templates/               # Document templates (copied on init)
+│   ├── scripts/bash/            # Spec-kit's scripts, including the template resolver
+│   └── templates/               # Core templates, written by `specify init`
 └── specs/
     └── NNN-feature-name/
         ├── spec.md              # Feature specification
@@ -71,6 +75,15 @@ your-project/
         ├── progress.yml         # Phase progress tracker (auto-managed)
         └── checklist-*.md       # Generated checklists
 ```
+
+Spec-kit resolves a template at command time rather than reading one path. The
+resolver layers project overrides, then presets, then an extension's templates,
+then core, so specflow's copies win over core without replacing the files under
+`.specify/templates/`. Every command below resolves through
+`.specify/scripts/bash/resolve-template.sh <name> --json` and reads
+`TEMPLATE_CONTENT`. When the resolver fails, stop and report the error. Do not
+fall back to reading `.specify/templates/<name>.md`, which holds only the core
+layer and silently drops the others.
 
 ## Commands
 
@@ -239,11 +252,10 @@ which files are present:
 
 **Process**:
 1. Create the `.specify/` directory structure when it does not exist
-2. Copy every file from this skill's `templates/` directory into `.specify/templates/`
-3. Read the template at `.specify/templates/constitution-template.md`
-4. Interview the user on core principles, the technology stack, the design system, and quality gates
-5. Fill the template with the user's answers to produce `constitution.md`
-6. Write the result to `.specify/memory/constitution.md`
+2. Resolve `constitution-template` by running `.specify/scripts/bash/resolve-template.sh constitution-template --json` and parsing `TEMPLATE_CONTENT`
+3. Interview the user on core principles, the technology stack, the design system, and quality gates
+4. Fill the template with the user's answers to produce `constitution.md`
+5. Write the result to `.specify/memory/constitution.md`
 
 **Gate**: No other command runs before the constitution exists.
 
@@ -257,7 +269,7 @@ which files are present:
 **Process**:
 1. Verify `.specify/memory/constitution.md` exists (stop with guidance if not)
 2. Work out the next spec number NNN by scanning the existing `specs/` directories
-3. Read the template at `.specify/templates/spec-template.md`
+3. Resolve `spec-template` by running `.specify/scripts/bash/resolve-template.sh spec-template --json` and parsing `TEMPLATE_CONTENT`
 4. Read the constitution for the project's principles and constraints
 5. Interview the user on the user scenarios, the requirements, and the success criteria
 6. Fill the template with the user's answers to produce `spec.md`
@@ -303,7 +315,7 @@ session adds its own entry to the brainstorm log.
 
 **Process**:
 1. Read the target spec file and the constitution
-2. Read the template at `.specify/templates/plan-template.md`
+2. Resolve `plan-template` by running `.specify/scripts/bash/resolve-template.sh plan-template --json` and parsing `TEMPLATE_CONTENT`
 3. Run a **constitution check**: confirm the plan follows every governance principle
 4. Look through the codebase to establish the technical context (language, dependencies, storage,
    testing framework, project type)
@@ -326,7 +338,7 @@ its blueprint process to sharpen the plan's task structure section. See
 
 **Process**:
 1. Read the spec, the plan, and the constitution for the target feature
-2. Read the template at `.specify/templates/tasks-template.md`
+2. Resolve `tasks-template` by running `.specify/scripts/bash/resolve-template.sh tasks-template --json` and parsing `TEMPLATE_CONTENT`
 3. **Superpowers detection**: Look for the `writing-plans` skill
    - **If found**: Read the writing-plans SKILL.md and follow its task decomposition
      process, fitting its output to the tasks template structure
@@ -400,7 +412,7 @@ user's explicit approval. **Never skip a checkpoint.**
 **Output**: `specs/NNN-feature-name/checklist-{type}.md`
 
 **Process**:
-1. Read the template at `.specify/templates/checklist-template.md`
+1. Resolve `checklist-template` by running `.specify/scripts/bash/resolve-template.sh checklist-template --json` and parsing `TEMPLATE_CONTENT`
 2. Read the spec, the plan, and the tasks for context
 3. Build a checklist matching the requested type (e.g., "launch readiness",
    "security audit", "accessibility review", "code review")
