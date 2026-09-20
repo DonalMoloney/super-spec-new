@@ -44,11 +44,9 @@ item named in the rewrite status below.
 
 | File | Real | Last moved by |
 |------|------|---------------|
-| `commands/hooks/after-tasks.md` | 0% | D-01 holds it |
 | `extension.yml` | 0% | D-05 holds it |
 | `CHANGELOG.md` | 1% | D-05 holds it |
 | `references/superpowers-mapping.md` | 4% | nothing since the rename |
-| `scripts/validate-extension-metadata.py` | 7% | D-05 holds it |
 | `templates/plan-template.md` | 20% | PR #69 |
 | `scripts/validate-release-archive.py` | 29% | `script-refactorer` |
 | `templates/spec-template.md` | 33% | PR #69 |
@@ -63,9 +61,11 @@ item named in the rewrite status below.
 | `references/workflow-guide.md` | 57% | PR #71 |
 | `commands/execute.md` | 57% | PR #66 |
 | `commands/tasks.md` | 58% | PR #66 |
+| `commands/hooks/after-tasks.md` | 60% | `prose-rephraser` |
 | `commands/hooks/after-execute.md` | 65% | PR #70 |
 | `commands/hooks/before-execute.md` | 70% | PR #70 |
 | `commands/review.md` | 76% | PR #67 |
+| `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` |
 | `README.md` | 100% | PR #59 |
 
 The installable payload has moved a long way from upstream in wording and very
