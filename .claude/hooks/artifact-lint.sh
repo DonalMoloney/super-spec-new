@@ -56,6 +56,15 @@ case "$artifact_name" in
       done
     fi
     ;;
+  progress.yml)
+    # The validator ships beside this hook under .claude/, so it resolves from $0
+    # rather than from the consuming project's root.
+    progress_validator="$(dirname "$0")/../review/validate-progress.py"
+    if [ -f "$progress_validator" ] \
+      && ! progress_out="$(python3 "$progress_validator" "$path" 2>&1)"; then
+      err "$(printf '%s' "$progress_out" | sed "s|^$path: ||" | tr '\n' ';')"
+    fi
+    ;;
 esac
 # The lint lives under scripts/, which the archive strips, so a consuming project without it skips this check.
 MARKDOWN_LINT="specflow/scripts/lint-standards.py"
