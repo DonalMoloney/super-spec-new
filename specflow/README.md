@@ -88,10 +88,13 @@ step; on a project with features it prints one line per feature:
 ```
 Specflow Project Status
 ========================
-Constitution: Done
+Constitution: Done (2026-04-22)
+Superpowers:  brainstorming (detected), writing-plans (not found)
+
 Features:
-  001-user-auth    [####------] execute (Phase 5/6), 11/19 tasks done
-  002-photo-upload [##--------] brainstorm (Phase 2/6), 2 open questions
+  001-user-auth    [####------] execute (Phase 5/6), gates: clarified, analyzed, T012/T019 tasks done
+  002-photo-upload [##--------] brainstorm (Phase 2/6), gates: none, 2 open questions
+  003-settings     [#---------] specify (Phase 1/6), gates: none, draft
 
 Suggested next step: /speckit.specflow.execute 001
 ```
