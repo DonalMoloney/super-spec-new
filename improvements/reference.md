@@ -245,7 +245,7 @@ standards-compliance pass D-05 gates.
 
 | File | Real | Agent | Waiting on |
 |------|------|-------|------------|
-| `commands/hooks/after-tasks.md` | 0% | `prose-rephraser` | D-01 |
+| `commands/hooks/after-tasks.md` | 60% | `prose-rephraser` | |
 | `extension.yml` | 0% | `prose-rephraser` | D-05 |
 | `CHANGELOG.md` | 1% | `prose-rephraser` | D-05 |
 | `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` | |

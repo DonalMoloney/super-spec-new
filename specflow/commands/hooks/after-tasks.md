@@ -1,20 +1,20 @@
 # Hook: after_tasks
 
-Runs after `/speckit.tasks` completes. Verifies the task plan covers the specification
-and checks if superpowers skills can enhance the task breakdown.
+The hook fires once `/speckit.tasks` completes. It checks that the task plan
+covers the spec and looks for a superpowers skill that could improve the breakdown.
 
 ## Checks
 
-1. **Coverage verification**: Ensure every user story from the spec has corresponding tasks
-2. **Superpowers enhancement**: If `writing-plans` skill is detected, suggest re-running
-   `/speckit.specflow.tasks` for enhanced decomposition
-3. **TDD readiness**: If constitution requires TDD, verify `[TDD]` markers are present
-   on appropriate tasks
-4. **Review gates**: If constitution requires code review, verify `[REVIEW]` markers
-   are present on appropriate tasks
+1. **Coverage check**: Check that every user story in the spec has matching tasks
+2. **Superpowers enhancement**: If the hook finds the `writing-plans` skill, it
+   suggests rerunning `/speckit.specflow.tasks` for a deeper breakdown
+3. **TDD readiness**: If the constitution requires TDD, check that `[TDD]` markers
+   appear on the matching tasks
+4. **Review gates**: If the constitution requires code review, check that `[REVIEW]`
+   markers appear on the matching tasks
 5. **Progress state**: Read `progress.yml` for what an earlier run recorded, if one
-   exists. Warn when the new breakdown drops a task that file marks complete
+   exists. Warn when the new breakdown drops a task the file marks complete.
 
 ## Output
 
-Warnings printed to user if any checks fail. No files modified.
+The hook prints a warning to the user for each failed check. It modifies no file.
