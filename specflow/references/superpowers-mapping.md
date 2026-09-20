@@ -14,6 +14,12 @@ Specflow checks for superpowers skills at these paths, in order of precedence:
 A skill is considered **available** if its `SKILL.md` file exists at either path.
 Project-local skills take precedence over user-global.
 
+Tested range: `>=6.0.0 <7.0.0`. Superpowers 6.0 rewrote
+`subagent-driven-development` and 6.2 moved its workspace, so a 5.x install runs
+a different protocol. `/speckit.specflow.status` prints
+`superpowers <version> is outside the tested range <range>` when the installed
+version sits outside that range.
+
 ### Detection Steps
 
 When a specflow command needs a superpowers skill:
@@ -27,14 +33,23 @@ When a specflow command needs a superpowers skill:
 
 ## Skill Mapping
 
-| Specflow Command | Superpowers Skill Name | Skill Directory |
-|-------------------|------------------------|-----------------|
-| `/speckit.specflow.brainstorm` | `brainstorming` | `brainstorming/` |
-| `/speckit.specflow.tasks` | `writing-plans` | `writing-plans/` |
-| `/speckit.specflow.execute` | `executing-plans` | `executing-plans/` |
-| `/speckit.specflow.execute` | `subagent-driven-development` | `subagent-driven-development/` |
-| `/speckit.specflow.execute` | `test-driven-development` | `test-driven-development/` |
-| `/speckit.specflow.review` | `requesting-code-review` | `requesting-code-review/` |
+| Specflow Command | Superpowers Skill Name | Skill Directory | Surface | When it runs |
+|-------------------|------------------------|-----------------|---------|--------------|
+| `/speckit.specflow.brainstorm` | `brainstorming` | `brainstorming/` | Both | Every run |
+| `/speckit.specflow.tasks` | `writing-plans` | `writing-plans/` | Both | Every run |
+| `/speckit.specflow.execute` | `subagent-driven-development` | `subagent-driven-development/` | Claude Code | Every run |
+| `/speckit.specflow.execute` | `executing-plans` | `executing-plans/` | Copilot CLI | Every run |
+| `/speckit.specflow.execute` | `test-driven-development` | `test-driven-development/` | Both | On a `[TDD]` task |
+| `/speckit.specflow.execute` | `systematic-debugging` | `systematic-debugging/` | Both | On a failing test |
+| `/speckit.specflow.execute` | `verification-before-completion` | `verification-before-completion/` | Both | Before ticking a task |
+| `/speckit.specflow.execute` | `using-git-worktrees` | `using-git-worktrees/` | Claude Code | On `[SUBAGENT]` dispatch |
+| `/speckit.specflow.execute` | `dispatching-parallel-agents` | `dispatching-parallel-agents/` | Claude Code | On a `[P]` batch |
+| `/speckit.specflow.review` | `requesting-code-review` | `requesting-code-review/` | Both | Every run |
+| `/speckit.specflow.review` | `receiving-code-review` | `receiving-code-review/` | Both | After findings are reported |
+| `/speckit.specflow.review` | `finishing-a-development-branch` | `finishing-a-development-branch/` | Both | After the merge gate passes |
+
+Claude Code runs `subagent-driven-development` for execute; the Copilot CLI has
+no subagents, so it runs `executing-plans` instead.
 
 ## Invocation Pattern
 
@@ -122,8 +137,10 @@ After the superpowers skill's process completes:
 **Process adaptation**:
 - Follow the executing-plans skill's batch processing protocol
 - Respect checkpoint gates defined in tasks.md
-- Apply human checkpoint protocol at every phase boundary
-- Never auto-approve. Always wait for user confirmation
+- Specflow's checkpoint wins at a phase boundary: stop and wait for
+  confirmation. Inside a phase the skill's no-pause rule holds. Reason: a phase
+  boundary is where `progress.yml` is written and where a user can still
+  redirect cheaply.
 
 **Combined with**:
 - `subagent-driven-development`: For tasks marked `[SUBAGENT]`, follow this skill's

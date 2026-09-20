@@ -37,6 +37,9 @@ The command drives implementation through TDD, subagent dispatch, and review gat
    - On Claude Code without the skill, dispatch one subagent per task with the
      Task tool and check each result before the next dispatch
    - On the Copilot CLI, implement the tasks in sequence, in the same session
+   - Two reviews run whatever the skill version says: `code-reviewer` reviews
+     each finished task, and `/speckit.specflow.review` reviews the whole
+     branch once the phase ends. Both run on all three paths above
 
    **For `[P]` tasks**:
    - On Claude Code with Agent Teams available and

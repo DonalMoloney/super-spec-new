@@ -224,9 +224,13 @@ Before running any specflow command, the agent MUST run the **resume check** fir
 **Process**:
 1. Scan the `.specify/` directory structure
 2. Check whether `constitution.md` exists
-3. **Run superpowers detection**: Look for every superpowers skill at
-   `.agents/skills/` and `~/.agents/skills/`. Update `.specify/superpowers.yml`
-   with the result.
+3. **Run superpowers detection**: Look for every skill the Skill Mapping table in
+   `references/superpowers-mapping.md` names, at `.agents/skills/` and
+   `~/.agents/skills/`. Update `.specify/superpowers.yml` with the result. When
+   `~/.claude/plugins/installed_plugins.json` exists, read the superpowers
+   entry's `version` and write it as `version:` in that file. When that version
+   sits outside the tested range the mapping states, print
+   `superpowers <version> is outside the tested range <range>`.
 4. For each spec directory, read `progress.yml` (or infer progress from the files
    present when it is missing). Note whether `.clarified` and `.analyzed` sit
    beside `spec.md`.

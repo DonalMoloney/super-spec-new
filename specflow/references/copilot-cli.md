@@ -38,7 +38,7 @@ The right column repeats the skill directory name spec-kit creates at install.
 | `/speckit.specflow.status` | No change. The command reads files and prints. |
 | `/speckit.specflow.brainstorm` | No change. The questioning protocol needs no subagent. |
 | `/speckit.specflow.tasks` | No change. Markers are written to `tasks.md` as text. |
-| `/speckit.specflow.execute` | `[P]` and `[SUBAGENT]` tasks run one at a time in order. `[TDD]` tasks follow the inline write-test, fail, implement, pass loop. Before ticking a task, the agent runs the constitution's test command itself, which `test-gate.sh` does on Claude Code. |
+| `/speckit.specflow.execute` | `[P]` and `[SUBAGENT]` tasks run one at a time in order. `[TDD]` tasks follow the inline write-test, fail, implement, pass loop. Before ticking a task, the agent runs the constitution's test command itself, which `test-gate.sh` does on Claude Code. Claude Code runs `subagent-driven-development` for execute; the Copilot CLI has no subagents, so it runs `executing-plans` instead. |
 | `/speckit.specflow.review` | The built-in five-dimension protocol runs once in the session. The risk tier comes from `gates/bash/risk-classifier.sh`, which the install carries. |
 | `/speckit.specflow.gate` | No change. The command runs `gates/bash/write-marker.sh` and prints what it wrote or why it refused. |
 

@@ -17,6 +17,7 @@ extension:
   homepage: "https://github.com/DonalMoloney/super-spec-new#readme"
 requires:
   speckit_version: ">=0.16.2"
+  # spec-kit reads no key under optional_skills; the mapping table is the list.
   optional_skills:
     - id: "brainstorming"
       source: "obra/superpowers"

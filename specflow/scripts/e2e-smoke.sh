@@ -50,7 +50,7 @@ RESOLVER_ERROR_LINES=3
 # associative arrays, so each row is "<command> <count>".
 EXPECTED_PROCESS_STEPS=(
   "status 8"
-  "brainstorm 8"
+  "brainstorm 9"
   "tasks 12"
   "execute 9"
   "review 9"

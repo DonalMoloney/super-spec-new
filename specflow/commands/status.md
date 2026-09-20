@@ -12,9 +12,13 @@ Print the project's progress, each feature's phase, and the superpowers detectio
 
 1. Scan the `.specify/` directory tree.
 2. Check whether `constitution.md` exists.
-3. **Run superpowers detection**: Check for all superpowers skills at
-   `.agents/skills/` and `~/.agents/skills/`. Write the result to
-   `.specify/superpowers.yml`.
+3. **Run superpowers detection**: Check for every skill the Skill Mapping table
+   in `references/superpowers-mapping.md` names, at `.agents/skills/` and
+   `~/.agents/skills/`. Write the result to `.specify/superpowers.yml`. When
+   `~/.claude/plugins/installed_plugins.json` exists, read the superpowers
+   entry's `version` and write it as `version:` in the same file. When that
+   version sits outside the tested range the mapping states, print
+   `superpowers <version> is outside the tested range <range>`.
 4. **Check template stamps**: Read the `<!-- specflow template: NAME VERSION -->`
    stamp from each file under `.specify/extensions/specflow/templates/`. Compare
    it against `extension.version` in `.specify/extensions/specflow/extension.yml`
@@ -68,5 +72,9 @@ Check for skills at these paths:
 1. Check `.agents/skills/{skill-name}/SKILL.md` first, the project-local path.
 2. Check `~/.agents/skills/{skill-name}/SKILL.md` second, the user-global path.
 
-The command writes the result to `.specify/superpowers.yml`. Read
-`references/superpowers-mapping.md` for the detection and adaptation rules.
+The command writes the result to `.specify/superpowers.yml`. It also writes the
+superpowers `version` there when `~/.claude/plugins/installed_plugins.json`
+carries one, and prints
+`superpowers <version> is outside the tested range <range>` for a version
+outside `>=6.0.0 <7.0.0`. Read `references/superpowers-mapping.md` for the skill
+list, the tested range, and the adaptation rules.
