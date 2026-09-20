@@ -37,6 +37,7 @@ to the consuming project the pipeline would have driven.
 | `specs/001-link-audit/progress.yml` | `/speckit.specflow.execute` | Per-phase task state, the gate dates |
 | `specs/001-link-audit/review-findings.json` | `/speckit.specflow.review` | R-001 fixed, R-002 open, verdict `CONCERNS` |
 | `specs/001-link-audit/checklists/` | `/speckit.checklist`, `/speckit.specflow.review` | The requirements checklist, the review checklist with its findings join |
+| [`analyze-gate.md`](analyze-gate.md) | `/speckit.specflow.execute` | The `ANALYZE_REQUIRED` stop, then the rerun that cleared it |
 
 ## What joins to what
 
