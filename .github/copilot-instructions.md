@@ -62,11 +62,11 @@ one item, and real ordering dependencies stated explicitly rather than merged to
 
 ## BDD agent squad
 
-`.claude/agents/` holds 28 agents: a 17-agent BDD squad, the 8-agent review panel
-named in ADR-0014, and the 3 rewrite agents. The BDD squad (orchestrator + 16 phase
-agents) drives one feature task through a full BDD lifecycle (Gherkin → step defs →
-RED → task decomposition → GREEN → REFACTOR → review → docs → adversarial
-verification), entered via `bdd-orchestrator`. This is Claude-CLI-specific tooling (Copilot CLI has no
+`.claude/agents/` holds the BDD squad, the review panel named in ADR-0014, the
+rewrite agents, the payload and archive reviewers, and the implementation-routing
+agents. The BDD squad drives one feature task through a full BDD lifecycle
+(Gherkin → step defs → RED → task decomposition → GREEN → REFACTOR → review →
+docs → adversarial verification), entered via `bdd-orchestrator`. This is Claude-CLI-specific tooling (Copilot CLI has no
 equivalent subagent mechanism). When working from Copilot CLI, follow the same phase
 order manually: requirements → scenarios → step defs → red → task breakdown into
 singular crisp items → implement → green → refactor → unit tests → review → spec audit
