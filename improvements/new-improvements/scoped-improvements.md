@@ -110,8 +110,10 @@ Findings from this survey that `roadmap.md` already carries. Work them there.
   Diverges: yes. Verify: `git archive HEAD:specflow | tar -t` lists
   `gates/bash/risk-classifier.sh`; the Copilot leg of `e2e-smoke.sh` finds it
   under `.specify/extensions/specflow/gates/`.
-- **N-04** Ship the findings contract. Move `.claude/review/schema.json` to
-  `specflow/references/review-findings.schema.json`, make `review.md` and the
+- **N-04** Ship the findings contract. Shipped: the file moved to
+  `specflow/references/findings-schema.json`, not the name proposed here.
+  Move `.claude/review/schema.json` to
+  `specflow/references/findings-schema.json`, make `review.md` and the
   eight reviewer agents cite that path, and add a `validate-findings` Python
   script to `provides.scripts` with `runtimes: [python]`. A Copilot user today
   has a command that writes a JSON shape with no schema to check it against.
