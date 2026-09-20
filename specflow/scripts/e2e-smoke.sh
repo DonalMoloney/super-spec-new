@@ -41,10 +41,10 @@ RESOLVER_ERROR_LINES=3
 # associative arrays, so each row is "<command> <count>".
 EXPECTED_PROCESS_STEPS=(
   "status 7"
-  "brainstorm 7"
+  "brainstorm 8"
   "tasks 10"
   "execute 9"
-  "review 8"
+  "review 9"
 )
 
 if [ -t 1 ]; then
