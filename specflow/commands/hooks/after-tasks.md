@@ -12,6 +12,8 @@ and checks if superpowers skills can enhance the task breakdown.
    on appropriate tasks
 4. **Review gates**: If constitution requires code review, verify `[REVIEW]` markers
    are present on appropriate tasks
+5. **Progress state**: Read `progress.yml` for what an earlier run recorded, if one
+   exists. Warn when the new breakdown drops a task that file marks complete
 
 ## Output
 
