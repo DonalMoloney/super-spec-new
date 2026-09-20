@@ -106,7 +106,7 @@ matching section while it runs a command.
 
 **Command**: `/speckit.specflow.brainstorm`
 **Gate**: The target spec file must exist.
-**Output**: Spec file, updated with new edge cases, open questions, and a brainstorm log entry.
+**Output**: Spec file, updated with new edge cases, open questions, and a brainstorm log entry. `decisions.md` at the project root, updated with one entry per resolved choice.
 
 ### Superpowers Integration
 
@@ -159,6 +159,14 @@ Ask about points of confusion, accessibility, and use the design did not intend.
 3. **After each answer**:
    - A new requirement goes into the spec's Functional Requirements
    - A resolved question updates the Open Questions table
+   - A resolved question that settled a choice also appends an entry to
+     `decisions.md` at the project root: a `## ADR-NNNN: <the choice>` heading
+     numbered one above the highest ADR already in the file, then `- Date:`,
+     `- Status: accepted`, `- Context:`, `- Decision:`, and `- Consequences:`
+     lines, under 150 words. The Context line opens with the question's ID.
+     Numbering starts at ADR-0001 when the file does not exist. A question the
+     spec now answers as a plain fact gets no entry, because the spec records
+     it and a later run reads it there
    - A new edge case goes into the Edge Cases section
    - A changed acceptance scenario updates the matching user story
 
