@@ -460,6 +460,10 @@ d="$(review_dir)"; write_review_findings "$d" Critical fixed
 check "fixed review command findings clear the merge"        0 "$(merge_gate_glob "$d" 'specs/*/review-findings.json')"
 merge_gate_message() { # dir [glob...] -> prints what the gate wrote to stderr
   local d="$1"; shift
+  # SC2069 reads this as an attempt to merge both streams. The order is
+  # deliberate: stdout goes to /dev/null after stderr is duplicated to it, so
+  # only stderr reaches the caller.
+  # shellcheck disable=SC2069
   ( cd "$d" && bash "$HOOKS/merge-gate.sh" "$@" 2>&1 >/dev/null )
 }
 d="$(review_dir)"; write_review_findings "$d" Critical open
