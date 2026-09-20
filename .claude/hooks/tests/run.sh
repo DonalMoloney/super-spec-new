@@ -602,6 +602,8 @@ check "merge gate workflow gates two steps on HIGH risk" 0 \
   "$(status_of [ "${high_gated:-0}" -eq 2 ])"
 check "security review action is pinned to a commit" 0 \
   "$(printf '%s' "$gate_src" | grep -Eq 'claude-code-security-review@[0-9a-f]{40}$'; echo $?)"
+check "headless review CLI is pinned to a version" 0 \
+  "$(printf '%s' "$gate_src" | grep -Eq '@anthropic-ai/claude-code@[0-9]+\.[0-9]+\.[0-9]+$'; echo $?)"
 check "merge gate workflow runs the gate hook under .claude" 0 \
   "$(printf '%s' "$gate_src" | grep -Fq '.claude/hooks/merge-gate.sh'; echo $?)"
 check_lacks "merge gate workflow names no .specify hook path" "$gate_src" ".specify/scripts/hooks/"

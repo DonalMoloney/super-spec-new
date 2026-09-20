@@ -50,7 +50,8 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           set -euo pipefail
-          npm install -g @anthropic-ai/claude-code
+          # Pinned so an upstream release cannot change what the gate reviews.
+          npm install -g @anthropic-ai/claude-code@2.1.278
           timeout 300 claude -p "Read .claude/review/schema.json, then review the diff of $BASE_REF...HEAD against standards/code.md and against the feature spec under specs/, if one exists. Return one JSON object matching that schema, with reviewer set to headless-ci and stage set to correctness. Report at least one finding, or show criterion by criterion that the diff adds no untested behavior, no swallowed error, and no change the task did not name." \
             --output-format json \
             --allowedTools "Read,Grep,Bash(git diff:*)" \
