@@ -107,8 +107,7 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          if ! .claude/hooks/merge-gate.sh ".claude/review/*.json"; then
+          if ! .claude/hooks/merge-gate.sh '.claude/review/*.json' 'specs/*/review-findings.json'; then
             echo "To rebut a false positive: write the rebuttal under 'Risks / open questions' in the PR description, then have the reviewer-of-record apply the findings-rebutted label." >&2
             exit 1
           fi
-          .claude/hooks/merge-gate.sh 'specs/*/review-findings.json'

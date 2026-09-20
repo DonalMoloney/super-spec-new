@@ -42,7 +42,9 @@ same two from a feature branch before you push:
 ```
 
 The classifier prints `HIGH` or `STANDARD` for the diff between `main` and
-`HEAD`. `HIGH` turns on the security review and the mutation score in CI. The gate reads `.claude/review/*.json` and exits 1 when a Critical or
+`HEAD`. `HIGH` turns on the security review and the mutation score in CI. The
+gate reads `.claude/review/*.json` and `specs/*/review-findings.json`, then
+exits 1 when a Critical or
 Important finding is neither fixed nor rebutted. A branch carrying no findings
 file passes and leaves `.claude/review/.merge-approved` behind.
 

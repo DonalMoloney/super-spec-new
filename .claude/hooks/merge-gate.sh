@@ -2,9 +2,15 @@
 # Blocks a merge while a Critical or Important finding is unresolved. A finding
 # counts as resolved only when its status is "fixed" or "rebutted"; the critic
 # stage judges a rebuttal and files its own finding when the rebuttal fails.
-# Minor findings never block. Pass a glob to read findings elsewhere.
+# Minor findings never block. By default it reads the reviewer agents' documents
+# and the one /speckit.specflow.review writes per feature. Pass one or more globs
+# to read findings elsewhere instead.
 set -euo pipefail
-findings_glob="${1:-.claude/review/*.json}"
+if [ "$#" -gt 0 ]; then
+  findings_globs=("$@")
+else
+  findings_globs=(".claude/review/*.json" "specs/*/review-findings.json")
+fi
 MARKER=".claude/review/.merge-approved"
 SCHEMA_FILE="schema.json" # the findings contract shares the directory with the reports
 count_unresolved() { # severity file -> number of findings that still block
@@ -18,16 +24,18 @@ count_unresolved() { # severity file -> number of findings that still block
 rm -f "$MARKER"
 unresolved_critical=0
 unresolved_important=0
-for file in $findings_glob; do
-  [ -e "$file" ] || continue
-  if [ "$(basename "$file")" = "$SCHEMA_FILE" ]; then continue; fi
-  if ! critical_in_file="$(count_unresolved Critical "$file")"; then
-    echo "merge-gate: $file does not parse as a findings document; expected an object with a findings array matching .claude/review/schema.json. Fix the file or move it out of the review directory." >&2
-    exit 1
-  fi
-  important_in_file="$(count_unresolved Important "$file")"
-  unresolved_critical=$((unresolved_critical + critical_in_file))
-  unresolved_important=$((unresolved_important + important_in_file))
+for findings_glob in "${findings_globs[@]}"; do
+  for file in $findings_glob; do
+    [ -e "$file" ] || continue
+    if [ "$(basename "$file")" = "$SCHEMA_FILE" ]; then continue; fi
+    if ! critical_in_file="$(count_unresolved Critical "$file")"; then
+      echo "merge-gate: $file does not parse as a findings document; expected an object with a findings array matching .claude/review/schema.json. Fix the file or move it out of the review directory." >&2
+      exit 1
+    fi
+    important_in_file="$(count_unresolved Important "$file")"
+    unresolved_critical=$((unresolved_critical + critical_in_file))
+    unresolved_important=$((unresolved_important + important_in_file))
+  done
 done
 if [ "$unresolved_critical" -gt 0 ]; then
   echo "MERGE BLOCKED: Critical findings unresolved: $unresolved_critical. Expected 0. Fix or rebut each finding, then rerun." >&2
