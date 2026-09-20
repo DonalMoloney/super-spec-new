@@ -639,6 +639,61 @@ validators, the hook suite and the smoke test, in CI's order, exiting nonzero
 on the first failure. Verify: the script's steps match `ci.yml` step for step,
 and deleting a step from `ci.yml` without changing the script fails a test.
 
+## G-36 — No check runs on a release tag before users pull it (working on)
+
+Executor: `bdd-orchestrator`. Model: sonnet. Move: Add. Effort: low.
+Depends on: none. Diverges: no. Was backlog item 24.
+
+The catalog downloads the tag ZIP. The last tag is v1.0.2 of 2026-08-07, and
+nothing validates a tag before a user installs from it. Upstream issue #6 was
+exactly this failure: a 12 MiB PNG took the archive over spec-kit's per-member
+limit and broke install for everyone.
+
+- [ ] T361 Validate the archive on a `v*` tag
+
+`release.yml` on a `v*` tag runs `validate-release-archive.py <tag>` and
+attaches the `git archive` ZIP and the validator output to the GitHub release.
+Verify: the workflow is tag-triggered, and a dry run of its steps against the
+current HEAD produces both assets.
+
+- [ ] T362 Adopt a version rule for a prompt contract
+
+A changed Process step or template section is minor, a renamed marker, command
+or file is major, wording is patch. Verify: the rule is written in
+`specflow/CHANGELOG.md`'s header or beside it, and names the three cases.
+
+## G-37 — The merge gate never reads a feature's findings (working on)
+
+Executor: `bdd-orchestrator`. Model: sonnet. Move: Tighten. Effort: low.
+Depends on: none. Diverges: no. Was backlog item 29.
+
+`review.md` has written `specs/NNN-*/review-findings.json` since PR #57, and
+`merge-gate.sh`'s default glob does not include it. A review run on the Copilot
+CLI writes findings the gate never reads, so a Critical finding blocks nothing
+there.
+
+- [ ] T371 Read the feature findings file in the merge gate
+
+Verify: a hook test with a Critical finding in
+`specs/001-x/review-findings.json` prints `MERGE BLOCKED`, and `merge-gate.yml`
+passes both globs.
+
+## G-38 — Nothing validates the resumability contract (working on)
+
+Executor: `bdd-orchestrator`. Model: sonnet. Move: Add. Effort: low.
+Depends on: none. Diverges: no. Was backlog item 30.
+
+`progress.yml` is the file every command reads to resume, and nothing checks
+it. A misspelled phase resumes at the wrong step with no message.
+
+- [ ] T381 Add a progress-file validator
+
+`.claude/review/validate-progress.py`, dependency-free like
+`validate-findings.py`, checking the keys of `progress.yml`, phase names
+against the Gate markers table in `workflow-guide.md`, and that every task ID
+marked complete exists in `tasks.md`. `artifact-lint.sh` calls it on write.
+Verify: three tests, an unknown phase, an unknown task ID, and a valid file.
+
 ## G-32 — The standards linter reads no YAML string (merged: `7cafc62`)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Tighten. Effort: low.
