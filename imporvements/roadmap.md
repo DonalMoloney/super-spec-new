@@ -62,6 +62,7 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | G-28 | Upstream superspec is catalogued under our summary | low | `docs/community/extensions.md` lists three bridges, none of them specflow |
 | G-29 | Two free naming/wording moves nobody claimed | low | See the two checks under G-29 |
 | G-30 | `superpowers-bridge.md` is named for a banned metaphor | medium | 16 files cite the path |
+| G-31 | The fallback guide names a template only on the superpowers path | low | Phase 4 names `tasks-template` only inside its `writing-plans` step |
 | C-01 | 44 merged remote branches | low | `git branch -r` |
 | C-03 | The `imporvements/` directory name is a typo | low | 13 files cite it |
 | C-05 | Both e2e scripts leave a work directory behind | low | `Workdir kept at` prints unconditionally |
@@ -512,6 +513,32 @@ specflow/extension.yml` prints nothing and
 Verify: `grep -c '"claude-code"' specflow/extension.yml` and
 `grep -c '"copilot"' specflow/extension.yml` each print 1, and
 `python3 scripts/validate-extension-metadata.py` passes.
+
+## G-31 — The fallback guide names a template only on the superpowers path
+
+Executor: `general-purpose`. Model: sonnet. Move: Tighten. Effort: low.
+Depends on: none. Diverges: yes.
+
+`references/workflow-guide.md` is the built-in protocol an agent follows when
+no superpowers skill is installed, which is what constraint 2 in
+`reference.md` requires every command to have. Its Phase 4 names
+`tasks-template` only inside step 2, and that step is conditional on the
+`writing-plans` skill being detected. An agent on the no-superpowers path
+reaches the end of Phase 4 without being told to resolve a template at all, so
+the one path the document exists to serve is the one path it does not cover.
+Phases 0, 1, and 3 each name their template unconditionally, so Phase 4 is
+alone in this.
+
+Found while fixing the resolver routing in `fd121f8`; out of scope there
+because closing it means restructuring the step or adding one, not rewording.
+
+- [ ] T311 Name the tasks template outside the superpowers condition
+
+Give Phase 4 an unconditional step that resolves `tasks-template` and reads
+`TEMPLATE_CONTENT`, matching Phases 0, 1, and 3, and leave step 2's
+`writing-plans` branch to describe only what that skill adds. Verify: Phase 4
+names `tasks-template` on a line that no skill-detection condition governs,
+and `e2e-smoke.sh` passes.
 
 ## G-30 — Drop the "bridge" metaphor from `superpowers-bridge.md`'s name
 
