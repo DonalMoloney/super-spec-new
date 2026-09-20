@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "reviewer": "speckit.specflow.review",
+  "verdict": "CONCERNS",
+  "findings": [
+    {
+      "id": "R-001",
+      "severity": "Important",
+      "category": "spec-compliance",
+      "location": "specs/001-link-audit/spec.md:152",
+      "evidence": "SC-002 is declared under Success Criteria but has no row in the Traceability table, so the conformance review has no test to check it against",
+      "fix": "Add an SC-002 row citing tests/test_scanner.py::reports_missing_target, which already asserts the file, the line, the target",
+      "status": "fixed"
+    },
+    {
+      "id": "R-002",
+      "severity": "Minor",
+      "category": "maintainability",
+      "location": "src/link_audit/report.py:61",
+      "evidence": "The --format json output carries no version field, so a consumer cannot tell a shape change from a parse error",
+      "fix": "Add a schema_version field to the JSON report once a consumer outside this repository exists",
+      "status": "open"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+spec: 001-link-audit
+status: complete
+current_phase: 6
+brainstorm:
+  sessions: 1
+  last_session: 2026-09-14
+phases:
+  - phase: 1
+    name: Setup
+    status: complete
+    tasks:
+      T001: complete
+      T002: complete
+      T003: complete
+  - phase: 2
+    name: Foundational
+    status: complete
+    tasks:
+      T004: complete
+      T005: complete
+      T006: complete
+      T007: complete
+      T008: complete
+      T009: complete
+      T010: complete
+      T011: complete
+      T012: complete
+  - phase: 3
+    name: Find the broken file links (US1)
+    status: complete
+    tasks:
+      T013: complete
+      T014: complete
+      T015: complete
+      T016: complete
+      T017: complete
+      T018: complete
+      T019: complete
+      T020: complete
+  - phase: 4
+    name: Catch the stale heading anchors (US2)
+    status: complete
+    tasks:
+      T021: complete
+      T022: complete
+      T023: complete
+      T024: complete
+  - phase: 5
+    name: Keep the scan to what the team owns (US3)
+    status: complete
+    tasks:
+      T025: complete
+      T026: complete
+      T027: complete
+      T028: complete
+  - phase: 6
+    name: Polish & Cross-Cutting
+    status: complete
+    tasks:
+      T029: complete
+      T030: complete
+      T031: complete
+      T032: complete
+      T033: complete
+      T034: complete
+      T035: complete
+gates:
+  clarified: 2026-09-14
+  analyzed: 2026-09-15
+  analyze_attempts: 2
