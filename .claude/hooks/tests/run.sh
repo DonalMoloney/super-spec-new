@@ -559,6 +559,9 @@ SAMPLE="$HOOKS/../../specflow/examples/mutation-gate-sample"
 mutation_gate() { # project-dir -> exit code
   bash "$HOOKS/mutation-gate.sh" "$1" >/dev/null 2>&1; echo $?
 }
+mutation_gate_message() { # project-dir -> stdout and stderr
+  bash "$HOOKS/mutation-gate.sh" "$1" 2>&1
+}
 # CI installs mutmut from requirements-dev.txt; a plain checkout has no mutmut,
 # and the cases that measure a score report skipped rather than failed there.
 MUTMUT_ABSENT="mutmut is not on PATH; see requirements-dev.txt"
@@ -592,8 +595,13 @@ check "threshold above 100 fails"            2 "$(MUTATION_THRESHOLD=101 mutatio
 check "threshold beyond the integer range fails" 2 "$(MUTATION_THRESHOLD=9223372036854775808 mutation_gate "$SAMPLE")"
 shim="$(mktemp -d)"
 ln -s "$(command -v bash)" "$shim/bash"
-ln -s "$(command -v mutmut)" "$shim/mutmut"
+# The gate checks mutmut before jq and exits before running either, so a
+# stand-in carries the case to the jq check on a machine with no mutmut
+# installed. The stub exits nonzero, so a reordered gate fails the case.
+printf '#!/bin/sh\necho "stand-in mutmut ran; the gate reached mutmut before the jq check" >&2\nexit 1\n' > "$shim/mutmut"
+chmod +x "$shim/mutmut"
 check "jq missing from PATH fails"           2 "$(PATH="$shim" mutation_gate "$SAMPLE")"
+check_has "the jq failure names jq" "$(PATH="$shim" mutation_gate_message "$SAMPLE")" "jq is not on PATH"
 out="$(bash "$HOOKS/mutation-gate.sh" "$SAMPLE" 2>&1)"; st=$?
 check_scored "the sample passes the gate"           0 "$st"
 check_has_scored "the sample reports a full score"  "$out" "mutation score 100%; expected >= 80%"
