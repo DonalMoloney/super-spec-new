@@ -27,7 +27,8 @@
 #   E2E_DRY_RUN=1         print the prompts, skip the claude call (free)
 #   E2E_MAX_BUDGET_USD    per-stage budget cap, default 0.50
 #   E2E_MAX_TURNS         per-stage turn cap, default 30
-#   E2E_KEEP_WORKDIR=0    delete the tmp project at exit (default: keep)
+#   KEEP_WORKDIR=1        keep the tmp project at exit (default: keep it only
+#                         when the run fails, or when E2E_RESUME_WORKDIR named it)
 #
 # Usage
 #   ANTHROPIC_API_KEY=sk-ant-... bash scripts/e2e-agent-claude.sh
@@ -42,7 +43,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DRY_RUN="${E2E_DRY_RUN:-0}"
 MAX_BUDGET="${E2E_MAX_BUDGET_USD:-0.50}"
 MAX_TURNS="${E2E_MAX_TURNS:-30}"
-KEEP_WORKDIR="${E2E_KEEP_WORKDIR:-1}"
+KEEP_WORKDIR="${KEEP_WORKDIR:-0}"
 # Resume support: skip prep + earlier stages by reusing an existing workdir.
 #   E2E_RESUME_WORKDIR=/abs/path  reuse this workdir (skip prep stage)
 #   E2E_RESUME_FROM=N             skip stages 1..N-1 (default: 1, run all)
@@ -83,13 +84,23 @@ else
 fi
 LOGS="$WORK/.logs"; mkdir -p "$LOGS"
 
+# Exit 0 when the run may discard its workdir: it exited clean, nothing asked
+# to keep it, and it created the directory rather than being handed one.
+# Args: <exit status>.
+workdir_is_disposable() {
+  [ "$1" -eq 0 ] && [ "$KEEP_WORKDIR" != "1" ] && [ -z "$RESUME_WORKDIR" ]
+}
+
 # The EXIT trap runs after every exit path, so the result line prints here to
-# land last.
+# land last. The exit status is the only signal that separates a clean finish
+# from an early exit on a hard error, which leaves the workdir for inspection.
 cleanup() {
-  if [ "$KEEP_WORKDIR" = "1" ]; then
-    printf '\n%sworkdir kept:%s %s\n' "$C_DIM" "$C_RST" "$WORK"
-  else
+  local status=$?
+  if workdir_is_disposable "$status"; then
     rm -rf "$WORK"
+    printf '\n%sworkdir removed:%s %s\n' "$C_DIM" "$C_RST" "$WORK"
+  else
+    printf '\n%sworkdir kept:%s %s\n' "$C_DIM" "$C_RST" "$WORK"
   fi
   printf '\n%d assertions, %d failed\n' "$PASS" "$FAIL"
 }
