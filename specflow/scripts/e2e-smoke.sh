@@ -6,16 +6,19 @@
 # and specflow jointly promise, without invoking an LLM.
 #
 # Usage: bash scripts/e2e-smoke.sh
+#        KEEP_WORKDIR=1 bash scripts/e2e-smoke.sh
 # Exit code: 0 when every assertion passes, 1 otherwise.
 #
-# The workdir is left on disk after the run for inspection; delete it
-# manually when done (`rm -rf <path>`).
+# A passing run deletes the workdirs it created. Any other outcome leaves them
+# on disk and prints their paths, because the path is the only way to inspect
+# the run. KEEP_WORKDIR=1 keeps them on a passing run too.
 
 # -e is omitted on purpose: a failing install or feature-creation command is
 # recorded as a failed assertion below rather than aborting the run.
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+KEEP_WORKDIR="${KEEP_WORKDIR:-0}"
 WORK="$(mktemp -d -t specflow-e2e.XXXXXX)"
 INIT_LOG="$WORK/.init.log"
 ADD_LOG="$WORK/.add.log"
@@ -85,6 +88,15 @@ pass() { printf '  %sok%s   %s\n' "$C_GREEN" "$C_RST" "$1"; PASS=$((PASS+1)); }
 fail() { printf '  %sFAIL%s %s\n' "$C_RED"   "$C_RST" "$1"; FAIL=$((FAIL+1)); FAILS+=("$1"); }
 # Print a numbered step header.
 step() { printf '\n%s[%s]%s %s\n' "$C_BOLD" "$1" "$C_RST" "$2"; }
+
+# Print the path of every workdir the run leaves on disk. The copilot workdir
+# is created midway, so an early exit names only the first one.
+report_kept_workdirs() {
+  printf '\nWorkdir kept at: %s\n' "$WORK"
+  if [ -n "${WORK_COPILOT:-}" ]; then
+    printf 'Copilot workdir kept at: %s\n' "$WORK_COPILOT"
+  fi
+}
 
 # Assert a file exists at path.
 assert_file()    { if [ -f "$2" ]; then pass "$1";   else fail "$1 (missing: $2)"; fi; }
@@ -267,6 +279,7 @@ if ! run_specify init \
   fail "specify init exited non-zero (see $INIT_LOG)"
   echo "----- last 30 lines of init log -----"
   tail -n "$LOG_TAIL_LINES" "$INIT_LOG"
+  report_kept_workdirs
   exit 1
 fi
 
@@ -333,6 +346,7 @@ if ! run_specify init \
         </dev/null >"$WORK_COPILOT/.init.log" 2>&1; then
   fail "specify init for copilot exited non-zero (see $WORK_COPILOT/.init.log)"
   tail -n "$LOG_TAIL_LINES" "$WORK_COPILOT/.init.log"
+  report_kept_workdirs
   exit 1
 fi
 run_specify extension add "$REPO_ROOT" --dev \
@@ -483,9 +497,16 @@ if [ "$FAIL" -gt 0 ]; then
   printf ', %s%d failed%s\n' "$C_RED" "$FAIL" "$C_RST"
   printf 'Failures:\n'
   for f in "${FAILS[@]}"; do printf '  - %s\n' "$f"; done
-  printf '\nWorkdir kept at: %s\n' "$WORK"
+  report_kept_workdirs
   exit 1
 fi
 printf '\n'
-printf 'Workdir kept at: %s\n' "$WORK"
+if [ "$KEEP_WORKDIR" = "1" ]; then
+  report_kept_workdirs
+  exit 0
+fi
+# Every earlier exit path is a failure that left its workdir on disk, so
+# reaching here with no failed assertion is the one outcome that discards them.
+rm -rf "$WORK" "$WORK_COPILOT"
+printf 'Workdirs removed. Set KEEP_WORKDIR=1 to keep them.\n'
 exit 0
