@@ -1,0 +1,51 @@
+name: Upstream drift
+
+# Asks once a week whether upstream superspec has moved past the commit
+# specflow/ was vendored from, and files one issue when it has. Divergence
+# percentages are measured against that commit, so a silent upstream move makes
+# every number in imporvements/reference.md stale.
+on:
+  schedule:
+    # Monday 06:00 UTC, before the working week reads the roadmap.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: upstream-drift
+  cancel-in-progress: false
+
+jobs:
+  check-upstream:
+    name: Check upstream drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compare the vendored commit to upstream HEAD
+        id: drift
+        run: |
+          set -uo pipefail
+          bash .claude/divergence/check-upstream.sh > drift-report.txt 2>&1
+          status=$?
+          cat drift-report.txt
+          case "$status" in
+            0) echo "moved=false" >> "$GITHUB_OUTPUT" ;;
+            1) echo "moved=true"  >> "$GITHUB_OUTPUT" ;;
+            # Exit 2 is an unreadable remote, not drift. Failing the job keeps
+            # a network outage from filing an issue that names no commit.
+            *) echo "check-upstream.sh exited $status; the remote was not read." >&2
+               exit "$status" ;;
+          esac
+
+      - name: File one drift issue
+        if: steps.drift.outputs.moved == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash .claude/divergence/open-drift-issue.sh drift-report.txt

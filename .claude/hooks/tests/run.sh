@@ -654,6 +654,74 @@ check "a failing ls-remote exits 2" 2 "$(check_upstream_exit "" 1)"
 check_has "a failing ls-remote names the remote" "$(check_upstream_out "" 1)" "superspec"
 check "an empty ls-remote answer exits 2" 2 "$(check_upstream_exit "" 0)"
 
+# --- open-drift-issue.sh (opens one drift issue, never a second) ---
+OPEN_DRIFT_ISSUE="$HOOKS/../divergence/open-drift-issue.sh"
+# A stub gh records its arguments and answers `issue list` with a JSON array
+# read from a variable, so no case reaches GitHub.
+cat > "$STUB_BIN/gh" <<'STUB'
+#!/usr/bin/env bash
+printf '%s\n' "$*" >> "$STUB_GH_LOG"
+if [ "${1:-}" = "issue" ] && [ "${2:-}" = "list" ]; then
+  printf '%s\n' "${STUB_GH_ISSUES:-[]}"
+  exit 0
+fi
+exit 0
+STUB
+chmod +x "$STUB_BIN/gh"
+open_drift_issue() { # open-issues-json -> exit code, logging gh calls to STUB_GH_LOG
+  : > "$STUB_GH_LOG"
+  printf 'vendored c20ac6c\nupstream %s\n' "$MOVED_HEAD" > "$STUB_BIN/report.txt"
+  PATH="$STUB_BIN:$PATH" STUB_GH_ISSUES="$1" STUB_GH_LOG="$STUB_GH_LOG" \
+    bash "$OPEN_DRIFT_ISSUE" "$STUB_BIN/report.txt" >/dev/null 2>&1
+  echo $?
+}
+STUB_GH_LOG="$(mktemp)"
+DRIFT_TITLE="Upstream superspec has moved past the vendored commit"
+check "no open issue means the script exits 0" 0 "$(open_drift_issue '[]')"
+check "no open issue means one issue is created" 0 \
+  "$(status_of grep -qF 'issue create' "$STUB_GH_LOG")"
+check "the created issue carries the fixed title" 0 \
+  "$(status_of grep -qF "$DRIFT_TITLE" "$STUB_GH_LOG")"
+check "an unrelated open issue still creates one" 0 \
+  "$(open_drift_issue '[{"title":"Something else"}]')"
+check "an unrelated open issue does not suppress creation" 0 \
+  "$(status_of grep -qF 'issue create' "$STUB_GH_LOG")"
+check "a matching open issue exits 0" 0 \
+  "$(open_drift_issue "[{\"title\":\"$DRIFT_TITLE\"}]")"
+check "a matching open issue creates no second issue" 1 \
+  "$(status_of grep -qF 'issue create' "$STUB_GH_LOG")"
+mixed_exit="$(open_drift_issue "[{\"title\":\"Other\"},{\"title\":\"$DRIFT_TITLE\"}]")"
+check "a matching open issue among others exits 0" 0 "$mixed_exit"
+check "a matching open issue among others creates no second issue" 1 \
+  "$(status_of grep -qF 'issue create' "$STUB_GH_LOG")"
+check "a missing report argument exits 2" 2 \
+  "$(PATH="$STUB_BIN:$PATH" STUB_GH_LOG="$STUB_GH_LOG" bash "$OPEN_DRIFT_ISSUE" >/dev/null 2>&1; echo $?)"
+check "a missing report file exits 2" 2 \
+  "$(PATH="$STUB_BIN:$PATH" STUB_GH_LOG="$STUB_GH_LOG" bash "$OPEN_DRIFT_ISSUE" /nonexistent/report.txt >/dev/null 2>&1; echo $?)"
+
+# --- .github/workflows/upstream-drift.yml (the weekly drift check) ---
+cd "$HOOKS/../.." || exit 1
+DRIFT_WORKFLOW=".github/workflows/upstream-drift.yml"
+drift_src="$(cat "$DRIFT_WORKFLOW" 2>/dev/null || true)"
+python3 -c 'import yaml;yaml.safe_load(open("'"$DRIFT_WORKFLOW"'"))' >/dev/null 2>&1
+check "upstream drift workflow parses as YAML" 0 $?
+python3 - "$DRIFT_WORKFLOW" <<'PY' >/dev/null 2>&1
+import sys
+import yaml
+document = yaml.safe_load(open(sys.argv[1]))
+# YAML 1.1 reads the bare key `on` as the boolean True.
+triggers = document[True] if True in document else document["on"]
+sys.exit(0 if "schedule" in triggers else 1)
+PY
+check "upstream drift workflow runs on a schedule" 0 $?
+check "upstream drift workflow runs the check script" 0 \
+  "$(printf '%s' "$drift_src" | grep -Fq '.claude/divergence/check-upstream.sh'; echo $?)"
+check "upstream drift workflow opens the issue through the dedupe script" 0 \
+  "$(printf '%s' "$drift_src" | grep -Fq '.claude/divergence/open-drift-issue.sh'; echo $?)"
+check "upstream drift workflow may write issues" 0 \
+  "$(printf '%s' "$drift_src" | grep -Fq 'issues: write'; echo $?)"
+cd / || exit 1
+
 # --- .claude/review/schema.json (findings contract read by the reviewer agents) ---
 cd "$HOOKS/../.." || exit 1
 python3 -c 'import json;json.load(open(".claude/review/schema.json"))' >/dev/null 2>&1
