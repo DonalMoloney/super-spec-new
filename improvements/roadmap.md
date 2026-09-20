@@ -54,7 +54,6 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
 | G-24 | Six command lines read a template path instead of resolving it | medium | See the nine checks under G-24 |
 | G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 done, T262 and T263 behind three prerequisites |
-| G-33 | The word-choice table is enforced by reading, not a check | medium | `lint-standards.py` checks em-dashes and the banned table only |
 
 ## D-01 — `after-tasks.md` reads the progress file (merged: `8fb7813`)
 
@@ -654,17 +653,23 @@ handling, so the YAML path reports through its own function rather than
 reusing it. Verify: a banned word planted in `extension.yml`'s `description`
 fails the linter, the same word in its `id` does not, and the suite passes.
 
-## G-33 — The word-choice table is enforced by reading, not by a check
+## G-33 — The word-choice table is enforced by reading, not by a check (merged: `f4d9c6c`)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Tighten. Effort: medium.
 Depends on: G-32. Diverges: no.
 
-`lint-standards.py` checks two rules: em-dashes, and the banned-words table it
+`lint-standards.py` checked two rules: em-dashes, and the banned-words table it
 parses out of `standards/documentation.md` at run time. The word-choice table,
-the sentence-structure rules, and the per-document rules are checked nowhere.
-"Verify task coverage" sat in `extension.yml` until G-29 read it; "verify that"
-is a word-choice row, not a banned-table row, so no guard would have caught it
-even once G-32 lands.
+the sentence-structure rules, and the per-document rules were checked nowhere.
+
+The motivating example does not survive contact with the fix, and the record
+should say so. "Verify task coverage" sat in `extension.yml` until G-29 read
+it, but the word-choice row bans the phrase "verify that", not bare "verify",
+so the check G-33 built still misses that string. Catching it needs a bare
+"verify" row in the standard, which would then fire on the `| Task | Verify |`
+column G-21 added to `tasks-template.md` and on every `Verify:` line this file
+uses. The row was not added. The gap G-33 closes is real; the example that
+motivated it is not the one it catches.
 
 Harder than G-32, which is why it is separate. The banned table is a category
 and a list; the word-choice table is two columns, so a check matches the "Not"
@@ -673,13 +678,13 @@ column and reports the "Write" suggestion. Its exclusions are contextual
 `update (unless a version bump)`), and `banned_entries` already drops
 qualifier-carrying rows rather than guessing at them.
 
-- [ ] T331 Decide which word-choice rows a check can hold
+- [x] T331 Decide which word-choice rows a check can hold
 
 A row whose exclusion needs the sentence's meaning is not checkable. Sort the
 table into rows a matcher can judge and rows it cannot, and record the split.
 Verify: the split is written down with a reason per excluded row.
 
-- [ ] T332 Check the rows that survive T331
+- [x] T332 Check the rows that survive T331
 
 Verify: a "Not" column word in a shipped document fails the linter and names
 its "Write" replacement, an excluded row does not fire, and the suite passes.
