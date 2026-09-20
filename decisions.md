@@ -216,3 +216,20 @@ deleting them; prune anything older than a quarter that no longer guides work.
   description separates specflow from the other three instead.
 - Consequences: the catalog submission uses `specflow` and does not reopen the
   question. A later rename needs a major version bump and a migration note.
+
+## ADR-0021: The five templates stay extension templates, not a preset
+
+- Date: 2026-09-20
+- Status: accepted
+- Context: G-25 asks whether the templates move from priority 3, where an
+  extension template always replaces core, to priority 2, where a preset may
+  `append` to it. `resolve_template_content` in spec-kit's
+  `scripts/python/common.py` composes both layers.
+- Decision: they stay. Append only adds at the end, and all five templates
+  change core lines it cannot reach: 13 in the constitution, 150 in tasks.
+  Core's file would ship verbatim under the addendum, carrying two
+  `[NEEDS CLARIFICATION]` markers, five emoji, and a second execution
+  strategy. A preset also carries no hooks and installs from its own catalog,
+  so the extension stays either way.
+- Consequences: a core template improvement reaches this fork only when
+  someone ports it. Backlog item 25 reports that drift.
