@@ -43,7 +43,8 @@ MAX_ZIP_TOTAL_BYTES = 50 * MIB
 # A check fails above half of a limit, before the archive reaches the limit itself.
 FAIL_RATIO = 0.5
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+# The extension directory, which is the archive root, not the repository root.
+EXTENSION_ROOT = Path(__file__).resolve().parent.parent
 
 # The installed extension reads each of these at runtime; the command and
 # template files declared in extension.yml are checked from the manifest.
@@ -116,7 +117,7 @@ def build_archive(ref: str, destination: Path) -> None:
     """
     subprocess.run(
         ["git", "archive", "--format=zip", "--prefix=specflow/", "-o", str(destination), ref],
-        cwd=REPO_ROOT,
+        cwd=EXTENSION_ROOT,
         check=True,
     )
 
