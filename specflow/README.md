@@ -216,14 +216,30 @@ To list the extension in the
    {
      "id": "specflow",
      "name": "Specflow",
-     "version": "1.0.2",
+     "version": "X.Y.Z",
      "description": "Adds brainstorming, task decomposition, TDD execution, and spec review to spec-kit, following obra/superpowers skills when they are installed. The execute command refuses to run until /speckit.analyze reports zero critical inconsistencies. The same command files run on Claude Code and on the GitHub Copilot CLI.",
      "author": "Specflow Contributors",
+     "download_url": "https://github.com/DonalMoloney/super-spec-new/releases/download/vX.Y.Z/specflow-vX.Y.Z.zip",
      "repository": "https://github.com/DonalMoloney/super-spec-new",
+     "homepage": "https://github.com/DonalMoloney/super-spec-new#readme",
+     "license": "MIT",
+     "requires": {
+       "speckit_version": ">=0.16.2"
+     },
      "verified": false,
      "tags": ["superpowers", "brainstorming", "tdd", "code-review", "subagent", "workflow", "claude-code", "copilot"]
    }
    ```
+
+   Put the released version in place of `X.Y.Z` in all three spots. Every
+   other value comes from `extension.yml`, so read it there rather than from
+   this page.
+
+   The URL names the release asset `.github/workflows/release.yml` uploads. It
+   is not GitHub's tag ZIP at `archive/refs/tags/vX.Y.Z.zip`: that archive holds
+   the whole repository, which puts `extension.yml` two levels down under
+   `super-spec-new-vX.Y.Z/specflow/`, and the install stops with
+   `No extension.yml found in archive`.
 
 3. Add a row to the Community Extensions table in the spec-kit README.
 4. Open a pull request with the extension submission template.
