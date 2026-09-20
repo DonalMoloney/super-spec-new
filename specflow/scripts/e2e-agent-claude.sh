@@ -14,7 +14,8 @@
 # Pipeline
 #   Stage 1  /speckit.constitution, writes .specify/memory/constitution.md
 #   Stage 2  /speckit.specify, writes specs/001-.../spec.md
-#   Stage 3  /speckit.specflow.brainstorm  (mutates spec.md, adds Edge Cases)
+#   Stage 3  /speckit.specflow.brainstorm  (mutates spec.md, adds Edge Cases,
+#                                     records a resolved question in decisions.md)
 #   Stage 4  /speckit.plan, writes specs/001-.../plan.md
 #   Stage 5  /speckit.tasks, writes specs/001-.../tasks.md
 #                                     (after_tasks hook may invoke .specflow.tasks)
@@ -108,6 +109,29 @@ assert_grep() {
   local desc="$1" pattern="$2" file="$3"
   if [ -f "$file" ] && grep -qE -- "$pattern" "$file"; then pass "$desc"
   else miss "$desc (pattern '$pattern' missing from ${file#$WORK/})"; return 1; fi
+}
+
+# brainstorm.md step 7 appends an ADR-lite entry for each Open Questions row the
+# run marks Resolved, so every resolved id must appear in decisions.md. A run
+# that resolved nothing has nothing to record.
+assert_resolved_questions_recorded() {
+  local spec="$1" decisions="$2" ids id rc=0
+  ids="$(grep -E '^\|[[:space:]]*OQ-[0-9]+[[:space:]]*\|.*\|[[:space:]]*Resolved[[:space:]]*\|' "$spec" 2>/dev/null \
+         | grep -oE 'OQ-[0-9]+')"
+  if [ -z "$ids" ]; then
+    note "no Open Questions row marked Resolved; nothing to record in decisions.md"
+    return 0
+  fi
+  assert_grep "  decisions.md carries an ADR-NNNN heading" '^#{2}[[:space:]]+ADR-[0-9]{4}:' "$decisions" || rc=1
+  for id in $ids; do
+    if [ -f "$decisions" ] && grep -qF -- "$id" "$decisions"; then
+      pass "  $id is Resolved in spec.md and recorded in decisions.md"
+    else
+      miss "  $id is Resolved in spec.md but absent from ${decisions#$WORK/}"
+      rc=1
+    fi
+  done
+  return "$rc"
 }
 
 # Stops the run once a stage has set FAILED_STAGE.
@@ -229,6 +253,7 @@ if [ "$DRY_RUN" = "1" ]; then
   cp -R "$SNAPSHOT/specs" "$WORK/"
   cp -R "$SNAPSHOT/web" "$WORK/"
   cp "$SNAPSHOT/.specify/memory/constitution.md" "$WORK/.specify/memory/constitution.md"
+  cp "$SNAPSHOT/decisions.md" "$WORK/decisions.md"
   pass "snapshot copied into ${WORK##*/}"
 fi
 
@@ -308,6 +333,10 @@ and add (or expand) at minimum:
   - an "## Edge Cases" section
   - an "## Open Questions" or "## Assumptions" section
 
+Per step 7 of the command, an Open Questions row you mark Resolved because a
+choice was settled also gets an ADR-lite entry appended to decisions.md at the
+project root.
+
 Run /speckit.specflow.brainstorm $SPEC_REL and stop when the spec file has
 been updated.
 EOF
@@ -325,6 +354,7 @@ if [ -z "$FAILED_STAGE" ]; then
   fi
   assert_grep "  ## Edge Cases section added" '^#{2,4}[[:space:]]+Edge Cases'           "$SPEC_DIR/spec.md" || FAILED_STAGE=3
   assert_grep "  ## Open Questions or Assumptions added" '^#{2,4}[[:space:]]+(Open Questions|Assumptions)' "$SPEC_DIR/spec.md" || FAILED_STAGE=3
+  assert_resolved_questions_recorded "$SPEC_DIR/spec.md" "$WORK/decisions.md" || FAILED_STAGE=3
 fi
 stop_if_stage_failed
 
