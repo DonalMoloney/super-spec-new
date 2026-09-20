@@ -5,6 +5,16 @@ All notable changes to the specflow extension will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+The extension ships prompts, not code. Pick the version part from the change:
+
+| Change | Version part |
+|--------|--------------|
+| A renamed marker, command, hook or file | Major |
+| A changed Process step or template section | Minor |
+| Wording, with every step and name unchanged | Patch |
+
+A release that carries more than one of these takes the highest part.
+
 ## [Unreleased]
 
 ### Changed
