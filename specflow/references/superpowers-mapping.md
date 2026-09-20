@@ -1,18 +1,18 @@
 # Superpowers Bridge Reference
 
-This document describes how specflow detects, invokes, and adapts obra/superpowers
-skills. The SKILL.md references this document when a command needs superpowers
-integration details.
+Specflow finds an obra/superpowers skill, runs the skill's own process, and
+writes what it produces into spec-kit's files. `SKILL.md` sends a reader here
+for the detection rules and the adaptation rules.
 
 ## Detection Logic
 
-Specflow checks for superpowers skills at these paths, in order of precedence:
+Specflow looks for a superpowers skill at two paths, highest precedence first:
 
 1. **Project-local**: `$PROJECT_DIR/.agents/skills/{skill-name}/SKILL.md`
 2. **User-global**: `~/.agents/skills/{skill-name}/SKILL.md`
 
-A skill is considered **available** if its `SKILL.md` file exists at either path.
-Project-local skills take precedence over user-global.
+A skill counts as **available** when its `SKILL.md` exists at either path. The
+project-local copy wins over the user-global one.
 
 Tested range: `>=6.0.0 <7.0.0`. Superpowers 6.0 rewrote
 `subagent-driven-development` and 6.2 moved its workspace, so a 5.x install runs
@@ -22,14 +22,14 @@ version sits outside that range.
 
 ### Detection Steps
 
-When a specflow command needs a superpowers skill:
+A specflow command that needs a superpowers skill runs these steps:
 
-1. Determine the skill name from the mapping table below
-2. Check project-local path first (use Glob or Read tool)
-3. If not found, check user-global path
-4. If found: log "Found {skill-name} at {path}" and proceed with enhanced mode
+1. Read the skill name out of the mapping table below
+2. Look at the project-local path first, with Glob or Read
+3. If nothing is there, look at the user-global path
+4. If found: log "Found {skill-name} at {path}" and switch to enhanced mode
 5. If not found: log "Superpowers {skill-name} not detected, using built-in fallback"
-   and proceed with fallback mode
+   and switch to fallback mode
 
 ## Skill Mapping
 
@@ -53,7 +53,7 @@ no subagents, so it runs `executing-plans` instead.
 
 ## Invocation Pattern
 
-When a superpowers skill is detected, the agent follows this pattern:
+Once the agent finds a skill, it runs these four steps.
 
 ### Step 1: Read the Skill
 
@@ -61,54 +61,54 @@ When a superpowers skill is detected, the agent follows this pattern:
 Read ~/.agents/skills/{skill-name}/SKILL.md
 ```
 
-Parse the skill's instructions, process steps, and output expectations.
+The file states the skill's process steps and what the skill produces.
 
 ### Step 2: Adapt Context
 
-Before following the skill's process, establish context adaptation rules:
+Set three rules before the skill's process starts:
 
-- **Input context**: Pass relevant spec-kit artifacts as context
+- **Input context**: Hand the skill the spec-kit files it needs
   - Constitution: `.specify/memory/constitution.md`
   - Spec: `specs/NNN/spec.md`
   - Plan: `specs/NNN/plan.md` (if exists)
   - Tasks: `specs/NNN/tasks.md` (if exists)
 
-- **Output location**: All outputs go to the `.specify/` structure
-  - Superpowers may default to `docs/superpowers/`; redirect to `.specify/`
-  - Brainstorming insights → update spec.md (Edge Cases, Open Questions, Brainstorm Log)
-  - Writing-plans output → merge into `specs/NNN/tasks.md`
-  - Code review findings → report to user, optionally write to checklist file
+- **Output location**: Every file the skill writes lands under `.specify/`
+  - Superpowers defaults to `docs/superpowers/`; send it to `.specify/` instead
+  - Brainstorming insights → spec.md, under Edge Cases, Open Questions, Brainstorm Log
+  - Writing-plans output → merged into `specs/NNN/tasks.md`
+  - Code review findings → reported to the user, optionally written to a checklist file
 
-- **Naming conventions**: Use spec-kit conventions
+- **Naming conventions**: Keep spec-kit's names
   - Feature numbering: NNN (001, 002, ...)
   - File naming: spec.md, plan.md, tasks.md (not design-doc.md, blueprint.md)
 
 ### Step 3: Follow the Skill's Process
 
-Execute the superpowers skill's steps as documented in its SKILL.md, but with
-the adapted context. The skill's methodology is the authority; only the
-input/output locations are adapted.
+Run the skill's steps as its `SKILL.md` writes them, against the adapted context.
+The skill owns the process. Specflow owns only where the files come from and
+where they go.
 
 ### Step 4: Integrate Results
 
-After the superpowers skill's process completes:
-- Verify outputs are in the correct `.specify/` locations
-- Update any cross-references (e.g., tasks.md referring to spec.md)
-- Log what was done in the relevant tracking section (e.g., Brainstorm Log)
+Once the skill's process ends:
+- Check every file it wrote sits under `.specify/`
+- Repoint a cross-reference the move broke, such as tasks.md naming spec.md
+- Record what ran in the tracking section that covers it, such as the Brainstorm Log
 
 ## Skill-Specific Adaptation Rules
 
 ### brainstorming → `/speckit.specflow.brainstorm`
 
 **Process adaptation**:
-- Follow the brainstorming skill's questioning protocol (one question at a time,
-  Socratic method, challenge assumptions)
-- Apply questions to the target spec document
-- Record insights in the spec's "Open Questions" section and "Brainstorm Log"
-- Read `decisions.md` at the project root before questioning, if it exists, and do
-  not re-ask a decision already recorded there
-- The skill may produce a "design document". Fold its insights back into the
-  existing spec.md rather than creating a separate file
+- Follow the brainstorming skill's questioning protocol: one question at a time,
+  Socratic method, assumptions challenged
+- Ask every question against the spec document under review
+- Write each insight into the spec's "Open Questions" section and "Brainstorm Log"
+- Read `decisions.md` at the project root first, when it exists, and skip a
+  decision already recorded there
+- Fold a "design document" the skill produces back into the existing spec.md
+  instead of keeping it as a separate file
 
 **Output mapping**:
 | Superpowers Output | Specflow Destination |
@@ -120,10 +120,10 @@ After the superpowers skill's process completes:
 ### writing-plans → `/speckit.specflow.tasks`
 
 **Process adaptation**:
-- Follow the writing-plans skill's task decomposition methodology
-- Structure the output using specflow's `tasks-template.md` format
-- Apply execution markers (`[TDD]`, `[REVIEW]`, `[SUBAGENT]`, `[P]`) based on
-  the plan's execution strategy section
+- Break the work into tasks the way the writing-plans skill does
+- Shape the result to specflow's `tasks-template.md`
+- Read the plan's execution strategy section, then mark each task `[TDD]`,
+  `[REVIEW]`, `[SUBAGENT]`, or `[P]`
 
 **Output mapping**:
 | Superpowers Output | Specflow Destination |
@@ -135,8 +135,8 @@ After the superpowers skill's process completes:
 ### executing-plans → `/speckit.specflow.execute`
 
 **Process adaptation**:
-- Follow the executing-plans skill's batch processing protocol
-- Respect checkpoint gates defined in tasks.md
+- Follow the executing-plans skill's batch protocol
+- Stop at every checkpoint gate `tasks.md` names
 - Specflow's checkpoint wins at a phase boundary: stop and wait for
   confirmation. Inside a phase the skill's no-pause rule holds. Reason: a phase
   boundary is where `progress.yml` is written and where a user can still
@@ -147,18 +147,18 @@ in its one session. On Claude Code the `subagent-driven-development` dispatch
 protocol covers that marker.
 
 **Combined with**:
-- `test-driven-development`: For tasks marked `[TDD]`, follow this skill's
-  RED-GREEN-REFACTOR discipline
+- `test-driven-development`: follow this skill's RED-GREEN-REFACTOR discipline
+  for a task marked `[TDD]`, on either surface
 
 ### requesting-code-review → `/speckit.specflow.review`
 
 **Process adaptation**:
-- Follow the requesting-code-review skill's pre-evaluation checklist
-- Add specflow-specific review dimensions:
-  - Spec compliance (acceptance scenarios from spec.md)
-  - Constitution compliance (principles from constitution.md)
-  - Brainstorm coverage (edge cases from brainstorming sessions)
-- Report findings with confidence scores (0-100, threshold >= 80)
+- Work through the requesting-code-review skill's pre-evaluation checklist
+- Add three specflow dimensions to it:
+  - Spec compliance, against the acceptance scenarios in spec.md
+  - Constitution compliance, against the principles in constitution.md
+  - Brainstorm coverage, against the edge cases the brainstorm raised
+- Score each finding from 0 to 100 for confidence and report those at 80 or above
 - Append each Critical or Important finding that reports a spec gap to the spec's
   `## Open Questions` table, with the finding ID opening the Question column
 
@@ -198,56 +198,56 @@ check the extension itself and have no counterpart in a feature review.
 
 ## Graceful Degradation
 
-Every superpowers integration has a built-in fallback. The skill NEVER hard-fails
-when superpowers are not installed.
+Every superpowers integration carries a built-in fallback. A missing superpowers
+install never stops a command.
 
 ### Fallback Behavior Summary
 
 | Superpowers Skill | Fallback | Where Defined |
 |-------------------|----------|---------------|
-| `brainstorming` | 5-category questioning protocol (boundary, error, scale, security, UX) | [workflow-guide.md](workflow-guide.md) Phase 2 |
-| `writing-plans` | Direct template-based decomposition from plan | [workflow-guide.md](workflow-guide.md) Phase 4 |
-| `executing-plans` | Sequential task walk with manual confirmation at checkpoints | [workflow-guide.md](workflow-guide.md) Phase 5 |
-| `subagent-driven-development` | Sequential in-session implementation (no parallel dispatch) | [workflow-guide.md](workflow-guide.md) Phase 5 |
+| `brainstorming` | Questions across 5 categories: boundary, error, scale, security, UX | [workflow-guide.md](workflow-guide.md) Phase 2 |
+| `writing-plans` | Task breakdown straight from the plan, against the template | [workflow-guide.md](workflow-guide.md) Phase 4 |
+| `executing-plans` | Tasks walked in order, with a manual confirmation at each checkpoint | [workflow-guide.md](workflow-guide.md) Phase 5 |
+| `subagent-driven-development` | Implementation in the one session, in order, with no parallel dispatch | [workflow-guide.md](workflow-guide.md) Phase 5 |
 | `test-driven-development` | Inline TDD: write test → verify fail → implement → verify pass | [workflow-guide.md](workflow-guide.md) Phase 5 |
-| `requesting-code-review` | Built-in review checklist (spec compliance, constitution, code quality) | [workflow-guide.md](workflow-guide.md) Phase 6 |
+| `requesting-code-review` | Built-in checklist: spec compliance, constitution, code quality | [workflow-guide.md](workflow-guide.md) Phase 6 |
 
 ### Fallback Quality
 
-The built-in fallbacks are designed to be **functional but lighter-weight** than
-the full superpowers experience:
+A fallback does less than the superpowers skill it stands in for:
 
-- **Brainstorming fallback**: Covers the same 5 categories but with simpler questioning
-  patterns. Superpowers brainstorming adds Socratic method, assumption challenging,
-  and more nuanced exploration.
+- **Brainstorming fallback**: asks about the same 5 categories from a fixed
+  question list. Superpowers brainstorming adds the Socratic method and
+  challenges the assumption behind an answer.
 
-- **Writing-plans fallback**: Produces a solid task breakdown from the plan template.
-  Superpowers writing-plans adds more sophisticated dependency analysis and
-  parallelization identification.
+- **Writing-plans fallback**: breaks the plan down against the task template.
+  Superpowers writing-plans reads task dependencies more closely and finds work
+  that can run in parallel.
 
-- **Execution fallback**: Walks tasks sequentially with manual checkpoints. Superpowers
-  adds intelligent batching, parallel subagent dispatch, and automated checkpoint
-  evaluation.
+- **Execution fallback**: walks the tasks in order and stops at each manual
+  checkpoint. Superpowers batches the tasks, dispatches subagents where the
+  surface has them, and judges a checkpoint itself.
 
-- **Review fallback**: Uses a static checklist approach. Superpowers adds multi-agent
-  parallel review with confidence scoring and false-positive filtering.
+- **Review fallback**: works through a fixed checklist. Superpowers runs several
+  reviewers in parallel, scores each finding for confidence, and drops the false
+  positives.
 
 ## Troubleshooting
 
 ### Skills Not Detected
 
-If superpowers skills are installed but not detected:
+If superpowers is installed and a skill still reads as missing:
 
-1. Verify the skill directory name matches exactly (case-sensitive)
-2. Verify the SKILL.md file exists inside the skill directory
+1. Check the skill directory name matches exactly, including case
+2. Check `SKILL.md` sits inside that skill directory
 3. Check both paths: `.agents/skills/` (project) and `~/.agents/skills/` (global)
-4. Verify file permissions allow reading
+4. Check the file is readable
 
 ### Skill Process Conflicts
 
-If the superpowers skill's process conflicts with specflow conventions:
+If the skill's process conflicts with a specflow convention, four rules settle it:
 
-1. Specflow output locations always take precedence (write to `.specify/`)
-2. Specflow naming conventions always take precedence (spec.md, plan.md, tasks.md)
-3. The skill's methodology and questioning approach take precedence over fallback
-4. When in doubt: follow the superpowers process, adapt only the outputs
+1. Specflow's output locations win: every file goes under `.specify/`
+2. Specflow's names win: spec.md, plan.md, tasks.md
+3. The skill's process and its questions win over the fallback protocol
+4. Otherwise follow the superpowers process and change only where the files land

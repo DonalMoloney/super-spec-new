@@ -45,7 +45,6 @@ item named in the rewrite status below.
 | File | Real | Last moved by |
 |------|------|---------------|
 | `extension.yml` | 0% | D-05 holds it |
-| `references/superpowers-mapping.md` | 4% | nothing since the rename |
 | `templates/plan-template.md` | 20% | PR #69 |
 | `scripts/validate-release-archive.py` | 29% | `script-refactorer` |
 | `templates/spec-template.md` | 33% | PR #69 |
@@ -57,6 +56,7 @@ item named in the rewrite status below.
 | `commands/status.md` | 45% | PR #55 |
 | `commands/brainstorm.md` | 54% | PR #67 |
 | `scripts/e2e-smoke.sh` | 56% | PR #68 |
+| `references/superpowers-mapping.md` | 57% | `prose-rephraser` |
 | `references/workflow-guide.md` | 57% | PR #71 |
 | `commands/execute.md` | 57% | PR #66 |
 | `commands/tasks.md` | 58% | PR #66 |
@@ -235,7 +235,7 @@ and flag. `divergence-auditor` measures the result with
 `.claude/divergence/measure-divergence.py` and runs the guards.
 
 Every shipped text file with an upstream counterpart has had its dedicated
-`prose-rephraser` or `script-refactorer` pass except the two below whose
+`prose-rephraser` or `script-refactorer` pass except the one below whose
 Waiting on cell names an item. An empty cell means the pass has run and the
 Real column records what it measured. Mark a row `(working on)` before
 dispatching, and commit that mark to `main`. The Real column is the raw
@@ -249,7 +249,7 @@ had already diverged from upstream.
 | `extension.yml` | 0% | `prose-rephraser` | D-05 |
 | `CHANGELOG.md` | 77% | `prose-rephraser` | |
 | `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` | |
-| `references/superpowers-mapping.md` | 4% | `prose-rephraser` | G-22 |
+| `references/superpowers-mapping.md` | 57% | `prose-rephraser` | |
 | `README.md` | 134% | `prose-rephraser` | |
 
 A command rewrite runs `e2e-smoke.sh` through the auditor, because the smoke
