@@ -13,21 +13,44 @@ files run on Claude Code and on the GitHub Copilot CLI.
 
 ## Installation
 
-Install from the spec-kit catalog:
+Specflow installs into a spec-kit project, so create the project first. For
+Claude Code:
 
 ```bash
-specify extension add specflow
+specify init --here --integration claude
 ```
 
-Install from a local checkout:
+For the GitHub Copilot CLI:
+
+```bash
+specify init --here --integration copilot
+```
+
+Then add specflow from a release asset. Take the URL from the
+[releases page](https://github.com/DonalMoloney/super-spec-new/releases):
+
+```bash
+specify extension add specflow --from <release asset URL>
+```
+
+To install from a checkout instead, clone the repository and point spec-kit at
+the `specflow/` directory:
 
 ```bash
 git clone https://github.com/DonalMoloney/super-spec-new.git
 specify extension add ./super-spec-new/specflow --dev
 ```
 
-The local form spec-kit documents is `specify extension add ./specflow --dev`,
-run from the parent of the extension directory.
+The form spec-kit documents is `specify extension add ./specflow --dev`, run
+from the parent of the extension directory. A `--dev` install copies the
+directory as it stands on disk, so it also copies the 13 MiB under `assets/`
+that the release archive strips.
+
+The catalog form works once the catalog lists specflow:
+
+```bash
+specify extension add specflow
+```
 
 To use the extension as an agent skill instead, symlink the directory into the
 skills path your agent reads:
