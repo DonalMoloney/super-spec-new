@@ -125,8 +125,8 @@ feature: feature-name
 created: 2026-04-22
 current_phase: brainstorm
 phases:
-  constitution: { status: done, updated: 2026-04-22 }
-  specify:      { status: done, updated: 2026-04-22 }
+  constitution: { status: complete, updated: 2026-04-22 }
+  specify:      { status: complete, updated: 2026-04-22 }
   brainstorm:   { status: in_progress, updated: 2026-04-22, sessions: 1 }
   plan:         { status: pending }
   tasks:        { status: pending }
@@ -134,9 +134,9 @@ phases:
   review:       { status: pending }
 ```
 
-**Status values**: `pending`, `in_progress`, `done`, `skipped`
+**Status values**: `pending`, `in_progress`, `complete`, `skipped`
 
-Every command marks `progress.yml` `in_progress` on start and `done` on finish.
+Every command marks `progress.yml` `in_progress` on start and `complete` on finish.
 
 ### Superpowers Status Tracking
 

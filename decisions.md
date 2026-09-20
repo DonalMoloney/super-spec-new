@@ -252,3 +252,20 @@ deleting them; prune anything older than a quarter that no longer guides work.
   need `jq` at install time.
 - Consequences: G-26 keeps T262 and T263 open behind those prerequisites. A
   gate that cannot be shown to fire is worse than no gate.
+
+## ADR-0023: `progress.yml` status holds `complete`, not `done`
+
+- Date: 2026-09-20
+- Status: accepted
+- Context: `workflow-guide.md`'s "Writing `progress.yml`" table and
+  `SKILL.md` told an agent to write `done`; both goldens wrote `complete`.
+  Nothing compares a status against `done`. Two shipped readers compare
+  against `complete`: `artifact-lint.sh` greps `TNNN: complete`, and
+  `validate-progress.py` collects a task whose state is `complete`.
+- Decision: the vocabulary is `pending`, `in_progress`, `complete`,
+  `skipped`, for the top-level, phase, and task status alike. `done` is
+  dropped because the readers pick the winner, not the older document.
+  `manual-browser-only` is a reason, not a state; the golden's task lines
+  already carry the reason, so those five tasks become `skipped`.
+- Consequences: `validate-progress.py` enumerates the four values, so a
+  sixth reason word is rejected on write instead of stored.

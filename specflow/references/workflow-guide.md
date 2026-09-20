@@ -658,13 +658,18 @@ The agent writes to `progress.yml` at these points:
 | Event | Update |
 |-------|--------|
 | Command starts | Set phase to `in_progress`, update timestamp |
-| Command completes successfully | Set phase to `done`, update timestamp |
+| Command completes successfully | Set phase to `complete`, update timestamp |
 | Brainstorm session ends | Increment `sessions` counter |
 | Task checkbox toggled during execute | Update `completed_tasks` and `current_task` |
 | User explicitly skips a phase | Set phase to `skipped` |
 
+Every `status` field, at the top level, on a phase, and on a task, holds one of
+four values: `pending`, `in_progress`, `complete`, `skipped`. A task the run
+cannot automate is `skipped`, and its task line in `tasks.md` states why.
+`.claude/review/validate-progress.py` rejects any other value.
+
 If `progress.yml` does not exist when a command runs, the command creates it
-and infers every prior phase as `done` from the files already on disk.
+and infers every prior phase as `complete` from the files already on disk.
 
 ### Superpowers Status File: `superpowers.yml`
 

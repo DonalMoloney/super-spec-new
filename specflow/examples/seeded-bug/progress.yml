@@ -48,10 +48,10 @@ phases:
       T020: complete
       T021: complete
       T022: complete
-      T023: manual-browser-only
-      T024: manual-browser-only
-      T025: manual-browser-only
+      T023: skipped
+      T024: skipped
+      T025: skipped
       T026: complete
-      T027: manual-browser-only
-      T028: manual-browser-only
+      T027: skipped
+      T028: skipped
       T029: complete
