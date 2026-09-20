@@ -776,6 +776,42 @@ def test_golden_run_every_traceability_test_reference_resolves():
     }
 
 
+SPEC_WITH_ESCAPING_TEST_REFERENCE = """# Feature
+
+## User Scenarios & Testing *(mandatory)*
+
+Scenario text.
+
+## Requirements *(mandatory)*
+
+- **FR-001**: The page loads.
+- **FR-002**: The page paginates.
+
+## Success Criteria *(mandatory)*
+
+Criteria are declared above.
+
+## Traceability
+
+| Criterion | Test |
+|---|---|
+| FR-001 | `../outside.md::anchor` |
+| FR-002 | `/etc/passwd::root` |
+"""
+
+
+def test_traceability_reference_outside_the_feature_directory_counts_missing():
+    with tempfile.TemporaryDirectory() as directory:
+        root = Path(directory)
+        (root / "outside.md").write_text("anchor\n")
+        feature_dir = root / "001-feature"
+        feature_dir.mkdir()
+        write_feature(feature_dir, SPEC_WITH_ESCAPING_TEST_REFERENCE)
+        report = score_json(feature_dir)
+    assert report["test_exists"]["found"] == 0
+    assert report["test_exists"]["missing"] == ["FR-001", "FR-002"]
+
+
 def test_seeded_threat_model_leaves_spoofing_unmitigated():
     report = score_json(SEEDED_THREAT_MODEL_FEATURE_DIR)
     assert report["threat_model"] == {

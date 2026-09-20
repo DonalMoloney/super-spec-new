@@ -332,6 +332,9 @@ def score_test_exists(spec_lines: list[str], feature_dir: Path) -> dict:
     Traceability table names for an undeclared FR/SC id is the caller's
     problem to filter, so it is excluded here the same way
     ``score_traceability`` excludes it.
+
+    The Test cell is author-supplied text, so a path leaving feature_dir
+    counts as missing rather than reading the file it names.
     """
     declared = declared_criteria(spec_lines)
     references = [
@@ -339,10 +342,14 @@ def score_test_exists(spec_lines: list[str], feature_dir: Path) -> dict:
         for reference in traceability_test_references(spec_lines)
         if reference[0] in declared
     ]
+    root = feature_dir.resolve()
     found = 0
     missing = []
     for identifier, file_path, anchor in references:
-        target = feature_dir / file_path
+        target = (feature_dir / file_path).resolve()
+        if target != root and root not in target.parents:
+            missing.append(identifier)
+            continue
         result = subprocess.run(
             ["grep", "-rl", "-F", anchor, str(target)],
             capture_output=True,
