@@ -51,8 +51,6 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 
 | Item | What it closes | Effort | Verified open by |
 |---|---|---|---|
-| D-01 | `after-tasks.md` never reads `progress.yml` | low | 0 matches for `progress.yml` in the file |
-| D-05 | Four stale names and a missing CHANGELOG section | low | See the four checks under D-05 |
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
 | G-20 | Brainstorm reads `decisions.md` and never writes it | medium | Read at `brainstorm.md` line 17, no write step |
 | G-21 | Three templates carry no check of their own | medium | No Verify column, no review-stage table, no `R-NNN` |
@@ -66,20 +64,18 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | G-30 | `superpowers-bridge.md` is named for a banned metaphor | medium | 16 files cite the path |
 | C-01 | 44 merged remote branches | low | `git branch -r` |
 | C-03 | The `imporvements/` directory name is a typo | low | 13 files cite it |
-| C-04 | `use-guide.md` titles itself with a path | low | H1 reads `# presentation/marp-deck use guide` |
 | C-05 | Both e2e scripts leave a work directory behind | low | `Workdir kept at` prints unconditionally |
 | C-06 | The dry run's assertion count is not its last line | low | The API-key hint trails it |
 
-## D-01 — `after-tasks.md` reads the progress file
+## D-01 — `after-tasks.md` reads the progress file (merged: `8fb7813`)
 
-Unclaimed. The worktree that held this had no commits and was removed on
-2026-09-20. Executor: `general-purpose`. Effort: low. Depends on: none.
+Executor: `general-purpose`. Effort: low. Depends on: none.
 
 `before-execute.md` reads `progress.yml` at its step 6. `after-tasks.md` is
 the one hook that assumes a fresh run, so a resumed feature rewrites state the
 earlier run already wrote.
 
-- [ ] D-01 Add a progress-state read step
+- [x] D-01 Add a progress-state read step
 
 Verify: the Process in `commands/hooks/after-tasks.md` lists a step that reads
 `progress.yml` before writing, and `e2e-smoke.sh` passes.
@@ -88,34 +84,34 @@ After this merges, `commands/hooks/after-tasks.md` is free for
 `prose-rephraser`; it is the last shipped file still byte-identical to
 upstream.
 
-## D-05 — Stale names and the missing CHANGELOG section
+## D-05 — Stale names and the missing CHANGELOG section (merged: `feb6777`, `8659302`, `cf85936`)
 
-Unclaimed. The worktree that held this had no commits and was removed on
-2026-09-20. Executor: `general-purpose`. Effort: low. Depends on: none.
+Executor: `general-purpose`. Effort: low. Depends on: none.
 
 Four separate stale strings, all verified present on `main` at `ff774c2`.
 They are one item because they are one rename, and because five files in
-`reference.md` wait on it.
+`reference.md` wait on it. D-05a needed no commit: the retitle was already on
+disk, uncommitted, when the item was picked up, and landed in `cbfc731`.
 
-- [ ] D-05a Retitle the findings schema
+- [x] D-05a Retitle the findings schema
 
 `.claude/review/schema.json` line 3 titles the schema
 `SuperspecReviewFindings`, a name this fork dropped. Verify: the title names
 specflow and `bash .claude/hooks/tests/run.sh` passes.
 
-- [ ] D-05b Delete the dead README check
+- [x] D-05b Delete the dead README check
 
 `validate-extension-metadata.py` line 147 tests the README for a
 `specify extension add superpowers-bridge --from ./specflow` string that no
 README has carried since the rename, so the branch can never run. Verify: the
 branch is gone and `python3 scripts/validate-extension-metadata.py` exits 0.
 
-- [ ] D-05c Open a CHANGELOG Unreleased section
+- [x] D-05c Open a CHANGELOG Unreleased section
 
 `specflow/CHANGELOG.md` opens at 1.0.2 and records nothing since. Verify: the
 file has an `## [Unreleased]` section and this PR adds a line to it.
 
-- [ ] D-05d Rewrite the manifest strings
+- [x] D-05d Rewrite the manifest strings
 
 `extension.yml` line 4 reads `name: "Superpowers Bridge"`, which uses a banned
 metaphor, and the descriptions carry "Enhanced" five times, "Deep-dive"
@@ -574,7 +570,7 @@ closed on 2026-09-20.
   in one PR when no worktree is open, because every one of them edits a file
   in the folder. Verify: `grep -rn imporvements . --exclude-dir=.git` prints
   nothing.
-- [ ] **C-04** Retitle `presentation/use-guide/use-guide.md`. The H1 is a path.
+- [x] **C-04** Retitle `presentation/use-guide/use-guide.md`. The H1 is a path.
   Verify: the H1 is a noun phrase and no header carries a capital after its
   first word except a proper noun.
 - [ ] **C-05** Delete the e2e work directory on a passing run. Both
