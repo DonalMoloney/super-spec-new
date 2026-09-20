@@ -235,8 +235,9 @@ and flag. `divergence-auditor` measures the result with
 `.claude/divergence/measure-divergence.py` and runs the guards.
 
 Every shipped text file with an upstream counterpart has had its dedicated
-`prose-rephraser` or `script-refactorer` pass except the five below, each
-waiting on the item that holds it. Mark a row `(working on)` before
+`prose-rephraser` or `script-refactorer` pass except the three below whose
+Waiting on cell names an item. An empty cell means the pass has run and the
+Real column records what it measured. Mark a row `(working on)` before
 dispatching, and commit that mark to `main`. The Real column is the raw
 divergence measured above, not a proxy for whether the pass has run:
 `README.md` is already 100% different from upstream in content (Copilot CLI
