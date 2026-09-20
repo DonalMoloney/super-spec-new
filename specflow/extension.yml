@@ -12,7 +12,7 @@ extension:
   license: "MIT"
   homepage: "https://github.com/DonalMoloney/super-spec-new#readme"
 requires:
-  speckit_version: ">=0.1.0"
+  speckit_version: ">=0.16.2"
   optional_skills:
     - id: "brainstorming"
       source: "obra/superpowers"
