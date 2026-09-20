@@ -32,6 +32,7 @@ STEPS=(
   "Ruff|ruff|.|ruff check specflow/scripts .claude/review .claude/divergence"
   "Structural smoke test||specflow|bash scripts/e2e-smoke.sh"
   "Agent e2e dry run against the example snapshot||specflow|E2E_DRY_RUN=1 bash scripts/e2e-agent-claude.sh"
+  "Copilot agent e2e dry run against the example snapshot||specflow|E2E_DRY_RUN=1 bash scripts/e2e-agent-copilot.sh"
 )
 
 # Each entry is "ci.yml step name|why this script leaves the step to CI".

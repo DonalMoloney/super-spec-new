@@ -66,6 +66,26 @@ Two differences bite harder than the deny shape:
   Copilot.
 - `timeoutSec` is the declared timeout plus a five-second buffer.
 
+The two surfaces also name the payload fields differently. Each gate reads
+three of them:
+
+| Value the gate reads | Claude Code | Copilot CLI |
+|---|---|---|
+| Tool name | `.tool_name` | `.toolName` |
+| Shell command | `.tool_input.command` | `.toolArgs.command` |
+| File path | `.tool_input.file_path` | `.toolArgs.path` |
+
+Measured against `@github/copilot` 1.0.86. Its `app.js` builds the
+`preToolUse` payload from `sessionId`, `timestamp`, `cwd`, `toolName`, and
+`toolArgs`. The shell tool declares `command` in its argument schema, and the
+`str_replace_editor` tool declares `path`. GitHub's
+[hooks reference](https://docs.github.com/en/copilot/reference/hooks-reference)
+documents the same five top-level fields.
+
+Copilot also accepts a `matcher` on a `preToolUse` entry in its own
+`hooks.json`. Spec-kit's writer emits none, which is why the tool-name filter
+above stays.
+
 ## What blocks the block
 
 Three things, in order of cost.
@@ -80,9 +100,10 @@ scripts under `specflow/`, which reverses ADR-0001 for those files.
 
 The gates read the Claude Code payload schema. `block-main-commit.sh` reads
 `.tool_input.command`; `test-gate.sh` and `artifact-lint.sh` read
-`.tool_input.file_path`. No source in this repository records the field names
-Copilot sends. A wrong name yields an empty string and the gate exits 0, which
-is the failure this page exists to prevent.
+`.tool_input.file_path`. The table above names the Copilot field for each, so
+each gate needs a branch on the schema that arrived rather than a second copy.
+A wrong name yields an empty string and the gate exits 0, which is the failure
+this page exists to prevent.
 
 The gates call `jq`. Shipping them adds an install-time dependency the
 extension does not have today.
