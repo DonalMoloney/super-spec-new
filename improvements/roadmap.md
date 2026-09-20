@@ -919,20 +919,20 @@ Depends on: none. Diverges: no. Raised as `priority.md` item 21 on 2026-09-20.
 bound, and every `ci.yml` job installs spec-kit from git main, so the floor the
 install refuses below has never been installed against.
 
-- [ ] T441 Let the environment pick the spec-kit ref the smoke test installs
+- [x] T441 Let the environment pick the spec-kit ref the smoke test installs
 
 `e2e-smoke.sh` line 27 assigns `SPEC_KIT_GIT_URL` outright, so a caller cannot
 point one run at a tag. Verify: the line reads `${SPEC_KIT_GIT_URL:-...}`, and
 `bash scripts/e2e-smoke.sh` still installs from git main with the variable
 unset.
 
-- [ ] T442 Add a `smoke-floor` job pinned to the floor tag
+- [x] T442 Add a `smoke-floor` job pinned to the floor tag
 
 Verify: `grep -c '0.16.2' .github/workflows/ci.yml` prints at least 1, the
 `smoke-floor` job runs `e2e-smoke.sh` from `specflow/` against
 `spec-kit.git@v0.16.2`, and `yaml.safe_load` parses the workflow.
 
-- [ ] T443 Run the parity tests after the step that installs uv
+- [x] T443 Run the parity tests after the step that installs uv
 
 `tests/test_readme_commands.py` skips when neither `specify` nor `uvx` is on
 PATH, and "CI parity tests" runs before "Install uv", so that suite has never
@@ -941,6 +941,38 @@ run in CI. `tests/test_ci_parity.py` reads step order, so `ci.yml` and
 "CI parity tests" follows "Install uv" in `ci.yml`, `verify.sh` carries the
 same relative order, `python3 -m pytest tests/test_ci_parity.py` passes, and
 `bash verify.sh` reaches its summary line with no failed step.
+
+## G-45 — The merge gate cannot read `code-reviewer`'s findings
+
+Executor: `bdd-orchestrator`. Model: sonnet. Move: Extend. Effort: low.
+Depends on: none. Raised on 2026-09-20 while rewriting the eight persona
+bodies under `priority.md` item 35.
+
+`merge-gate.sh` reads `.claude/review/*.json` and `specs/*/review-findings.json`
+and blocks on an unresolved Critical or Important finding. `code-reviewer.md`
+states its output as findings grouped Critical, Important, and Suggestion in
+prose, and cites no schema. It is the only persona in the Review personas
+table of `references/superpowers-mapping.md` whose Critical finding cannot
+reach the gate, so the whole-change-set review is the one review a merge
+never waits on.
+
+- [ ] T451 Decide whether `code-reviewer` writes a findings document
+
+The other nine personas write the shape `references/findings-schema.json`
+declares. `code-reviewer` runs as phase 11 of the BDD squad, where
+`bdd-orchestrator` reads its prose directly, so switching its output changes a
+contract inside the squad rather than only a reviewer file. Record the choice
+as an ADR. Verify: the ADR names which consumer reads `code-reviewer`'s output
+and states whether the gate is meant to block on it.
+
+- [ ] T452 Make the chosen contract true in the file
+
+Either give `code-reviewer.md` an `## Output format` naming
+`references/findings-schema.json`, matching the eight personas, or state in
+that file why its output stays prose and that the merge gate does not read it.
+Verify: `grep -L 'findings-schema.json' .claude/agents/*-reviewer.md` prints
+nothing, or `code-reviewer.md` carries the sentence that explains the
+exception.
 
 ## Checked on 2026-09-20, no work needed
 
