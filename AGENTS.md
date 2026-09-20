@@ -52,6 +52,9 @@ there, so a workflow under `specflow/` never runs.
 
 ## Architecture
 
+- `README.md`: the repository's human-facing entry point. States what specflow
+  is, the install command, and links out to `specflow/README.md` for full
+  usage; distinct from the agent-facing trio named above.
 - `specflow/extension.yml`: the manifest, which declares the 6 commands, 5 templates,
   5 scripts, and 5 hooks (`after_clarify`, `after_analyze`, `after_tasks`,
   `before_implement`, `after_implement`) spec-kit's catalog reads.
