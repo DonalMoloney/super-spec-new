@@ -1,4 +1,4 @@
-<!-- specflow template: spec-template 1.0.2 -->
+<!-- specflow template: spec-template 1.1.0 -->
 # Feature Specification: [FEATURE NAME]
 
 **Feature Branch**: `[###-feature-name]`

@@ -1,7 +1,7 @@
 ---
 description: "Task list template for feature implementation"
 ---
-<!-- specflow template: tasks-template 1.0.2 -->
+<!-- specflow template: tasks-template 1.1.0 -->
 
 # Tasks: [FEATURE NAME]
 

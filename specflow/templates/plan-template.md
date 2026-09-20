@@ -1,4 +1,4 @@
-<!-- specflow template: plan-template 1.0.2 -->
+<!-- specflow template: plan-template 1.1.0 -->
 # Implementation Plan: [FEATURE]
 
 **Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link to spec.md]

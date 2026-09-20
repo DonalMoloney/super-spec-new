@@ -1,4 +1,4 @@
-<!-- specflow template: constitution-template 1.0.2 -->
+<!-- specflow template: constitution-template 1.1.0 -->
 # [PROJECT_NAME] Constitution
 
 ## Core Principles
