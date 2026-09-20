@@ -103,7 +103,7 @@ Spec red-team reviewer (≥3 findings or prove completeness criterion-by-criteri
 
 **Cost governance.** Per-phase budgets via the headless budget cap; model routing (ADR-0003 and ADR-0014 in `decisions.md`); gate the expensive layers (critic loop, cross-model, mutation) on `risk-classifier.sh`; on a Max flat-rate plan, per-session cost matters less but token volume still affects latency.
 
-**Weekly ritual (30 min).** Prune `decisions.md` (mark superseded ADRs), clear resolved `open-questions.md`, review the reviewer scorecard and tune any persona with precision < 0.5 or zero promoted findings, eyeball mutation-score and cost-per-feature trends.
+**Weekly ritual (30 min).** Prune `decisions.md` (mark superseded ADRs), clear resolved `open-questions.md`, run `bash .claude/review/scorecard.sh` and tune any persona with precision < 0.5 or zero promoted findings, eyeball mutation-score and cost-per-feature trends.
 
 ---
 
