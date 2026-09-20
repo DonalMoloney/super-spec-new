@@ -85,9 +85,9 @@ the resolver spec-kit installed under `.specify/scripts/` and reads
 picked by `--script` at init and defaulting to PowerShell on Windows and bash
 elsewhere:
 
-- `bash/resolve-template.sh <name> --json`
-- `powershell/resolve-template.ps1 <name> -Json`
-- `python/resolve_template.py <name> --json`
+- `.specify/scripts/bash/resolve-template.sh <name> --json`
+- `.specify/scripts/powershell/resolve-template.ps1 <name> -Json`
+- `.specify/scripts/python/resolve_template.py <name> --json`
 
 When the resolver fails, stop and report the error. Do not fall back to
 reading `.specify/templates/<name>.md`, which holds only the core layer and

@@ -13,11 +13,11 @@ The command builds a phased task breakdown with the writing-plans skill.
 1. Read the spec, plan, and constitution for the target feature
 2. Resolve `tasks-template` with the resolver spec-kit installed under
    `.specify/scripts/`, then parse `TEMPLATE_CONTENT`. One variant exists per
-   project: `bash/resolve-template.sh tasks-template --json`,
-   `powershell/resolve-template.ps1 tasks-template -Json`, or
-   `python/resolve_template.py tasks-template --json`. Stop and report when the
-   resolver fails; reading `.specify/templates/tasks-template.md` returns only
-   the core layer.
+   project: `.specify/scripts/bash/resolve-template.sh tasks-template --json`,
+   `.specify/scripts/powershell/resolve-template.ps1 tasks-template -Json`, or
+   `.specify/scripts/python/resolve_template.py tasks-template --json`. Stop and
+   report when the resolver fails; reading `.specify/templates/tasks-template.md`
+   returns only the core layer.
 3. **Superpowers detection**: Check for the `writing-plans` skill
    - **If found**: Read `SKILL.md` for `writing-plans` and follow its task
      decomposition process. Adapt the output to the tasks template structure
