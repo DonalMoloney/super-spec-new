@@ -985,7 +985,7 @@ re-verify it when picking up G-24 to G-28.
 | Workflow step types | 12, listed at `workflows/engine.py` line 142 |
 | Core `spec-template.md` against ours | 131 lines against 197 |
 | Core `tasks-template.md` against ours | 252 against 225. Core is larger for this one template only; ours is larger for the other four (constitution 123/50, spec 197/131, plan 130/113, checklist 120/45). Core's extra lines are User Story 3 boilerplate and an Implementation Strategy section this fork replaced on purpose, measured under G-25 |
-| Agents under `.claude/agents/` | 28, against the 17 that `.github/copilot-instructions.md` line 64 states |
+| Agents under `.claude/agents/` | 34 on 2026-09-20, up from the 28 first measured. `.github/copilot-instructions.md` names the groups and states no count, so the two no longer disagree |
 
 ## Cleanup
 
