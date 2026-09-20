@@ -347,8 +347,8 @@ forbids it, and every submission goes through an issue instead.
        "speckit_version": ">=0.16.2"
      },
      "provides": {
-       "commands": 5,
-       "hooks": 3
+       "commands": 6,
+       "hooks": 5
      },
      "verified": false,
      "created_at": "YYYY-MM-DDT00:00:00Z",
