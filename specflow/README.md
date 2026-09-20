@@ -315,11 +315,19 @@ differently on the GitHub Copilot CLI.
 
 ## Submitting to the spec-kit catalog
 
-To list the extension in the
-[spec-kit community catalog](https://github.com/github/spec-kit/tree/main/extensions):
+A spec-kit maintainer edits the community catalog, not a contributor. Do not
+open a pull request against `extensions/catalog.community.json`: the
+[Extension Publishing Guide](https://github.com/github/spec-kit/blob/main/extensions/EXTENSION-PUBLISHING-GUIDE.md)
+forbids it, and every submission goes through an issue instead.
 
-1. Fork `github/spec-kit`.
-2. Add an entry to `extensions/catalog.community.json`:
+1. Tag the release so `.github/workflows/release.yml` uploads the archive.
+2. File an
+   [Extension Submission](https://github.com/github/spec-kit/issues/new?template=extension_submission.yml)
+   issue. The template asks for the id, the name, the version, the description,
+   the author, the license, the repository, the download URL, the required
+   spec-kit version, the command and hook counts, the tags, and a testing
+   checklist.
+3. Paste this entry into the issue's Proposed Catalog Entry field:
 
    ```json
    {
@@ -331,18 +339,29 @@ To list the extension in the
      "download_url": "https://github.com/DonalMoloney/super-spec-new/releases/download/vX.Y.Z/specflow-vX.Y.Z.zip",
      "repository": "https://github.com/DonalMoloney/super-spec-new",
      "homepage": "https://github.com/DonalMoloney/super-spec-new#readme",
+     "changelog": "https://github.com/DonalMoloney/super-spec-new/blob/main/specflow/CHANGELOG.md",
      "license": "MIT",
+     "category": "process",
+     "effect": "read-write",
      "requires": {
        "speckit_version": ">=0.16.2"
      },
+     "provides": {
+       "commands": 5,
+       "hooks": 3
+     },
      "verified": false,
+     "created_at": "YYYY-MM-DDT00:00:00Z",
+     "updated_at": "YYYY-MM-DDT00:00:00Z",
      "tags": ["superpowers", "brainstorming", "tdd", "code-review", "subagent", "workflow", "claude-code", "copilot"]
    }
    ```
 
-   Put the released version in place of `X.Y.Z` in all three spots. Every
-   other value comes from `extension.yml`, so read it there rather than from
-   this page.
+   Put the released version in place of `X.Y.Z` in all three spots and the
+   release date in place of both `YYYY-MM-DD`. Every other value comes from
+   `extension.yml`, so read it there rather than from this page. The schema
+   appendix in the publishing guide marks `downloads` and `stars` as
+   auto-updated, so the entry leaves them out.
 
    The URL names the release asset `.github/workflows/release.yml` uploads. It
    is not GitHub's tag ZIP at `archive/refs/tags/vX.Y.Z.zip`: that archive holds
@@ -350,12 +369,9 @@ To list the extension in the
    `super-spec-new-vX.Y.Z/specflow/`, and the install stops with
    `No extension.yml found in archive`.
 
-3. Add a row to the Community Extensions table in the spec-kit README.
-4. Open a pull request with the extension submission template.
-5. Automated checks and a manual review take three to seven business days.
-
-The [Extension Publishing Guide](https://github.com/github/spec-kit/blob/main/extensions/EXTENSION-PUBLISHING-GUIDE.md)
-has the full procedure.
+4. Wait for triage. A spec-kit maintainer applies the `extension-submission`
+   label, which starts the catalog validation. A contributor cannot apply that
+   label, so there is nothing to label or to ask for.
 
 ## License
 
