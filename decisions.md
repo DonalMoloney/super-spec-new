@@ -200,3 +200,19 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Consequences: the raised floor replaces the fallback. Reading the raw path
   returns only the core layer and drops this fork's sections, which is the bug
   G-24 fixed. T242's fallback clause is superseded.
+
+## ADR-0020: The extension id stays `specflow`
+
+- Date: 2026-09-20
+- Status: accepted
+- Context: G-28 settles what a spec-kit catalog entry says. The community
+  catalog lists `superpowers-bridge`, `speckit-superpowers-bridge`, and
+  `superspec`, so `specflow` collides with no listed id.
+  `imporvements/reference.md` prices a rename at 27 files and calls it not an
+  option.
+- Decision: the id stays. Namespace lock-step ties it to all five command
+  names and all three hook names, so a rename renames every command a user has
+  typed and every line in an installed `.specify/extensions.yml`. The
+  description separates specflow from the other three instead.
+- Consequences: the catalog submission uses `specflow` and does not reopen the
+  question. A later rename needs a major version bump and a migration note.
