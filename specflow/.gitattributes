@@ -1,10 +1,13 @@
 # Release archive contents
 # ---------------------------------------------------------------------------
-# spec-kit's catalog installs this extension from GitHub's generated tag ZIP
-# (https://github.com/DonalMoloney/super-spec-new/archive/refs/tags/vX.Y.Z.zip). That
-# archive is produced by `git archive`, which honours `export-ignore`, so every
-# path marked below is present in the repository (and for `--dev` installs) but
-# is stripped from the published archive.
+# spec-kit's catalog installs this extension from the release asset
+# specflow-vX.Y.Z.zip, built by .github/workflows/release.yml as
+# `git archive --prefix=specflow/` from this directory. GitHub's generated tag
+# ZIP holds the whole repository and has no extension.yml one level down, so
+# spec-kit cannot install it. Both archives come from `git archive`, which
+# honours `export-ignore`, so every path marked below is present in the
+# repository (and for `--dev` installs) but is stripped from the published
+# archive.
 #
 # This matters because spec-kit validates archives before extracting them
 # (src/specify_cli/_download_security.py):
