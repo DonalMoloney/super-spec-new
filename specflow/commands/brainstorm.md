@@ -30,13 +30,24 @@ Probe edge cases and refine a spec document with the brainstorming skill.
    - A new requirement → enters Functional Requirements
    - A resolved question → closes in the Open Questions table
    - A new edge case → enters the Edge Cases section
-7. When the user confirms the spec is ready, update the "Brainstorm Log" with a
+7. Append each resolved question that settled a choice to `decisions.md` at the
+   project root, under a `## ADR-NNNN: <the choice>` heading numbered one above
+   the highest ADR already in the file, followed by `- Date:`,
+   `- Status: accepted`, `- Context:`, `- Decision:`, and `- Consequences:`
+   lines, under 150 words. Open the Context line with the question's ID. A
+   question the spec now answers as a fact gets no entry, because the spec
+   records it. Start at ADR-0001 when the file does not exist
+8. When the user confirms the spec is ready, update the "Brainstorm Log" with a
    dated summary of the insights found
 
 ## Output
 
 The command returns an updated spec file with refined edge cases, resolved open
 questions, and brainstorm log entries.
+
+The command also appends an ADR-lite entry to `decisions.md` for each resolved
+question that settled a choice, so a later run reads it at step 3 instead of
+asking again.
 
 ## Iteration
 
