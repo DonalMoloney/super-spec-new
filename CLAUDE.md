@@ -18,7 +18,7 @@
   before it's trusted, not only inside the BDD pipeline.
 - `prose-rephraser`, `script-refactorer`, and `divergence-auditor` rewrite one shipped
   file under `specflow/` to `standards/` and measure the result against upstream. The
-  file table and dispatch order live in `imporvements/divergence-by-part.md`.
+  file table and dispatch order live in `imporvements/reference.md`.
 - Follow `superpowers:test-driven-development` for any code task that ISN'T routed
   through the BDD squad above.
 - Before editing a command file under `specflow/commands/`, read its current Process

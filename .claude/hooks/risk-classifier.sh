@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Prints HIGH or STANDARD for the diff between a base ref and HEAD. The review
 # pipeline runs the critic stage and the cross-model panel only on HIGH.
-# Thresholds come from imporvements/imporvements2.md section 3.10.
+# Thresholds come from docs/review-research.md section 3.10.
 set -euo pipefail
 SENSITIVE_DIRS='(^|/)(auth|payments|billing|migrations|infra|secrets|crypto)/'
 DEPENDENCY_MANIFESTS='(package-lock\.json|yarn\.lock|Cargo\.lock|poetry\.lock|go\.sum|requirements.*\.txt)$'

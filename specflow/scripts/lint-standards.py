@@ -6,8 +6,8 @@ Usage:
 
 A path that is a directory is walked through `git ls-files`, so only tracked
 Markdown is checked. A path that is a file is checked whether or not it is
-tracked. Either way a file under one of EXCLUDED_DIRS, relative to the git
-top level, is skipped. With no path the current directory is walked. Exit 0
+tracked. Either way a file under one of EXCLUDED_DIRS, or named in
+EXCLUDED_FILES, relative to the git top level, is skipped. With no path the current directory is walked. Exit 0
 with no findings, 1 with findings, 2 when a path is missing.
 """
 
@@ -26,6 +26,9 @@ EM_DASH = "—"
 
 # Examples, the roadmap, and the standards themselves quote the banned words.
 EXCLUDED_DIRS = ("specflow/examples", "imporvements", "standards")
+
+# Research notes quote their sources verbatim, banned words and em-dashes included.
+EXCLUDED_FILES = ("docs/review-research.md",)
 
 FENCE = re.compile(r"^\s*(```|~~~)")
 
@@ -78,7 +81,7 @@ def findings_for(path: Path, pattern: re.Pattern[str]) -> list[str]:
 
 
 def is_excluded(path: Path) -> bool:
-    """Return whether `path` sits under an excluded directory of its git checkout.
+    """Return whether `path` is excluded in its git checkout.
 
     A file outside any git checkout is never excluded.
     """
@@ -91,6 +94,8 @@ def is_excluded(path: Path) -> bool:
     if toplevel.returncode != 0:
         return False
     relative = path.resolve().relative_to(Path(toplevel.stdout.strip()).resolve()).as_posix()
+    if relative in EXCLUDED_FILES:
+        return True
     return any(relative.startswith(prefix + "/") for prefix in EXCLUDED_DIRS)
 
 

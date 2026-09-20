@@ -150,3 +150,35 @@ deleting them; prune anything older than a quarter that no longer guides work.
   lets a bundled task through.
 - Consequences: an enumeration in a task line is a comma list without "and". A
   task that needs "and" is split.
+
+## ADR-0017: Open work lives in one roadmap; the option space is reference
+
+- Date: 2026-09-20
+- Status: accepted
+- Context: `tasks.md`, `cleanup.md`, and `divergence-by-part.md` each tracked
+  status, so a claimed divergence bullet was stated twice and the copies
+  drifted. Five entries were stale on `main` at `ff774c2`, including a task
+  PR #70 had already done.
+- Decision: `imporvements/roadmap.md` holds every open item and is the only
+  place a claim or a checkbox lives. `imporvements/reference.md` holds the
+  option space, the measured divergence, and the names table, and names a
+  roadmap item instead of repeating its tasks. `docs/review-research.md` holds
+  the review evidence moved out of the v2 playbook.
+- Consequences: a claim is recorded once. `lint-standards.py` skips the
+  research file by name, because it quotes its sources verbatim.
+
+## ADR-0018: `divergence-renamer` owns a name cited in more than one file
+
+- Date: 2026-09-20
+- Status: accepted
+- Context: `prose-rephraser` freezes every path and identifier in the one file
+  it edits; `script-refactorer` freezes every behavior in the one script it
+  edits. Neither can move a name that other files cite, so G-30's rename of
+  `references/superpowers-bridge.md`, cited by two validators, a test
+  fixture, and 16 files, had no agent to run it.
+- Decision: a fourth rewrite agent, `divergence-renamer`, takes an old name
+  and a new one, finds every citation repository-wide, classifies each as
+  current state or historical record, and moves only the current ones.
+  `divergence-auditor` still measures and runs the guards afterward.
+- Consequences: a rename with a stated old and new value has a dispatch
+  target. `imporvements/reference.md`'s Names table cites it for G-30.

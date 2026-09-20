@@ -1,6 +1,6 @@
 ---
 name: script-refactorer
-description: Use this agent to refactor one script under specflow/scripts/ to standards/code.md without changing its observable behavior, so it diverges from upstream superspec in structure while every test and every caller in CI keeps passing. Typical triggers include a user asking to bring a validator or e2e script up to our code standards, or a divergence bullet in imporvements/divergence-by-part.md that names naming, error handling, or comment register as the move. Not for code the BDD pipeline added in the current task; refactor-specialist owns that.
+description: Use this agent to refactor one script under specflow/scripts/ to standards/code.md without changing its observable behavior, so it diverges from upstream superspec in structure while every test and every caller in CI keeps passing. Typical triggers include a user asking to bring a validator or e2e script up to our code standards, or a divergence bullet in imporvements/reference.md that names naming, error handling, or comment register as the move. Not for code the BDD pipeline added in the current task; refactor-specialist owns that.
 model: sonnet
 color: yellow
 tools: ["Read", "Edit", "Bash", "Grep", "Glob"]
@@ -14,7 +14,7 @@ same files on disk. Only structure and wording change.
 
 - **A user names one script under `specflow/scripts/`** and asks for it to
   follow our code standards.
-- **A divergence bullet** in `imporvements/divergence-by-part.md` names naming,
+- **A divergence bullet** in `imporvements/reference.md` names naming,
   error types, docstrings, or comment register as the move for `scripts/`.
 
 Do not invoke on code the BDD pipeline added in the current task;

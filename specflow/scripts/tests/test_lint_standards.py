@@ -152,3 +152,27 @@ def test_summary_counts_files_and_findings():
         git_repo(root, *files)
         result = lint(".", cwd=root)
     assert result.stdout.strip().endswith("2 files checked, 2 findings")
+
+
+def test_quoting_file_is_skipped_but_its_siblings_are_not():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        files = [
+            write(root / "docs" / "review-research.md", "Quoted — source.\n"),
+            write(root / "docs" / "guide.md", "A — dash.\n"),
+        ]
+        git_repo(root, *files)
+        result = lint(".", cwd=root)
+    assert result.returncode == 1, result.stdout
+    assert "review-research.md" not in result.stdout
+    assert "guide.md:1" in result.stdout
+
+
+def test_explicit_quoting_file_is_skipped():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        path = write(root / "docs" / "review-research.md", "A — dash.\n")
+        git_repo(root)
+        result = lint(str(path), cwd=root)
+    assert result.returncode == 0, result.stdout
+    assert result.stdout.strip() == "OK: 0 files checked, 0 findings"

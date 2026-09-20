@@ -1,0 +1,269 @@
+# How specflow/ can diverge from upstream
+
+For each part of the extension, the ways it can diverge from upstream superspec
+without breaking spec-kit's install contract. Read it when choosing where the
+next roadmap item lands. `roadmap.md` holds the committed work; this file holds
+the option space and the measured distance to upstream.
+
+Percentages are the real (rebrand-normalized) change against the vendored
+upstream at the root commit (`bda4ef0`, upstream `c20ac6c`). Upstream `HEAD`
+was still `c20ac6c` on 2026-09-11. An option a roadmap item already claims names
+that item instead of repeating its tasks.
+
+## Three constraints
+
+A move that violates one is not an option.
+
+1. **Namespace lock-step.** The extension id and every command or hook name
+   match, or `validate-extension-metadata.py` fails.
+2. **Superpowers optional.** Every command keeps a built-in fallback when the
+   skill is absent.
+3. **Both targets.** Anything shipped in `specflow/` runs on the Copilot CLI as
+   well as Claude Code. A shipped file may not depend on `.claude/` hooks,
+   agents, or `model:` frontmatter, which Copilot cannot execute.
+
+## Five moves
+
+| Move | Meaning | Reversible | Breaks resync |
+|------|---------|------------|---------------|
+| Tighten | Same steps, stricter gate or stricter output shape | yes | rarely |
+| Extend | New step, section, or placeholder appended to the upstream shape | yes | sometimes |
+| Add | New file with no upstream counterpart | yes | no |
+| Replace | Same file name, different process | no | yes |
+| Remove | Drop a file or step upstream still ships | no | yes |
+
+Tighten and Add are the cheap moves. Replace and Remove are where the fork
+stops being a fork; take them only when the upstream shape is wrong for the two
+targets.
+
+## Measured state
+
+Measured 2026-09-20 against upstream `c20ac6c1` by rerunning the reproduce
+command below. Lowest real change first. A row marked `roadmap` waits on the
+item named in the rewrite status below.
+
+| File | Real | Last moved by |
+|------|------|---------------|
+| `commands/hooks/after-tasks.md` | 0% | D-01 holds it |
+| `extension.yml` | 0% | D-05 holds it |
+| `CHANGELOG.md` | 1% | D-05 holds it |
+| `references/superpowers-bridge.md` | 4% | nothing since the rename |
+| `scripts/validate-extension-metadata.py` | 7% | D-05 holds it |
+| `templates/plan-template.md` | 20% | PR #69 |
+| `scripts/validate-release-archive.py` | 29% | `script-refactorer` |
+| `templates/spec-template.md` | 33% | PR #69 |
+| `templates/checklist-template.md` | 34% | PR #69 |
+| `templates/constitution-template.md` | 36% | PR #69 |
+| `SKILL.md` | 40% | PR #70 |
+| `templates/tasks-template.md` | 42% | PR #69 |
+| `scripts/e2e-agent-claude.sh` | 42% | PR #68 |
+| `commands/status.md` | 45% | PR #55 |
+| `commands/brainstorm.md` | 54% | PR #67 |
+| `scripts/e2e-smoke.sh` | 56% | PR #68 |
+| `references/workflow-guide.md` | 57% | PR #71 |
+| `commands/execute.md` | 57% | PR #66 |
+| `commands/tasks.md` | 58% | PR #66 |
+| `commands/hooks/after-execute.md` | 65% | PR #70 |
+| `commands/hooks/before-execute.md` | 70% | PR #70 |
+| `commands/review.md` | 76% | PR #67 |
+| `README.md` | 100% | PR #59 |
+
+The installable payload has moved a long way from upstream in wording and very
+little in shape. The fork's behavioral divergence still lives in `.claude/`,
+`standards/`, `scripts/`, and CI, which the archive strips.
+
+Reproduce the table from the repository root:
+
+```bash
+git clone -q https://github.com/WangX0111/superspec "$SCRATCH/upstream"
+cd specflow && git ls-files | grep -E '\.(md|yml|py|sh)$' | grep -v '^examples/' \
+  | grep -vE 'copilot-cli\.md|lint-standards\.py|score-artifacts\.py|tests/test_(lint_standards|score_artifacts|validate_extension_metadata|validate_release_archive)\.py' \
+  | xargs python3 ../.claude/divergence/measure-divergence.py --local . --upstream "$SCRATCH/upstream"
+```
+
+The excluded paths are files this fork added with no upstream counterpart;
+`measure-divergence.py` exits nonzero on the first one it hits otherwise, so
+the unfiltered command in earlier revisions of this file never produced the
+full table above.
+
+## commands/hooks/
+
+Three hook prompts spec-kit runs around its own commands.
+
+- **Tighten** `after-tasks.md` to read `progress.yml` before writing, as
+  `before-execute.md` does at step 6. Claimed by: D-01.
+- **Add** a `before_tasks` hook that stops when the spec's Open Questions table
+  has unresolved rows. Spec-kit fires `hooks.before_tasks`; upstream never
+  registered one. Not cheap: it changes the hook count `e2e-smoke.sh`,
+  `ci.yml`, and the hook tuple in `validate-extension-metadata.py` assert.
+  Verify: all three assertions updated and green. Claimed by: none, deferred in
+  `roadmap.md`.
+- **Extend** `after-execute.md` to write a findings file `review.md` reads.
+  Done, PR #57.
+- **Replace**: not warranted. The hooks are thin and spec-kit fixes their order.
+
+## commands/
+
+Command names are asserted in `e2e-smoke.sh`, `e2e-agent-claude.sh`, and
+`ci.yml`. Every Process-step change needs a smoke-test update.
+
+- **Extend** `brainstorm.md` to write resolved questions to `decisions.md` as
+  ADR-lite entries. G-17 covers the read. Claimed by: G-20.
+- **Replace** `execute.md` with a dispatcher over the `.claude/agents/` squad on
+  Claude Code, keeping the sequential walk as the Copilot fallback. Verify: both
+  paths pass the agent e2e in dry run. Claimed by: none, deferred in
+  `roadmap.md` until G-19 lands a snapshot to assert against.
+- **Add** a sixth command: not an option. It changes `extension.yml`, README,
+  and command-name assertions in four files.
+- Done: the status marker column (D-07, PR #55), the compound-task rule (D-06,
+  PR #58, with ADR-0016 on why the lint is blunt), and the review risk tier
+  (D-03, PR #59).
+
+## SKILL.md
+
+The largest single behavior contract and the file a `~/.agents/skills/` install
+reads first.
+
+- **Tighten** the phase list to name the gate marker each phase produces, so it
+  and `workflow-guide.md` cannot drift. Claimed by: G-22.
+- **Replace**: not warranted. Spec-kit's skill loader expects the upstream
+  section shape.
+- Done: the Target surface section (D-03, PR #59) and the prose rewrite
+  (PR #70).
+
+## references/
+
+Content is cheap to diverge; the file names are not. Both validators require
+`references/superpowers-bridge.md` and `references/workflow-guide.md` to
+exist by that exact path, so a content rewrite is free but a rename is not.
+See G-30 for the cost of renaming `superpowers-bridge.md`.
+
+- **Extend** `superpowers-bridge.md` to map the review personas under
+  `.claude/agents/` to the `requesting-code-review` skill, so Claude Code
+  prefers the squad and Copilot the skill. Claimed by: G-22. This is the last
+  shipped reference still close to upstream, at 4 percent.
+- **Extend** `workflow-guide.md` with one section per new gate or marker. The
+  Gate markers table stays the single source for marker names, and
+  `e2e-smoke.sh` asserts every row since PR #53. Claimed by: continuing, per
+  item.
+- Done: the `copilot-cli.md` reference (D-03, PR #59).
+
+## templates/
+
+Spec-kit's own commands fill these and expect the upstream section names. A
+change here reaches every downstream artifact.
+
+- **Extend** `constitution-template.md` with a review-stage table naming a model
+  class per stage, never an agent alias. Claimed by: G-21.
+- **Extend** `tasks-template.md` with a Verify column. Claimed by: G-21.
+- **Tighten** `checklist-template.md` with an `R-NNN` column joining `CHK` rows
+  to review findings. Claimed by: G-21.
+- **Replace**: not warranted.
+
+## examples/
+
+Export-ignored. Teaching material and the scorer's test fixture.
+`static-landing-page/` is upstream's snapshot and predates every gate this fork
+added; `sample-workflow.md` walks a "User Authentication" feature no snapshot
+contains, with abbreviated outputs that show none of the markers.
+`mutation-gate-sample/` and `seeded-bug/` are this fork's, added in PR #64 and
+the scorer work.
+
+- **Replace** the snapshot with a run of this fork's pipeline, **Add** a
+  failing-gate snapshot, and **Remove** `sample-workflow.md`. All three claimed
+  by: G-19.
+- **Add** a snapshot of a Copilot CLI run, so the fallback path has an example
+  and a dry-run fixture. Verify: the snapshot has no `.claude/` files and every
+  stage artifact. Claimed by: none. Needs a Copilot e2e script, backlog item 27.
+- **Tighten**: regenerate the snapshot spec when `spec-template.md` changes, so
+  the scorer golden matches the template. Verify: `score-artifacts.py` passes
+  after a template change. Claimed by: G-13, implicitly.
+
+## scripts/
+
+Export-ignored, so divergence here never reaches an installed extension.
+
+- **Tighten** `e2e-smoke.sh` to assert the Process-step count of each command
+  file, so a dropped step fails before merge. The gate-marker half landed in
+  PR #53. Claimed by: G-23.
+- **Add** an upstream drift check that compares the vendored commit to upstream
+  `HEAD`. Claimed by: G-23.
+- Done: both e2e scripts refactored to `standards/code.md` (PR #68), and
+  `validate-release-archive.py` before them.
+
+## assets/
+
+12 MiB of workflow diagrams, export-ignored because one PNG broke install for
+every user (upstream issue #6).
+
+- **Remove** the PNGs and check in Mermaid or SVG source beside the deck under
+  `presentation/`, per `standards/presentations.md`. Verify:
+  `validate-release-archive.py` passes and the README renders the diagram from
+  source. Claimed by: none.
+- **Add** or **Extend**: not an option. There is no reason to ship a binary the
+  archive strips.
+
+## Names
+
+Names are asserted in more files than behavior is. Each row states where a
+rename lands, so the cost is known before the move.
+
+| Name | Today | Asserted in | Cost | Claimed by |
+|------|-------|-------------|------|------------|
+| Manifest `name:` | "Superpowers Bridge" | `extension.yml`, `CHANGELOG.md`, validator test, `AGENTS.md`, `copilot-instructions.md` | Cheap; "bridges" is a banned metaphor | D-05d |
+| Manifest description and `purpose:` strings | "Deep-dive" (2), "Intelligent" (1), "Enhanced" (5) | Nothing greps them | Free Tighten | D-05d |
+| `.claude/review/schema.json` title | `SuperspecReviewFindings` | Hook tests | Cheap | D-05a |
+| `validate-extension-metadata.py` line 147 | Checks for a `superpowers-bridge --from` string no README carries | Validator tests | Delete the branch | D-05b |
+| Hook `prompt:` and `description:` strings | "Run enhanced Superpowers task decomposition and validation?" | Nothing greps them | Free Tighten | G-29 |
+| `tags:` list | `superpowers`, `brainstorming`, `tdd`, `code-review`, `subagent`, `workflow` | The spec-kit catalog search | Free; add `copilot`, `claude-code` | G-29 |
+| `author:` | "Specflow Contributors" | Nothing | Free | none |
+| `references/superpowers-bridge.md` | Named for the metaphor | Both validators' required-file lists, a `validate-release-archive` test fixture, and 16 prose citations including `AGENTS.md`'s `@` import | 16 files, two of them validators | G-30 |
+| `examples/static-landing-page/` | Upstream's feature | dry run, `score-artifacts.yml`, README | Replaced, not renamed | G-19 |
+| `commands/hooks/*.md` file names | `after-tasks`, `before-execute`, `after-execute` | Nothing; the manifest maps hooks to commands | Free, and no reason | none |
+| `commands/*.md` file names | `status`, `brainstorm`, `tasks`, `execute`, `review` | The `file:` field in `extension.yml` | Cheap, and no reason | none |
+| Extension id `specflow` | | 27 files | Not an option | |
+| `templates/*.md` file names | | Spec-kit reads `.specify/templates/<name>`; `e2e-smoke.sh` | Not an option | |
+| `superpowers.yml` cache name | | Every command and the smoke test | Not an option | |
+| `LICENSE` "Superspec Contributors" | | MIT requires the original notice | Not an option | |
+
+## Rewrite status
+
+`prose-rephraser` rewrites sentences to `standards/documentation.md` and keeps
+every heading, step, code block, path, and marker verbatim. `script-refactorer`
+applies `standards/code.md` to a script and keeps every exit code, output line,
+and flag. `divergence-auditor` measures the result with
+`.claude/divergence/measure-divergence.py` and runs the guards.
+
+Every shipped text file with an upstream counterpart has had its dedicated
+`prose-rephraser` or `script-refactorer` pass except the five below, each
+waiting on the item that holds it. Mark a row `(working on)` before
+dispatching, and commit that mark to `main`. The Real column is the raw
+divergence measured above, not a proxy for whether the pass has run:
+`README.md` is already 100% different from upstream in content (Copilot CLI
+support, the five-command structure) without having gone through the
+standards-compliance pass D-05 gates.
+
+| File | Real | Agent | Waiting on |
+|------|------|-------|------------|
+| `commands/hooks/after-tasks.md` | 0% | `prose-rephraser` | D-01 |
+| `extension.yml` | 0% | `prose-rephraser` | D-05 |
+| `CHANGELOG.md` | 1% | `prose-rephraser` | D-05 |
+| `scripts/validate-extension-metadata.py` | 7% | `script-refactorer` | D-05 |
+| `references/superpowers-bridge.md` | 4% | `prose-rephraser` | G-22 |
+| `README.md` | 100% | `prose-rephraser` | D-05 |
+
+A command rewrite runs `e2e-smoke.sh` through the auditor, because the smoke
+test greps command prose.
+
+## Choosing
+
+Pick by blast radius, not by the percentage. The percentage measures past
+divergence; it says nothing about what a new change costs. Order of preference:
+
+1. A reference's content, which nothing asserts against; not its file name,
+   which the validators do.
+2. A script, which never ships.
+3. A template, which reaches every downstream artifact once and needs no smoke
+   test change.
+4. A command or hook, which changes what the user sees and needs the smoke test,
+   CI, and the validators updated together.
