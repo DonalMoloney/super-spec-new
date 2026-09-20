@@ -99,6 +99,18 @@
 - [ ] CHK070 [Custom checklist item]
 - [ ] CHK071 [Custom checklist item]
 
+## Review Findings
+
+<!--
+  Join a failed checklist item to the review finding that reported it.
+  R-NNN ids come from the review-findings.json the review command writes.
+-->
+
+| CHK ID | R-NNN | Status |
+|--------|-------|--------|
+| CHK012 | R-001 | open |
+| CHK021 | R-004 | fixed |
+
 ## Notes
 
 - Check items off as completed: `[x]`
