@@ -52,9 +52,6 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | Item | What it closes | Effort | Verified open by |
 |---|---|---|---|
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
-| G-20 | Brainstorm reads `decisions.md` and never writes it | medium | Read at `brainstorm.md` line 17, no write step |
-| G-21 | Three templates carry no check of their own | medium | No Verify column, no review-stage table, no `R-NNN` |
-| G-22 | `SKILL.md` and the bridge do not name the personas | low | 0 matches for `reviewer` in `superpowers-bridge.md` |
 | G-23 | The smoke test misses a dropped step, and nothing watches upstream | low | No step-count table, no `check-upstream.sh`, no scheduled workflow |
 | G-24 | Six command lines read a template path instead of resolving it | medium | See the nine checks under G-24 |
 | G-25 | An extension template always replaces, so core's changes are lost | high | Core `tasks-template.md` is 252 lines against our 210 |
@@ -62,7 +59,6 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | G-28 | Upstream superspec is catalogued under our summary | low | `docs/community/extensions.md` lists three bridges, none of them specflow |
 | G-29 | Two free naming/wording moves nobody claimed | low | See the two checks under G-29 |
 | G-30 | `superpowers-bridge.md` is named for a banned metaphor | medium | 16 files cite the path |
-| G-31 | The fallback guide names a template only on the superpowers path | low | Phase 4 names `tasks-template` only inside its `writing-plans` step |
 | C-01 | 44 merged remote branches | low | `git branch -r` |
 | C-03 | The `imporvements/` directory name is a typo | low | 13 files cite it |
 | C-05 | Both e2e scripts leave a work directory behind | low | `Workdir kept at` prints unconditionally |
@@ -173,54 +169,54 @@ grep prints nothing.
 grep -r 'static-landing-page\|sample-workflow' specflow/ README.md
 ```
 
-## G-20 — Brainstorm writes decisions (working on)
+## G-20 — Brainstorm writes decisions (merged: `bc35f95`)
 
 Executor: `general-purpose`. Model: sonnet. Effort: medium. Depends on: none.
 
 G-17 made `brainstorm.md` read `decisions.md` at step 3. Nothing writes to it,
 so a question resolved in a session is lost by the next one.
 
-- [ ] T201 Write a resolved question as an ADR-lite entry
+- [x] T201 Write a resolved question as an ADR-lite entry
 
 Add a Process step that appends a Context, Decision, Consequences entry to
 `decisions.md` for each Open Questions row the run marks Resolved, numbered
 after the highest existing ADR. Verify: the step names the file and the shape,
 and `e2e-smoke.sh` passes.
 
-- [ ] T202 Assert the write in the dry run
+- [x] T202 Assert the write in the dry run
 
 Verify: the brainstorm stage assertion checks that a resolved fixture row
 lands in `decisions.md`.
 
-## G-21 — Templates carry their own checks (working on)
+## G-21 — Templates carry their own checks (merged: `9c9c878`)
 
 Executor: `general-purpose`. Model: sonnet. Effort: medium. Depends on: none.
 
-- [ ] T211 Add a Verify column to `tasks-template.md`
+- [x] T211 Add a Verify column to `tasks-template.md`
 
 The template carries an Independent Test line per story and no per-task check.
 Verify: the template's task table header carries the column and
 `score-artifacts.py` still parses the golden.
 
-- [ ] T212 Add a review-stage table to `constitution-template.md`
+- [x] T212 Add a review-stage table to `constitution-template.md`
 
 Three rows (pre-mortem, single reviewer, panel) and a model class per row
 (fast, standard, strongest). No agent alias, per constraint 3 in
 `reference.md`. Verify: `grep -E 'opus|sonnet|haiku'` on the template prints
 nothing.
 
-- [ ] T213 Add an `R-NNN` column to `checklist-template.md`
+- [x] T213 Add an `R-NNN` column to `checklist-template.md`
 
 Joins the `CHK` row ids to review finding ids. Verify: the column exists and
 the dry run's checklist assertion passes.
 
-## G-22 — `SKILL.md` and the bridge name the gates and the personas (working on)
+## G-22 — `SKILL.md` and the bridge name the gates and the personas (merged: `139eaf8`)
 
 Executor: `general-purpose`. Model: sonnet. Effort: low. Depends on: none.
 D-03 (PR #59) added the Target surface section. PR #70 rewrote the prose, so
 `SKILL.md` now stands at 40 percent real change.
 
-- [ ] T221 Name the gate marker on each phase line
+- [x] T221 Name the gate marker on each phase line
 
 `SKILL.md` names `.clarified` and `.analyzed` in its status section, so a grep
 for the markers already passes. It does not name the marker each phase
@@ -229,11 +225,13 @@ Verify: every phase line under `## Unified Workflow` that produces a marker
 names it, and every marker in the Gate markers table of `workflow-guide.md`
 appears under that heading.
 
-- [ ] T222 Map the review personas in `superpowers-bridge.md`
+- [x] T222 Map the review personas in `superpowers-bridge.md`
 
 One row per `.claude/agents/*-reviewer.md` file, naming the
 `requesting-code-review` step it replaces on Claude Code and the skill step
-Copilot runs instead. Verify: eight rows.
+Copilot runs instead. Verify: one row per `.claude/agents/*-reviewer.md` file.
+Measured 10 on 2026-09-20; an earlier revision of this line said eight, which
+went stale when reviewers were added.
 
 ## G-23 — The smoke test catches a dropped step, and CI watches upstream (working on)
 
@@ -514,7 +512,7 @@ Verify: `grep -c '"claude-code"' specflow/extension.yml` and
 `grep -c '"copilot"' specflow/extension.yml` each print 1, and
 `python3 scripts/validate-extension-metadata.py` passes.
 
-## G-31 — The fallback guide names a template only on the superpowers path (working on)
+## G-31 — The fallback guide names a template only on the superpowers path (merged: `321c202`)
 
 Executor: `general-purpose`. Model: sonnet. Move: Tighten. Effort: low.
 Depends on: none. Diverges: yes.
@@ -532,7 +530,7 @@ alone in this.
 Found while fixing the resolver routing in `fd121f8`; out of scope there
 because closing it means restructuring the step or adding one, not rewording.
 
-- [ ] T311 Name the tasks template outside the superpowers condition
+- [x] T311 Name the tasks template outside the superpowers condition
 
 Give Phase 4 an unconditional step that resolves `tasks-template` and reads
 `TEMPLATE_CONTENT`, matching Phases 0, 1, and 3, and leave step 2's
@@ -618,12 +616,15 @@ closed on 2026-09-20.
   never reaches the jq check it names. It passes for the wrong reason on any
   machine without mutmut. Verify: the case fails when jq is on `PATH` and
   mutmut is not.
-- [ ] **C-09** Stop `artifact-lint.sh` treating `specflow/commands/tasks.md` as
-  a generated artifact. The lint matches on the basename `tasks.md`, so editing
-  the command contract trips `no task lines with stable IDs (expected '- [ ]
-  T001 ...')`. A command file is a behavior contract, not a feature's task
-  list. Verify: an edit to `specflow/commands/tasks.md` passes the lint, and a
-  `specs/NNN-*/tasks.md` with no stable IDs still fails it.
+- [ ] **C-09** Scope `artifact-lint.sh` by path instead of by basename. Two
+  symptoms, one cause. Editing `specflow/commands/tasks.md` trips `no task
+  lines with stable IDs (expected '- [ ] T001 ...')`, because the lint matches
+  the basename `tasks.md`; a command file is a behavior contract, not a
+  feature's task list. Separately, the hook fired on a file under
+  `~/.claude/projects/`, outside this repository entirely, and blocked the
+  write over an em-dash. Verify: an edit to `specflow/commands/tasks.md`
+  passes, a `specs/NNN-*/tasks.md` with no stable IDs still fails, and a path
+  outside the repository is not linted.
 
 ## Backlog: items 23 to 36
 
