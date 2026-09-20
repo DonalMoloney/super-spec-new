@@ -1,0 +1,79 @@
+name: Release
+
+# The spec-kit catalog installs this extension from the ZIP GitHub generates for
+# a tag, and no check runs between pushing that tag and a user downloading it.
+# Issue #6 was that gap: a 12 MiB asset passed spec-kit's 10 MiB per-member limit
+# and broke every install. This job rebuilds the same archive, checks it against
+# every install limit, and publishes it with the check output beside it.
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+# A tag is pushed once, so a second run for the same tag is a rerun of the first.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-archive:
+    name: Validate and publish the release archive
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      TAG: ${{ github.ref_name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # validate-release-archive.py archives into a temporary directory it then
+      # deletes, so the published ZIP is built here with the same command it runs.
+      - name: Build the release archive
+        working-directory: specflow
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/release"
+          git archive --format=zip --prefix=specflow/ \
+            -o "$RUNNER_TEMP/release/specflow-$TAG.zip" "$TAG"
+          ls -l "$RUNNER_TEMP/release/specflow-$TAG.zip"
+
+      - name: Validate the release archive
+        working-directory: specflow
+        run: |
+          set -uo pipefail
+          report="$RUNNER_TEMP/release/validate-release-archive-$TAG.txt"
+          if python3 scripts/validate-release-archive.py "$TAG" | tee "$report"; then
+            exit 0
+          fi
+          # Failing the job stops the release, but the tag is already pushed and
+          # GitHub already serves its ZIP, so the maintainer has to withdraw it.
+          {
+            echo "validate-release-archive.py failed for $TAG; see the checks above."
+            echo "No release was created, but $TAG is pushed and GitHub serves its ZIP now."
+            echo "Delete the tag, fix the archive, then tag the fix as a new version:"
+            echo "  git push --delete origin $TAG"
+            echo "  git tag -d $TAG"
+          } >&2
+          exit 1
+
+      - name: Attach the archive and the check output to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release view "$TAG" > /dev/null 2>&1 \
+            || gh release create "$TAG" --title "$TAG" --generate-notes
+          gh release upload "$TAG" \
+            "$RUNNER_TEMP/release/specflow-$TAG.zip" \
+            "$RUNNER_TEMP/release/validate-release-archive-$TAG.txt" \
+            --clobber
