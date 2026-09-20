@@ -21,6 +21,8 @@ description: "Task list template for feature implementation"
 
 **One outcome per task**: a description that needs "and" is two tasks. Split it.
 
+**One check per task**: the Task Verification table names how each task is proven.
+
 **Story labels**: `[US1]`, `[US2]`, etc. map tasks to user stories for traceability.
 
 ## Path Conventions
@@ -138,6 +140,19 @@ as parallel subagents. T014 needs review before the next task starts.
 
 **Execution notes**: Most polish tasks run in parallel. The final security hardening
 needs review. Every test must pass before this phase ends.
+
+---
+
+## Task Verification
+
+Give every task a row. The Verify cell names the command or the observation that
+proves the task is done, so a reader checks it without asking the implementer.
+
+| Task | Verify |
+|------|--------|
+| T001 | `ls src/ tests/` lists the directories plan.md names |
+| T004 | The model test fails before the implementation, passes after it |
+| T014 | A request with an empty `email` field returns 400 |
 
 ---
 
