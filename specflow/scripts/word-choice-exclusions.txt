@@ -1,0 +1,31 @@
+# Word-choice entries lint-standards.py leaves to a reader.
+#
+# The Word choice table in standards/documentation.md maps a word to write
+# against the words not to write. lint-standards.py checks the "Not" column of
+# that table. Two kinds of entry are left out.
+#
+# An entry the table itself qualifies, such as `update (unless a version bump)`,
+# is dropped where the table is parsed, the rule `banned_entries` already
+# follows. It needs no line here.
+#
+# An entry below carries a second sense this repository uses, or names a concept
+# this repository already fixed a term for. A matcher reads neither, so it would
+# report prose the standard allows.
+#
+# One entry per line, as `entry: reason`. The entry is a word from the "Not"
+# column, lower case. An entry the table no longer carries stops the linter, so
+# a row deleted upstream cannot leave a silent exclusion behind.
+
+stage: agent frontmatter carries a `stage` key and the review panel numbers its stages, the reason the table qualifies the sibling entry `phase`
+surface: "target surface" names a CLI runtime in AGENTS.md, where the row bans the verb
+resolve: a path resolves and an open question is resolved, where the row bans the "fix" sense
+strategy: `workflow-guide.md` names the execution strategy a plan states
+following: "the following steps" points forward, where the row bans the "after" sense
+address: an email address and an IP address are nouns, where the row bans the "fix" sense
+drop: `git stash drop` drops a stash, where the row bans the "remove" sense
+element: a list element and an XML element are nouns, where the row bans the "part" sense
+allow: a permission flag allows a tool, where the row bans the "let" sense
+concern: standards/code.md asks for one concern per commit, where the row bans the "problem" sense
+challenge: the brainstorming protocol challenges an assumption, where the row bans the noun
+platform: an operating system is a platform, where the row bans the "tool" sense
+outcome: AGENTS.md names one outcome per task and the scenarios name the observable outcome, so the standard's own "One term per concept" rule keeps it
