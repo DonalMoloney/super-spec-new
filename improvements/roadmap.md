@@ -55,7 +55,6 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | G-24 | Six command lines read a template path instead of resolving it | medium | See the nine checks under G-24 |
 | G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 done, T262 and T263 behind three prerequisites |
 | G-33 | The word-choice table is enforced by reading, not a check | medium | `lint-standards.py` checks em-dashes and the banned table only |
-| C-03 | The `imporvements/` directory name is a typo | low | 13 files cite it |
 
 ## D-01 — `after-tasks.md` reads the progress file (merged: `8fb7813`)
 
@@ -737,13 +736,15 @@ closed on 2026-09-20.
   their tips were not ancestors. None had an open PR. `delete_branch_on_merge`
   is now true on the repository, so the list stops growing. Verify:
   `git branch -r` lists only `origin/main` and `origin/HEAD`.
-- [ ] **C-03** Rename the `imporvements/` directory to `improvements/`. The
-  typo is cited from `AGENTS.md`, `CLAUDE.md`, `decisions.md`, two agent
-  files, `measure-divergence.py`, `lint-standards.py` and its test, the deck's
-  speaker notes, and both new files in the folder: 13 tracked files. Do it
-  in one PR when no worktree is open, because every one of them edits a file
-  in the folder. Verify: `grep -rn imporvements . --exclude-dir=.git` prints
-  nothing.
+- [x] **C-03** Rename the `imporvements/` directory to `improvements/`. Done
+  on 2026-09-20 in `ab859e7`: 26 citations moved across 14 files, including
+  `lint-standards.py`'s `EXCLUDED_DIRS` and the two fixtures that prove the
+  exclusion works, which had to move together or the tests would pass while
+  testing nothing. One citation keeps the typo on purpose:
+  `docs/review-research.md:12` names the deleted `imporvements/imporvements2.md`,
+  a file that never existed under the corrected spelling. Verify:
+  `grep -rn imporvements . --exclude-dir=.git` prints that one line and no
+  other.
 - [x] **C-04** Retitle `presentation/use-guide/use-guide.md`. The H1 is a path.
   Verify: the H1 is a noun phrase and no header carries a capital after its
   first word except a proper noun.
