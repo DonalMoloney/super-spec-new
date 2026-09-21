@@ -48,7 +48,6 @@ to the local path first.
 
 | File | Real | Last moved by |
 |------|------|---------------|
-| `extension.yml` | 0% | D-05 holds it |
 | `templates/plan-template.md` | 20% | PR #69 |
 | `scripts/validate-release-archive.py` | 29% | `script-refactorer` |
 | `templates/spec-template.md` | 33% | PR #69 |
@@ -60,6 +59,7 @@ to the local path first.
 | `commands/status.md` | 45% | PR #55 |
 | `commands/brainstorm.md` | 54% | PR #67 |
 | `scripts/e2e-smoke.sh` | 56% | PR #68 |
+| `extension.yml` | 56% | `prose-rephraser` |
 | `references/superpowers-mapping.md` | 57% | `prose-rephraser` |
 | `references/workflow-guide.md` | 57% | PR #71 |
 | `commands/execute.md` | 57% | PR #66 |
@@ -240,18 +240,17 @@ and flag. `divergence-auditor` measures the result with
 `.claude/divergence/measure-divergence.py` and runs the guards.
 
 Every shipped text file with an upstream counterpart has had its dedicated
-`prose-rephraser` or `script-refactorer` pass except the one below whose
-Waiting on cell names an item. An empty cell means the pass has run and the
-Real column records what it measured. Mark a row `(working on)` before
-dispatching, and commit that mark to `main`. The Real column is the raw
-divergence measured above, not a proxy for whether the pass has run:
-`README.md` measured 134% both before and after its pass, because its content
-had already diverged from upstream.
+`prose-rephraser` or `script-refactorer` pass. An empty Waiting on cell means
+the pass has run and the Real column records what it measured. Mark a row
+`(working on)` before dispatching, and commit that mark to `main`. The Real
+column is the raw divergence measured above, not a proxy for whether the pass
+has run: `README.md` measured 134% both before and after its pass, because its
+content had already diverged from upstream.
 
 | File | Real | Agent | Waiting on |
 |------|------|-------|------------|
 | `commands/hooks/after-tasks.md` | 60% | `prose-rephraser` | |
-| `extension.yml` | 0% | `prose-rephraser` | D-05 |
+| `extension.yml` | 56% | `prose-rephraser` | |
 | `CHANGELOG.md` | 77% | `prose-rephraser` | |
 | `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` | |
 | `references/superpowers-mapping.md` | 57% | `prose-rephraser` | |

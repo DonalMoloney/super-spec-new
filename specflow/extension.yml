@@ -17,46 +17,46 @@ extension:
   homepage: "https://github.com/DonalMoloney/super-spec-new#readme"
 requires:
   speckit_version: ">=0.16.2"
-  # spec-kit reads no key under optional_skills; the mapping table is the list.
+  # spec-kit reads no key under optional_skills; superpowers-mapping.md holds the list.
   optional_skills:
     - id: "brainstorming"
       source: "obra/superpowers"
-      purpose: "Edge case exploration during the specification phase"
+      purpose: "Finds edge cases while the spec is written"
     - id: "writing-plans"
       source: "obra/superpowers"
-      purpose: "Task decomposition from implementation plans"
+      purpose: "Breaks an implementation plan into tasks"
     - id: "executing-plans"
       source: "obra/superpowers"
-      purpose: "Batch execution with human checkpoints"
+      purpose: "Runs tasks in batches and waits at each checkpoint"
     - id: "subagent-driven-development"
       source: "obra/superpowers"
-      purpose: "Parallel task dispatch to subagents"
+      purpose: "Hands an independent task to a subagent"
     - id: "test-driven-development"
       source: "obra/superpowers"
-      purpose: "RED-GREEN-REFACTOR discipline enforcement"
+      purpose: "Keeps a task in RED-GREEN-REFACTOR order"
     - id: "requesting-code-review"
       source: "obra/superpowers"
-      purpose: "Pre-evaluation code review checklists"
+      purpose: "Works through a checklist before the review starts"
 provides:
   commands:
     - name: "speckit.specflow.status"
       file: "commands/status.md"
-      description: "Show current project progress and superpowers detection status"
+      description: "Print each feature's phase, its gate markers, and the superpowers detection result"
     - name: "speckit.specflow.brainstorm"
       file: "commands/brainstorm.md"
-      description: "Find edge cases and refine a spec using brainstorming skills"
+      description: "Probe a spec for edge cases and record the answers in its Open Questions"
     - name: "speckit.specflow.tasks"
       file: "commands/tasks.md"
-      description: "Generate phased task breakdown using writing-plans skills"
+      description: "Break a plan into phased tasks, one outcome per task"
     - name: "speckit.specflow.execute"
       file: "commands/execute.md"
-      description: "Orchestrate implementation with TDD, subagents, and review gates"
+      description: "Drive implementation through TDD, subagent dispatch, and review gates"
     - name: "speckit.specflow.review"
       file: "commands/review.md"
-      description: "Run code review against spec requirements using review skills"
+      description: "Check a change against the spec and the constitution, and score each finding"
     - name: "speckit.specflow.gate"
       file: "commands/gate.md"
-      description: "Write a feature's clarify or analyze marker, or report why the gate refused"
+      description: "Write a feature's clarify or analyze marker, or name the check that refused"
   scripts:
     - name: "risk-classifier"
       file: "gates/bash/risk-classifier.sh"
@@ -81,44 +81,44 @@ provides:
   templates:
     - name: "constitution-template"
       file: "templates/constitution-template.md"
-      description: "Constitution with development workflow and quality gates"
+      description: "States the core principles, the development workflow, and the quality gates"
     - name: "spec-template"
       file: "templates/spec-template.md"
-      description: "Spec with brainstorm prompts, open questions, and brainstorm log"
+      description: "Carries an open questions table, a threat model, and a brainstorm log"
     - name: "plan-template"
       file: "templates/plan-template.md"
-      description: "Plan with execution strategy and superpowers dispatch"
+      description: "States the execution strategy the task breakdown reads"
     - name: "tasks-template"
       file: "templates/tasks-template.md"
-      description: "Tasks with TDD/REVIEW/SUBAGENT execution markers"
+      description: "Marks each task [P], [TDD], [REVIEW], or [SUBAGENT] and gives it a Verify row"
     - name: "checklist-template"
       file: "templates/checklist-template.md"
-      description: "Checklist with code review and spec compliance categories"
+      description: "Covers spec compliance, code review, constitution, and test coverage"
 hooks:
   after_clarify:
     command: "speckit.specflow.gate"
     optional: false
-    description: "Write the feature's clarify marker once no NEEDS CLARIFICATION marker is left"
+    description: "Write the feature's .clarified file once the spec holds no NEEDS CLARIFICATION line"
   after_analyze:
     command: "speckit.specflow.gate"
     optional: false
-    description: "Write the feature's analyze marker once the report holds no CRITICAL row"
+    description: "Write the feature's .analyzed file once the report holds no CRITICAL row"
   after_tasks:
     command: "speckit.specflow.tasks"
     optional: true
     priority: 10
-    prompt: "Run Superpowers task decomposition and add execution markers?"
-    description: "Check task coverage and add Superpowers execution markers after core task generation"
+    prompt: "Break the tasks down again with the writing-plans skill?"
+    description: "Check that every user story has tasks and that each task carries its markers"
   before_implement:
     command: "speckit.specflow.execute"
     optional: true
     priority: 10
-    prompt: "Run Superpowers-guided implementation with TDD and checkpoints?"
-    description: "Enforce TDD discipline and follow Superpowers execution guidance before core implementation"
+    prompt: "Hand the implementation to /speckit.specflow.execute instead?"
+    description: "Check the constitution and analyze gates before /speckit.implement starts"
   after_implement:
     command: "speckit.specflow.review"
     optional: true
     priority: 10
-    prompt: "Run Superpowers review against the specification and implementation?"
-    description: "Review implementation against the spec, plan, tasks, and constitution"
+    prompt: "Review the completed phase against its spec?"
+    description: "Review the completed phase against the spec, the plan, and the constitution"
 tags: ["superpowers", "brainstorming", "tdd", "code-review", "subagent", "workflow", "claude-code", "copilot"]
