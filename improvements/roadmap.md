@@ -234,7 +234,7 @@ Verify: a `progress.yml` written by following `SKILL.md` alone validates clean,
 and `grep` for `completed_tasks` and `current_task` in `workflow-guide.md`
 prints nothing.
 
-## G-45 — The merge gate cannot read `code-reviewer`'s findings
+## G-45 — The merge gate cannot read `code-reviewer`'s findings (working on)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Extend. Effort: low.
 Depends on: none. Raised on 2026-09-20 while rewriting the eight persona
