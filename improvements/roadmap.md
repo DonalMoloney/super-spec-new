@@ -782,7 +782,7 @@ wording was inherited from upstream, whose repository root is its extension.
 test was added, because nothing behavioural changed and a wrongly rooted archive
 already fails the existing required-member check. G-42 came out of this.
 
-## G-44 — The mutation-gate hook cases fail without mutmut, not skip (merged: `5745362`, `2c80922`, `c816aec`)
+## G-48 — The mutation-gate hook cases fail without mutmut, not skip (merged: `5745362`, `2c80922`, `c816aec`)
 
 Executor: none, committed directly. Effort: low. Was backlog item N-23. Found
 already merged with no roadmap claim while auditing this folder for currency
@@ -1313,7 +1313,7 @@ beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
 
 ## Suggested order
 
-D-01, D-05, G-20 through G-25, G-28 through G-42, G-44, and C-01 through C-09
+D-01, D-05, G-20 through G-25, G-28 through G-42, G-48, and C-01 through C-09
 are merged or closed. What is left, in order:
 
 1. G-43. Low effort, and it is the second `SKILL.md` schema inaccuracy G-41

@@ -22,7 +22,7 @@ group carries the claim.
 |-------|---------------------|
 | `validate-extension-metadata.py` | OK |
 | `validate-release-archive.py` | within every limit, 26 entries |
-| `.claude/hooks/tests/run.sh` | 223 passed, 0 failed, 8 skipped; the eight are `mutation-gate.sh` cases, now skipped rather than failed when mutmut is absent, closed as G-44 |
+| `.claude/hooks/tests/run.sh` | 223 passed, 0 failed, 8 skipped; the eight are `mutation-gate.sh` cases, now skipped rather than failed when mutmut is absent, closed as G-48 |
 | `pytest` over the four test dirs | 113 passed |
 | `lint-standards.py` | 67 files, 0 findings |
 | `shellcheck -S warning` | 0 findings |
@@ -31,7 +31,7 @@ group carries the claim.
 | `ruff check` | not run locally, `ruff` not installed here; CI runs it |
 
 The first wave, G-01 to G-18, and the cleanup wave, Q-01 to Q-28, are merged.
-`roadmap.md` now carries D-01, D-05, G-20 to G-25, G-28 to G-42, and G-44 as
+`roadmap.md` now carries D-01, D-05, G-20 to G-25, G-28 to G-42, and G-48 as
 merged, G-19, G-26, and G-43 as open, C-01 to C-09 as closed hygiene, and a
 scoped backlog of items 23, 25 to 28, and 31 to 36 (24, 29, and 30 promoted
 to G-36, G-37, and G-38 and merged).
@@ -87,7 +87,7 @@ Findings from this survey that `roadmap.md` already carries. Work them there.
 | `SKILL.md` and `workflow-guide.md` describe copying templates into `.specify/templates/` | N-20, closed as G-24 T242 to T244 |
 | The Budgets section of `workflow-guide.md` names a TBD flag and the wrong telemetry path | N-21, closed as G-24 T247 |
 | `.github/copilot-instructions.md` states the wrong agent count | N-22, closed as G-24 T249 |
-| Mutation-gate hook cases fail rather than skip without mutmut | N-23, closed as G-44 |
+| Mutation-gate hook cases fail rather than skip without mutmut | N-23, closed as G-48 |
 
 ## N-01 to N-10: follow spec-kit 1.0
 
@@ -254,7 +254,7 @@ All four closed as G-24 tasks, merged. See the "Already on the roadmap" table.
 
 ## N-24 to N-25: repository hygiene
 
-N-23 closed as G-44 (merged: `5745362`, `2c80922`, `c816aec`).
+N-23 closed as G-48 (merged: `5745362`, `2c80922`, `c816aec`).
 
 - **N-24** Pin `@anthropic-ai/claude-code` in `merge-gate.yml`, which
   installs `latest` on every run while the action beside it is pinned to a
