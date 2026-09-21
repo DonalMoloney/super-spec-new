@@ -8,6 +8,8 @@
 # stage_1_constitution through stage_7_review with that function's name.
 #
 # Pipeline
+#   Stage 0  /speckit.specflow.status, dry run only: superpowers detection
+#                                     against a skill tree and a plugin manifest
 #   Stage 1  /speckit.constitution, writes .specify/memory/constitution.md
 #   Stage 2  /speckit.specify, writes specs/001-.../spec.md
 #   Stage 3  /speckit.specflow.brainstorm  (mutates spec.md, adds Edge Cases,
@@ -301,6 +303,116 @@ prep_project() {
   exit 1
 }
 
+MAPPED_SKILL_COUNT=12
+SUPERPOWERS_FIXTURE_VERSION="5.0.0"
+
+# Prints the Skill Directory cell of every Skill Mapping row, the directory
+# name /speckit.specflow.status step 3 looks for.
+mapped_skill_directories() {
+  awk '
+    /^## /               { inside = ($0 ~ /^## Skill Mapping[[:space:]]*$/); next }
+    !inside              { next }
+    !/^[[:space:]]*\|/   { next }
+    {
+      split($0, cell, "|")
+      gsub(/[`[:space:]]/, "", cell[4])
+      sub(/\/$/, "", cell[4])
+      if (cell[4] == "" || cell[4] == "SkillDirectory" || cell[4] ~ /^:?-+:?$/) next
+      print cell[4]
+    }
+  ' "$REPO_ROOT/references/superpowers-mapping.md"
+}
+
+# Counts the mapped skills a project carries at the project-local path the
+# mapping's Detection Logic names. Args: <project directory>.
+count_detected_skills() {
+  local project="$1" skill found=0
+  for skill in $(mapped_skill_directories); do
+    [ -f "$project/.agents/skills/$skill/SKILL.md" ] && found=$((found+1))
+  done
+  printf '%s\n' "$found"
+}
+
+# Exit 0 when a version sits outside a `>=X.Y.Z <A.B.C` range. The tested
+# range the mapping states is bounded on major numbers, so the comparison
+# reads major numbers. Args: <version> <range>.
+version_is_outside_range() {
+  local version="$1" range="$2" major floor ceiling
+  major="${version%%.*}"
+  floor="$(printf '%s\n' "$range"   | sed -n 's/.*>=\([0-9][0-9]*\)\..*/\1/p')"
+  ceiling="$(printf '%s\n' "$range" | sed -n 's/.*<\([0-9][0-9]*\)\..*/\1/p')"
+  [ -n "$floor" ] && [ -n "$ceiling" ] || return 1
+  [ "$major" -lt "$floor" ] || [ "$major" -ge "$ceiling" ]
+}
+
+# Writes the two fixtures the status stage reads: a project-local skill tree
+# holding every mapped skill, and a plugin manifest naming a superpowers
+# version below the tested range. The manifest stands in for
+# ~/.claude/plugins/installed_plugins.json, which a test never writes.
+seed_status_fixtures() {
+  local skill
+  for skill in $(mapped_skill_directories); do
+    mkdir -p "$WORK/.agents/skills/$skill"
+    printf '# %s\n' "$skill" > "$WORK/.agents/skills/$skill/SKILL.md"
+  done
+
+  mkdir -p "$WORK/.claude/plugins"
+  cat > "$WORK/.claude/plugins/installed_plugins.json" <<FIXTURE
+{
+  "plugins": {
+    "superpowers": {
+      "version": "$SUPERPOWERS_FIXTURE_VERSION"
+    }
+  }
+}
+FIXTURE
+}
+
+# The dry run's status stage: the superpowers detection /speckit.specflow.status
+# step 3 runs, checked against the two fixtures above. seed_dry_run_snapshot
+# calls it, because the stage needs no agent and both agent scripts reach it
+# there.
+stage_0_status() {
+  title 0 "/speckit.specflow.status: superpowers detection"
+  local mapping="$REPO_ROOT/references/superpowers-mapping.md"
+  seed_status_fixtures
+
+  assert_grep "the mapping names the project-local detection path" \
+              '\.agents/skills/.*/SKILL\.md' "$mapping"
+
+  local declared detected
+  declared="$(mapped_skill_directories | wc -l | tr -d ' ')"
+  if [ "$declared" = "$MAPPED_SKILL_COUNT" ]; then
+    pass "  the Skill Mapping table names $MAPPED_SKILL_COUNT skills"
+  else
+    miss "  the Skill Mapping table names $declared skills, expected $MAPPED_SKILL_COUNT"
+  fi
+
+  detected="$(count_detected_skills "$WORK")"
+  if [ "$detected" = "$MAPPED_SKILL_COUNT" ]; then
+    pass "  the status stage detects $detected of $MAPPED_SKILL_COUNT skills from the fixture"
+  else
+    miss "  the status stage detects $detected of $MAPPED_SKILL_COUNT skills from the fixture"
+  fi
+
+  assert_grep "  status.md documents the out-of-range line" \
+              'superpowers <version> is outside the tested range <range>' \
+              "$REPO_ROOT/commands/status.md"
+
+  local version range warning
+  version="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
+                    "$WORK/.claude/plugins/installed_plugins.json" | head -n1)"
+  range="$(sed -n 's/^Tested range: `\([^`]*\)`.*/\1/p' "$mapping")"
+  warning="superpowers $version is outside the tested range $range"
+  if ! version_is_outside_range "$version" "$range"; then
+    miss "  the fixture version $version reads as inside '$range', so no line is printed"
+  elif [ "$warning" = "superpowers 5.0.0 is outside the tested range >=6.0.0 <7.0.0" ]; then
+    pass "  the status stage prints: $warning"
+  else
+    miss "  the status stage prints '$warning'"
+  fi
+}
+
 # A dry run copies the shipped example snapshot into the project and runs
 # every stage assertion against it, so a broken assertion fails without an
 # agent call. The snapshot is a real run's output, so it is the fixture.
@@ -312,6 +424,7 @@ seed_dry_run_snapshot() {
   cp "$SNAPSHOT/.specify/memory/constitution.md" "$WORK/.specify/memory/constitution.md"
   cp "$SNAPSHOT/decisions.md" "$WORK/decisions.md"
   pass "snapshot copied into ${WORK##*/}"
+  stage_0_status
 }
 
 # stage 1: /speckit.constitution
