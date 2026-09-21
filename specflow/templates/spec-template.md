@@ -74,28 +74,27 @@
 -->
 
 - What happens when [boundary condition]?
-- How does the system handle [error scenario]?
+- How does the system respond to [error scenario]?
 
 #### Brainstorm Prompts
 
 <!--
   These prompts guide /speckit.specflow.brainstorm. Each one opens a line of
-  questioning. Add a prompt specific to this feature's domain when the list
-  below does not cover it.
+  questioning. When the list below does not cover this feature's domain, add
+  a prompt for it.
 -->
 
 - **Boundary conditions**: What are the minimum and maximum valid inputs? What happens at the edges?
 - **Error scenarios**: What if the network is down? What if the database is unavailable? What if input is malformed?
 - **Scale**: What happens under 10x or 100x the expected load? Do rate limits apply?
-- **Security**: Can this feature be abused? Are there injection vectors? What about unauthorized access?
+- **Security**: Could an attacker abuse this feature? Are there injection vectors? Could an attacker gain unauthorized access?
 - **User confusion**: Where might users misunderstand the feature? What if they use it in an unintended way?
-- **Data integrity**: What happens during concurrent modifications? What about partial failures?
+- **Data integrity**: What happens during concurrent modifications? What happens during a partial failure?
 - **Backwards compatibility**: Does this break existing behavior? What migration path does it need?
 
 ## Open Questions
 
 <!--
-  This section lists unresolved questions from brainstorming.
   Each question carries a status, Open or Resolved, and a resolution summary.
   /speckit.specflow.brainstorm updates this section as it explores each question.
 -->
@@ -127,8 +126,8 @@
 ## Threat Model
 
 <!--
-  Optional. Walk each STRIDE category against this feature. Mark a row N/A
-  with a one-clause reason when the category does not apply. Do not delete
+  Optional. Walk each STRIDE category against this feature. When a category
+  does not apply, mark the row N/A with a one-clause reason. Do not delete
   the row.
 -->
 
@@ -153,7 +152,7 @@
 ## Traceability
 
 Every FR and SC criterion needs at least one named test before the conformance review runs.
-Automated scoring reads only the Test name column. Status is for a human reader.
+Automated scoring reads only the Test name column. A human reader uses the Status column.
 
 | Criterion ID | Test name | Status |
 |--------------|-----------|--------|
@@ -170,13 +169,13 @@ Automated scoring reads only the Test name column. Status is for a human reader.
 ## Brainstorm Log
 
 <!--
-  This section records insights from /speckit.specflow.brainstorm sessions.
-  Each entry is dated and states what the session found and decided.
-  Do not edit it by hand. /speckit.specflow.brainstorm maintains this section.
+  /speckit.specflow.brainstorm maintains this section and adds one entry per
+  session. Each entry is dated and states what the session found and decided.
+  Do not edit it by hand.
 -->
 
 <!-- Example entry:
-### Session 2026-04-22
+### Session [YYYY-MM-DD]
 **Focus**: Edge cases in authentication flow
 **Key insights**:
 - Discovered need for rate limiting on login attempts
@@ -188,8 +187,8 @@ Automated scoring reads only the Test name column. Status is for a human reader.
 ## Changelog
 
 <!--
-  One row records each spec version, newest last. Add a row when the spec
-  changes after its first approval. Then delete `.clarified` and `.analyzed`,
+  One row records each spec version, newest last. When the spec changes after
+  its first approval, add a row. Then delete `.clarified` and `.analyzed`,
   and rerun /speckit.clarify and /speckit.analyze.
 -->
 
