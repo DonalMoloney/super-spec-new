@@ -337,6 +337,56 @@ points, while `validate-release-archive.py`, which carries no such floor, rose
 from 39% to 87% in the same sweep. Read a template's Real column against its
 free prose count, never against a script's.
 
+## Reducing what is left
+
+Wording has moved a long way; shape has not. The inherited shipped documents
+still share about 84 percent of their heading structure with upstream, because
+ADR-0013 freezes a heading during a prose pass and every pass so far was a
+prose pass. Moving shape is the only lever left.
+
+A heading counts as free when no script, workflow, or test in this repository
+greps it. Measured 2026-09-21 by searching every heading against `*.sh`,
+`*.py`, and `*.yml` outside `examples/`.
+
+| File | Free headings | Risk | Yield |
+|------|---------------|------|-------|
+| `references/workflow-guide.md` | 30 of 44 | Low. A reference; content is cheap to diverge, the file name is not | Highest |
+| `SKILL.md` | 21 of 23 | Medium. Spec-kit's skill loader expects the upstream section shape | High |
+| `templates/tasks-template.md` | 17 of 20 | Medium. Renaming strands the recorded goldens | High |
+| `templates/constitution-template.md` | 11 of 17 | Medium. Same | Medium |
+| `templates/checklist-template.md` | 7 of 12 | Medium. Same | Medium |
+| `templates/plan-template.md` | 7 of 13 | Medium. Same | Medium |
+| `templates/spec-template.md` | 7 of 19 | Medium. Same | Low |
+| `commands/hooks/*.md` | 2 of 3 each | Low | Low; three headings each |
+| `commands/*.md` | 2 or 3 of 5 to 7 | High. `e2e-smoke.sh` counts each file's Process steps | Low |
+
+Two names repeat across files, so one `divergence-renamer` pass moves each and
+nothing else changes:
+
+- `## Superpowers Adaptation` closes 4 of the 5 command files and is free in
+  every one. It is upstream's section name and the most visible inherited
+  fingerprint in the payload.
+- `## Checks` opens all three hook prompts and is free in every one.
+
+Order of attack, by yield per unit of risk:
+
+1. `references/workflow-guide.md`. Thirty free headings in the file with the
+   loosest contract. Nothing a catalog install runs asserts its section names,
+   and the Gate markers table `e2e-smoke.sh` reads is matched by its rows, not
+   by the heading above them.
+2. The two repeated names above, one renamer pass each.
+3. `templates/tasks-template.md`, then the other four in the order of the
+   table. Regenerate the goldens in the same change, because a template and its
+   recorded output drift the moment either moves.
+4. `SKILL.md`, last among the worthwhile ones. It carries the most free
+   headings after the guide, but it is the file a `~/.agents/skills/` install
+   reads first, so a section rename needs the loader checked before it lands.
+
+Not worth taking: the command files. Two or three free headings each, against a
+smoke test that counts Process steps per file and a workflow guide that names
+every artifact each command writes. The cost is three assertions updated per
+heading moved, for the smallest share of the remaining similarity.
+
 ## Choosing
 
 Pick by blast radius, not by the percentage. The percentage measures past
