@@ -289,6 +289,54 @@ template's Real column against its prose line count, never against a script's.
 A command rewrite runs `e2e-smoke.sh` through the auditor, because the smoke
 test greps command prose.
 
+## What has not moved
+
+The Real column counts changed lines, so it conflates a reworded file with a
+restructured one. This records the other half: the headings, functions, and
+manifest keys still spelled as upstream spells them, measured 2026-09-21
+against `c20ac6c1`. Read it before choosing a rewrite target.
+
+Structure held while prose moved. Every command file keeps upstream's
+`## Usage`, `## Process`, `## Output`, and `## Superpowers Adaptation`; the one
+heading each lost is its `# speckit.specflow.*` title, which the namespace
+rename moved. The three hook prompts keep 3 of 3 headings. `extension.yml`
+keeps all six top-level keys. ADR-0013 bars `prose-rephraser` from touching a
+heading, so a rewrite pass moves the Real column without moving the shape.
+
+| File | Real | Named units shared |
+|------|------|--------------------|
+| `templates/plan-template.md` | 23% | 12 of 13 headings |
+| `templates/spec-template.md` | 38% | 15 of 19 headings |
+| `templates/checklist-template.md` | 45% | 11 of 12 headings |
+| `templates/constitution-template.md` | 48% | 15 of 17 headings |
+| `templates/tasks-template.md` | 49% | 19 of 20 headings |
+| `commands/hooks/*.md` | 60 to 70% | 3 of 3 each |
+| `extension.yml` | 56% | 6 of 6 keys |
+| `SKILL.md` | 57% | 16 of 23 headings |
+| `references/workflow-guide.md` | 64% | 36 of 44 headings |
+| `commands/*.md` | 60 to 79% | 4 or 5 of 5 to 7 headings |
+| `scripts/validate-release-archive.py` | 87% | 3 of 13 functions |
+| `scripts/validate-extension-metadata.py` | 90% | 2 of 4 functions |
+| `scripts/e2e-agent-claude.sh` | 90% | 0 of 11 functions |
+
+A template's Real column cannot move much, because most of its lines are not
+prose. Of the lines each template still shares with upstream:
+
+| Template | Identical | Free prose | Frozen scaffolding |
+|----------|-----------|------------|--------------------|
+| `tasks-template.md` | 115 | 26 | 89, of which 64 are blank |
+| `spec-template.md` | 123 | 44 | 79 |
+| `plan-template.md` | 103 | 24 | 78 |
+| `checklist-template.md` | 67 | 10 | 57 |
+| `constitution-template.md` | 65 | 3 | 62 |
+
+Scaffolding is a heading, a blank line, a table row, a fenced block, or a
+bracket placeholder, and the contract freezes all of it. So
+`constitution-template.md` had three prose lines left to change and rose four
+points, while `validate-release-archive.py`, which carries no such floor, rose
+from 39% to 87% in the same sweep. Read a template's Real column against its
+free prose count, never against a script's.
+
 ## Choosing
 
 Pick by blast radius, not by the percentage. The percentage measures past

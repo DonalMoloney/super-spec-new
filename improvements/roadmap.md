@@ -1,12 +1,14 @@
 # Roadmap
 
-Every piece of open work on this repository: the divergence items, the second
-wave of groups, the spec-kit 1.0 decay groups, the hygiene debt, and the
-scoped backlog behind them. Read it to pick the next thing to build. `reference.md` holds the divergence option
-space each group draws from and the measured distance to upstream;
-`docs/review-research.md` holds the evidence behind the review stack.
-`priority.md` ranks every open item here and in the scoped backlog for the
-first tagged release; it holds no checkbox.
+Every piece of open work on this repository, ranked. Read it to pick the next
+thing to build. It is the only file that holds a claim or a checkbox
+(ADR-0017). `reference.md` holds the divergence option space each group draws
+from and the measured distance to upstream; `docs/review-research.md` holds the
+evidence behind the review stack.
+
+`priority.md` and `new-improvements/scoped-improvements.md` were folded into
+this file and deleted on 2026-09-21. Their open items are below; git history
+holds the rest.
 
 The first wave, G-01 to G-18, merged between PR #8 and PR #53. The first
 cleanup wave, Q-01 to Q-28, merged in PR #53. Neither appears below. Every
@@ -22,6 +24,10 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
   line that proves it done. Tick the box when that line passes.
 - Before creating a worktree, append `(working on)` to the item header and
   commit that to `main`, so a second session does not start the same item.
+  `block-main-commit.sh` refuses a commit whose working directory sits on
+  `main` (ADR-0004), so commit the marker on the branch and fast-forward:
+  `git -C <main checkout> merge --ff-only <branch>`. Main gains the commit and
+  the hook never fires.
 - After merge: remove the worktree, mark the header `(merged: PR #N)`, and
   record any non-obvious choice in `decisions.md`.
 - A shipped file under `specflow/` runs on the Copilot CLI as well as Claude
@@ -57,6 +63,7 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 done, T262 and T263 behind three prerequisites |
 | G-43 | `SKILL.md` documents a `progress.yml` schema the validator rejects | low | Not started; see G-43 below |
 | G-45 | The merge gate cannot read `code-reviewer`'s findings | low | T451 and T452 open; see G-45 below |
+| G-49 | No check catches a document that has gone out of date | low | `AGENTS.md` claimed main carried no commits until `5a5e8db` |
 
 ## G-19 — Examples produced by this fork, not upstream
 
@@ -124,6 +131,25 @@ grep prints nothing.
 grep -r 'static-landing-page\|sample-workflow' specflow/ README.md
 ```
 
+When a key exists, the live run is one session and one feature, in this order.
+
+1. Export `ANTHROPIC_API_KEY` and run `bash scripts/e2e-agent-claude.sh` with
+   the link-audit description from `examples/link-audit/README.md` as the
+   stage 2 prompt. Keep the work directory the script reports.
+2. Copy `specs/001-*/` from that directory over `examples/link-audit/specs/`.
+3. Rewrite `examples/link-audit/README.md` to say the run was recorded, with
+   the date, the model, and `git rev-parse HEAD`. Delete the word
+   "constructed".
+4. Replace the sentence in `examples/static-landing-page/README.md` that says
+   nothing is hand-edited with the list of its hand edits, starting with
+   `.analyzed` from `df50cb8`; `git log --oneline -- specflow/examples/static-landing-page`
+   names the other four.
+5. Point `SNAPSHOT` in `e2e-stages.sh` at `examples/link-audit`, then fix every
+   assertion that named the old snapshot's content.
+6. Build `examples/seeded-ambiguity/` from the recorded spec with one sort
+   order left unspecified, then add `score_seeded_ambiguity` to
+   `score-artifacts.py` with a test.
+
 ## G-26 — Register the gates as agent-native hooks (blocked: ADR-0022)
 
 Executor: `bdd-orchestrator`. Model: opus. Move: Add. Effort: medium. Depends
@@ -136,8 +162,7 @@ agent's own hook system. The canonical events are `session_start`,
 `session_end`. `events.py` line 2287 merges Copilot config through
 `_merge_copilot_json` in the `copilot-json` format, so an `events:` block is
 the supported route for running this repository's `.claude/hooks/` gates on
-the Copilot CLI. Neither `scoped-improvements.md` nor `reference.md` names the
-mechanism. Settle this group before N-03, which ships the same gates the long
+the Copilot CLI. `reference.md` does not name the mechanism. Settle this group before N-03, which ships the same gates the long
 way as `provides.scripts` under `gates/`, and before backlog item 28, which
 writes a second hook config by hand.
 
@@ -213,7 +238,7 @@ prints nothing.
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Extend. Effort: low.
 Depends on: none. Raised on 2026-09-20 while rewriting the eight persona
-bodies under `priority.md` item 35.
+bodies.
 
 `merge-gate.sh` reads `.claude/review/*.json` and `specs/*/review-findings.json`
 and blocks on an unresolved Critical or Important finding. `code-reviewer.md`
@@ -240,6 +265,52 @@ that file why its output stays prose and that the merge gate does not read it.
 Verify: `grep -L 'findings-schema.json' .claude/agents/*-reviewer.md` prints
 nothing, or `code-reviewer.md` carries the sentence that explains the
 exception.
+
+## G-49 — No check catches a document that has gone out of date
+
+Executor: `bdd-orchestrator`. Model: sonnet. Effort: low. Depends on: none.
+Raised on 2026-09-21.
+
+Two documents were found stating things that had stopped being true, both in
+one afternoon. `AGENTS.md` opened by telling every agent "No commits exist on
+`main` yet; this is a fresh checkout" while `main` carried seventy. Seven rows
+of `reference.md`'s Names table described renames that had already shipped, one
+of them citing `.claude/review/schema.json`, a file that no longer exists. Both
+were fixed in `5a5e8db`, by reading, not by a check.
+
+`lint-standards.py` reads every Markdown file already, so it is where a
+currency check belongs. It has two blind spots of its own, found the same way:
+the metaphor rule in `standards/documentation.md` sits in prose outside the
+banned table, so the word "bridge" survived in five places while the linter
+reported 73 files clean; and the check matched "bridge" but not "bridges" or
+"bridging", so two of those five needed a hand grep to find.
+
+- [ ] T491 Fail the build when a repository document cites a path that does not exist
+
+Verify: adding a line citing `specflow/nope.md` to any linted file makes
+`python3 specflow/scripts/lint-standards.py` exit nonzero, naming the file, the
+line, and the missing path.
+
+- [ ] T492 Match inflected forms in the banned-word check
+
+`banned_entries` builds one pattern per table entry. A noun with a verb form
+escapes it. Verify: a fixture containing "bridging" is reported when "bridge"
+is a banned entry.
+
+- [ ] T493 Record whether "bridge" joins the banned table in `standards/documentation.md`
+
+The unqualified entry catches 5 lines, of which 2 are `CHANGELOG.md` entries
+that record the old name accurately ("The extension is listed as Specflow, not
+Superpowers Bridge"). A qualified entry such as "bridge (as metaphor)" is
+ignored, because `banned_entries` returns unqualified entries only. So the
+choice is a per-rule CHANGELOG exclusion or leaving the rule unenforced.
+Verify: the outcome is an ADR in `decisions.md`, whichever way it goes.
+
+- [ ] T494 Re-check every count a document states against the repository
+
+`AGENTS.md`, both READMEs, and `SKILL.md` state counts: commands, hooks,
+templates, scripts, agents, assertions. Verify: each count is listed beside the
+command that produced it, and every one matches.
 
 ## Checked on 2026-09-20, no work needed
 
@@ -396,13 +467,18 @@ beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
   hook's own prompt remain to write.
 - **A Copilot CLI run snapshot** under `examples/`: needs the Copilot e2e
   script, backlog item 27.
-- **A spec-kit workflow file** (N-06 in
-  `improvements/new-improvements/scoped-improvements.md`): deferred on
-  2026-09-20. Most of its stated value was running the gates on the Copilot
+- **A spec-kit workflow file** (was N-06): deferred on 2026-09-20. Most of its stated value was running the gates on the Copilot
   CLI, which the `events:` block in G-26 buys for less. Reprice it after G-26.
-- **A spec-kit bundle** (N-08): deferred on 2026-09-20. It composes the
+- **A spec-kit bundle** (was N-08): deferred on 2026-09-20. It composes the
   workflow above with the preset G-25 decides, so it cannot start before
   either.
+- **Upstream the resync-safe moves**: four Tighten moves this fork made that
+  upstream could take, each tagged "breaks resync: rarely": the after-tasks
+  progress read (D-01), the status marker column (D-07), the compound-task rule
+  (D-06), and the Copilot fallback rows (D-03). Every accepted one shrinks the
+  diff `upstream-drift.yml` reports. Open one pull request per move against
+  `WangX0111/superspec` and record each link beside its bullet in
+  `reference.md`.
 
 ## Suggested order
 
@@ -412,13 +488,38 @@ through C-09 are merged or closed. What is left, in order:
 1. G-43. Low effort, and it is the second `SKILL.md` schema inaccuracy G-41
    found in the same file; the drift compounds the longer it sits.
 2. G-45 T451 and T452, whenever a session is short.
-3. G-26 T262 and T263, once the three ADR-0022 prerequisites clear.
-4. Backlog items 23, 25, and 26 next; each depended only on G-36, now merged.
-5. Backlog item 27, then 28, which depends on it for the live check.
-6. Backlog items 31 through 36 whenever a session is short; none depends on
+3. G-49, which stops the next document going stale unnoticed. Its T491 also
+   catches a dangling path before a reader hits it.
+4. G-26 T262 and T263, once the three ADR-0022 prerequisites clear.
+5. Backlog items 23, 25, and 26 next; each depended only on G-36, now merged.
+6. Backlog item 27, then 28, which depends on it for the live check.
+7. Backlog items 31 through 36 whenever a session is short; none depends on
    another still open.
-7. G-19 whenever a live agent run is available; this environment has no API
+8. G-19 whenever a live agent run is available; this environment has no API
    key to make one.
 
 Pick the item whose `Verify:` line you can run before you start. An item whose
 check you cannot run today is a design task, not a roadmap task.
+
+## Ready to release
+
+Run every line on `main` the day of the tag. One false line means the release
+is not ready, whatever the order above says.
+
+- A tag exists, `release.yml` ran green for it, and the release carries the ZIP
+  and the validator report.
+- `specify extension add specflow --from <release zip>` installs in a fresh
+  project on both surfaces, and `specify extension list` prints the command and
+  hook counts `extension.yml` declares.
+- The root `README.md` exists, and every command in `specflow/README.md` ran in
+  CI on this commit.
+- `examples/` holds one recorded run of this fork's pipeline, and the README
+  links it.
+- `bash verify.sh` reports 0 failed and 0 skipped with Ruff installed.
+- `bash .claude/hooks/tests/run.sh` reports 0 failed.
+- Both e2e dry runs exit 0.
+- `open-questions.md` lists nothing.
+- `git status --porcelain` prints nothing on `main`.
+- `CHANGELOG.md` has no `[Unreleased]` entries left; each one moved under the
+  tag's heading with the version the rule in that file picks.
+
