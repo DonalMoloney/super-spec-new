@@ -51,7 +51,7 @@ reason: `commands/gate.md`, `commands/hooks/after-analyze.md`, and
 | File | Real | Last moved by |
 |------|------|---------------|
 | `templates/plan-template.md` | 23% | `prose-rephraser` |
-| `templates/spec-template.md` | 36% | `prose-rephraser` |
+| `templates/spec-template.md` | 38% | `prose-rephraser` |
 | `templates/checklist-template.md` | 45% | `prose-rephraser` |
 | `templates/constitution-template.md` | 48% | `prose-rephraser` |
 | `templates/tasks-template.md` | 49% | `prose-rephraser` |
@@ -275,7 +275,7 @@ content had already diverged from upstream.
 | `references/superpowers-mapping.md` | 57% | `prose-rephraser` | |
 | `README.md` | 134% | `prose-rephraser` | |
 | `templates/plan-template.md` | 23% | `prose-rephraser` | |
-| `templates/spec-template.md` | 36% | `prose-rephraser` | |
+| `templates/spec-template.md` | 38% | `prose-rephraser` | |
 | `templates/checklist-template.md` | 45% | `prose-rephraser` | |
 | `templates/constitution-template.md` | 48% | `prose-rephraser` | |
 | `templates/tasks-template.md` | 49% | `prose-rephraser` | |

@@ -17,7 +17,7 @@ each one the `prose-rephraser` or `script-refactorer` pass it had never had.
 | File | Real before | Real after | Identical lines after | Units shared after |
 |------|-------------|------------|-----------------------|--------------------|
 | `templates/plan-template.md` | 21% | 23% | 103 of 133 (77%) | 12 of 13 headings |
-| `templates/spec-template.md` | 33% | 36% | 128 of 197 (65%) | 15 of 19 headings |
+| `templates/spec-template.md` | 33% | 38% | 123 of 197 (62%) | 15 of 19 headings |
 | `templates/checklist-template.md` | 41% | 45% | 67 of 121 (55%) | 11 of 12 headings |
 | `templates/constitution-template.md` | 44% | 48% | 65 of 126 (52%) | 15 of 17 headings |
 | `templates/tasks-template.md` | 46% | 49% | 115 of 225 (51%) | 19 of 20 headings |
@@ -31,7 +31,7 @@ template's still-identical lines are made of:
 | Template | Identical lines | Free prose | Frozen scaffolding |
 |----------|-----------------|------------|--------------------|
 | `tasks-template.md` | 115 | 26 | 89, of which 64 are blank |
-| `spec-template.md` | 128 | 49 | 79 |
+| `spec-template.md` | 123 | 44 | 79 |
 | `plan-template.md` | 103 | 24 | 78 |
 | `checklist-template.md` | 67 | 10 | 57 |
 | `constitution-template.md` | 65 | 3 | 62 |
