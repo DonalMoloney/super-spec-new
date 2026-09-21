@@ -5,67 +5,98 @@ is still upstream superspec's, and lists the headings, functions, and manifest
 keys inside each one that match upstream verbatim. `reference.md` records how far
 each file has moved; this file records what has not moved.
 
-Measured 2026-09-21 against upstream `c20ac6c1`. A named unit counts as shared
-when it appears in the local file and the upstream file with the same spelling.
-Percentages in the Real column come from `reference.md`'s measured state.
+Measured 2026-09-21 against upstream `c20ac6c1`, after G-47 rewrote all six of
+the files below. A named unit counts as shared when it appears in the local file
+and the upstream file with the same spelling.
 
-## The closest six
+## The closest six, before and after G-47
 
-Six files sit below 50 percent real change. Every other shipped file sits at 56
-percent or above, so the gap after `tasks-template.md` marks where upstream's
-work ends.
+These six were the only shipped files below 50 percent real change. G-47 gave
+each one the `prose-rephraser` or `script-refactorer` pass it had never had.
 
-| File | Real | Identical lines | Named units shared |
-|------|------|-----------------|--------------------|
-| `templates/plan-template.md` | 21% | 104 of 131 (79%) | 13 of 13 headings |
-| `templates/spec-template.md` | 33% | 132 of 198 (67%) | 16 of 19 headings |
-| `scripts/validate-release-archive.py` | 39% | 157 of 241 (65%) | 5 of 7 functions |
-| `templates/checklist-template.md` | 41% | 71 of 121 (59%) | 11 of 12 headings |
-| `templates/constitution-template.md` | 44% | 70 of 126 (56%) | 15 of 17 headings |
-| `templates/tasks-template.md` | 46% | 122 of 226 (54%) | 19 of 20 headings |
+| File | Real before | Real after | Identical lines after | Units shared after |
+|------|-------------|------------|-----------------------|--------------------|
+| `templates/plan-template.md` | 21% | 23% | 103 of 133 (77%) | 12 of 13 headings |
+| `templates/spec-template.md` | 33% | 36% | 128 of 197 (65%) | 15 of 19 headings |
+| `templates/checklist-template.md` | 41% | 45% | 67 of 121 (55%) | 11 of 12 headings |
+| `templates/constitution-template.md` | 44% | 48% | 65 of 126 (52%) | 15 of 17 headings |
+| `templates/tasks-template.md` | 46% | 49% | 115 of 225 (51%) | 19 of 20 headings |
+| `scripts/validate-release-archive.py` | 39% | 87% | 106 of 273 (39%) | 3 of 13 functions |
+
+## Why a template moved 3 points and the script moved 48
+
+A template's prose is a small part of its line count. G-47 counted what each
+template's still-identical lines are made of:
+
+| Template | Identical lines | Free prose | Frozen scaffolding |
+|----------|-----------------|------------|--------------------|
+| `tasks-template.md` | 115 | 26 | 89, of which 64 are blank |
+| `spec-template.md` | 128 | 49 | 79 |
+| `plan-template.md` | 103 | 24 | 78 |
+| `checklist-template.md` | 67 | 10 | 57 |
+| `constitution-template.md` | 65 | 3 | 62 |
+
+Scaffolding is a heading, a blank line, a table row, a fenced block, or a
+bracket placeholder. The contract freezes all of it: `artifact-lint.sh` and
+`score-artifacts.py` grep the headings, and spec-kit fills the placeholders. A
+prose pass reaches the rest, so `constitution-template.md` had 3 lines left to
+change and moved 4 points. The script carries no such floor, so the same sweep
+took it from 39 percent to 87 percent.
+
+Read a template's Real column against its free prose count, never against a
+script's.
+
+## What each file still shares
 
 ### templates/plan-template.md
 
-Every heading is upstream's. The fork added no section here.
-
-`# Implementation Plan: [FEATURE]`, `## Summary`, `## Technical Context`,
-`## Constitution Check`, `## Project Structure`, `### Documentation (this feature)`,
+Twelve headings are upstream's: `# Implementation Plan: [FEATURE]`,
+`## Summary`, `## Technical Context`, `## Constitution Check`,
+`## Project Structure`, `### Documentation (this feature)`,
 `### Source Code (repository root)`, `## Execution Strategy`,
-`### TDD Requirements`, `### Parallel Execution Opportunities`,
-`### Human Checkpoints`, `### Review Gates`, `## Complexity Tracking`.
+`### TDD Requirements`, `### Human Checkpoints`, `### Review Gates`,
+`## Complexity Tracking`.
+
+Ours: `### Independent Work Streams`. It replaced upstream's
+`### Parallel Execution Opportunities`, which asked a plan author for work the
+Copilot CLI cannot do, having no subagents.
+
+The Technical Context field labels and the `**Branch**` metadata line are frozen
+beyond the contract: eight recorded `plan.md` files under `specflow/examples/`
+reproduce them verbatim, so renaming one would drift the template from its own
+recorded output.
 
 ### templates/spec-template.md
 
 Shared: `# Feature Specification: [FEATURE NAME]`,
-`## User Scenarios & Testing *(mandatory)*`,
-`### User Story 1 - [Brief Title] (Priority: P1)`, the P2 and P3 siblings,
-`### Edge Cases`, `#### Brainstorm Prompts`, `## Open Questions`,
-`## Requirements *(mandatory)*`, `### Functional Requirements`,
-`### Key Entities *(include if feature involves data)*`,
-`## Success Criteria *(mandatory)*`, `### Measurable Outcomes`, `## Assumptions`,
-`## Brainstorm Log`, `### Session 2026-04-22`.
+`## User Scenarios & Testing *(mandatory)*`, the three
+`### User Story N` slots, `### Edge Cases`, `#### Brainstorm Prompts`,
+`## Open Questions`, `## Requirements *(mandatory)*`,
+`### Functional Requirements`, `### Key Entities`,
+`## Success Criteria *(mandatory)*`, `### Measurable Outcomes`,
+`## Assumptions`, `## Brainstorm Log`.
 
-Ours: `## Threat Model`, `## Traceability`, `## Changelog`.
-
-Line 179 still carries upstream's sample date, `### Session 2026-04-22`.
+Ours: `## Threat Model`, `## Traceability`, `## Changelog`, and
+`### Session [YYYY-MM-DD]`. The last one replaced upstream's hardcoded
+`### Session 2026-04-22`, which shipped a pre-dated Brainstorm Log entry to
+every project that installed the extension.
 
 ### scripts/validate-release-archive.py
 
-Shared functions: `fail`, `ok`, `declared_payload_files`, `build_archive`, `main`.
+Three function names are still upstream's: `declared_payload_files`,
+`build_archive`, `main`.
 
-Ours: `format_mib`, `check_limit`. Upstream's `human` is gone.
-
-`declared_payload_files` and `build_archive` carry the archive contract, so a
-rewrite here changes what the release check reads.
+Ours: `report_failure`, `report_pass`, `format_mib`, `check_limit`,
+`read_archive_manifest`, `check_size_limits`, `check_member_sizes`,
+`check_required_members`, `check_declared_members`, `check_excluded_paths`.
+Upstream's `human`, `fail`, and `ok` are gone.
 
 ### templates/checklist-template.md
 
 Shared: `# [CHECKLIST TYPE] Checklist: [FEATURE NAME]`, `## Spec Compliance`,
 `## Code Review`, `### Correctness`, `### Security`, `### Performance`,
 `### Code Quality`, `## Constitution Compliance`, `## Test Coverage`,
-`## [Custom Category]`, `## Notes`.
-
-Ours: `## Review Findings`.
+`## [Custom Category]`, `## Notes`. Ours: `## Review Findings`.
 
 ### templates/constitution-template.md
 
@@ -74,32 +105,23 @@ Shared: `# [PROJECT_NAME] Constitution`, `## Core Principles`, the five
 `### Workflow Rules`, `## Quality Gates`, `### Testing Requirements`,
 `### Review Requirements`, `### Deployment Gates`, `## Governance`.
 
-Ours: `### Review Stages`, `## Code Review Rules`.
+Ours: `### Review Stages`, `## Code Review Rules`. The five principle examples
+were upstream's prose until G-47; ADR-0028 records why an example is rewritten
+rather than frozen.
 
 ### templates/tasks-template.md
 
-Shared: `# Tasks: [FEATURE NAME]`, `## Task Format`, `## Path Conventions`,
-`## Phase 1: Setup (Shared Infrastructure)`,
-`## Phase 2: Foundational (Blocking Prerequisites)`,
-`## Phase 3: User Story 1 - [Title] (Priority: P1) MVP`,
-`### Tests for User Story 1 (if TDD applies)`,
-`### Implementation for User Story 1`,
-`## Phase 4: User Story 2 - [Title] (Priority: P2)`,
-`### Implementation for User Story 2`,
-`## Phase N: Polish & Cross-Cutting Concerns`,
-`## Dependencies & Execution Order`, `### Phase Dependencies`,
-`### Within Each User Story`, `### Parallel Opportunities`,
-`## Superpowers Execution`, `### Execution Discipline by Marker`,
-`### Checkpoint Protocol`, `## Notes`.
-
-Ours: `## Task Verification`.
+Nineteen headings are upstream's, from `# Tasks: [FEATURE NAME]` through
+`## Notes`, including every `## Phase N` slot, `## Dependencies & Execution
+Order`, `## Superpowers Execution`, and `### Checkpoint Protocol`. Ours:
+`## Task Verification`.
 
 ## Prose moved, structure held
 
 The command files, the hook prompts, and the manifest read at 56 to 79 percent
 changed, yet nearly every heading and key is still upstream's. ADR-0013 bars
-`prose-rephraser` from touching a heading, so a rewrite pass moves the Real column
-without moving the shape. Read the percentage as wording, not as structure.
+`prose-rephraser` from touching a heading, so a rewrite pass moves the Real
+column without moving the shape. Read the percentage as wording, not structure.
 
 | File | Real | Named units shared |
 |------|------|--------------------|
@@ -128,12 +150,11 @@ each with `## Checks` and `## Gate`.
 
 ## Files that left upstream behind
 
-Two scripts moved in structure, not only in wording. Neither is a rewrite target.
-
 | File | Real | Named units shared |
 |------|------|--------------------|
+| `scripts/validate-release-archive.py` | 87% | 3 of 13 functions |
 | `scripts/e2e-agent-claude.sh` | 90% | 0 of 11 upstream functions |
-| `scripts/validate-extension-metadata.py` | 90% | 2 of 4 (`extract_extension_id`, `main`) |
+| `scripts/validate-extension-metadata.py` | 90% | 2 of 4 |
 | `scripts/e2e-smoke.sh` | 83% | 8 shared, 14 added |
 | `README.md` | 134% | rewritten |
 

@@ -50,12 +50,11 @@ reason: `commands/gate.md`, `commands/hooks/after-analyze.md`, and
 
 | File | Real | Last moved by |
 |------|------|---------------|
-| `templates/plan-template.md` | 21% | version stamp to 1.1.0 |
-| `templates/spec-template.md` | 33% | version stamp to 1.1.0 |
-| `scripts/validate-release-archive.py` | 39% | gate scripts shipped in the archive |
-| `templates/checklist-template.md` | 41% | version stamp to 1.1.0 |
-| `templates/constitution-template.md` | 44% | reads its own test command instead of a hardcoded `cd` |
-| `templates/tasks-template.md` | 46% | version stamp to 1.1.0 |
+| `templates/plan-template.md` | 23% | `prose-rephraser` |
+| `templates/spec-template.md` | 36% | `prose-rephraser` |
+| `templates/checklist-template.md` | 45% | `prose-rephraser` |
+| `templates/constitution-template.md` | 48% | `prose-rephraser` |
+| `templates/tasks-template.md` | 49% | `prose-rephraser` |
 | `extension.yml` | 56% | `prose-rephraser` |
 | `SKILL.md` | 57% | skill count and sample version updated |
 | `references/superpowers-mapping.md` | 57% | `prose-rephraser` |
@@ -70,6 +69,7 @@ reason: `commands/gate.md`, `commands/hooks/after-analyze.md`, and
 | `CHANGELOG.md` | 77% | `prose-rephraser` |
 | `commands/review.md` | 79% | per-command script declared in frontmatter |
 | `scripts/e2e-smoke.sh` | 83% | frontmatter asserted on both surfaces |
+| `scripts/validate-release-archive.py` | 87% | `script-refactorer` |
 | `scripts/e2e-agent-claude.sh` | 90% | Copilot CLI added to the seven e2e stages |
 | `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` |
 | `README.md` | 134% | `prose-rephraser` |
@@ -274,6 +274,22 @@ content had already diverged from upstream.
 | `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` | |
 | `references/superpowers-mapping.md` | 57% | `prose-rephraser` | |
 | `README.md` | 134% | `prose-rephraser` | |
+| `templates/plan-template.md` | 23% | `prose-rephraser` | |
+| `templates/spec-template.md` | 36% | `prose-rephraser` | |
+| `templates/checklist-template.md` | 45% | `prose-rephraser` | |
+| `templates/constitution-template.md` | 48% | `prose-rephraser` | |
+| `templates/tasks-template.md` | 49% | `prose-rephraser` | |
+| `scripts/validate-release-archive.py` | 87% | `script-refactorer` | |
+
+A template's Real column moves little because most of its lines cannot move.
+G-47 measured what each template's still-identical lines are made of: of
+`constitution-template.md`'s 65 identical lines, 3 are prose and 62 are
+headings, blank lines, tables, and bracket placeholders the contract freezes.
+`tasks-template.md` carries 64 blank lines among its 115. A prose pass reaches
+the remainder, so a template that rises 3 points has had as full a pass as one
+that rises 50. `validate-release-archive.py` rose from 39% to 87% in the same
+sweep because a script's structure is free and a template's is not. Read a
+template's Real column against its prose line count, never against a script's.
 
 A command rewrite runs `e2e-smoke.sh` through the auditor, because the smoke
 test greps command prose.

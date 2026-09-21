@@ -1024,7 +1024,7 @@ pull request; the two fixtures assert the 12-skill detection and the line
 `shellcheck -S warning specflow/scripts/*.sh` is clean; and
 `python3 -m pytest tests -q` still passes.
 
-## G-47 — The five templates never got their prose pass (working on)
+## G-47 — The five templates never got their prose pass (merged)
 
 Executor: `prose-rephraser`, `script-refactorer`, `divergence-auditor`. Model:
 sonnet. Move: Tighten, with a light Extend. Effort: medium. Raised from
@@ -1039,28 +1039,28 @@ one. The six files closest to upstream are the five templates and
 of its lines verbatim. `spec-template.md` line 179 still ships upstream's
 sample date, `### Session 2026-04-22`.
 
-- [ ] T467 Rewrite `templates/plan-template.md` prose to
+- [x] T467 Rewrite `templates/plan-template.md` prose to
   `standards/documentation.md`, every heading verbatim
 
-- [ ] T468 Rewrite `templates/spec-template.md` prose to the same standard
+- [x] T468 Rewrite `templates/spec-template.md` prose to the same standard
 
-- [ ] T469 Rewrite `templates/checklist-template.md` prose to the same standard
+- [x] T469 Rewrite `templates/checklist-template.md` prose to the same standard
 
-- [ ] T470 Rewrite `templates/constitution-template.md` prose to the same
+- [x] T470 Rewrite `templates/constitution-template.md` prose to the same
   standard
 
-- [ ] T471 Rewrite `templates/tasks-template.md` prose to the same standard
+- [x] T471 Rewrite `templates/tasks-template.md` prose to the same standard
 
-- [ ] T472 Refactor `scripts/validate-release-archive.py` to
+- [x] T472 Refactor `scripts/validate-release-archive.py` to
   `standards/code.md`, every exit code and output line unchanged
 
-- [ ] T473 Replace the hardcoded `### Session 2026-04-22` in
+- [x] T473 Replace the hardcoded `### Session 2026-04-22` in
   `spec-template.md` with a date placeholder
 
-- [ ] T474 Rename the free headings under `plan-template.md`'s
+- [x] T474 Rename the free headings under `plan-template.md`'s
   `## Execution Strategy` to name the two target surfaces
 
-- [ ] T475 Correct the Rewrite status claim in `reference.md` to match its
+- [x] T475 Correct the Rewrite status claim in `reference.md` to match its
   table
 
 Verify: `bash verify.sh` exits 0; `bash .claude/hooks/tests/run.sh` passes;
