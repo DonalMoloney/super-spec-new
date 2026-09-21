@@ -210,7 +210,7 @@ validators pass.
 Verify: the Copilot leg of `e2e-smoke.sh` finds the hook file the install
 wrote and names the events in it.
 
-## G-43 — SKILL.md documents a progress file the validator rejects (working on)
+## G-43 — SKILL.md documents a progress file the validator rejects (merged: direct)
 
 Executor: `general-purpose`. Model: sonnet. Move: Tighten. Effort: low.
 Depends on: none. Diverges: no. Found by G-41 on 2026-09-20. Not started.
