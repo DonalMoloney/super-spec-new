@@ -11,8 +11,8 @@
 ## Technical Context
 
 <!--
-  ACTION REQUIRED: Replace each placeholder with the real technical detail.
-  Mark an unknown item as NEEDS CLARIFICATION.
+  ACTION REQUIRED: Fill each placeholder with the real technical choice.
+  Flag an unresolved item as NEEDS CLARIFICATION.
 -->
 
 **Language/Version**: [e.g., Python 3.11, TypeScript 5.x, Rust 1.75 or NEEDS CLARIFICATION]
@@ -26,11 +26,11 @@
 
 ## Constitution Check
 
-*GATE: The plan must pass this check before it proceeds. Re-check it after the design phase.*
+*GATE: This check blocks the plan until it passes. Re-run it after the design phase.*
 
 <!--
-  Check the plan against each constitution principle.
-  Mark each principle PASS, NEEDS ATTENTION, or VIOLATION, with justification.
+  Weigh the plan against every principle in the constitution.
+  Mark each principle PASS, NEEDS ATTENTION, or VIOLATION, and state why.
 -->
 
 | Principle | Status | Notes |
@@ -53,8 +53,8 @@ specs/[###-feature]/
 ### Source Code (repository root)
 
 <!--
-  ACTION REQUIRED: Replace the layout below with this feature's real structure.
-  Drop the unused options and list the real paths.
+  ACTION REQUIRED: Swap the layout below for this feature's actual structure.
+  Delete the options this feature skips and list its real paths.
 -->
 
 ```text
@@ -74,7 +74,7 @@ tests/
 ## Execution Strategy
 
 <!--
-  This section states how tasks run.
+  Record how tasks run here.
   `/speckit.specflow.tasks` reads it to build the task breakdown.
   `/speckit.specflow.execute` reads it during execution.
 -->
@@ -82,40 +82,42 @@ tests/
 ### TDD Requirements
 
 <!--
-  List the areas of this feature that need strict RED-GREEN-REFACTOR discipline.
-  The task breakdown marks their tasks [TDD].
+  Name the areas of this feature that need strict RED-GREEN-REFACTOR discipline.
+  The task breakdown flags their tasks with [TDD].
 -->
 
 - [ ] [Component/module]: [Why TDD is needed, e.g., "Complex business logic with many edge cases"]
 - [ ] [Component/module]: [Why TDD is needed]
 
-### Parallel Execution Opportunities
+### Independent Work Streams
 
 <!--
-  List the work streams that run independently and can go to parallel subagents.
-  The task breakdown marks their tasks [SUBAGENT].
+  Name each work stream that carries no dependency on another.
+  The task breakdown flags its tasks with [SUBAGENT].
+  Claude Code dispatches them as parallel subagents.
+  The Copilot CLI has one session, so it runs them in order.
 -->
 
-- [ ] [Work stream A] and [Work stream B] share no files or dependencies
+- [ ] [Work stream A] shares no files or dependencies with [Work stream B]
 - [ ] [Work stream C] runs independently after [prerequisite]
 
 ### Human Checkpoints
 
 <!--
-  Define each gate where the agent pauses for human approval.
-  Each gate becomes a phase boundary in the task breakdown.
+  Name each gate where the agent pauses for human approval.
+  Each gate marks a phase boundary in the task breakdown.
 -->
 
-1. After the foundational setup, check that the project structure and dependencies are correct
+1. After the foundational setup, check that the project structure and the dependencies are correct
 2. After each user story, check that its behavior matches the acceptance scenarios
-3. After all stories, run the full test suite before the polish phase
+3. After every story lands, run the full test suite before the polish phase starts
 4. Before the merge, review the work against the spec
 
 ### Review Gates
 
 <!--
-  List the tasks that need code review before the plan proceeds.
-  The task breakdown marks their tasks [REVIEW].
+  Name the tasks that need code review before the plan continues.
+  The task breakdown flags their tasks with [REVIEW].
 -->
 
 - [ ] [API contracts/interfaces]: Review before implementing consumers
@@ -124,7 +126,7 @@ tests/
 
 ## Complexity Tracking
 
-> **Fill in this table only when the Constitution Check lists a violation to justify**
+> **Fill in this table only when the Constitution Check flags a violation to justify**
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|

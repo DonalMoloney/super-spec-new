@@ -81,7 +81,7 @@ test names the module it exercises. No `utils` module: the slug helper lives in
 - [x] `anchors.py`: slugging rules follow the GitHub renderer, which only a test pins down
 - [x] `scanner.py`: root containment is a security control, so it needs a test that tries to escape
 
-### Parallel Execution Opportunities
+### Independent Work Streams
 
 - [x] `parser.py` work shares no file with `anchors.py` work, so the two run together
 - [x] Every `[TDD]` test task in a phase runs in parallel; each writes its own test file
