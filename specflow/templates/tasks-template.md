@@ -18,13 +18,13 @@ description: "Task list template for feature implementation"
 - **[P]**: Runs in parallel (different files, no dependencies)
 - **[TDD]**: Follows RED-GREEN-REFACTOR (write test, fail, implement, pass, refactor)
 - **[REVIEW]**: Pauses for a code review before the next task starts
-- **[SUBAGENT]**: Can be delegated to a subagent for parallel execution
+- **[SUBAGENT]**: Delegates to a subagent for parallel work
 
 **One outcome per task**: a description that needs "and" is two tasks. Split it.
 
-**One check per task**: the Task Verification table names how each task is proven.
+**One check per task**: the Task Verification table names the check for each task.
 
-**Story labels**: `[US1]`, `[US2]`, etc. map tasks to user stories for traceability.
+**Story labels**: `[US1]`, `[US2]`, and further labels tie a task to its user story.
 
 ## Path Conventions
 
@@ -35,20 +35,20 @@ description: "Task list template for feature implementation"
 
 <!--
   ============================================================================
-  IMPORTANT: The tasks below are sample tasks. They illustrate the format only.
+  The tasks below are examples. They show the format, not real work.
 
-  /speckit.specflow.tasks must replace them with real tasks drawn from:
-  - User stories in spec.md, with their priorities (P1, P2, P3...)
-  - Technical decisions in plan.md
+  /speckit.specflow.tasks replaces them with real tasks, built from:
+  - The user stories in spec.md, each with its priority (P1, P2, P3, and so on)
+  - The technical decisions in plan.md
   - The execution strategy in plan.md (TDD, parallel work, review gates)
-  - Entities in spec.md
+  - The entities in spec.md
 
-  Tasks must group by user story, so each story can be:
-  - Implemented independently
-  - Tested independently
-  - Delivered as an MVP increment
+  Tasks group by user story, so each one can:
+  - Ship independently
+  - Test independently
+  - Deliver as an MVP increment
 
-  Remove these sample tasks from the generated tasks.md file.
+  /speckit.specflow.tasks removes these sample tasks from the generated tasks.md file.
   ============================================================================
 -->
 
@@ -56,7 +56,7 @@ description: "Task list template for feature implementation"
 
 **Purpose**: Set up the project and its basic structure
 
-- [ ] T001 Create the project structure per the implementation plan
+- [ ] T001 Create the project structure from plan.md
 - [ ] T002 Initialize the project with its dependencies
 - [ ] T003 [P] Configure the linter
 
@@ -66,17 +66,17 @@ description: "Task list template for feature implementation"
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-**Purpose**: Core infrastructure that MUST be complete before ANY user story
+**Purpose**: Build the infrastructure every user story depends on
 
-**CRITICAL**: No user story work can begin until this phase is complete.
+**Critical**: No user story starts until this phase finishes.
 
-- [ ] T004 [TDD] Set up the core data models/entities
+- [ ] T004 [TDD] Set up the core data models
 - [ ] T005 [P] Implement the shared utilities
 - [ ] T006 [P] [REVIEW] Set up the API routing
 - [ ] T007 Configure the error handling
 
-**Execution notes**: For tasks marked [TDD], write the tests first, run them, confirm they fail, then implement.
-For tasks marked [REVIEW], pause for a human review of the API contracts before any consumer is built.
+**Execution notes**: For a task marked [TDD], write the test first and run it. Confirm it fails, then implement.
+For a task marked [REVIEW], pause for a human review of the API contracts before a consumer is built.
 
 **Checkpoint**: The foundation is ready. Get human approval before any user story starts.
 
@@ -119,7 +119,7 @@ as parallel subagents. T014 needs review before the next task starts.
 - [ ] T015 [P] [SUBAGENT] [US2] Create the [Entity] model
 - [ ] T016 [US2] Implement the [Service]
 - [ ] T017 [US2] Implement the [endpoint/feature]
-- [ ] T018 [US2] Integrate with the User Story 1 components, if needed
+- [ ] T018 [US2] If needed, integrate with the User Story 1 components
 
 **Checkpoint**: User Stories 1 and 2 both work independently. Get human approval.
 
@@ -137,7 +137,7 @@ as parallel subagents. T014 needs review before the next task starts.
 - [ ] TXXX Clean up the code
 - [ ] TXXX [P] Optimize performance
 - [ ] TXXX [REVIEW] Harden security
-- [ ] TXXX Run the full test suite: every test must pass
+- [ ] TXXX Run the full test suite
 
 **Execution notes**: Most polish tasks run in parallel. The final security hardening
 needs review. Every test must pass before this phase ends.
@@ -147,7 +147,7 @@ needs review. Every test must pass before this phase ends.
 ## Task Verification
 
 Give every task a row. The Verify cell names the command or the observation that
-proves the task is done, so a reader checks it without asking the implementer.
+proves the task is done. A reader then checks it without asking the implementer.
 
 | Task | Verify |
 |------|--------|
@@ -188,8 +188,7 @@ proves the task is done, so a reader checks it without asking the implementer.
 ## Superpowers Execution
 
 <!--
-  This section tells /speckit.specflow.execute how to process this task list.
-  The execute command reads these instructions to decide how it runs.
+  This section tells /speckit.specflow.execute how it processes this task list.
 -->
 
 ### Execution Discipline by Marker
