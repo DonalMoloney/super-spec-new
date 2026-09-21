@@ -4,7 +4,7 @@ The hook fires once `/speckit.clarify` finishes. It writes the feature's
 `.clarified` marker through `/speckit.specflow.gate`, so no later command has to
 infer that clarification ran.
 
-## Checks
+## Preconditions
 
 1. **Constitution gate**: Check that `.specify/memory/constitution.md` exists. If
    it is missing, the hook stops with `CONSTITUTION_REQUIRED` and tells the user

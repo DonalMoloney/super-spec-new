@@ -3,7 +3,7 @@
 The hook fires once `/speckit.implement` finishes a phase or the full run. It
 rejects a completion claim that carries no evidence.
 
-## Checks
+## Preconditions
 
 1. **Check the evidence**: For each completed task, confirm the expected output
    exists: passing tests, created files, or another named artifact.

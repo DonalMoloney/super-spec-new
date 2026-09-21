@@ -4,7 +4,7 @@ The hook fires once `/speckit.analyze` finishes. It writes the feature's
 `.analyzed` marker through `/speckit.specflow.gate`, the marker
 `/speckit.specflow.execute` refuses to start without.
 
-## Checks
+## Preconditions
 
 1. **Constitution gate**: Check that `.specify/memory/constitution.md` exists. If
    it is missing, the hook stops with `CONSTITUTION_REQUIRED` and tells the user

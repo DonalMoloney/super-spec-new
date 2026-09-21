@@ -3,7 +3,7 @@
 The hook fires once `/speckit.tasks` completes. It checks that the task plan
 covers the spec and looks for a superpowers skill that could improve the breakdown.
 
-## Checks
+## Preconditions
 
 1. **Coverage check**: Check that every user story in the spec has matching tasks
 2. **Superpowers enhancement**: If the hook finds the `writing-plans` skill, it

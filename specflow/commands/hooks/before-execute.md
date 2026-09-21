@@ -3,7 +3,7 @@
 The hook fires before `/speckit.implement` starts. It points the user at
 `/speckit.specflow.execute` for TDD discipline and prerequisite checks.
 
-## Checks
+## Preconditions
 
 1. **Constitution gate**: Check that `.specify/memory/constitution.md` exists. If
    it is missing, the hook stops with `CONSTITUTION_REQUIRED`, names the missing
