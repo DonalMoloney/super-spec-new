@@ -228,7 +228,7 @@ the schema, so the validator rejects both as unknown keys.
 G-41 settled the vocabulary and deliberately left the schema alone, because
 changing a documented shape is a different move from changing a word.
 
-- [ ] T431 Make SKILL.md and the guide document the schema the goldens carry
+- [x] T431 Make SKILL.md and the guide document the schema the goldens carry
 
 Verify: a `progress.yml` written by following `SKILL.md` alone validates clean,
 and `grep` for `completed_tasks` and `current_task` in `workflow-guide.md`
