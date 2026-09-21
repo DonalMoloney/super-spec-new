@@ -38,60 +38,75 @@ targets.
 
 ## Measured state
 
-Measured 2026-09-20 against upstream `c20ac6c1` by rerunning the reproduce
+Measured 2026-09-21 against upstream `c20ac6c1` by rerunning the reproduce
 command below. Lowest real change first. One row the command cannot reach:
 G-30 renamed `references/superpowers-bridge.md` to
 `references/superpowers-mapping.md`, and the measurer resolves one relative
 path against both roots, so that row is measured by copying upstream's file
-to the local path first.
+to the local path first. Three files carry no upstream counterpart at all and
+are left out of both the table and the reproduce command below for that
+reason: `commands/gate.md`, `commands/hooks/after-analyze.md`, and
+`commands/hooks/after-clarify.md`.
 
 | File | Real | Last moved by |
 |------|------|---------------|
-| `templates/plan-template.md` | 20% | PR #69 |
-| `scripts/validate-release-archive.py` | 29% | `script-refactorer` |
-| `templates/spec-template.md` | 33% | PR #69 |
-| `templates/checklist-template.md` | 34% | PR #69 |
-| `templates/constitution-template.md` | 36% | PR #69 |
-| `SKILL.md` | 40% | PR #70 |
-| `templates/tasks-template.md` | 42% | PR #69 |
-| `scripts/e2e-agent-claude.sh` | 42% | PR #68 |
-| `commands/status.md` | 45% | PR #55 |
-| `commands/brainstorm.md` | 54% | PR #67 |
-| `scripts/e2e-smoke.sh` | 56% | PR #68 |
+| `templates/plan-template.md` | 21% | version stamp to 1.1.0 |
+| `templates/spec-template.md` | 33% | version stamp to 1.1.0 |
+| `scripts/validate-release-archive.py` | 39% | gate scripts shipped in the archive |
+| `templates/checklist-template.md` | 41% | version stamp to 1.1.0 |
+| `templates/constitution-template.md` | 44% | reads its own test command instead of a hardcoded `cd` |
+| `templates/tasks-template.md` | 46% | version stamp to 1.1.0 |
 | `extension.yml` | 56% | `prose-rephraser` |
+| `SKILL.md` | 57% | skill count and sample version updated |
 | `references/superpowers-mapping.md` | 57% | `prose-rephraser` |
-| `references/workflow-guide.md` | 57% | PR #71 |
-| `commands/execute.md` | 57% | PR #66 |
-| `commands/tasks.md` | 58% | PR #66 |
+| `commands/execute.md` | 60% | per-command script declared in frontmatter |
 | `commands/hooks/after-tasks.md` | 60% | `prose-rephraser` |
+| `commands/status.md` | 62% | per-command script declared in frontmatter |
+| `references/workflow-guide.md` | 64% | gate scripts shipped in the archive |
 | `commands/hooks/after-execute.md` | 65% | PR #70 |
-| `commands/hooks/before-execute.md` | 70% | PR #70 |
-| `commands/review.md` | 76% | PR #67 |
+| `commands/brainstorm.md` | 66% | per-command script declared in frontmatter |
+| `commands/hooks/before-execute.md` | 70% | gate scripts shipped in the archive |
+| `commands/tasks.md` | 74% | per-command script declared in frontmatter |
 | `CHANGELOG.md` | 77% | `prose-rephraser` |
+| `commands/review.md` | 79% | per-command script declared in frontmatter |
+| `scripts/e2e-smoke.sh` | 83% | frontmatter asserted on both surfaces |
+| `scripts/e2e-agent-claude.sh` | 90% | Copilot CLI added to the seven e2e stages |
 | `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` |
 | `README.md` | 134% | `prose-rephraser` |
 
-The installable payload has moved a long way from upstream in wording and very
-little in shape. The fork's behavioral divergence still lives in `.claude/`,
-`standards/`, `scripts/`, and CI, which the archive strips.
+The installable payload has moved a long way from upstream in wording and,
+since the previous measurement, in shape as well: `extension.yml` now
+declares a sixth command (`speckit.specflow.gate`) and five hooks
+(`after_clarify`, `after_analyze`, `after_tasks`, `before_implement`,
+`after_implement`). The `commands/` and `commands/hooks/` sections below are
+corrected to match. The fork's remaining behavioral divergence lives in
+`.claude/`, `standards/`, `scripts/`, and CI, which the archive strips.
 
 Reproduce the table from the repository root:
 
 ```bash
 git clone -q https://github.com/WangX0111/superspec "$SCRATCH/upstream"
 cd specflow && git ls-files | grep -E '\.(md|yml|py|sh)$' | grep -v '^examples/' \
-  | grep -vE 'copilot-cli\.md|lint-standards\.py|score-artifacts\.py|tests/test_(lint_standards|score_artifacts|validate_extension_metadata|validate_release_archive)\.py' \
+  | grep -vE 'copilot-cli\.md|lint-standards\.py|score-artifacts\.py|tests/test_(lint_standards|score_artifacts|validate_extension_metadata|validate_release_archive)\.py|commands/gate\.md|commands/hooks/after-(analyze|clarify)\.md|scripts/e2e-(agent-copilot|stages)\.sh|^gates/|references/superpowers-mapping\.md' \
   | xargs python3 ../.claude/divergence/measure-divergence.py --local . --upstream "$SCRATCH/upstream"
 ```
 
-The excluded paths are files this fork added with no upstream counterpart;
-`measure-divergence.py` exits nonzero on the first one it hits otherwise, so
-the unfiltered command in earlier revisions of this file never produced the
-full table above.
+The excluded paths are files this fork added with no upstream counterpart,
+plus `references/superpowers-mapping.md`, measured separately above because
+it no longer shares upstream's file name. `measure-divergence.py` exits
+nonzero on the first missing or misnamed counterpart it hits, so the
+unfiltered command in earlier revisions of this file never produced the full
+table above.
 
 ## commands/hooks/
 
-Three hook prompts spec-kit runs around its own commands.
+Five hook prompts spec-kit runs around its own commands: `after-clarify.md`,
+`after-analyze.md`, `after-tasks.md`, `before-execute.md`, and
+`after-execute.md`. The last two file names predate the rename in
+`extension.yml`'s `hooks:` block to `before_implement` and `after_implement`;
+their content already carries the new names (each file opens `# Hook:
+before_implement` or `# Hook: after_implement`), so this is a Names-table gap,
+not an open option.
 
 - **Tighten** `after-tasks.md` to read `progress.yml` before writing, as
   `before-execute.md` does at step 6. Claimed by: D-01.
@@ -103,6 +118,9 @@ Three hook prompts spec-kit runs around its own commands.
   `roadmap.md`.
 - **Extend** `after-execute.md` to write a findings file `review.md` reads.
   Done, PR #57.
+- Done: `after-clarify.md` and `after-analyze.md`, each firing
+  `speckit.specflow.gate`, which `gates/bash/write-marker.sh` backs. Neither
+  has an upstream counterpart (see `commands/` below).
 - **Replace**: not warranted. The hooks are thin and spec-kit fixes their order.
 
 ## commands/
@@ -116,8 +134,11 @@ Command names are asserted in `e2e-smoke.sh`, `e2e-agent-claude.sh`, and
   Claude Code, keeping the sequential walk as the Copilot fallback. Verify: both
   paths pass the agent e2e in dry run. Claimed by: none, deferred in
   `roadmap.md` until G-19 lands a snapshot to assert against.
-- **Add** a sixth command: not an option. It changes `extension.yml`, README,
-  and command-name assertions in four files.
+- Done: a sixth command, `gate.md` (`speckit.specflow.gate`), writes a
+  feature's `.clarified` or `.analyzed` marker from the `after_clarify` and
+  `after_analyze` hooks. `extension.yml` lists it under `provides.commands`;
+  no upstream counterpart exists, so it is excluded from the Measured state
+  table above rather than shown as 100 percent.
 - Done: the status marker column (D-07, PR #55), the compound-task rule (D-06,
   PR #58, with ADR-0016 on why the lint is blunt), and the review risk tier
   (D-03, PR #59).
