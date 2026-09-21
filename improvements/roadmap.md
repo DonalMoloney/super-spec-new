@@ -266,7 +266,7 @@ Verify: `grep -L 'findings-schema.json' .claude/agents/*-reviewer.md` prints
 nothing, or `code-reviewer.md` carries the sentence that explains the
 exception.
 
-## G-49 — No check catches a document that has gone out of date
+## G-49 — No check catches a document that has gone out of date (working on)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Effort: low. Depends on: none.
 Raised on 2026-09-21.
