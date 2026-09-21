@@ -47,6 +47,10 @@ fi
 
 # output helpers
 PASS=0; FAIL=0; FAILED_STAGE=""
+# A replay is the second entry into a stage that assert_idempotent runs.
+# REPLAYING holds 1 for the length of that entry, and AGENT_INVOKE carries the
+# invocation function the first entry was given.
+IDEMPOTENT=0; REPLAYING=0; AGENT_INVOKE=""
 WORK=""; LOGS=""
 SPEC_DIR=""; SPEC_REL=""
 pass()  { printf '    %sok%s   %s\n' "$C_GREEN" "$C_RST" "$1"; PASS=$((PASS+1)); }
@@ -109,8 +113,49 @@ count_unresolved_questions() {
   ' "$1"
 }
 
+DIFF_INDENT='        '
+
+# Re-enters a stage and fails on any file the second entry changes in the
+# feature directory. "Everything is resumable" in AGENTS.md makes a stage safe
+# to re-run after an interruption, and only a second entry shows it.
+# The replay runs in a subshell with REPLAYING=1, so its assertions, its
+# counters, and its exit path stay out of the run, while its writes land on
+# disk. Args: <stage function name>.
+assert_idempotent() {
+  local stage="$1"
+  [ "$REPLAYING" = "1" ] && return 0
+  [ -z "$FAILED_STAGE" ] || return 0
+
+  local feature_dir="$SPEC_DIR"
+  [ -n "$feature_dir" ] || feature_dir="$(ls -d "$WORK"/specs/[0-9][0-9][0-9]-* 2>/dev/null | head -n1 || true)"
+  if [ -z "$feature_dir" ] || [ ! -d "$feature_dir" ]; then
+    note "$stage ran before a feature directory existed; no second entry to compare"
+    return 0
+  fi
+
+  local before="$WORK/.idempotence/$stage"
+  rm -rf "$before"; mkdir -p "$before"
+  cp -R "$feature_dir/." "$before/"
+
+  ( REPLAYING=1; "$stage" "$AGENT_INVOKE" ) >/dev/null 2>&1
+
+  local changed
+  changed="$(diff -r "$before" "$feature_dir" 2>&1)"
+  rm -rf "$before"
+  if [ -z "$changed" ]; then
+    pass "re-entering $stage leaves ${feature_dir#$WORK/} unchanged"
+    IDEMPOTENT=$((IDEMPOTENT+1))
+    return 0
+  fi
+  miss "re-entering $stage rewrites ${feature_dir#$WORK/}"
+  printf '%s\n' "$changed" | sed "s|^|$DIFF_INDENT|"
+  return 1
+}
+
 # Stops the run once a stage has set FAILED_STAGE.
 stop_if_stage_failed() {
+  # A replay runs its stage to the end, so the diff sees every write.
+  [ "$REPLAYING" = "1" ] && return 0
   [ -z "$FAILED_STAGE" ] && return 0
   printf '\n%sStopped at Stage %s%s\n' "$C_RED" "$FAILED_STAGE" "$C_RST"
   exit 1
@@ -134,7 +179,7 @@ cleanup() {
   else
     printf '\n%sworkdir kept:%s %s\n' "$C_DIM" "$C_RST" "$WORK"
   fi
-  printf '\n%d assertions, %d failed\n' "$PASS" "$FAIL"
+  printf '\n%d assertions, %d failed, %d idempotence checks\n' "$PASS" "$FAIL" "$IDEMPOTENT"
 }
 
 # Fails the run when uvx is absent, because every prep step goes through it.
@@ -168,6 +213,11 @@ PROMPT_PREVIEW_CHARS=400
 run_agent_stage() {
   local invoke="$1" stage_id="$2" prompt="$3"
   local log="$LOGS/stage-$stage_id.log"
+  AGENT_INVOKE="$invoke"
+
+  # A replay measures what a second entry writes; a second agent call would
+  # charge for a different answer and hide that measurement.
+  [ "$REPLAYING" = "1" ] && return 0
 
   if [ "$stage_id" -lt "$RESUME_FROM" ]; then
     note "SKIP $AGENT_NAME call (resumed past stage $stage_id, reusing prior artifacts)"
@@ -291,6 +341,7 @@ EOF
     assert_file ".specify/memory/constitution.md exists" "$WORK/.specify/memory/constitution.md"           || FAILED_STAGE=1
     assert_grep "  has ## Core Principles section"        '^#{2,4}[[:space:]]+Core Principles' "$WORK/.specify/memory/constitution.md" || FAILED_STAGE=1
   fi
+  assert_idempotent stage_1_constitution
   stop_if_stage_failed
 }
 
@@ -330,6 +381,7 @@ EOF
     assert_no_path "  no .specify/specs/ leak (issue #4)" "$WORK/.specify/specs"  || FAILED_STAGE=2
     assert_grep "  spec.md mentions P1/P2/P3" '\b(P1|P2|P3)\b' "$SPEC_DIR/spec.md" || FAILED_STAGE=2
   fi
+  assert_idempotent stage_2_specify
   stop_if_stage_failed
 }
 
@@ -374,6 +426,7 @@ EOF
     assert_grep "  ## Open Questions or Assumptions added" '^#{2,4}[[:space:]]+(Open Questions|Assumptions)' "$SPEC_DIR/spec.md" || FAILED_STAGE=3
     assert_resolved_questions_recorded "$SPEC_DIR/spec.md" "$WORK/decisions.md" || FAILED_STAGE=3
   fi
+  assert_idempotent stage_3_brainstorm
   stop_if_stage_failed
 }
 
@@ -392,6 +445,7 @@ EOF
   if [ -z "$FAILED_STAGE" ]; then
     assert_file "plan.md exists at ${SPEC_DIR#$WORK/}/plan.md" "$SPEC_DIR/plan.md" || FAILED_STAGE=4
   fi
+  assert_idempotent stage_4_plan
   stop_if_stage_failed
 }
 
@@ -455,6 +509,7 @@ FIXTURE
       note "the snapshot spec holds $open_rows unresolved row(s), so its tasks stage would stop"
     fi
   fi
+  assert_idempotent stage_5_tasks
   stop_if_stage_failed
 }
 
@@ -488,6 +543,7 @@ EOF
       note "progress.yml not produced (soft signal; the specflow contract suggests it)"
     fi
   fi
+  assert_idempotent stage_6_execute
   stop_if_stage_failed
 }
 
@@ -507,6 +563,7 @@ EOF
     assert_file "review.md exists" "$SPEC_DIR/checklists/review.md" || FAILED_STAGE=7
     assert_grep "  review.md is a checklist" '\[[ xX]\]' "$SPEC_DIR/checklists/review.md" || FAILED_STAGE=7
   fi
+  assert_idempotent stage_7_review
   stop_if_stage_failed
 }
 
@@ -514,7 +571,8 @@ EOF
 # in a dry run, what a real run needs.
 # Args: <the line naming what a real run needs>.
 report_summary() {
-  printf '\n%sSummary%s: %d assertions passed across 7 stages\n' "$C_BOLD" "$C_RST" "$PASS"
+  printf '\n%sSummary%s: %d assertions passed across 7 stages, %d of them idempotence checks\n' \
+         "$C_BOLD" "$C_RST" "$PASS" "$IDEMPOTENT"
   echo
   echo "Final artifacts under workdir:"
   find "$WORK" -type f \
