@@ -337,3 +337,18 @@ deleting them; prune anything older than a quarter that no longer guides work.
   shipped script that reads a hook payload: `speckit.specflow.gate` resolves
   through its frontmatter to `write-marker.sh`, which exits 2 with no
   argument, so registering it on `pre_tool_use` blocks every Bash call.
+
+## ADR-0028: Sample content inside a shipped template is rewritten, not frozen
+
+- Date: 2026-09-21
+- Status: accepted, supersedes the sample-content clause of `bd75111`
+- Context: `constitution-template.md` carried upstream's five principle
+  examples verbatim, kept in `bd75111` on the grounds that an example is
+  sample content. ADR-0015 freezes a `[NEEDS CLARIFICATION]` marker on an
+  example line, which reads as the same rule.
+- Decision: a marker is frozen because a validator greps it; prose is not. An
+  example is the text a reader imitates, so it follows
+  `standards/documentation.md` like any other prose. Each example keeps its
+  concept, its identifiers, and its bracket placeholders.
+- Consequences: ADR-0015 scopes to markers alone. A template's example prose
+  is in scope for `prose-rephraser`; its placeholders and markers are not.
