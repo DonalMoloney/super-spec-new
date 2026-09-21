@@ -113,7 +113,7 @@ report's `Suggestion` severity maps to `Minor` in the file.
 A merge gate reading this file blocks while a Critical or Important finding
 stays `open`.
 
-## Superpowers Adaptation
+## Skill Mode Behavior
 
 When the command uses the `requesting-code-review` skill, it adapts the
 skill's outputs:

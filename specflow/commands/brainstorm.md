@@ -61,7 +61,7 @@ asking again.
 Run this command any number of times on the same spec. Each session appends to
 the brainstorm log and skips previously explored categories.
 
-## Superpowers Adaptation
+## Skill Mode Behavior
 
 When the `brainstorming` skill produces output, redirect it:
 - Design documents → merge their insights into the existing `spec.md`

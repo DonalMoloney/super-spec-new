@@ -78,7 +78,7 @@ The command changes code in the project and updates the task checkboxes in `task
 The agent MUST pause at every phase boundary and wait for explicit user approval.
 Never skip a checkpoint.
 
-## Superpowers Adaptation
+## Skill Mode Behavior
 
 | Skill | Adaptation |
 |-------|------------|

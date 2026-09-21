@@ -82,7 +82,7 @@ The command writes the phased task breakdown to `specs/NNN-feature-name/tasks.md
 | `[REVIEW]` | Review Gate | Pauses for a human code review before the next task starts |
 | `[SUBAGENT]` | Subagent | May be dispatched to a parallel subagent |
 
-## Superpowers Adaptation
+## Skill Mode Behavior
 
 Adapt the output of the `writing-plans` skill this way:
 - Implementation blueprints go into `specs/NNN/tasks.md`, in the template structure
