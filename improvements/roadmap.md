@@ -210,7 +210,7 @@ validators pass.
 Verify: the Copilot leg of `e2e-smoke.sh` finds the hook file the install
 wrote and names the events in it.
 
-## G-43 — SKILL.md documents a progress file the validator rejects
+## G-43 — SKILL.md documents a progress file the validator rejects (working on)
 
 Executor: `general-purpose`. Model: sonnet. Move: Tighten. Effort: low.
 Depends on: none. Diverges: no. Found by G-41 on 2026-09-20. Not started.
@@ -522,4 +522,3 @@ is not ready, whatever the order above says.
 - `git status --porcelain` prints nothing on `main`.
 - `CHANGELOG.md` has no `[Unreleased]` entries left; each one moved under the
   tag's heading with the version the rule in that file picks.
-
