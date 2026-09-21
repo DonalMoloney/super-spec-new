@@ -984,19 +984,19 @@ G-38 validates the progress file, yet both agent e2e runs enter each of the
 seven stages once, so a stage that rewrites a feature's artifacts on a second
 entry passes today.
 
-- [ ] T461 Add `assert_idempotent` to `e2e-stages.sh`
+- [x] T461 Add `assert_idempotent` to `e2e-stages.sh`
 
-- [ ] T462 Call `assert_idempotent` at the end of each of the seven stage
+- [x] T462 Call `assert_idempotent` at the end of each of the seven stage
   functions
 
-- [ ] T463 Print an `IDEMPOTENT` count beside the assertion count
+- [x] T463 Print an `IDEMPOTENT` count beside the assertion count
 
-- [ ] T464 Break one stage's idempotence in a throwaway commit, then revert it
+- [x] T464 Break one stage's idempotence in a throwaway commit, then revert it
 
-- [ ] T465 Assert the status stage detects the 12 skills the Skill Mapping
+- [x] T465 Assert the status stage detects the 12 skills the Skill Mapping
   table names
 
-- [ ] T466 Assert the out-of-range line from a `version: 5.0.0` plugin stub
+- [x] T466 Assert the out-of-range line from a `version: 5.0.0` plugin stub
 
 Verify: both dry runs print an idempotence count beside the assertion count
 and exit 0; the branch history carries one commit that breaks a stage's
