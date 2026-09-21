@@ -112,9 +112,11 @@ not an open option.
   `before-execute.md` does at step 6. Claimed by: D-01.
 - **Add** a `before_tasks` hook that stops when the spec's Open Questions table
   has unresolved rows. Spec-kit fires `hooks.before_tasks`; upstream never
-  registered one. Not cheap: it changes the hook count `e2e-smoke.sh`,
-  `ci.yml`, and the hook tuple in `validate-extension-metadata.py` assert.
-  Verify: all three assertions updated and green. Claimed by: none, deferred in
+  registered one. Cheaper than it was: G-24 T241 made `e2e-smoke.sh` and
+  `ci.yml` derive their hook count from `extension.yml`, and the hook tuple in
+  `validate-extension-metadata.py` already passes a fourth hook unedited. Only
+  the manifest and the hook's own prompt need writing. Verify: all three checks
+  stay green with no manual count edit. Claimed by: none, deferred in
   `roadmap.md`.
 - **Extend** `after-execute.md` to write a findings file `review.md` reads.
   Done, PR #57.
