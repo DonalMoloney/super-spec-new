@@ -39,8 +39,7 @@ targets.
 ## Measured state
 
 Measured 2026-09-20 against upstream `c20ac6c1` by rerunning the reproduce
-command below. Lowest real change first. A row marked `roadmap` waits on the
-item named in the rewrite status below. One row the command cannot reach:
+command below. Lowest real change first. One row the command cannot reach:
 G-30 renamed `references/superpowers-bridge.md` to
 `references/superpowers-mapping.md`, and the measurer resolves one relative
 path against both roots, so that row is measured by copying upstream's file
@@ -145,8 +144,7 @@ See G-30 for the cost of renaming `superpowers-bridge.md`.
 - Done: `superpowers-mapping.md` maps the review personas under
   `.claude/agents/` to the `requesting-code-review` skill, so Claude Code
   prefers the squad and Copilot the skill (G-22). Its `prose-rephraser` pass
-  then took it to 57 percent, so `extension.yml` is the one shipped file still
-  close to upstream.
+  then took it to 57 percent.
 - **Extend** `workflow-guide.md` with one section per new gate or marker. The
   Gate markers table stays the single source for marker names, and
   `e2e-smoke.sh` asserts every row since PR #53. Claimed by: continuing, per

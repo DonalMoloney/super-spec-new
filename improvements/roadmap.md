@@ -463,14 +463,32 @@ and `session-start.sh`.
 
 - [ ] T262 Declare the block in `extension.yml`
 
-Blocked by ADR-0022. Three prerequisites, each verified by G-26 against
-spec-kit 1.0.9.dev0: our command files need YAML frontmatter with a `scripts:`
-block, since none has any today and the dispatcher resolves the script through
-it; Copilot's tool-payload field names need recording, because the gates read
-`.tool_input.command` and `.tool_input.file_path` and a wrong key passes
-everything; and the four gates need moving under `specflow/`, which reverses
-ADR-0001 and adds `jq` as an install-time dependency. Copilot also drops the
-`matcher` field Claude Code keeps, so a gate filters by tool name itself.
+Blocked, and shipping the block today would brick the extension. Two of the
+three prerequisites cleared on 2026-09-20: every command file now carries
+frontmatter with a `scripts:` block, and `docs/agent-event-mapping.md` records
+Copilot's `toolName`, `toolArgs.command`, and `toolArgs.path`. ADR-0027 covers
+the `jq` dependency.
+
+What remains is a handler. An `events:` entry names a command, the dispatcher
+resolves that command to one script, and that script receives a hook payload on
+stdin and nothing else. No shipped script reads one: `speckit.specflow.gate`
+resolves to `write-marker.sh`, which takes two arguments and exits 2 without
+them, so registering it on `pre_tool_use` denies every Bash call. Reproduced
+against spec-kit `d4229c0`:
+
+```
+$ echo '{"toolName":"bash","toolArgs":{"command":"ls"}}' | python3 .specify/events.py speckit.specflow.gate pre_tool_use 30
+write-marker: got 0 argument(s); expected 2.
+DISPATCHER EXIT=2
+```
+
+The four scripts that do read a payload, `block-main-commit.sh`,
+`test-gate.sh`, `artifact-lint.sh`, and `session-start.sh`, are still under
+`.claude/`; ADR-0025 moved a different four. Moving them is the real
+prerequisite. Note also that `validate_events` requires each `events:` value to
+be a mapping, so one event name takes one entry: the mapping table's two
+`post_tool_use` gates cannot both register. Copilot drops the `matcher` field
+Claude Code keeps, so a gate filters by tool name itself.
 
 Verify: `grep -c '^events:' specflow/extension.yml` prints 1 and both
 validators pass.

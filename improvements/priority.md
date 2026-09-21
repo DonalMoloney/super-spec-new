@@ -22,13 +22,16 @@ with the text to grep for, because lines move.
 
 ## Start here
 
-Open `first-tag` and `payload-gates` before anything else. The release and
-seven blocks wait on the first. Nine blocks wait on the second, directly or
-through `copilot-e2e`, and the longest chain in this file runs
-`payload-gates`, `copilot-e2e`, `superpowers-range`, `rewrite-mapping`.
-`payload-gates` rebases over four small wave-1 blocks, so merge those four
-first and open `payload-gates` the same day. The other wave-1 blocks are
-independent and fill any idle slot.
+Twenty-five of the twenty-seven blocks below merged to `main` on 2026-09-20,
+in the dependency order the table states. Two remain, both in "Blocked on an
+API key": `live-run`, and `delete-upstream-example` behind it. Every other row
+in the table is history; read it for the order that worked, not for work to
+pick up. "Closed since the scoped list was written" lists each merged block.
+
+Two items inside merged blocks stayed open, each for a reason no worktree can
+fix: item 19's `events:` block would deny every Bash call until a shipped
+script reads a hook payload (G-26 T262 records the reproduction), and item
+20's upgrade test needs a published release, which waits on the first tag.
 
 | Worktree | Items | Wave | Wait for | Rebase over |
 |----------|-------|------|----------|-------------|
@@ -1262,6 +1265,13 @@ Do not re-verify these when picking a worktree above.
 
 | Item | Closed by |
 |------|-----------|
+| Every wave-1 block | merged 2026-09-20: `deck-edits`, `first-tag`, `manifest-schema`, `skill-progress-schema`, `template-stamp`, `merge-gate-steps`, `payload-gates`, `verify-pin`, `speckit-floor`, `test-gate`, `telemetry-budget`, `scorer-dimensions`, `reviewer-scorecard`, `rewrite-after-tasks`, `rewrite-metadata-validator` |
+| Every wave-2 block | merged 2026-09-20: `readme-onboarding`, `copilot-e2e`, `reviewer-bodies`, `rewrite-changelog` |
+| Every wave-3 block | merged 2026-09-20: `register-gates` (items 19 and 20 partly open, see the note under Start here), `idempotent-dry-run`, `superpowers-range`, `rewrite-readme`, `rewrite-extension-yml`, `rewrite-mapping` |
+| N-03, ship the gate scripts | `payload-gates`, ADR-0025: they ship under `specflow/gates/` |
+| N-04, ship the findings contract | `payload-gates`: the schema moved to `references/findings-schema.json`, not the name N-04 proposed |
+| N-05, the current manifest schema | `manifest-schema`: `category`, `effect`, and a hook `priority` |
+| Item 34, all six rewrite rows | no row in either `reference.md` table waits on an item |
 | N-07, templates as a preset | G-25, ADR-0021: they stay extension templates |
 | N-10, counts derived from the manifest | G-24 T241 |
 | N-19, N-20, N-21, N-22 | G-24 T248, T243 and T244, T247, T249 |
