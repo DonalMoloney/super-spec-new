@@ -7,9 +7,9 @@
 
 <!--
   ============================================================================
-  The checklist items below are sample items for illustration only.
+  These sample items illustrate the format only.
 
-  The /speckit.checklist command must replace these with actual items based on:
+  The /speckit.checklist command replaces these with items drawn from:
   - User's specific checklist request
   - Feature requirements from spec.md
   - Technical context from plan.md
@@ -22,20 +22,20 @@
 ## Spec Compliance
 
 <!--
-  Check that each acceptance scenario from the spec is implemented and passing.
-  These items come from spec.md's user stories and acceptance scenarios.
+  Check that the code implements and passes each acceptance scenario from the spec.
+  This category draws its items from spec.md's user stories and acceptance scenarios.
 -->
 
-- [ ] CHK001 US1 Scenario 1: [Given/When/Then from spec], implemented and tested
-- [ ] CHK002 US1 Scenario 2: [Given/When/Then from spec], implemented and tested
-- [ ] CHK003 US2 Scenario 1: [Given/When/Then from spec], implemented and tested
-- [ ] CHK004 Edge case: [Edge case from spec], handled
+- [ ] CHK001 US1 Scenario 1: the code implements and tests [Given/When/Then from spec]
+- [ ] CHK002 US1 Scenario 2: the code implements and tests [Given/When/Then from spec]
+- [ ] CHK003 US2 Scenario 1: the code implements and tests [Given/When/Then from spec]
+- [ ] CHK004 Edge case: the code handles [Edge case from spec]
 
 ## Code Review
 
 <!--
   These checks apply to most features.
-  Adjust them against the constitution's quality gates.
+  Adjust each one against the constitution's quality gates.
 -->
 
 ### Correctness
@@ -47,15 +47,15 @@
 
 ### Security
 
-- [ ] CHK020 No injection vulnerability exists (SQL, XSS, command injection)
-- [ ] CHK021 Authentication and authorization checks exist
+- [ ] CHK020 The code carries no SQL, XSS, or command injection vulnerability
+- [ ] CHK021 The code checks authentication and authorization
 - [ ] CHK022 The code never logs or exposes sensitive data
 - [ ] CHK023 Every entry point sanitizes its input
 - [ ] CHK024 The review fills the STRIDE table, or marks each row N/A
 
 ### Performance
 
-- [ ] CHK030 The code makes no N+1 query or unnecessary database call
+- [ ] CHK030 The code avoids N+1 queries and unnecessary database calls
 - [ ] CHK031 The code caches where caching pays off
 - [ ] CHK032 Critical paths run no blocking operation
 - [ ] CHK033 The code closes every connection and file handle it opens
@@ -63,7 +63,7 @@
 ### Code Quality
 
 - [ ] CHK040 The code follows the constitution's conventions
-- [ ] CHK041 Each function does one thing and stays small
+- [ ] CHK041 Each function covers one responsibility and stays small
 - [ ] CHK042 Duplicate code stays under the project's limit
 - [ ] CHK043 Names stay clear and consistent
 
@@ -71,7 +71,7 @@
 
 <!--
   Check that the feature respects each constitution principle.
-  These items come from the principles in .specify/memory/constitution.md.
+  This category draws its items from the principles in .specify/memory/constitution.md.
 -->
 
 - [ ] CHK050 [Principle 1]: [Specific verification for this feature]
@@ -81,13 +81,13 @@
 ## Test Coverage
 
 <!--
-  Check that tests exist and pass for critical functionality.
+  Check that tests cover the critical logic and pass.
 -->
 
 - [ ] CHK060 Unit tests cover core business logic
 - [ ] CHK061 Integration tests cover user flows
 - [ ] CHK062 All tests pass in the CI environment
-- [ ] CHK063 [TDD] tasks followed RED-GREEN-REFACTOR discipline
+- [ ] CHK063 Every [TDD] task followed the RED-GREEN-REFACTOR discipline
 - [ ] CHK064 Every criterion lists a test in Traceability
 
 ## [Custom Category]
@@ -104,7 +104,7 @@
 
 <!--
   Join a failed checklist item to the review finding that reported it.
-  R-NNN ids come from the review-findings.json the review command writes.
+  review-findings.json holds the R-NNN ids, and the review command writes that file.
 -->
 
 | CHK ID | R-NNN | Status |
@@ -114,8 +114,8 @@
 
 ## Notes
 
-- Check items off as completed: `[x]`
-- Add inline comments for findings or exceptions
-- Link to relevant code, tests, or documentation
-- Number items sequentially (CHK###) for easy reference
-- Report issues with a confidence score (0-100); flag only scores at or above 80
+- Check off a completed item with `[x]`.
+- Add an inline comment for a finding or an exception.
+- Link to the code, tests, or documentation the item covers.
+- Number items in sequence with the CHK### prefix, so a reader can reference one directly.
+- Score each finding from 0 to 100 for confidence; report only scores at or above 80.
