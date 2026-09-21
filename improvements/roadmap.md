@@ -974,6 +974,38 @@ Verify: `grep -L 'findings-schema.json' .claude/agents/*-reviewer.md` prints
 nothing, or `code-reviewer.md` carries the sentence that explains the
 exception.
 
+## G-46 — No test re-enters a stage after it has already run
+
+Executor: `bdd-orchestrator`. Model: sonnet. Move: Extend. Effort: low.
+Depends on: `copilot-e2e`. Raised as `priority.md` item 26 on 2026-09-20.
+
+"Everything is resumable" is the third architecture rule in `AGENTS.md` and
+G-38 validates the progress file, yet both agent e2e runs enter each of the
+seven stages once, so a stage that rewrites a feature's artifacts on a second
+entry passes today.
+
+- [ ] T461 Add `assert_idempotent` to `e2e-stages.sh`
+
+- [ ] T462 Call `assert_idempotent` at the end of each of the seven stage
+  functions
+
+- [ ] T463 Print an `IDEMPOTENT` count beside the assertion count
+
+- [ ] T464 Break one stage's idempotence in a throwaway commit, then revert it
+
+- [ ] T465 Assert the status stage detects the 12 skills the Skill Mapping
+  table names
+
+- [ ] T466 Assert the out-of-range line from a `version: 5.0.0` plugin stub
+
+Verify: both dry runs print an idempotence count beside the assertion count
+and exit 0; the branch history carries one commit that breaks a stage's
+idempotence and one that reverts it, with the failing output quoted in the
+pull request; the two fixtures assert the 12-skill detection and the line
+`superpowers 5.0.0 is outside the tested range >=6.0.0 <7.0.0`;
+`shellcheck -S warning specflow/scripts/*.sh` is clean; and
+`python3 -m pytest tests -q` still passes.
+
 ## Checked on 2026-09-20, no work needed
 
 Measured against spec-kit 1.0.9.dev0 at `d4229c0`. Each line held, so do not
