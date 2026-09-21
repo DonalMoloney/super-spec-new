@@ -297,8 +297,8 @@ manifest keys still spelled as upstream spells them, measured 2026-09-21
 against `c20ac6c1`. Read it before choosing a rewrite target.
 
 Structure held while prose moved. Every command file keeps upstream's
-`## Usage`, `## Process`, `## Output`, and `## Superpowers Adaptation`; the one
-heading each lost is its `# speckit.specflow.*` title, which the namespace
+`## Usage`, `## Process`, and `## Output`; the one heading each lost is its
+`# speckit.specflow.*` title, which the namespace
 rename moved. The three hook prompts keep 3 of 3 headings. `extension.yml`
 keeps all six top-level keys. ADR-0013 bars `prose-rephraser` from touching a
 heading, so a rewrite pass moves the Real column without moving the shape.
@@ -360,13 +360,16 @@ greps it. Measured 2026-09-21 by searching every heading against `*.sh`,
 | `commands/hooks/*.md` | 2 of 3 each | Low | Low; three headings each |
 | `commands/*.md` | 2 or 3 of 5 to 7 | High. `e2e-smoke.sh` counts each file's Process steps | Low |
 
-Two names repeat across files, so one `divergence-renamer` pass moves each and
-nothing else changes:
+Done: the two repeated names below, each moved by one `divergence-renamer` pass
+in a single-purpose worktree, verified against `e2e-smoke.sh`,
+`lint-standards.py`, and (for the hooks) `.claude/hooks/tests/run.sh` before
+merging.
 
-- `## Superpowers Adaptation` closes 4 of the 5 command files and is free in
-  every one. It is upstream's section name and the most visible inherited
-  fingerprint in the payload.
-- `## Checks` opens all three hook prompts and is free in every one.
+- `## Superpowers Adaptation`, upstream's section name in 4 of the 5 command
+  files, is now `## Skill Mode Behavior`.
+- `## Checks` opened all five hook prompts, not three as first sampled; the
+  sample missed `after-clarify.md` and `after-analyze.md`. All five are now
+  `## Preconditions`.
 
 Order of attack, by yield per unit of risk:
 
