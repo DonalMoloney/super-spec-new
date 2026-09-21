@@ -236,14 +236,7 @@ rename lands, so the cost is known before the move.
 
 | Name | Today | Asserted in | Cost | Claimed by |
 |------|-------|-------------|------|------------|
-| Manifest `name:` | "Superpowers Bridge" | `extension.yml`, `CHANGELOG.md`, validator test, `AGENTS.md`, `copilot-instructions.md` | Cheap; "bridges" is a banned metaphor | D-05d |
-| Manifest description and `purpose:` strings | "Deep-dive" (2), "Intelligent" (1), "Enhanced" (5) | Nothing greps them | Free Tighten | D-05d |
-| `.claude/review/schema.json` title | `SuperspecReviewFindings` | Hook tests | Cheap | D-05a |
-| `validate-extension-metadata.py` line 147 | Checks for a `superpowers-bridge --from` string no README carries | Validator tests | Delete the branch | D-05b |
-| Hook `prompt:` and `description:` strings | "Run enhanced Superpowers task decomposition and validation?" | Nothing greps them | Free Tighten | G-29 |
-| `tags:` list | `superpowers`, `brainstorming`, `tdd`, `code-review`, `subagent`, `workflow` | The spec-kit catalog search | Free; add `copilot`, `claude-code` | G-29 |
 | `author:` | "Specflow Contributors" | Nothing | Free | none |
-| `references/superpowers-bridge.md` | Named for the metaphor | Both validators' required-file lists, a `validate-release-archive` test fixture, and 16 prose citations including `AGENTS.md`'s `@` import | 16 files, two of them validators | G-30 |
 | `examples/static-landing-page/` | Upstream's feature | dry run, `score-artifacts.yml`, README | Replaced, not renamed | G-19 |
 | `commands/hooks/*.md` file names | `after-tasks`, `before-execute`, `after-execute` | Nothing; the manifest maps hooks to commands | Free, and no reason | none |
 | `commands/*.md` file names | `status`, `brainstorm`, `tasks`, `execute`, `review` | The `file:` field in `extension.yml` | Cheap, and no reason | none |

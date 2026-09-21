@@ -1,9 +1,9 @@
 # Copilot instructions: super-spec-new
 
-This repo is our own fork/reimplementation of **Specflow** ("Superpowers Bridge"), a
-[spec-kit](https://github.com/github/spec-kit) extension bridging spec-kit's governance
-workflow (constitution → spec → plan → tasks → checklist) with
-[obra/superpowers](https://github.com/obra/superpowers) agent skills. The upstream
+This repo is our own fork/reimplementation of **Specflow**, a
+[spec-kit](https://github.com/github/spec-kit) extension that runs
+[obra/superpowers](https://github.com/obra/superpowers) agent skills inside spec-kit's
+governance workflow (constitution → spec → plan → tasks → checklist). The upstream
 reference implementation (`WangX0111/superspec`) is vendored read-only at `specflow/`,
 rebranded. Treat it as the spec to diverge from, not a dependency. `AGENTS.md` at the repo root is the source of truth
 for commands, architecture, and gotchas; this file is a Copilot-CLI-facing summary of

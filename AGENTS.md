@@ -1,12 +1,12 @@
 # super-spec-new
 
-Our own fork/reimplementation of **Specflow** ("Superpowers Bridge"), a
-[spec-kit](https://github.com/github/spec-kit) extension that bridges spec-kit's
-governance workflow (constitution → spec → plan → tasks → checklist) with
+Our own fork/reimplementation of **Specflow**, a
+[spec-kit](https://github.com/github/spec-kit) extension that runs
 [obra/superpowers](https://github.com/obra/superpowers) agent skills (brainstorming,
-writing-plans, TDD, subagent-driven-development, code review). The upstream reference
-implementation is vendored at `specflow/`. Treat it as the spec to diverge from, not
-a dependency to import. No commits exist on `main` yet; this is a fresh checkout.
+writing-plans, TDD, subagent-driven-development, code review) inside spec-kit's
+governance workflow (constitution → spec → plan → tasks → checklist). The upstream
+reference implementation is vendored at `specflow/`. Treat it as the spec to diverge
+from, not a dependency to import.
 
 This is a **prompt/spec repo, not an application**: the "source code" is Markdown
 command definitions and YAML metadata that define an agent's behavior contract, plus a
@@ -218,7 +218,7 @@ See `improvements/roadmap.md` for item definitions, executors, and Verify condit
 ## Claude Code
 
 @specflow/references/superpowers-mapping.md is the map between this project's
-commands and the obra/superpowers skills they bridge to. Read it before editing
+commands and the obra/superpowers skills they map to. Read it before editing
 any command file's superpowers-detection logic.
 
 <!-- CLAUDE.md at the repo root imports this file with `@AGENTS.md`. Keep this file the

@@ -1,4 +1,4 @@
-# Superpowers Bridge Reference
+# Superpowers Skill Mapping
 
 Specflow finds an obra/superpowers skill, runs the skill's own process, and
 writes what it produces into spec-kit's files. `SKILL.md` sends a reader here
@@ -27,7 +27,7 @@ A specflow command that needs a superpowers skill runs these steps:
 1. Read the skill name out of the mapping table below
 2. Look at the project-local path first, with Glob or Read
 3. If nothing is there, look at the user-global path
-4. If found: log "Found {skill-name} at {path}" and switch to enhanced mode
+4. If found: log "Found {skill-name} at {path}" and switch to skill mode
 5. If not found: log "Superpowers {skill-name} not detected, using built-in fallback"
    and switch to fallback mode
 

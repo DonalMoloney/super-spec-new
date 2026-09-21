@@ -32,7 +32,7 @@ flowchart LR
 
 **Required**: None. Specflow runs on its own, using the built-in fallback protocols.
 
-**Optional (enhanced)**: Install the [obra/superpowers](https://github.com/obra/superpowers)
+**Optional (skill mode)**: Install the [obra/superpowers](https://github.com/obra/superpowers)
 skills under `~/.agents/skills/` or `.agents/skills/` for deeper brainstorming,
 planning, and execution. See [superpowers-mapping.md](references/superpowers-mapping.md)
 for how specflow detects and wires them in.
@@ -200,8 +200,8 @@ release status read from the plugin manifest.
 - A user can hand-edit the file to override the detection result
 
 **Why persist this**: the project's documentation then shows which superpowers
-skills are in use. A teammate reading `.specify/` sees the enhanced skills at a
-glance, without running a command.
+skills are in use. A teammate reading `.specify/` sees them at a glance,
+without running a command.
 
 ### Resume Protocol
 
@@ -372,7 +372,7 @@ session adds its own entry to the brainstorm log.
 7. Fill the template to produce `plan.md`
 8. Write the result to `specs/NNN-feature-name/plan.md`
 
-**Superpowers bridge**: When the `writing-plans` skill is detected, read it and use
+**Skill mode**: When the `writing-plans` skill is detected, read it and use
 its blueprint process to sharpen the plan's task structure section. See
 [superpowers-mapping.md](references/superpowers-mapping.md).
 

@@ -744,7 +744,7 @@ skills:
 
 The resume check reads `superpowers.yml` instead of re-detecting.
 `/speckit.specflow.brainstorm`, for example, uses the cached result to choose
-between enhanced mode (superpowers) and fallback mode (built-in). When a skill
+between skill mode (superpowers) and fallback mode (built-in). When a skill
 was `detected: false` last time, the command runs one re-check before it falls
 back, in case the user installed the skill since the last session.
 
