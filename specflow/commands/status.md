@@ -1,3 +1,7 @@
+---
+description: Show current project progress and superpowers detection status
+---
+
 # speckit.specflow.status
 
 Print the project's progress, each feature's phase, and the superpowers detection result.

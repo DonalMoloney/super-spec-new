@@ -1,3 +1,9 @@
+---
+description: Run code review against spec requirements using review skills
+scripts:
+  sh: gates/bash/risk-classifier.sh
+---
+
 # speckit.specflow.review
 
 Run code review against spec requirements using review skills.

@@ -1,3 +1,11 @@
+---
+description: Generate phased task breakdown using writing-plans skills
+scripts:
+  sh: ../../scripts/bash/resolve-template.sh tasks-template --json
+  ps: ../../scripts/powershell/resolve-template.ps1 tasks-template -Json
+  py: ../../scripts/python/resolve_template.py tasks-template --json
+---
+
 # speckit.specflow.tasks
 
 The command builds a phased task breakdown with the writing-plans skill.

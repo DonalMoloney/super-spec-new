@@ -1,3 +1,7 @@
+---
+description: Orchestrate implementation with TDD, subagents, and review gates
+---
+
 # speckit.specflow.execute
 
 The command drives implementation through TDD, subagent dispatch, and review gates.

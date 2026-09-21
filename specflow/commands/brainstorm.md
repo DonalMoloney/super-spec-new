@@ -1,3 +1,7 @@
+---
+description: Find edge cases and refine a spec using brainstorming skills
+---
+
 # speckit.specflow.brainstorm
 
 Probe edge cases and refine a spec document with the brainstorming skill.

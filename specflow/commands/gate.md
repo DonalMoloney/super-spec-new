@@ -1,3 +1,9 @@
+---
+description: Write a feature's clarify or analyze marker, or report why the gate refused
+scripts:
+  sh: gates/bash/write-marker.sh
+---
+
 # speckit.specflow.gate
 
 Write a feature's `.clarified` or `.analyzed` marker, or report why the gate refused.
