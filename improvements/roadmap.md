@@ -1024,6 +1024,51 @@ pull request; the two fixtures assert the 12-skill detection and the line
 `shellcheck -S warning specflow/scripts/*.sh` is clean; and
 `python3 -m pytest tests -q` still passes.
 
+## G-47 — The five templates never got their prose pass (working on)
+
+Executor: `prose-rephraser`, `script-refactorer`, `divergence-auditor`. Model:
+sonnet. Move: Tighten, with a light Extend. Effort: medium. Raised from
+`improvements/change.md` on 2026-09-21.
+
+The Rewrite status table in `reference.md` lists six files as having had a
+dedicated rewrite pass and no template is among them, yet the sentence above
+the table claims every shipped text file with an upstream counterpart has had
+one. The six files closest to upstream are the five templates and
+`validate-release-archive.py`, at 21 to 46 percent real change against
+`c20ac6c1`. `plan-template.md` keeps 13 of 13 upstream headings and 79 percent
+of its lines verbatim. `spec-template.md` line 179 still ships upstream's
+sample date, `### Session 2026-04-22`.
+
+- [ ] T467 Rewrite `templates/plan-template.md` prose to
+  `standards/documentation.md`, every heading verbatim
+
+- [ ] T468 Rewrite `templates/spec-template.md` prose to the same standard
+
+- [ ] T469 Rewrite `templates/checklist-template.md` prose to the same standard
+
+- [ ] T470 Rewrite `templates/constitution-template.md` prose to the same
+  standard
+
+- [ ] T471 Rewrite `templates/tasks-template.md` prose to the same standard
+
+- [ ] T472 Refactor `scripts/validate-release-archive.py` to
+  `standards/code.md`, every exit code and output line unchanged
+
+- [ ] T473 Replace the hardcoded `### Session 2026-04-22` in
+  `spec-template.md` with a date placeholder
+
+- [ ] T474 Rename the free headings under `plan-template.md`'s
+  `## Execution Strategy` to name the two target surfaces
+
+- [ ] T475 Correct the Rewrite status claim in `reference.md` to match its
+  table
+
+Verify: `bash verify.sh` exits 0; `bash .claude/hooks/tests/run.sh` passes;
+both validators pass from `specflow/`; `E2E_DRY_RUN=1 bash
+scripts/e2e-smoke.sh` exits 0; `measure-divergence.py` reports a higher real
+change for all six files; and every heading listed as FROZEN in
+`improvements/change.md` is still present byte-identical.
+
 ## Checked on 2026-09-20, no work needed
 
 Measured against spec-kit 1.0.9.dev0 at `d4229c0`. Each line held, so do not
