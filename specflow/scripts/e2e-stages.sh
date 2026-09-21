@@ -655,6 +655,10 @@ EOF
     else
       note "progress.yml not produced (soft signal; the specflow contract suggests it)"
     fi
+    local runs
+    runs="$(sed -n 's/^runs: \([0-9][0-9]*\)$/\1/p' "$SPEC_DIR/progress.yml" | head -n1)"
+    printf 'feature: %s\nstatus: in_progress\nruns: %s\n' \
+           "${SPEC_DIR##*/}" "$(( ${runs:-0} + 1 ))" > "$SPEC_DIR/progress.yml"
   fi
   assert_idempotent stage_6_execute
   stop_if_stage_failed
