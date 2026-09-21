@@ -6,6 +6,11 @@
 # and the one /speckit.specflow.review writes per feature. Pass one or more globs
 # to read findings elsewhere instead.
 set -euo pipefail
+# ADR-0027: jq is an install-time dependency no manifest field declares.
+if ! command -v jq >/dev/null 2>&1; then
+  echo "merge-gate: jq is not installed; the gate reads each findings document with it. Install jq (brew install jq, apt-get install jq), then rerun the gate." >&2
+  exit 1
+fi
 if [ "$#" -gt 0 ]; then
   findings_globs=("$@")
 else

@@ -237,7 +237,7 @@ deleting them; prune anything older than a quarter that no longer guides work.
 ## ADR-0022: The gates stay under `.claude/`; the `events:` block waits
 
 - Date: 2026-09-20
-- Status: accepted, amends nothing
+- Status: superseded in part by ADR-0027, which clears both unknowns
 - Context: G-26 asked whether spec-kit's `events:` block should register this
   repository's four gates so they run on the Copilot CLI. An `events:` entry
   names a command, not a script: the dispatcher reads that command's
@@ -318,3 +318,22 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Consequences: the gap is visible on every run rather than learned from a red
   main. A check the CI build implements and the local build lacks still passes
   here. Pinning stays open at the cost of an install step per contributor.
+
+## ADR-0027: A shipped gate checks for `jq` before it calls it
+
+- Date: 2026-09-20
+- Status: accepted, supersedes ADR-0022's "blocked on two unknowns" clause
+- Context: both unknowns cleared. ADR-0025 gave a gate a home under
+  `specflow/gates/`, which no `export-ignore` rule strips, so a catalog
+  install carries it. `docs/agent-event-mapping.md` records Copilot's
+  `toolName`, `toolArgs.command`, and `toolArgs.path`, read from GitHub's
+  hooks reference and `@github/copilot` 1.0.86. The third prerequisite held:
+  `merge-gate.sh` ships and calls `jq` with no check, so a project without
+  `jq` reads "does not parse as a findings document" instead of the cause.
+- Decision: a shipped bash gate that calls `jq` checks for it first and, when
+  it is absent, names the install command and exits 1.
+- Consequences: `jq` is an install-time dependency no manifest field
+  declares, so the gate states it. The `events:` block still waits on a
+  shipped script that reads a hook payload: `speckit.specflow.gate` resolves
+  through its frontmatter to `write-marker.sh`, which exits 2 with no
+  argument, so registering it on `pre_tool_use` blocks every Bash call.
