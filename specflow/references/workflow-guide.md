@@ -1,4 +1,4 @@
-# Specflow Workflow Guide
+# Running Specflow Without Superpowers
 
 This guide gives phase-by-phase instructions for the specflow workflow. SKILL.md
 references this document for progressive disclosure: the agent reads only the
@@ -47,7 +47,7 @@ matching section while it runs a command.
 
 5. **Write** to `.specify/memory/constitution.md`
 
-### Verification
+### Exit Criteria
 
 - File exists at `.specify/memory/constitution.md`
 - Every placeholder replaced with real content
@@ -92,7 +92,7 @@ matching section while it runs a command.
 7. **Suggest the next step**: "Run `/speckit.specflow.brainstorm specs/NNN-feature-name/spec.md`
    to discover edge cases before planning."
 
-### Verification
+### Exit Criteria
 
 - The spec file exists at the expected path
 - At least one user story has acceptance scenarios
@@ -225,7 +225,7 @@ This phase may run more than once. Each session:
 
 8. **Write** the plan to `specs/NNN-feature-name/plan.md`
 
-### Verification
+### Exit Criteria
 
 - The Constitution check table is complete, with no violation unresolved
 - The technical context is filled in, with no NEEDS CLARIFICATION left without good reason
@@ -292,7 +292,7 @@ This phase may run more than once. Each session:
 
 12. **Write the result** to `specs/NNN-feature-name/tasks.md`
 
-### Verification
+### Exit Criteria
 
 - Every user story in the spec maps to a task
 - Each task traces to its user story with a `[US#]` label
