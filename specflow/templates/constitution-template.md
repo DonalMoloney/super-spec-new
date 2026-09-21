@@ -6,27 +6,27 @@
 ### [PRINCIPLE_1_NAME]
 <!-- Example: I. Library-First -->
 [PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+<!-- Example: Every feature starts as a standalone library. Each library stays self-contained, independently testable, and documented. An organizational-only library has no clear purpose and does not ship. -->
 
 ### [PRINCIPLE_2_NAME]
 <!-- Example: II. CLI Interface -->
 [PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+<!-- Example: Every library exposes its functionality through a CLI. Input arrives as text on stdin or args; output goes to stdout, errors to stderr. The CLI supports JSON and a human-readable format. -->
 
 ### [PRINCIPLE_3_NAME]
 <!-- Example: III. Test-First (NON-NEGOTIABLE) -->
 [PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+<!-- Example: TDD is mandatory. Write the tests, get them approved, watch them fail, then implement. The Red-Green-Refactor cycle is enforced without exception. -->
 
 ### [PRINCIPLE_4_NAME]
 <!-- Example: IV. Integration Testing -->
 [PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+<!-- Example: Integration tests cover four areas: a new library's contract tests, a contract change, inter-service communication, and a shared schema. -->
 
 ### [PRINCIPLE_5_NAME]
 <!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
 [PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+<!-- Example: Text I/O makes the system debuggable. Structured logging is required. Or: version with MAJOR.MINOR.BUILD. Or: start simple and apply YAGNI. -->
 
 ## Technology Stack
 
@@ -40,8 +40,8 @@
 ## Development Workflow
 
 <!--
-  This section ties the project to the specflow pipeline.
-  Edit the steps below to match the team's actual process.
+  The steps below tie the project to the specflow pipeline.
+  Edit them to match the team's actual process.
 -->
 
 This project follows **specification-driven development** through the specflow pipeline:
