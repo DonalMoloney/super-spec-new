@@ -128,6 +128,9 @@ Each feature's spec directory holds a `progress.yml` file that tracks the status
 spec: NNN-feature-name
 status: in_progress
 current_phase: 2
+brainstorm:
+  sessions: 1
+  last_session: 2026-09-14
 phases:
   - phase: 1
     name: Setup
@@ -140,12 +143,17 @@ phases:
     status: in_progress
     tasks:
       T003: pending
+gates:
+  clarified: 2026-09-14
+  analyze_attempts: 2
 ```
 
 **Status values**: `pending`, `in_progress`, `complete`, `skipped`
 
-`brainstorm` (`sessions`, `last_session`) and `gates` are optional top-level
-mappings; copy their shape from `examples/link-audit/specs/001-link-audit/progress.yml`.
+The required top-level keys are `spec`, `status`, `current_phase`, and `phases`.
+`current_phase` holds the number of one listed phase. Each phase requires a
+number, name, and status; its `tasks` mapping is optional. The `brainstorm` and
+`gates` mappings are optional.
 
 Every command marks `progress.yml` `in_progress` on start and `complete` on finish.
 

@@ -606,14 +606,25 @@ A feature spec directory may hold a `progress.yml` file:
 ```yaml
 spec: 001-static-landing-page
 status: complete
-current_phase: 6
+current_phase: 1
+brainstorm:
+  sessions: 1
+  last_session: 2026-09-14
 phases:
   - phase: 1
     name: Setup
     status: complete
     tasks:
       T001: complete
+gates:
+  clarified: 2026-09-14
+  analyze_attempts: 2
 ```
+
+The required top-level keys are `spec`, `status`, `current_phase`, and `phases`.
+`current_phase` holds the number of one listed phase. Each phase requires a
+number, name, and status; its `tasks` mapping is optional. The `brainstorm` and
+`gates` mappings are optional.
 
 ### Resume Check Protocol
 
@@ -683,8 +694,8 @@ The agent writes to `progress.yml` at these points:
 
 | Event | Update |
 |-------|--------|
-| Command starts | Set phase to `in_progress`, update timestamp |
-| Command completes successfully | Set phase to `complete`, update timestamp |
+| Command starts | Set the top-level and current phase status to `in_progress` |
+| Command completes successfully | Set the current phase status to `complete` |
 | Brainstorm session ends | Increment `sessions` counter |
 | Task checkbox toggled during execute | Set the task's entry under its phase's `tasks:` mapping |
 | User explicitly skips a phase | Set phase to `skipped` |
