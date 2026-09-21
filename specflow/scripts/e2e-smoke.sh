@@ -171,6 +171,51 @@ assert_resolved_template() {
   done
 }
 
+# Print "<command> <script>" for every command file whose frontmatter declares
+# a bash script. The event dispatcher resolves that path under the installed
+# extension directory and returns 0 when it lands nowhere, so an unresolvable
+# path is a handler that passes everything (docs/agent-event-mapping.md).
+declared_bash_scripts() {
+  local name
+  for name in "${SPECFLOW_COMMANDS[@]}"; do
+    awk -v cmd="$name" '
+      NR == 1 && $0 != "---"  { exit }
+      NR > 1  && $0 == "---"  { exit }
+      /^scripts:/             { inside = 1; next }
+      inside && /^[^[:space:]]/ { exit }
+      inside && /^[[:space:]]+sh:/ {
+        sub(/^[[:space:]]+sh:[[:space:]]*/, "")
+        sub(/[[:space:]].*$/, "")
+        print cmd, $0
+        exit
+      }
+    ' "$REPO_ROOT/commands/$name.md"
+  done
+}
+
+# Assert every declared bash script exists in the installed extension. Runs per
+# surface, because the dispatcher resolves the same path on both.
+assert_declared_scripts() {
+  local surface="$1" workdir="$2" cmd script
+  while read -r cmd script; do
+    [ -n "$cmd" ] || continue
+    assert_file "$surface: commands/$cmd.md declares $script, which the install carries" \
+                "$workdir/.specify/extensions/specflow/$script"
+  done < <(declared_bash_scripts)
+}
+
+# Assert each installed skill carries the description its command file declares.
+# spec-kit falls back to "Extension command: <name>" when a command file has no
+# frontmatter, so the fallback text proves the frontmatter did not land.
+assert_skill_descriptions() {
+  local surface="$1" skills_dir="$2" cmd
+  for cmd in "${SPECFLOW_COMMANDS[@]}"; do
+    assert_no_grep "$surface: skill speckit-specflow-$cmd carries its command file's description" \
+                   "Extension command: speckit.specflow.$cmd" \
+                   "$skills_dir/speckit-specflow-$cmd/SKILL.md"
+  done
+}
+
 # Print the number of top-level numbered steps in a command file's Process
 # section. A nested list is indented, so the anchored pattern skips it.
 count_process_steps() {
@@ -279,6 +324,17 @@ assert_grep()    {
     fail "$desc (pattern '$pattern' not found in $file)"
   fi
 }
+# Assert a file exists and does not contain pattern.
+assert_no_grep() {
+  local desc="$1" pattern="$2" file="$3"
+  if [ ! -f "$file" ]; then
+    fail "$desc (missing: $file)"
+  elif grep -q -- "$pattern" "$file"; then
+    fail "$desc (pattern '$pattern' found in $file)"
+  else
+    pass "$desc"
+  fi
+}
 
 step "1/5" "Initialize spec-kit in a fresh project"
 cd "$WORK" || exit 1
@@ -314,6 +370,8 @@ assert_file ".specify/extensions.yml created" "$WORK/.specify/extensions.yml"
 assert_file "gates/bash/risk-classifier.sh installed" \
             "$WORK/.specify/extensions/specflow/gates/bash/risk-classifier.sh"
 
+assert_declared_scripts "claude" "$WORK"
+
 assert_resolved_template "claude" "$WORK"
 
 # Every shipped template stamps its own name and the extension version it
@@ -337,6 +395,8 @@ for cmd in "${SPECFLOW_COMMANDS[@]}"; do
   assert_file "Claude Code command file for speckit.specflow.$cmd" \
               "$WORK/.claude/skills/speckit-specflow-$cmd/SKILL.md"
 done
+
+assert_skill_descriptions "claude" "$WORK/.claude/skills"
 
 # extensions.yml nests each hook's commands as `command: speckit.specflow.<name>`
 # lines under the hook's own key; counting those lines counts the hooks.
@@ -378,8 +438,10 @@ for cmd in "${SPECFLOW_COMMANDS[@]}"; do
   assert_file "Copilot command file for speckit.specflow.$cmd" \
               "$WORK_COPILOT/.github/skills/speckit-specflow-$cmd/SKILL.md"
 done
+assert_skill_descriptions "copilot" "$WORK_COPILOT/.github/skills"
 assert_file "copilot: gates/bash/risk-classifier.sh installed" \
             "$WORK_COPILOT/.specify/extensions/specflow/gates/bash/risk-classifier.sh"
+assert_declared_scripts "copilot" "$WORK_COPILOT"
 assert_resolved_template "copilot" "$WORK_COPILOT"
 
 for tmpl in "${SPECFLOW_TEMPLATES[@]}"; do
