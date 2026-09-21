@@ -176,12 +176,12 @@ Automated scoring reads only the Test name column. A human reader uses the Statu
 
 <!-- Example entry:
 ### Session [YYYY-MM-DD]
-**Focus**: Edge cases in authentication flow
+**Focus**: Edge cases in the authentication flow
 **Key insights**:
-- Discovered need for rate limiting on login attempts
-- Clarified token expiration strategy: 24h access + 30d refresh
-- Identified missing requirement: account lockout after 5 failed attempts
-**Spec updates**: Added FR-006 (rate limiting), updated US1 acceptance scenarios
+- Login attempts need a rate limit
+- An access token expires after 24 h, a refresh token after 30 d
+- An account locks after five failed attempts, which no requirement covered
+**Spec updates**: Added FR-006 for the rate limit, rewrote the US1 acceptance scenarios
 -->
 
 ## Changelog
