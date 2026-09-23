@@ -61,8 +61,6 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 |---|---|---|---|
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
 | G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 done, T262 and T263 behind three prerequisites |
-| G-43 | `SKILL.md` documents a `progress.yml` schema the validator rejects | low | Not started; see G-43 below |
-| G-45 | The merge gate cannot read `code-reviewer`'s findings | low | T451 and T452 open; see G-45 below |
 | G-49 | No check catches a document that has gone out of date | low | `AGENTS.md` claimed main carried no commits until `5a5e8db` |
 
 ## G-19 — Examples produced by this fork, not upstream
@@ -234,7 +232,7 @@ Verify: a `progress.yml` written by following `SKILL.md` alone validates clean,
 and `grep` for `completed_tasks` and `current_task` in `workflow-guide.md`
 prints nothing.
 
-## G-45 — The merge gate cannot read `code-reviewer`'s findings (working on)
+## G-45 — The merge gate cannot read `code-reviewer`'s findings (merged: direct)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Move: Extend. Effort: low.
 Depends on: none. Raised on 2026-09-20 while rewriting the eight persona
@@ -482,20 +480,17 @@ beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
 
 ## Suggested order
 
-D-01, D-05, G-20 through G-25, G-28 through G-42, G-44, G-46, G-48, and C-01
-through C-09 are merged or closed. What is left, in order:
+D-01, D-05, G-20 through G-25, G-28 through G-42, G-43, G-44, G-45, G-46,
+G-48, and C-01 through C-09 are merged or closed. What is left, in order:
 
-1. G-43. Low effort, and it is the second `SKILL.md` schema inaccuracy G-41
-   found in the same file; the drift compounds the longer it sits.
-2. G-45 T451 and T452, whenever a session is short.
-3. G-49, which stops the next document going stale unnoticed. Its T491 also
+1. G-49, which stops the next document going stale unnoticed. Its T491 also
    catches a dangling path before a reader hits it.
-4. G-26 T262 and T263, once the three ADR-0022 prerequisites clear.
-5. Backlog items 23, 25, and 26 next; each depended only on G-36, now merged.
-6. Backlog item 27, then 28, which depends on it for the live check.
-7. Backlog items 31 through 36 whenever a session is short; none depends on
+2. G-26 T262 and T263, once the three ADR-0022 prerequisites clear.
+3. Backlog items 23, 25, and 26 next; each depended only on G-36, now merged.
+4. Backlog item 27, then 28, which depends on it for the live check.
+5. Backlog items 31 through 36 whenever a session is short; none depends on
    another still open.
-8. G-19 whenever a live agent run is available; this environment has no API
+6. G-19 whenever a live agent run is available; this environment has no API
    key to make one.
 
 Pick the item whose `Verify:` line you can run before you start. An item whose
