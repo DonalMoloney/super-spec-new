@@ -68,7 +68,8 @@ there, so a workflow under `specflow/` never runs.
   carries them and the Copilot CLI can run them (ADR-0025). A two-line script
   under `.claude/hooks/` execs each shipped bash gate, so `.claude/settings.json`
   and `merge-gate.yml` keep their paths.
-- `specflow/templates/*.md`: document templates spec-kit installs to
+- `specflow/templates/*.md`: the 5 document templates (`constitution`, `spec`,
+  `plan`, `tasks`, `checklist`) spec-kit installs to
   `.specify/extensions/specflow/templates/` and resolves at command time. The
   resolver layers project overrides, presets, extension templates, then core,
   so these win over core without replacing `.specify/templates/`.

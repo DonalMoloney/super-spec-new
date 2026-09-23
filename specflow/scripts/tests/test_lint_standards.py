@@ -129,6 +129,13 @@ def test_banned_phrase_is_reported():
     assert "banned word 'note that'" in result.stdout
 
 
+def test_banned_word_matches_an_inflected_form():
+    lint_standards = load_script()
+    pattern = lint_standards.entry_pattern(["bridge"], match_inflections=True)
+
+    assert pattern.search("The adapter is bridging two formats.")
+
+
 def test_banned_word_inside_fenced_code_is_ignored():
     with tempfile.TemporaryDirectory() as tmp:
         path = write(Path(tmp) / "code.md", "```bash\n# leverage nothing\n```\n")
@@ -200,6 +207,72 @@ def test_no_argument_walks_the_current_directory():
         result = lint(cwd=root)
     assert result.returncode == 1
     assert "README.md:1: em-dash" in result.stdout
+
+
+def test_missing_repository_path_is_reported_with_file_and_line():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        path = write(root / "README.md", "Read `specflow/nope.md` before editing.\n")
+        write(root / "specflow" / "README.md", "Existing directory anchor.\n")
+        git_repo(root, path)
+        result = lint(str(path), cwd=root)
+
+    assert result.returncode == 1
+    assert f"{path}:1: missing repository path 'specflow/nope.md'" in result.stdout
+
+
+def test_missing_repository_path_drops_a_trailing_period():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        target = write(root / "specflow" / "README.md", "Existing file.\n")
+        path = write(root / "doc.md", "Read `specflow/README.md`.\n")
+        git_repo(root, path, target)
+        result = lint(str(path), cwd=root)
+    assert result.returncode == 0, result.stdout
+
+
+def test_relative_parent_citation_is_not_checked_as_a_repository_path():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        path = write(root / "doc.md", "Resolves `../../../.claude/hooks/` in this checkout.\n")
+        git_repo(root, path)
+        result = lint(str(path), cwd=root)
+    assert result.returncode == 0, result.stdout
+
+
+def test_gitignored_citation_is_not_reported_as_missing():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write(root / ".gitignore", ".claude/telemetry.jsonl\n")
+        write(root / ".claude" / "hooks.md", "Anchor so `.claude` resolves.\n")
+        path = write(root / "doc.md", "Query `.claude/telemetry.jsonl` after a run.\n")
+        git_repo(root, path)
+        result = lint(str(path), cwd=root)
+    assert result.returncode == 0, result.stdout
+
+
+def test_excluded_citation_is_not_reported_as_missing():
+    module = load_script()
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        document = write(root / "doc.md", "")
+        findings = list(
+            module.missing_path_findings(
+                "Save nothing to `docs/superpowers/`.",
+                document,
+                1,
+                root,
+                frozenset({"docs/superpowers"}),
+            )
+        )
+    assert findings == []
+
+
+def test_a_missing_path_exclusion_without_a_reason_is_rejected():
+    module = load_script()
+    with pytest.raises(module.StaleExclusionError) as error:
+        module.missing_path_exclusions("docs/superpowers\n")
+    assert "docs/superpowers" in str(error.value)
 
 
 def test_missing_path_exits_two_with_a_message():

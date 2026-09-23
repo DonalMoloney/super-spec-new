@@ -366,3 +366,28 @@ deleting them; prune anything older than a quarter that no longer guides work.
   Important findings.
 - Consequences: phase 11 keeps its direct result, and its blocking findings
   now join the other reviewer findings at the merge gate.
+
+## ADR-0030: "bridge" stays out of the mechanical banned-word table
+
+- Date: 2026-09-22
+- Status: accepted
+- Context: T493 asked whether "bridge" joins `standards/documentation.md`'s
+  banned table, now that G-49 T492 makes the check match "bridges" and
+  "bridging" too. Every current occurrence outside the excluded directories is
+  a literal citation of the product's old name: `superpowers-bridge.md`
+  (renamed under G-30), the `superpowers-bridge` catalog id ADR-0020 kept out
+  of, and `CHANGELOG.md` entries recording "Superpowers Bridge" as what the
+  extension used to be listed as. None is the metaphorical use
+  `standards/documentation.md`'s "No metaphor" bullet already bans in prose.
+  `table_rows` drops a qualified entry such as "bridge (as metaphor)" from the
+  mechanical check by design, and the banned-word rule has no per-entry
+  exclusion file the way the word-choice rule does, so a plain entry would
+  flag every historically accurate citation in `decisions.md` and
+  `CHANGELOG.md`.
+- Decision: leave "bridge" out of the table. The "No metaphor" bullet stays
+  the enforcement for a live metaphorical use; a reviewer applies it by
+  reading, the way `AGENTS.md` and `reference.md`'s stale rows were fixed
+  before G-49 existed.
+- Consequences: a future metaphorical "bridge" in prose is caught by review,
+  not by `lint-standards.py`. Revisit if the banned-word rule gains a
+  per-entry exclusion file, the mechanism T492's "bridging" fix did not need.

@@ -4,9 +4,16 @@
 Usage:
     python3 scripts/lint-standards.py [path ...]
 
-Three rules run: em-dashes, the banned words the standard tables, and, on the
-shipped contracts under WORD_CHOICE_PATHS, the "Not" column of the standard's
-word-choice table.
+Four rules run: em-dashes, missing repository paths, the banned words in the
+standard tables, and, on the shipped contracts under WORD_CHOICE_PATHS, the
+"Not" column of the standard's word-choice table.
+
+The missing-path rule flags a cited repository path that does not exist. A
+relative `../` citation is skipped: it names no path anchored at the git top
+level. A cited path a gitignore rule matches counts as present, since a fresh
+checkout never carries it. An entry in MISSING_PATH_EXCLUSIONS is a citation of
+a path outside this repository, such as a consuming project's install layout,
+that a reader would otherwise flag as stale.
 
 A path that is a directory is walked through `git ls-files`, so only tracked
 Markdown and a tracked `extension.yml` are checked. A path that is a file is
@@ -32,6 +39,7 @@ STANDARD = REPO_ROOT / "standards" / "documentation.md"
 BANNED_HEADING = "## Banned words and phrases"
 WORD_CHOICE_HEADING = "## Word choice"
 EXCLUSIONS = Path(__file__).resolve().parent / "word-choice-exclusions.txt"
+MISSING_PATH_EXCLUSIONS = Path(__file__).resolve().parent / "missing-path-exclusions.txt"
 
 EM_DASH = "—"
 
@@ -42,6 +50,9 @@ EXCLUDED_DIRS = ("specflow/examples", "improvements", "standards")
 EXCLUDED_FILES = ("docs/review-research.md",)
 
 FENCE = re.compile(r"^\s*(```|~~~)")
+REPOSITORY_PATH = re.compile(
+    r"(?<![\w~./-])([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)+)"
+)
 
 MANIFEST_NAME = "extension.yml"
 
@@ -118,6 +129,26 @@ def word_choice_exclusions(exclusions_text: str) -> set[str]:
     return entries
 
 
+def missing_path_exclusions(exclusions_text: str) -> frozenset[str]:
+    """Return the cited paths that name a place outside this repository.
+
+    Raises `StaleExclusionError` when a line states no reason.
+    """
+    entries: set[str] = set()
+    for line in exclusions_text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        entry, separator, reason = stripped.partition(":")
+        if not separator or not reason.strip():
+            raise StaleExclusionError(
+                f"the missing-path exclusion '{stripped}' states no reason; expected "
+                f"'entry: reason'. Edit {MISSING_PATH_EXCLUSIONS.name}."
+            )
+        entries.add(entry.strip())
+    return frozenset(entries)
+
+
 def word_choice_rule(standard_text: str, exclusions_text: str) -> WordChoice:
     """Build the word-choice rule from the standard's table and the exclusions file.
 
@@ -145,9 +176,16 @@ def word_choice_rule(standard_text: str, exclusions_text: str) -> WordChoice:
     return WordChoice(entry_pattern(sorted(replacement)), replacement)
 
 
-def entry_pattern(entries: list[str]) -> re.Pattern[str]:
+def entry_pattern(entries: list[str], match_inflections: bool = False) -> re.Pattern[str]:
     """Compile one pattern that matches any entry as a whole word or phrase."""
-    alternatives = [re.escape(entry).replace(r"\ ", r"\s+") for entry in entries]
+    alternatives: list[str] = []
+    for entry in entries:
+        escaped = re.escape(entry).replace(r"\ ", r"\s+")
+        if match_inflections and entry.endswith("e"):
+            escaped = escaped[:-1] + r"(?:e|es|ed|ing)"
+        elif match_inflections:
+            escaped += r"(?:s|es|ed|ing)?"
+        alternatives.append(escaped)
     return re.compile(
         r"(?<![\w-])(" + "|".join(alternatives) + r")(?![\w-])",
         re.IGNORECASE,
@@ -176,11 +214,15 @@ def findings_in(
 
 
 def findings_for(
-    path: Path, banned: re.Pattern[str], word_choice: WordChoice | None
+    path: Path,
+    banned: re.Pattern[str],
+    word_choice: WordChoice | None,
+    path_exclusions: frozenset[str],
 ) -> list[str]:
     """Return one line per finding in `path`."""
     lines: list[str] = []
     in_fence = False
+    root = git_top_level(path)
     for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         if EM_DASH in line:
             lines.append(f"{path}:{number}: em-dash")
@@ -190,7 +232,65 @@ def findings_for(
         if in_fence:
             continue
         lines.extend(findings_in(line, f"{path}:{number}", banned, word_choice))
+        lines.extend(missing_path_findings(line, path, number, root, path_exclusions))
     return lines
+
+
+def git_top_level(path: Path) -> Path | None:
+    """Return the top level of the git checkout containing `path`."""
+    toplevel = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        cwd=path.resolve().parent,
+        capture_output=True,
+        text=True,
+    )
+    if toplevel.returncode != 0:
+        return None
+    return Path(toplevel.stdout.strip()).resolve()
+
+
+def is_gitignored(root: Path, relative: str) -> bool:
+    """Return whether `relative`, rooted at `root`, matches a gitignore rule.
+
+    A gitignored citation, such as `.claude/telemetry.jsonl`, names a real
+    runtime path a fresh checkout never carries.
+    """
+    result = subprocess.run(
+        ["git", "check-ignore", "-q", "--", relative],
+        cwd=root,
+        capture_output=True,
+    )
+    return result.returncode == 0
+
+
+def missing_path_findings(
+    line: str,
+    document: Path,
+    number: int,
+    root: Path | None,
+    path_exclusions: frozenset[str],
+) -> Iterator[str]:
+    """Yield missing repository paths cited by one Markdown line."""
+    if root is None:
+        return
+    for match in REPOSITORY_PATH.finditer(line):
+        cited = match.group(1).rstrip(".")
+        if cited.startswith(("../", "./")) or cited in path_exclusions:
+            continue
+        first = cited.partition("/")[0]
+        root_anchor = root / first
+        local_anchor = document.resolve().parent / first
+        if root_anchor.exists():
+            target = root / cited
+        elif local_anchor.exists():
+            target = document.resolve().parent / cited
+        else:
+            continue
+        if target.exists():
+            continue
+        if is_gitignored(root, target.relative_to(root).as_posix()):
+            continue
+        yield f"{document}:{number}: missing repository path '{cited}'"
 
 
 def user_facing_strings(node: object, key_path: str = "") -> Iterator[tuple[str, str]]:
@@ -239,15 +339,10 @@ def manifest_findings(
 
 def repo_relative(path: Path) -> str | None:
     """Return `path` relative to the top level of its git checkout, or None outside one."""
-    toplevel = subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"],
-        cwd=path.resolve().parent,
-        capture_output=True,
-        text=True,
-    )
-    if toplevel.returncode != 0:
+    toplevel = git_top_level(path)
+    if toplevel is None:
         return None
-    return path.resolve().relative_to(Path(toplevel.stdout.strip()).resolve()).as_posix()
+    return path.resolve().relative_to(toplevel).as_posix()
 
 
 def is_excluded(path: Path) -> bool:
@@ -322,9 +417,12 @@ def main(arguments: list[str]) -> int:
         )
         return 2
     standard_text = STANDARD.read_text(encoding="utf-8")
-    banned = entry_pattern(banned_entries(standard_text))
+    banned = entry_pattern(banned_entries(standard_text), match_inflections=True)
     try:
         word_choice = word_choice_rule(standard_text, EXCLUSIONS.read_text(encoding="utf-8"))
+        path_exclusions = missing_path_exclusions(
+            MISSING_PATH_EXCLUSIONS.read_text(encoding="utf-8")
+        )
     except StaleExclusionError as stale:
         print(f"lint-standards: {stale}", file=sys.stderr)
         return 2
@@ -334,7 +432,7 @@ def main(arguments: list[str]) -> int:
         if path.name == MANIFEST_NAME:
             findings.extend(manifest_findings(path, banned, rule))
         else:
-            findings.extend(findings_for(path, banned, rule))
+            findings.extend(findings_for(path, banned, rule, path_exclusions))
     for finding in findings:
         print(finding)
     noun = "file" if len(files) == 1 else "files"

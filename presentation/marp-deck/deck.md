@@ -207,7 +207,7 @@ The envelope needs schema_version, reviewer, verdict, and findings. Each finding
 
 Schema validity cannot prove that evidence is true. The merge gate applies a separate policy: Critical and Important findings block unless fixed or rebutted; Minor findings do not block. CI rebuttals use the documented pull-request label path. Committed findings can carry per-finding status.
 
-Sources: .claude/review/schema.json; .claude/review/validate-findings.py; .claude/hooks/merge-gate.sh; decisions.md, ADR-0006 and ADR-0012.
+Sources: specflow/references/findings-schema.json; .claude/review/validate-findings.py; .claude/hooks/merge-gate.sh; decisions.md, ADR-0006 and ADR-0012.
 -->
 
 ---
@@ -223,7 +223,7 @@ Count direct shell scripts in .claude/hooks and Markdown definitions in .claude/
 
 ADR-0001 keeps Claude-specific hooks outside the spec-kit archive. Copy and configure the companion kit deliberately for a consuming project. The extension targets Claude Code and GitHub Copilot CLI, but .claude settings are a Claude Code integration. Those settings are not a portable Copilot hook setup.
 
-Sources: .claude/hooks/; .claude/agents/; .claude/review/schema.json; .claude/skills/specflow-dispatcher/SKILL.md; .github/workflows/; decisions.md, ADR-0001. The outline counted nine hooks; the current checkout adds mutation-gate.sh, making 10. Counts match the local inventory checked for this deck.
+Sources: .claude/hooks/; .claude/agents/; specflow/references/findings-schema.json; .claude/skills/specflow-dispatcher/SKILL.md; .github/workflows/; decisions.md, ADR-0001. The outline counted nine hooks; the current checkout adds mutation-gate.sh, making 10. Counts match the local inventory checked for this deck.
 -->
 
 ---

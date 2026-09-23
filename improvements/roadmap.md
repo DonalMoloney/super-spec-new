@@ -61,7 +61,6 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 |---|---|---|---|
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
 | G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 done, T262 and T263 behind three prerequisites |
-| G-49 | No check catches a document that has gone out of date | low | `AGENTS.md` claimed main carried no commits until `5a5e8db` |
 
 ## G-19 — Examples produced by this fork, not upstream
 
@@ -264,7 +263,7 @@ Verify: `grep -L 'findings-schema.json' .claude/agents/*-reviewer.md` prints
 nothing, or `code-reviewer.md` carries the sentence that explains the
 exception.
 
-## G-49 — No check catches a document that has gone out of date (working on)
+## G-49 — No check catches a document that has gone out of date (merged: direct)
 
 Executor: `bdd-orchestrator`. Model: sonnet. Effort: low. Depends on: none.
 Raised on 2026-09-21.
@@ -283,19 +282,19 @@ banned table, so the word "bridge" survived in five places while the linter
 reported 73 files clean; and the check matched "bridge" but not "bridges" or
 "bridging", so two of those five needed a hand grep to find.
 
-- [ ] T491 Fail the build when a repository document cites a path that does not exist
+- [x] T491 Fail the build when a repository document cites a path that does not exist
 
 Verify: adding a line citing `specflow/nope.md` to any linted file makes
 `python3 specflow/scripts/lint-standards.py` exit nonzero, naming the file, the
 line, and the missing path.
 
-- [ ] T492 Match inflected forms in the banned-word check
+- [x] T492 Match inflected forms in the banned-word check
 
 `banned_entries` builds one pattern per table entry. A noun with a verb form
 escapes it. Verify: a fixture containing "bridging" is reported when "bridge"
 is a banned entry.
 
-- [ ] T493 Record whether "bridge" joins the banned table in `standards/documentation.md`
+- [x] T493 Record whether "bridge" joins the banned table in `standards/documentation.md`
 
 The unqualified entry catches 5 lines, of which 2 are `CHANGELOG.md` entries
 that record the old name accurately ("The extension is listed as Specflow, not
@@ -304,7 +303,7 @@ ignored, because `banned_entries` returns unqualified entries only. So the
 choice is a per-rule CHANGELOG exclusion or leaving the rule unenforced.
 Verify: the outcome is an ADR in `decisions.md`, whichever way it goes.
 
-- [ ] T494 Re-check every count a document states against the repository
+- [x] T494 Re-check every count a document states against the repository
 
 `AGENTS.md`, both READMEs, and `SKILL.md` state counts: commands, hooks,
 templates, scripts, agents, assertions. Verify: each count is listed beside the
@@ -481,16 +480,15 @@ beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
 ## Suggested order
 
 D-01, D-05, G-20 through G-25, G-28 through G-42, G-43, G-44, G-45, G-46,
-G-48, and C-01 through C-09 are merged or closed. What is left, in order:
+G-48, G-49, and C-01 through C-09 are merged or closed. What is left, in
+order:
 
-1. G-49, which stops the next document going stale unnoticed. Its T491 also
-   catches a dangling path before a reader hits it.
-2. G-26 T262 and T263, once the three ADR-0022 prerequisites clear.
-3. Backlog items 23, 25, and 26 next; each depended only on G-36, now merged.
-4. Backlog item 27, then 28, which depends on it for the live check.
-5. Backlog items 31 through 36 whenever a session is short; none depends on
+1. G-26 T262 and T263, once the three ADR-0022 prerequisites clear.
+2. Backlog items 23, 25, and 26 next; each depended only on G-36, now merged.
+3. Backlog item 27, then 28, which depends on it for the live check.
+4. Backlog items 31 through 36 whenever a session is short; none depends on
    another still open.
-6. G-19 whenever a live agent run is available; this environment has no API
+5. G-19 whenever a live agent run is available; this environment has no API
    key to make one.
 
 Pick the item whose `Verify:` line you can run before you start. An item whose

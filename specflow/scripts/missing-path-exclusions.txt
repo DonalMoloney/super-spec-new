@@ -1,0 +1,17 @@
+# Missing-path citations lint-standards.py leaves to a reader.
+#
+# The missing-path rule flags a cited repository path that does not exist,
+# after a gitignored path and a relative `../` citation are already ruled
+# out. An entry below cites a path outside this repository: a consuming
+# project's install layout, or another tool's own directory named only to
+# contrast with where this repository writes instead.
+#
+# One entry per line, as `entry: reason`, the entry spelled exactly as the
+# citation reads once a trailing period is dropped.
+
+.claude/rules: ADR-0002 names the alternative location standards/ replaced, which this repository never created
+.github/skills: describes a consuming project's spec-kit-registered command directory, not this repository's
+.github/skills/speckit-specflow-: the Copilot CLI skill path a consuming project installs, with the `<name>` placeholder cut at the capture boundary
+docs/superpowers: the obra/superpowers skill's own default output directory, named only to contrast with .specify/, where this repository writes instead
+tests/contract: tasks-template.md's example task line for a consuming project's own test tree
+tests/integration: tasks-template.md's example task line for a consuming project's own test tree
