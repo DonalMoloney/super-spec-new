@@ -28,5 +28,15 @@ step definitions, implementation, refactors, and unit tests.
 
 ## Output format
 
-Findings grouped Critical / Important / Suggestion, each naming the file, the concrete
-problem, and the failure scenario it would cause. `NO FINDINGS` if the diff is clean.
+Write one JSON object to `.claude/review/code-reviewer.json`, return the same object to
+the caller, and write nothing else. The object conforms to
+`specflow/references/findings-schema.json`. It carries `schema_version`, `reviewer` set
+to `code-reviewer`, `verdict`, and `findings`.
+
+Each finding carries `id`, `severity`, `category`, `location`, `evidence`, `fix`, and
+`status`. Write `location` as `file:line`. Put the reproduced failure or broken rule in
+`evidence`, and put one concrete correction in `fix`. Map a Suggestion to `Minor`.
+
+Use `BLOCK` when a Critical or Important finding remains open. Use `CONCERNS` when
+every open finding is Minor. Use `CLEAN` with an empty `findings` array when the diff
+has no finding.

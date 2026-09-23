@@ -921,6 +921,11 @@ cd / || exit 1
 cd "$HOOKS/../.." || exit 1
 python3 -c 'import json;json.load(open("specflow/references/findings-schema.json"))' >/dev/null 2>&1
 check "review findings schema parses as JSON" 0 $?
+CODE_REVIEWER=".claude/agents/code-reviewer.md"
+check "code reviewer uses the findings schema" 0 \
+  "$(grep -Fq 'specflow/references/findings-schema.json' "$CODE_REVIEWER"; echo $?)"
+check "code reviewer writes a gate-readable findings document" 0 \
+  "$(grep -Fq '.claude/review/code-reviewer.json' "$CODE_REVIEWER"; echo $?)"
 check "the risk classifier hook execs the shipped gate" 0 \
   "$(grep -Fq 'specflow/gates/bash/risk-classifier.sh' "$HOOKS/risk-classifier.sh"; echo $?)"
 check "the merge gate hook execs the shipped gate" 0 \

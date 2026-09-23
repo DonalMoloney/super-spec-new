@@ -248,7 +248,7 @@ table of `references/superpowers-mapping.md` whose Critical finding cannot
 reach the gate, so the whole-change-set review is the one review a merge
 never waits on.
 
-- [ ] T451 Decide whether `code-reviewer` writes a findings document
+- [x] T451 Decide whether `code-reviewer` writes a findings document
 
 The other nine personas write the shape `references/findings-schema.json`
 declares. `code-reviewer` runs as phase 11 of the BDD squad, where
@@ -257,7 +257,7 @@ contract inside the squad rather than only a reviewer file. Record the choice
 as an ADR. Verify: the ADR names which consumer reads `code-reviewer`'s output
 and states whether the gate is meant to block on it.
 
-- [ ] T452 Make the chosen contract true in the file
+- [x] T452 Make the chosen contract true in the file
 
 Either give `code-reviewer.md` an `## Output format` naming
 `references/findings-schema.json`, matching the eight personas, or state in

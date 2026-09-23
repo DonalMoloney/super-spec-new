@@ -352,3 +352,17 @@ deleting them; prune anything older than a quarter that no longer guides work.
   concept, its identifiers, and its bracket placeholders.
 - Consequences: ADR-0015 scopes to markers alone. A template's example prose
   is in scope for `prose-rephraser`; its placeholders and markers are not.
+
+## ADR-0029: The whole-change-set review writes gate-readable findings
+
+- Date: 2026-09-21
+- Status: accepted
+- Context: `bdd-orchestrator` reads `code-reviewer`'s phase 11 result, but the
+  merge gate reads JSON files. Prose findings never reached the gate.
+- Decision: `code-reviewer` returns one object matching
+  `specflow/references/findings-schema.json` and writes the same object to
+  `.claude/review/code-reviewer.json`. `bdd-orchestrator` reads the returned
+  object. The merge gate reads the file and blocks on unresolved Critical or
+  Important findings.
+- Consequences: phase 11 keeps its direct result, and its blocking findings
+  now join the other reviewer findings at the merge gate.
