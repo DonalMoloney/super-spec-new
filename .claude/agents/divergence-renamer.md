@@ -1,6 +1,6 @@
 ---
 name: divergence-renamer
-description: Use this agent to change one literal name (a file path, an identifier, or a manifest string) that appears verbatim in more than one file, so every citing location moves in lockstep and nothing else in those files changes. Typical triggers include a roadmap item that renames a shipped file (G-30) or a stale string a validator or test hardcodes (D-05a), or a Names-table row in improvements/reference.md with a cost stated in files touched. Not for a single file's sentence-level wording; that is prose-rephraser. Not for a script's internal structure; that is script-refactorer.
+description: Use this agent to change one literal name that appears verbatim in more than one file, so every citing location moves in lockstep and nothing else changes. Typical triggers include a roadmap item renaming a shipped file, or a stale string a validator hardcodes. Not for one file's wording, which is prose-rephraser, and not for a script's structure, which is script-refactorer.
 model: sonnet
 color: orange
 tools: ["Read", "Edit", "Bash", "Grep", "Glob"]
@@ -22,6 +22,13 @@ mid-task without stating the choice and why.
 Do not invoke to reword a single file's prose; `prose-rephraser` does that.
 Do not invoke to restructure a script; `script-refactorer` does that. Do not
 invoke when the old name appears in exactly one file; edit it directly.
+
+## Inputs
+
+- The old name and the new name, both verbatim.
+
+Both are fixed before the first edit. Where the task names only one, stop and
+ask; a name you invent propagates to every citing file before anyone reviews it.
 
 ## Process
 
@@ -55,27 +62,40 @@ invoke when the old name appears in exactly one file; edit it directly.
 
 5. Edit every remaining citing location from step 2's list, changing only the
    occurrence of the name. Leave every other word on the line as it was.
-6. Confirm no unintended occurrence remains and no historical one was touched:
-
-   ```bash
-   grep -rn '<old-name>' . --include='*.md' --include='*.py' --include='*.yml' \
-     --include='*.sh' --include='*.json' | grep -v '/\.git/'
-   ```
-
-   Expected output is empty except lines you classified as historical in
-   step 3.
-7. Run every guard a rename can break:
-
-   ```bash
-   cd specflow && python3 scripts/validate-extension-metadata.py
-   cd specflow && python3 scripts/validate-release-archive.py
-   cd specflow && python3 -m pytest scripts/tests -q
-   bash .claude/hooks/tests/run.sh
-   cd specflow && bash scripts/e2e-smoke.sh
-   ```
-
 Add no alias, redirect, or backward-compatibility shim for the old name. A
 rename replaces; it does not grow a second spelling of the same thing.
+
+## Stop conditions
+
+Stop and report, rather than renaming, when:
+
+- The task names an old value and no new one, or a new value and no old one.
+- A hit resists classification as current state or historical record. Ask
+  rather than guessing; a renamed ADR falsifies the record it exists to keep.
+- The rename would change `extension.id`, which renames every command a user has
+  typed. ADR-0020 in `decisions.md` settles that one outside this agent.
+
+## Self-check
+
+Confirm no unintended occurrence remains and no historical one was touched:
+
+```bash
+grep -rn '<old-name>' . --include='*.md' --include='*.py' --include='*.yml' \
+  --include='*.sh' --include='*.json' | grep -v '/\.git/'
+```
+
+Expected output is empty except the lines you classified as historical in
+step 3. Then run every guard a rename can break, and paste each output:
+
+```bash
+cd specflow && python3 scripts/validate-extension-metadata.py
+cd specflow && python3 scripts/validate-release-archive.py
+cd specflow && python3 -m pytest scripts/tests -q
+bash .claude/hooks/tests/run.sh
+cd specflow && bash scripts/e2e-smoke.sh
+```
+
+Expected output from each names zero failures.
 
 ## Output format
 

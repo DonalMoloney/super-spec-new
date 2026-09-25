@@ -177,11 +177,23 @@ def test_description_names_the_boundary_it_refuses(agent_file):
 
 
 @pytest.mark.parametrize("agent_file", agent_files(), ids=lambda path: path.stem)
-def test_body_carries_the_six_headings_in_order(agent_file):
+def test_body_carries_every_required_heading(agent_file):
     _, body = split_frontmatter(agent_file)
-    assert headings(body) == REQUIRED_HEADINGS, (
-        f"{agent_file.name} headings are {headings(body)}; expected "
-        f"{REQUIRED_HEADINGS}. See Body sections in standards/agents.md."
+    missing = [name for name in REQUIRED_HEADINGS if name not in headings(body)]
+    assert missing == [], (
+        f"{agent_file.name} is missing {missing}. See Body sections in "
+        "standards/agents.md."
+    )
+
+
+@pytest.mark.parametrize("agent_file", agent_files(), ids=lambda path: path.stem)
+def test_required_headings_keep_their_order(agent_file):
+    _, body = split_frontmatter(agent_file)
+    found = [name for name in headings(body) if name in REQUIRED_HEADINGS]
+    assert found == REQUIRED_HEADINGS, (
+        f"{agent_file.name} orders its required headings {found}; expected "
+        f"{REQUIRED_HEADINGS}. An agent may add a section of its own between "
+        "them, but not reorder these."
     )
 
 

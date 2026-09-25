@@ -68,7 +68,10 @@ accident. Name the boundary and the collision stops.
 
 ## Body sections
 
-Seven sections, in this order, each with the heading given here.
+Seven sections, in this order, each with the heading given here. An agent may
+add a section of its own between them where its work needs one, such as the
+frozen-element list a rewrite agent checks against. It may not drop one of
+these, and it may not reorder them.
 
 ### Role
 

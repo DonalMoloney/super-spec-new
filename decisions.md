@@ -515,3 +515,24 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Consequences: a non-shell tool with no arguments still passes. A Copilot
   shell tool under another name with no `toolArgs` passes; only `bash` is
   recorded in `docs/agent-event-mapping.md`.
+## ADR-0037: An agent definition has a fixed shape, and `stage:` stays
+
+- Date: 2026-09-25
+- Status: accepted
+- Context: the 34 files under `.claude/agents/` carried two frontmatter
+  dialects, two body shapes, and descriptions from 13 to 75 words. Only
+  `prose-rephraser` named a self-check with its expected output, and none
+  named its inputs or a stop condition, so `AGENTS.md`'s rule to surface
+  confusion instead of guessing had nowhere to bite. The drift went unseen
+  because `.claude/agents/tests/` ran in no workflow: `test_dispatch_order.py`
+  and `test_implementation_routing.py` had never run in CI.
+- Decision: `standards/agents.md` fixes the shape. Five frontmatter fields in
+  one order, a description of 40 to 70 words carrying a "Not for" clause, and
+  six body sections: When to invoke, Inputs, Process, Stop conditions,
+  Self-check, Output format. An agent may add a section of its own between
+  them. `stage:` stays as a sixth field for the ten reviewers whose value
+  `findings-schema.json` enumerates, because the value is what the reviewer
+  writes into its findings document, not decoration.
+  `test_agent_contract.py` checks all of it and now runs in `ci.yml`.
+- Consequences: a new agent has a shape to copy and a test that rejects the
+  gaps. A stage added to the schema with no reviewer behind it now fails.

@@ -140,7 +140,7 @@ Given/When/Then blocks and `bdd-orchestrator`'s checklist items both follow this
 
 ## Standards
 
-Every agent, on either target surface, produces work against the three files under
+Every agent, on either target surface, produces work against the four files under
 `standards/`. Read the one that matches the output before starting; reviewers and
 `work-verifier` reject against them.
 
@@ -152,6 +152,10 @@ Every agent, on either target surface, produces work against the three files und
   CHANGELOG, ADR, PR description, and hand-off report.
 - [`standards/presentations.md`](standards/presentations.md): how slide decks are
   formatted. Marp front matter, per-slide limits, deck shape, and a render check.
+- [`standards/agents.md`](standards/agents.md): how an agent definition under
+  `.claude/agents/` is written. Frontmatter fields, the routing shape of a
+  description, the six body sections, and the evidence rule.
+  `.claude/agents/tests/test_agent_contract.py` checks the mechanical parts.
 
 ## Code Review Rules
 
