@@ -159,8 +159,7 @@ agent's own hook system. The canonical events are `session_start`,
 `session_end`. `events.py` line 2287 merges Copilot config through
 `_merge_copilot_json` in the `copilot-json` format, so an `events:` block is
 the supported route for running this repository's `.claude/hooks/` gates on
-the Copilot CLI. `reference.md` does not name the mechanism. Settle this group before N-03, which ships the same gates the long
-way as `provides.scripts` under `gates/`, and before backlog item 28, which
+the Copilot CLI. `reference.md` does not name the mechanism. Settle this group before backlog item 28, which
 writes a second hook config by hand.
 
 - [x] T261 Write the event mapping
@@ -309,6 +308,407 @@ Verify: the outcome is an ADR in `decisions.md`, whichever way it goes.
 templates, scripts, agents, assertions. Verify: each count is listed beside the
 command that produced it, and every one matches.
 
+## G-50 — Diverge more: wording, layout, and correctness fixes from the 2026-09-25 survey
+
+Executor: `general-purpose` per task, or `prose-rephraser`/`script-refactorer`/
+`divergence-renamer` where named. Effort: low unless stated. Depends on: none
+unless stated. Raised on 2026-09-25 by seven parallel read-only surveys, one
+per shipped file or file group, each proving its guard claims against the
+actual scripts and tests rather than assuming `reference.md`'s existing risk
+notes. Three surveys disproved a claim in `reference.md` itself (T510, T536,
+T548 below); fix those first, since later tasks in this group cite the
+corrected version.
+
+Two cross-file couplings span two tasks each and must land together:
+`## Session Resumability` is spelled identically in both `SKILL.md:116` and
+`workflow-guide.md`, so a rename of one without the other leaves two names for
+one concept (T520 covers `SKILL.md`'s copy only; renaming both is a
+`divergence-renamer` job, not yet a separate task — do not take T520 without
+also renaming the guide's copy in the same change). T514's `superpowers.yml`
+sample move must land in the same commit as the matching edit to
+`workflow-guide.md:717-735`, named in that task.
+
+### references/workflow-guide.md
+
+- [ ] T500 Rewrite the file's title and drop its progressive-disclosure framing
+
+Replace the title `# Running Specflow Without Superpowers` with `# The
+specflow workflow, phase by phase`: the file also documents skill mode in
+Phases 2 through 6, so the current title describes only half the file.
+Replace the two-sentence intro (lines 3-5) with a paragraph stating each
+section is one phase carrying its command, gate, steps, and exit criteria,
+that a reader reads only their own phase, and that a phase with a skill
+alternative says so under its Skill mode heading. Drop "progressive
+disclosure": `standards/documentation.md` bans describing the document and
+bars jargon the reader is not in.
+Verify: `bash verify.sh` passes; `python3 specflow/scripts/lint-standards.py`
+reports 0 findings.
+
+- [ ] T501 Rename Phase 0 for the artifact it writes
+
+Replace the heading `## Phase 0: Project Initialization` with `## Phase 0:
+Constitution`. The phase writes `constitution.md`; this file's own Budgets
+table and `SKILL.md` already call the row "0 - Constitution". Do not change
+any later body citation of "Phase 0" (the number, not the name, is what other
+sections cite).
+Verify: `bash verify.sh` passes; `grep -rF 'Project Initialization' specflow/`
+returns nothing.
+
+- [ ] T502 Rename the Phase 2 mode headings to the repo's skill-mode vocabulary
+
+Replace `### Superpowers Integration` with `### Skill mode` and `### Built-in
+Fallback Protocol` with `### Fallback mode`. Four command files already say
+`## Skill Mode Behavior`; this file is the one place still using the old
+pair. Do not touch `### Process` on line 152, which `e2e-smoke.sh:66` asserts
+verbatim.
+Verify: `bash verify.sh` passes; `grep -rF 'Built-in Fallback Protocol'
+specflow/` returns nothing.
+
+- [ ] T503 Rename the four Session Resumability subheadings from labels to claims
+
+Replace `` ### Progress File: `progress.yml` `` with `` ### What
+`progress.yml` holds ``, `### Resume Check Protocol` with `### The check
+every command runs first`, `### Phase-Specific Resume Rules` with `### Where
+each phase resumes`, and `` ### Superpowers Status File: `superpowers.yml` ``
+with `` ### What `superpowers.yml` caches ``. Leave `` ### Writing
+`progress.yml` `` alone; it already reads as an imperative. Leave every body
+line unchanged.
+Verify: `bash verify.sh` passes; `grep -rF -e 'Resume Check Protocol' -e
+'Phase-Specific Resume Rules' -e 'Progress File:' -e 'Superpowers Status
+File:' specflow/` returns nothing.
+
+- [ ] T504 Rewrite the 15 sample brainstorm questions to the documentation standard
+
+Rewrite each of the 15 quoted questions under the five `#### Category`
+headings (lines 124-150). Keep each question's concept, its `[bracket]`
+placeholder, its quotation marks, and three questions per category. Drop the
+contractions ("What's" becomes "What is"), the capitals-for-emphasis in "Who
+should NOT have access to [resource]?", and the weak verbs `handle`,
+`needed`, and `should` that `standards/documentation.md`'s word-choice table
+rejects. ADR-0028 authorizes rewriting sample content the same as any prose.
+Verify: `bash verify.sh` passes; `python3 specflow/scripts/lint-standards.py`
+reports 0 findings.
+
+- [ ] T505 Add an Exit Criteria section to Phases 2, 5, and 6
+
+Four of seven phases state how a reader knows the phase is done; three do
+not. Add a `### Exit Criteria` heading with a bullet list to Phase 2 (after
+`### Iteration`, before its closing `---`), Phase 5 (after `### Human
+Checkpoint Protocol`, before its closing `---`), and Phase 6 (after `###
+Steps`, before its closing `---`), matching the bullet style of the four
+existing Exit Criteria sections. Phase 2: the Brainstorm Log carries a dated
+entry, every category is covered or skipped, each resolved choice has a
+`decisions.md` entry. Phase 5: every task line in `tasks.md` is checked or
+`skipped` with a stated reason, `progress.yml` records each phase status,
+every checkpoint was confirmed. Phase 6: each reported finding scores 80 or
+above, `review-findings.json` exists, each spec gap has an Open Questions row.
+Verify: `bash verify.sh` passes; `grep -c '^### Exit Criteria'
+specflow/references/workflow-guide.md` prints 7.
+
+- [ ] T506 Rewrite the Budgets section's unwrapped prose
+
+Rewrap lines 515, 527, and 529 to the roughly 80-column width the rest of the
+file uses. Delete the mirrored clause pair "A higher ceiling buys deeper
+exploration; a lower ceiling keeps cost down." Replace the en-dash range
+`20–50%` with "20 to 50 percent". Drop the word "actual" from "Track actual
+spend per phase" and from "actual implementation" in the Phase 5 table row.
+Keep the literal `--max-budget-usd 1.00`, which `.claude/hooks/cost-report.sh`
+cites.
+Verify: `bash verify.sh` passes; `grep -c '–' specflow/references/workflow-guide.md`
+prints 0.
+
+- [ ] T507 Reorder the file to lead with the phase table
+
+Move `## Quick Reference` and its `### Stop codes` subsection to sit
+immediately after the intro paragraph and before `## Phase 0`. Move `##
+Review stack` to sit immediately after Phase 6. Move `## Budgets` to the end
+of the file. Keep every `---` rule between adjacent `##` sections; change no
+line of any section's body. Depends on: land before T508, which renames a
+heading this task moves.
+Verify: `bash verify.sh` passes, including the structural smoke test and both
+agent dry runs.
+
+- [ ] T508 Rename Quick Reference to name the table's columns
+
+Replace the heading `## Quick Reference` with `## Gate and output per phase`.
+Change nothing else. Depends on: T507.
+Verify: `bash verify.sh` passes; `grep -rF 'Quick Reference' specflow/
+.claude/ .github/` returns nothing.
+
+### SKILL.md
+
+- [ ] T510 Correct reference.md's claim that spec-kit's loader reads SKILL.md's sections
+
+`improvements/reference.md:157` and `:364` both say spec-kit's skill loader
+expects SKILL.md's upstream section shape. Spec-kit 0.16.2's
+`ExtensionManager.generate_skills` (`extensions/__init__.py:1537-1640`)
+iterates `manifest.commands` and reads `commands/*.md` only; no code path
+opens the extension-root `SKILL.md`, and `extension.yml` does not declare it
+— verified by reading the installed 0.16.2 source, not assumed. Replace both
+cells with: "Low. Spec-kit 0.16.2 never reads the extension-root `SKILL.md`;
+it renders one skill per `commands/*.md`. An external `~/.agents/skills/`
+loader's section expectations are unverified." Update the sentence at line
+392 to record that the check was done.
+Verify: `python3 specflow/scripts/lint-standards.py` passes; `grep -n "skill
+loader expects the upstream section shape" improvements/reference.md` returns
+nothing.
+
+- [ ] T511 Move the superpowers.yml schema sample out of SKILL.md
+
+Replace `SKILL.md` lines 160-212 (`### Superpowers Status Tracking` through
+the "Why persist this" paragraph) with a seven-line `### The skill detection
+cache` pointer: state that `.specify/superpowers.yml` records one entry per
+skill the Skill Mapping table in `superpowers-mapping.md` names, plus the
+superpowers release in `version`, that no command re-runs detection while the
+file is current, and that `workflow-guide.md` holds the file's shape and the
+events that rewrite it. In the same commit, replace
+`workflow-guide.md:717-735` with `SKILL.md`'s current lines 166-196, because
+the guide's sample omits `version:` and six of the twelve skills the Skill
+Mapping table names — it is the stale copy, not this one.
+Verify: `cd specflow && python3 scripts/validate-extension-metadata.py &&
+python3 scripts/validate-release-archive.py && bash scripts/e2e-smoke.sh &&
+python3 scripts/lint-standards.py` all pass; `grep -c 'detected:'
+references/workflow-guide.md` returns 12.
+
+- [ ] T512 Delete SKILL.md's phase-resume table in favor of the guide's
+
+Delete `SKILL.md` lines 230-242 (`### How Each Phase Resumes` and its 7-row
+table); the guide's `### Phase-Specific Resume Rules` covers all seven phases
+and adds the unconfirmed-checkpoint rule this table drops. Append to the
+Resume Protocol's step 6, after "resume execution from the first unchecked
+task)": " The per-phase rules are in
+[workflow-guide.md](references/workflow-guide.md) under Phase-Specific
+Resume Rules."
+Verify: `cd specflow && bash scripts/e2e-smoke.sh && python3
+scripts/lint-standards.py` both pass; `grep -c 'How Each Phase Resumes'
+SKILL.md` returns 0.
+
+- [ ] T513 Correct the Session Resumability state claim
+
+`SKILL.md:118-120` reads "Specflow is **fully resumable across sessions**. It
+keeps all state as Markdown inside the `.specify/` directory..." — both facts
+are wrong: the state files are YAML, and `progress.yml` lives under
+`specs/NNN-feature-name/`, not `.specify/`. Replace with: "Specflow resumes
+across sessions. State lives in two plain-text files: `progress.yml` under
+`specs/NNN-feature-name/`, and `.specify/superpowers.yml`. An agent timeout,
+a closed session, or a CLI crash drops no progress."
+Verify: `cd specflow && bash scripts/e2e-smoke.sh && python3
+scripts/lint-standards.py` both pass.
+
+- [ ] T514 Move the phase sequence above the resumability section
+
+Cut `SKILL.md` lines 476-506 (the `---` rule, `## Unified Workflow`, the
+fenced Phase 0-6 block, and the three trailing paragraphs) and paste them
+immediately after the Commands table, before the `---` that precedes
+`## Session Resumability`. Change nothing inside the block. Depends on: T511,
+T512.
+Verify: `cd specflow && bash scripts/e2e-smoke.sh && python3
+scripts/validate-extension-metadata.py && python3 scripts/lint-standards.py`
+all pass; `grep -n 'Unified Workflow\|Session Resumability' SKILL.md` shows
+Unified Workflow on the lower line number.
+
+- [ ] T515 Rename SKILL.md's eight remaining upstream-spelled free headings
+
+Apply: `## Prerequisites` to `## Specflow runs without superpowers`; `##
+Project Structure` to `## Where the files land`; `## Commands` to `##
+Command index`; `## Session Resumability` to `## Every command resumes from
+the files on disk`; `### Progress Tracking` to `### The progress file`; `###
+Resume Protocol` to `### The resume check runs first`; `## Unified Workflow`
+to `## The seven phases in order`; `## Additional Resources` to `## Where to
+read more`. Nothing in this repository greps any of them. Depends on: T511,
+T512, T514. Renaming `## Session Resumability` here must land together with
+renaming `workflow-guide.md`'s identical heading (see this group's header
+note); do not take this task's `## Session Resumability` line alone.
+Verify: `cd specflow && python3 scripts/validate-extension-metadata.py &&
+python3 scripts/validate-release-archive.py && bash scripts/e2e-smoke.sh &&
+python3 scripts/lint-standards.py && bash ../.claude/hooks/tests/run.sh` all
+pass.
+
+- [ ] T516 Document the five hooks in SKILL.md
+
+`grep -i hook SKILL.md` returns only one line naming `test-gate.sh`; none of
+the five hooks `extension.yml` declares (`after_clarify`, `after_analyze`,
+`after_tasks`, `before_implement`, `after_implement`) appear. Add a `## Five
+hooks fire on spec-kit's own commands` section with a 5-row table (Hook /
+Fires after / What it does) immediately after the Commands table, taking each
+row's wording from the matching `description:` field in `extension.yml`.
+Verify: `cd specflow && python3 scripts/validate-extension-metadata.py &&
+bash scripts/e2e-smoke.sh` pass; `python3 -c "import yaml,sys;
+h=yaml.safe_load(open('extension.yml'))['hooks']; t=open('SKILL.md').read();
+sys.exit(0 if all(k in t for k in h) else 1)"` exits 0.
+
+- [ ] T517 State the constitution gate in SKILL.md's Prerequisites section
+
+`SKILL.md:315` states the constitution gate only inside the
+`/speckit.constitution` section. Add to Prerequisites, after the "**Required**:
+None." line: "One gate is unconditional: `.specify/memory/constitution.md`
+must exist before any other command runs. Every command checks for it first
+and stops with guidance when it is absent." Leave line 315 as is.
+Verify: `cd specflow && bash scripts/e2e-smoke.sh && python3
+scripts/lint-standards.py` both pass.
+
+- [ ] T518 Add the clarify and analyze rows to SKILL.md's Commands table
+
+The table lists ten commands and omits `/speckit.clarify` and
+`/speckit.analyze`, which the Unified Workflow makes mandatory gates. Insert
+`| /speckit.clarify | Resolve the spec's NEEDS CLARIFICATION markers, then
+write .clarified |` after the `/speckit.specify` row, and `|
+/speckit.analyze | Check spec, plan, and tasks for inconsistency, then write
+.analyzed |` after the `/speckit.specflow.tasks` row.
+Verify: `cd specflow && python3 scripts/validate-extension-metadata.py &&
+bash scripts/e2e-smoke.sh` pass.
+
+### commands/*.md and commands/hooks/*.md
+
+- [ ] T520 Add a constitution gate step to brainstorm.md
+
+Insert a new Process step 2: "**Constitution gate**: Check that
+`.specify/memory/constitution.md` exists. If it is missing, stop with
+`CONSTITUTION_REQUIRED`, name the missing path, and tell the user to run
+`/speckit.constitution`." Renumber the current steps 2-9 to 3-10. `tasks.md`,
+`execute.md`, and `gate.md` already carry this step; `brainstorm.md` and
+`review.md` (T521) are the two commands where the fork's own rule was never
+finished. Update `specflow/scripts/e2e-smoke.sh:52` from `"brainstorm 9"` to
+`"brainstorm 10"`.
+Verify: `bash specflow/scripts/e2e-smoke.sh` passes with no new failures.
+
+- [ ] T521 Add a constitution gate step to review.md
+
+Insert a new Process step 1, the same constitution-gate wording as T520,
+renumbering current steps 1-9 to 2-10. Update
+`specflow/scripts/e2e-smoke.sh:55` from `"review 9"` to `"review 10"`. Must
+land in the same change as T522 (same file, renumbering conflicts).
+Verify: `bash specflow/scripts/e2e-smoke.sh` passes.
+
+- [ ] T522 Update "Review step 4" citations after T521's renumbering
+
+Replace "step 4" with "step 5" at `specflow/references/superpowers-mapping.md`
+lines 176, 185, 186, 187, 188, 189, 190 (7 occurrences) and
+`specflow/references/workflow-guide.md` lines 438-439 (2 occurrences), to
+match review.md's Process numbering after T521. Depends on: T521, same
+commit.
+Verify: `grep -c 'step 4' specflow/references/superpowers-mapping.md
+specflow/references/workflow-guide.md` returns 0; `grep -c 'step 5'` on the
+same two files returns 9.
+
+- [ ] T523 Add an Output section to status.md
+
+`status.md` is the one command file with no `## Output` heading; its sample
+output is embedded inline in a Process step instead. Add `## Output` after
+`## Process` stating the command prints the status summary to the terminal,
+writes nothing, and refreshes `.specify/superpowers.yml` as a side effect of
+superpowers detection.
+Verify: `bash specflow/scripts/e2e-smoke.sh` passes; `python3
+specflow/scripts/validate-extension-metadata.py` passes.
+
+- [ ] T524 Rewrite "clear description" in review.md's Finding Format section
+
+Replace `- A clear description and a confidence score` (line 79) with `- A
+one-line description and a confidence score`. `standards/documentation.md`
+bans evaluative adjectives about the work itself ("clear" as praise); this
+line was never touched by the file's earlier prose pass.
+Verify: `grep -n 'clear' specflow/commands/review.md` returns nothing.
+
+- [ ] T525 Correct reference.md's Names-table cost cell for the hook file names
+
+`improvements/reference.md:241` lists the cost of renaming
+`before-execute.md`/`after-execute.md` as "Free, and no reason", but
+`specflow/scripts/e2e-smoke.sh:515` greps the literal path
+`commands/hooks/after-execute.md`, and
+`specflow/examples/link-audit/analyze-gate.md:5` cites
+`commands/hooks/before-execute.md` in prose. Change the Cost cell to name
+both citations instead of "Nothing".
+Verify: read the edited row back; no script check applies to this doc-only
+change.
+
+### templates/*.md
+
+- [ ] T530 Tighten tasks-template.md's Checkpoint Protocol to point at workflow-guide.md
+
+Replace the five-line numbered list under `### Checkpoint Protocol` (lines
+206-213) with two sentences naming `references/workflow-guide.md`'s Human
+Checkpoint Protocol instead of restating its steps. Keep the heading
+unchanged. No golden regeneration needed (`score-artifacts.py` never reads
+this body text).
+Verify: `bash specflow/scripts/e2e-smoke.sh` passes; `grep -c "Ask the user:"
+specflow/templates/tasks-template.md` returns 0.
+
+- [ ] T531 Drop tasks-template.md's Notes bullets that repeat Task Format
+
+Delete the four bullets under `## Notes` (lines 219-222) restating `[P]`,
+`[TDD]`, `[REVIEW]`, `[SUBAGENT]`, already defined under `## Task Format`
+(lines 17-21). Keep the remaining three Notes bullets.
+Verify: `bash specflow/scripts/e2e-smoke.sh` passes; `sed -n '/## Notes/,$p'
+specflow/templates/tasks-template.md` shows exactly 3 bullets.
+
+- [ ] T532 Reorder spec-template.md's Threat Model section after Success Criteria
+
+Move the `## Threat Model` block (lines 126-141, comment and table included)
+to sit after `### Measurable Outcomes` and before `## Traceability`, so the
+document's two `*(mandatory)*` sections stay adjacent. No text inside the
+block changes; `score-artifacts.py` never checks section order.
+Verify: `python3 specflow/scripts/score-artifacts.py <a feature dir under
+specflow/examples with a threat model>` reports the same `threat_model` and
+`spec_sections` scores as before.
+
+- [ ] T533 Trim spec-template.md's Brainstorm Prompts to the 5 fallback categories
+
+Delete the `**Data integrity**` and `**Backwards compatibility**` bullets
+(lines 92-93) from `#### Brainstorm Prompts`. `superpowers-mapping.md` and
+`workflow-guide.md` both state the fallback protocol runs exactly 5
+categories (boundary, error, scale, security, UX); this template lists 7,
+contradicting the fork's own documented behavior.
+Verify: `grep -c "Data integrity\|Backwards compatibility"
+specflow/templates/spec-template.md` returns 0.
+
+- [ ] T534 Reorder constitution-template.md's Code Review Rules before Governance
+
+Move the `## Code Review Rules` block (lines 117-126) to sit immediately
+before `## Governance` (currently line 106), so the version/ratification
+stamp in Governance stays the document's closing section. No text inside
+either block changes.
+Verify: `tail -12 specflow/templates/constitution-template.md` ends with the
+`**Version**` line.
+
+### README.md, CHANGELOG.md, references/
+
+- [ ] T540 Move the catalog-submission section out of specflow/README.md
+
+`specflow/README.md:317-375` (59 lines) holds maintainer-facing
+catalog-submission process inside the user-facing install README. Cut it
+verbatim into a new `specflow/references/publishing.md`, and replace it in
+`README.md` with a one-line pointer.
+Verify: `wc -l specflow/README.md` drops to roughly 320 lines; `python3
+scripts/validate-extension-metadata.py` and `python3
+scripts/validate-release-archive.py` both exit 0; `grep -rn "Submitting to
+the spec-kit catalog" specflow/` finds it only in the new file.
+
+- [ ] T541 Rewrite the root README's stale `.claude/` directory-table row
+
+`README.md:25` reads "`.claude/` | The maintainers. It holds the agents and
+gate scripts for this checkout.", which predates ADR-0025 moving the real
+gate logic to `specflow/gates/` (the `.claude/hooks/` copies are now 3-line
+exec wrappers). Replace with: "`.claude/` | The maintainers. It holds the
+agents and the wrapper scripts that exec the gates shipped under
+`specflow/gates/`."
+Verify: `grep -n "gate scripts" README.md` no longer matches the old wording.
+
+### examples/
+
+- [ ] T542 Record the examples/ unmeasured-upstream total in reference.md
+
+`static-landing-page/` and `sample-workflow.md` hold approximately 2,224
+lines of verbatim upstream text at roughly 0% real divergence, none of it in
+the reproduce command's table (it filters `^examples/`). Add one sentence
+after reference.md's `## examples/` intro line stating this total, cited to
+this survey, so T194's deferral is priced honestly. Do not rewrite the
+snapshot's prose: `test_score_artifacts.py` asserts five `seeded-*/`
+directories are byte-identical to it except one named diff each, so any
+wording change must mirror into all five and their test constants, for a
+directory already scheduled for deletion under T194.
+Verify: `grep -n "2224\|2200" improvements/reference.md` finds the added
+sentence.
+
 ## Checked on 2026-09-20, no work needed
 
 Measured against spec-kit 1.0.9.dev0 at `d4229c0`. Each line held, so do not
@@ -344,19 +744,6 @@ bridges already listed, so run it first. Verify: a CI step runs
 `SPECKIT_CATALOG_URL=<raw url> specify extension search specflow` and greps the
 id. Effort: low. Depends on: G-36 (merged).
 
-**25. A template drift report in status.** A stamp comment in every shipped
-template (`<!-- specflow template: spec-template 1.1.0 -->`) and a Doctor
-section in `/speckit.specflow.status` that compares the stamps in
-`.specify/templates/` with the installed extension version and lists stale
-templates. `/speckit.constitution` copies templates once; an extension upgrade
-leaves the copies behind and nothing says so. G-24 T243 and T244 delete the
-copy step, and an extension upgrade rewrites
-`.specify/extensions/specflow/templates/` in place, so after them no stale
-copy is left to report. Write it as a prose Process step
-so it runs on the Copilot CLI. Verify: the smoke test greps the stamp, and a
-dry-run fixture with an old stamp prints the stale line. Effort: low. Depends
-on: G-36 (merged).
-
 **26. An upgrade path the smoke test walks.** `e2e-smoke.sh` installs the
 v1.0.2 release ZIP, installs the checkout over it with `--dev`, and asserts no
 stale command file or `extensions.yml` entry remains. Every user who installed
@@ -365,19 +752,6 @@ reports the upgrade assertions and passes. Effort: low. Depends on: G-36
 (merged).
 
 ### Prove it on both runtimes
-
-**27. An agent-driven e2e for the Copilot CLI.**
-`scripts/e2e-agent-copilot.sh`, the twin of the Claude script: the dry run
-replays the snapshot, the live run drives each stage with `copilot -p "<stage
-prompt>"` and per-tool allow flags such as `--allow-tool='shell(git:*)'`, under
-`timeout`. The README says the extension runs on the Copilot CLI, and the only
-Copilot check is the install layout the smoke test asserts (PR #59). Move the
-stage prompts and assertions into a sourced `e2e-stages.sh` both scripts share.
-*Verified:* `-p` is the non-interactive mode and `--allow-tool` scopes
-permissions; check the flag names against the programmatic reference in your
-version, and never use `--allow-all-tools` on a runner that can push. Verify:
-`E2E_DRY_RUN=1 bash scripts/e2e-agent-copilot.sh` exits 0 in CI. Effort:
-medium. Depends on: none.
 
 **28. Gate hooks on the Copilot CLI.** A `.github/hooks/specflow.json`
 registering the existing scripts under `preToolUse` (block-main-commit,
@@ -392,25 +766,9 @@ Copilot CLI hooks live in `.github/hooks/`, support `sessionStart`,
 `errorOccurred`, and `preToolUse` denies by a JSON object on stdout, not by exit
 code. Verify: a hook test runs the adapter on a blocked command and asserts the
 deny JSON; a live Copilot session refuses `git commit` on main. Effort: medium.
-Depends on: 27 for the live check.
+Depends on: none; the Copilot e2e script (item 27) is merged, so the live check can run.
 
 ### Operate it
-
-**31. A reviewer scorecard.** `.claude/review/scorecard.sh` reads every findings
-file, prints per-persona precision (fixed divided by fixed plus rejected plus
-rebutted) with counts, and writes `.claude/review/scorecard.md`. Section 3.9 of
-`docs/review-research.md` and the weekly ritual in Part 6 both assume a
-scorecard and none exists, so a persona below 0.5 precision cannot be found, let
-alone demoted. Verify: a fixture with four findings, two fixed and two rejected,
-prints 0.50. Effort: low. Depends on: none.
-
-**32. Cost per feature against the budget table.**
-`.claude/hooks/cost-report.sh` sums `total_cost_usd` per feature from
-`.specify/telemetry.jsonl`, prints a table beside the Budgets table in
-`workflow-guide.md`, and exits 1 when a feature is over budget. G-16 set budgets
-and G-07 logs phases; nothing joins them, so a budget is a number nobody checks.
-Verify: a fixture over budget exits 1 and names the feature. Effort: low.
-Depends on: none.
 
 **33. The lint checks a traceability row names a real test.** Once `.analyzed`
 exists, `artifact-lint.sh` reads the `## Traceability` rows and fails when the
@@ -426,14 +784,6 @@ the reviewer finds a seeded bug; nothing proves the spec phase finds a seeded
 ambiguity, and the spec phase is where upstream is thinnest. Verify:
 `score-artifacts.py` scores the new golden and `score-artifacts.yml` replays it.
 Effort: medium. Depends on: G-19.
-
-**35. A tested superpowers version range.** `superpowers.yml` records the
-installed superpowers version from the plugin manifest,
-`superpowers-mapping.md` states the tested range, and status warns outside it.
-Superpowers v6.0 rewrote `subagent-driven-development` and v6.2 moved the SDD
-workspace; the bridge assumes a skill shape and nothing says which. Verify: a
-dry-run fixture with `version: 5.0.0` prints the warning. Effort: low. Depends
-on: none.
 
 **36. Upstream the resync-safe moves.** Open pull requests against
 WangX0111/superspec for the Tighten moves tagged "breaks resync: rarely": the
@@ -462,20 +812,13 @@ beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
   than a sixth command now that G-24 T241 derives `e2e-smoke.sh`'s and
   `ci.yml`'s hook counts from `extension.yml`; only the manifest entry and the
   hook's own prompt remain to write.
-- **A Copilot CLI run snapshot** under `examples/`: needs the Copilot e2e
-  script, backlog item 27.
+- **A Copilot CLI run snapshot** under `examples/`: the Copilot e2e script
+  (backlog item 27) is merged; only the live run remains.
 - **A spec-kit workflow file** (was N-06): deferred on 2026-09-20. Most of its stated value was running the gates on the Copilot
   CLI, which the `events:` block in G-26 buys for less. Reprice it after G-26.
 - **A spec-kit bundle** (was N-08): deferred on 2026-09-20. It composes the
   workflow above with the preset G-25 decides, so it cannot start before
   either.
-- **Upstream the resync-safe moves**: four Tighten moves this fork made that
-  upstream could take, each tagged "breaks resync: rarely": the after-tasks
-  progress read (D-01), the status marker column (D-07), the compound-task rule
-  (D-06), and the Copilot fallback rows (D-03). Every accepted one shrinks the
-  diff `upstream-drift.yml` reports. Open one pull request per move against
-  `WangX0111/superspec` and record each link beside its bullet in
-  `reference.md`.
 
 ## Suggested order
 
@@ -484,11 +827,14 @@ G-48, G-49, and C-01 through C-09 are merged or closed. What is left, in
 order:
 
 1. G-26 T262 and T263, once the three ADR-0022 prerequisites clear.
-2. Backlog items 23, 25, and 26 next; each depended only on G-36, now merged.
-3. Backlog item 27, then 28, which depends on it for the live check.
-4. Backlog items 31 through 36 whenever a session is short; none depends on
+2. Backlog items 23 and 26 next; each depended only on G-36, now merged.
+3. Backlog item 28; item 27's live check is no longer blocked, since the
+   Copilot e2e script it needed is merged.
+4. Backlog items 33, 34, and 36 whenever a session is short; none depends on
    another still open.
-5. G-19 whenever a live agent run is available; this environment has no API
+5. G-50 (below) whenever a session is short; every task there is independent
+   of the items above.
+6. G-19 whenever a live agent run is available; this environment has no API
    key to make one.
 
 Pick the item whose `Verify:` line you can run before you start. An item whose
