@@ -60,6 +60,11 @@ Suggested next step: /speckit.specflow.execute 001
 8. If no `.specify/` directory exists, print: "No specflow project found. Run
    `/speckit.constitution` to get started."
 
+## Output
+
+The command prints the status summary to the terminal and writes nothing. It
+refreshes `.specify/superpowers.yml` as a side effect of superpowers detection.
+
 ## File Inference Fallback
 
 If `progress.yml` is missing, infer the phase from the files present:

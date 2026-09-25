@@ -17,13 +17,16 @@ Probe edge cases and refine a spec document with the brainstorming skill.
 ## Process
 
 1. Read the target spec file
-2. Read the constitution for the project's constraints
-3. Read `decisions.md` at the project root if it exists. Treat every recorded
+2. **Constitution gate**: Check that `.specify/memory/constitution.md` exists. If
+   it is missing, stop with `CONSTITUTION_REQUIRED`, name the missing path, and
+   tell the user to run `/speckit.constitution`.
+3. Read the constitution for the project's constraints
+4. Read `decisions.md` at the project root if it exists. Treat every recorded
    decision as settled and do not raise it as a question again
-4. Classify the spec as a spike or a feature. A spike is a throwaway that learns
+5. Classify the spec as a spike or a feature. A spike is a throwaway that learns
    one fact; a feature ships. For a spike, ask only the boundary condition and
    error scenario categories, and skip the other three
-5. **Superpowers detection**: Check for the `brainstorming` skill
+6. **Superpowers detection**: Check for the `brainstorming` skill
    - **If found**: Read the brainstorming SKILL.md, follow its questioning protocol,
      and adapt every output to the target spec file
    - **If not found**: Use the built-in 5-category questioning protocol:
@@ -32,20 +35,20 @@ Probe edge cases and refine a spec document with the brainstorming skill.
      - Scale & performance (heavy load, concurrent use, rate limits)
      - Security & privacy (injection, authorization, exposed data)
      - User experience (points of confusion, accessibility, unintended usage)
-6. Ask questions **one at a time** and prefer multiple-choice format
-7. After each answer, fold the outcome into the spec:
+7. Ask questions **one at a time** and prefer multiple-choice format
+8. After each answer, fold the outcome into the spec:
    - A new requirement → enters Functional Requirements
    - A resolved question → closes in the Open Questions table
    - A new edge case → enters the Edge Cases section
-8. Append each resolved question that settled a choice to `decisions.md` at the
+9. Append each resolved question that settled a choice to `decisions.md` at the
    project root, under a `## ADR-NNNN: <the choice>` heading numbered one above
    the highest ADR already in the file, followed by `- Date:`,
    `- Status: accepted`, `- Context:`, `- Decision:`, and `- Consequences:`
    lines, under 150 words. Open the Context line with the question's ID. A
    question the spec now answers as a fact gets no entry, because the spec
    records it. Start at ADR-0001 when the file does not exist
-9. When the user confirms the spec is ready, update the "Brainstorm Log" with a
-   dated summary of the insights found
+10. When the user confirms the spec is ready, update the "Brainstorm Log" with a
+    dated summary of the insights found
 
 ## Output
 
