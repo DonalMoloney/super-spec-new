@@ -155,10 +155,13 @@ Ask about points of confusion, accessibility, and use the design did not intend.
    Read `decisions.md` at the project root when it exists, and skip a question
    its entries already settle.
 
-2. **Ask one question at a time**. Wait for the user's answer before the next question.
+2. **Confirm the gate**: Require `.specify/memory/constitution.md`. Stop with
+   `CONSTITUTION_REQUIRED` when it is absent.
+
+3. **Ask one question at a time**. Wait for the user's answer before the next question.
    Prefer multiple-choice form when possible, for faster exploration.
 
-3. **After each answer**:
+4. **After each answer**:
    - A new requirement goes into the spec's Functional Requirements
    - A resolved question updates the Open Questions table
    - A resolved question that settled a choice also appends an entry to
@@ -172,9 +175,9 @@ Ask about points of confusion, accessibility, and use the design did not intend.
    - A new edge case goes into the Edge Cases section
    - A changed acceptance scenario updates the matching user story
 
-4. **Continue** through all 5 categories and skip a question the spec already covers.
+5. **Continue** through all 5 categories and skip a question the spec already covers.
 
-5. **When the user says the spec is ready** (or the agent has covered every category):
+6. **When the user says the spec is ready** (or the agent has covered every category):
    - Log a dated entry in the "Brainstorm Log" section
    - State the number of questions asked, the insights found, and the updates made to the spec
    - Suggest: "Run `/speckit.plan` to create the implementation plan."
@@ -421,25 +424,28 @@ The agent MUST:
 
 ### Steps
 
-1. **Read inputs**: Pull the acceptance scenarios from the spec, the
+1. **Confirm the gate**: Require `.specify/memory/constitution.md`. Stop with
+   `CONSTITUTION_REQUIRED` when it is absent.
+
+2. **Read inputs**: Pull the acceptance scenarios from the spec, the
    constitution check from the plan, the principles from the constitution,
    and `specs/NNN-feature-name/review-scope.md` when the `after_implement`
    hook wrote one.
 
-2. **Superpowers detection**: When the `requesting-code-review` skill is
+3. **Superpowers detection**: When the `requesting-code-review` skill is
    available, follow its review protocol.
 
-3. **Risk tier**: Add the changed lines and count the changed files from
+4. **Risk tier**: Add the changed lines and count the changed files from
    `git diff --numstat main...HEAD`. The tier is HIGH when the diff exceeds
    400 lines, touches more than 15 files, changes a path under a directory
    named `auth`, `payments`, `billing`, `migrations`, `infra`, `secrets`, or
    `crypto`, or changes a dependency lock file. Otherwise the tier is
    STANDARD. Use the `gates/bash/risk-classifier.sh` result instead, when
-   the installed extension carries that script. HIGH runs step 4 and then audits each
-   finding for a `file:line` reference and evidence. STANDARD runs step 4
+   the installed extension carries that script. HIGH runs step 5 and then audits each
+   finding for a `file:line` reference and evidence. STANDARD runs step 5
    once.
 
-4. **Review dimensions** (built-in protocol):
+5. **Review dimensions** (built-in protocol):
 
    a. **Spec compliance**: Verify that each acceptance scenario in the spec is
       implemented and can be demonstrated.
@@ -455,27 +461,27 @@ The agent MUST:
 
    e. **Test coverage**: Verify that tests exist for the critical paths.
 
-5. **Report findings** with:
+6. **Report findings** with:
    - Confidence score (0-100, reported only when >= 80)
    - Severity (Critical / Important / Suggestion)
    - File path and line number
    - A specific recommendation
 
-6. **Group** the findings by severity, highest first.
+7. **Group** the findings by severity, highest first.
 
-7. **Append each spec gap** to the spec. For every Critical or Important
+8. **Append each spec gap** to the spec. For every Critical or Important
    finding that reports a missing, ambiguous, or contradicted requirement, add
    a row to the `## Open Questions` table in `specs/NNN-feature-name/spec.md`
    and open its Question column with the finding ID.
 
-8. **Write** the findings to `specs/NNN-feature-name/review-findings.json`, in
+9. **Write** the findings to `specs/NNN-feature-name/review-findings.json`, in
    the shape `commands/review.md` defines under Findings File.
 
-9. **Join** each finding to the checklist item it fails. For every checklist
-   the feature has, under `specs/NNN-feature-name/checklists/` or in the
-   `checklist-review.md` this run writes, that carries a `## Review Findings`
-   table, add a row with the `CHK` id, the finding's `R-NNN` id, and the
-   finding's status. A feature with no checklist skips this step.
+10. **Join** each finding to the checklist item it fails. For every checklist
+    the feature has, under `specs/NNN-feature-name/checklists/` or in the
+    `checklist-review.md` this run writes, that carries a `## Review Findings`
+    table, add a row with the `CHK` id, the finding's `R-NNN` id, and the
+    finding's status. A feature with no checklist skips this step.
 
 ---
 

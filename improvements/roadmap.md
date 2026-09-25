@@ -560,7 +560,7 @@ bash scripts/e2e-smoke.sh` pass.
 
 ### commands/*.md and commands/hooks/*.md
 
-- [ ] T520 Add a constitution gate step to brainstorm.md
+- [x] T520 Add a constitution gate step to brainstorm.md
 
 Insert a new Process step 2: "**Constitution gate**: Check that
 `.specify/memory/constitution.md` exists. If it is missing, stop with
@@ -572,7 +572,7 @@ finished. Update `specflow/scripts/e2e-smoke.sh:52` from `"brainstorm 9"` to
 `"brainstorm 10"`.
 Verify: `bash specflow/scripts/e2e-smoke.sh` passes with no new failures.
 
-- [ ] T521 Add a constitution gate step to review.md
+- [x] T521 Add a constitution gate step to review.md
 
 Insert a new Process step 1, the same constitution-gate wording as T520,
 renumbering current steps 1-9 to 2-10. Update
@@ -580,7 +580,7 @@ renumbering current steps 1-9 to 2-10. Update
 land in the same change as T522 (same file, renumbering conflicts).
 Verify: `bash specflow/scripts/e2e-smoke.sh` passes.
 
-- [ ] T522 Update "Review step 4" citations after T521's renumbering
+- [x] T522 Update "Review step 4" citations after T521's renumbering
 
 Replace "step 4" with "step 5" at `specflow/references/superpowers-mapping.md`
 lines 176, 185, 186, 187, 188, 189, 190 (7 occurrences) and
@@ -591,7 +591,7 @@ Verify: `grep -c 'step 4' specflow/references/superpowers-mapping.md
 specflow/references/workflow-guide.md` returns 0; `grep -c 'step 5'` on the
 same two files returns 9.
 
-- [ ] T523 Add an Output section to status.md
+- [x] T523 Add an Output section to status.md
 
 `status.md` is the one command file with no `## Output` heading; its sample
 output is embedded inline in a Process step instead. Add `## Output` after
@@ -601,7 +601,7 @@ superpowers detection.
 Verify: `bash specflow/scripts/e2e-smoke.sh` passes; `python3
 specflow/scripts/validate-extension-metadata.py` passes.
 
-- [ ] T524 Rewrite "clear description" in review.md's Finding Format section
+- [x] T524 Rewrite "clear description" in review.md's Finding Format section
 
 Replace `- A clear description and a confidence score` (line 79) with `- A
 one-line description and a confidence score`. `standards/documentation.md`

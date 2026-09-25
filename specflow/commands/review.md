@@ -18,14 +18,17 @@ Run code review against spec requirements using review skills.
 
 ## Process
 
-1. Read the spec and the plan for the feature under review. If
+1. **Constitution gate**: Check that `.specify/memory/constitution.md` exists. If
+   it is missing, stop with `CONSTITUTION_REQUIRED`, name the missing path, and
+   tell the user to run `/speckit.constitution`.
+2. Read the spec and the plan for the feature under review. If
    `specs/NNN-feature-name/review-scope.md` exists and the user gave no scope,
    read it and review the files it lists
-2. **Superpowers detection**: Check for the `requesting-code-review` skill
+3. **Superpowers detection**: Check for the `requesting-code-review` skill
    - **If found**: Read the skill and follow its pre-evaluation checklist and
      review dispatch protocol
    - **If not found**: Follow the built-in review protocol below
-3. **Risk tier**: Classify the change before the review starts. Run
+4. **Risk tier**: Classify the change before the review starts. Run
    `git diff --numstat main...HEAD` and sum the changed lines and files. The
    tier is HIGH when the diff changes more than 400 lines or more than 15
    files, when any changed path has a directory named `auth`, `payments`,
@@ -34,32 +37,32 @@ Run code review against spec requirements using review skills.
    `Cargo.lock`, `poetry.lock`, `go.sum`, or a `requirements*.txt`). Otherwise
    the tier is STANDARD. When `gates/bash/risk-classifier.sh` exists under the
    installed extension directory, run it and use its answer instead. A HIGH tier runs every
-   dimension in step 4, then a second pass that checks each finding for a
+   dimension in step 5, then a second pass that checks each finding for a
    `file:line` reference and evidence and drops any finding missing either. A
-   STANDARD tier runs step 4 once.
-4. Built-in review protocol:
+   STANDARD tier runs step 5 once.
+5. Built-in review protocol:
    - **Spec compliance**: Check that each acceptance scenario in the spec is implemented
    - **Edge case coverage**: Check that the brainstormed edge cases are handled
    - **Constitution compliance**: Check that the code follows every governance principle
    - **Code quality**: Check for bugs, security flaws, and missing error handling
    - **Test coverage**: Check that tests cover the critical paths
-5. Report each finding with a confidence score from 0-100, and report only findings that score 80 or higher
-6. Group findings by severity: Critical > Important > Suggestion
-7. Append each spec gap to the spec: for each Critical or Important finding
+6. Report each finding with a confidence score from 0-100, and report only findings that score 80 or higher
+7. Group findings by severity: Critical > Important > Suggestion
+8. Append each spec gap to the spec: for each Critical or Important finding
    that reports a missing, ambiguous, or contradicted requirement, add a row
    to the `## Open Questions` table in `specs/NNN-feature-name/spec.md` and
    open its Question column with the finding ID
-8. **Write the findings file**: Write every reported finding to
+9. **Write the findings file**: Write every reported finding to
    `specs/NNN-feature-name/review-findings.json` in the shape the Findings
    File section defines below. Overwrite the file on each run. A run with no
    findings writes an empty `findings` array and the verdict `CLEAN`
-9. **Join each finding to its checklist item**: for each checklist the feature
-   has, under `specs/NNN-feature-name/checklists/` or in the
-   `checklist-review.md` this run writes, fill the `## Review Findings` table.
-   Add one row per finding that fails an item in that checklist: the `CHK` id
-   of the item, the finding's `R-NNN` id, and the finding's status. Skip a
-   checklist that carries no `## Review Findings` table, and skip the step
-   when the feature has no checklist
+10. **Join each finding to its checklist item**: for each checklist the feature
+    has, under `specs/NNN-feature-name/checklists/` or in the
+    `checklist-review.md` this run writes, fill the `## Review Findings` table.
+    Add one row per finding that fails an item in that checklist: the `CHK` id
+    of the item, the finding's `R-NNN` id, and the finding's status. Skip a
+    checklist that carries no `## Review Findings` table, and skip the step
+    when the feature has no checklist
 
 ## Output
 
@@ -76,7 +79,7 @@ joining a failed `CHK` id to the `R-NNN` id that reported it.
 ## Finding Format
 
 Each finding includes:
-- A clear description and a confidence score
+- A one-line description and a confidence score
 - A file path and a line reference
 - A specific recommendation or fix
 - A finding ID of the form `R-NNN`, unique within the review run
