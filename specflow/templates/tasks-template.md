@@ -35,7 +35,7 @@ description: "Task list template for feature implementation"
 
 <!--
   ============================================================================
-  The tasks below are examples. They show the format, not real work.
+  These sample tasks show the format, not real work.
 
   /speckit.specflow.tasks replaces them with real tasks, built from:
   - The user stories in spec.md, each with its priority (P1, P2, P3, and so on)
@@ -76,7 +76,7 @@ description: "Task list template for feature implementation"
 - [ ] T007 Configure the error handling
 
 **Execution notes**: For a task marked [TDD], write the test first and run it. Confirm it fails, then implement.
-For a task marked [REVIEW], pause for a human review of the API contracts before a consumer is built.
+For a task marked [REVIEW], pause for a human review of the API contracts before building a consumer.
 
 **Checkpoint**: The foundation is ready. Get human approval before any user story starts.
 
@@ -188,7 +188,7 @@ proves the task is done. A reader then checks it without asking the implementer.
 ## Superpowers Execution
 
 <!--
-  This section tells /speckit.specflow.execute how it processes this task list.
+  /speckit.specflow.execute reads this section to decide how it processes the task list.
 -->
 
 ### Execution Discipline by Marker
@@ -217,9 +217,9 @@ At every phase boundary:
 ## Notes
 
 - [P] tasks touch different files, with no dependencies
-- [TDD] tasks follow strict RED-GREEN-REFACTOR discipline
+- [TDD] tasks follow RED-GREEN-REFACTOR discipline
 - [REVIEW] tasks stop at a human review gate
-- [SUBAGENT] tasks are candidates for parallel subagent dispatch
+- [SUBAGENT] tasks qualify for parallel subagent dispatch
 - The [Story] label maps a task to its user story, for traceability
 - Commit after every task or logical group
 - Stop at any checkpoint to confirm the work independently

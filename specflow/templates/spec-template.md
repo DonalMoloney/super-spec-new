@@ -14,7 +14,7 @@
   usable MVP (Minimum Viable Product).
 
   Assign each story a priority (P1, P2, P3), with P1 the most critical.
-  Each story is a standalone slice of functionality:
+  Each story meets these independence criteria:
   - It can be developed without the others.
   - It can be tested without the others.
   - It can be deployed without the others.
@@ -127,8 +127,8 @@
 
 <!--
   Optional. Walk each STRIDE category against this feature. When a category
-  does not apply, mark the row N/A with a one-clause reason. Do not delete
-  the row.
+  does not apply, mark its row N/A with a one-clause reason instead of
+  deleting the row.
 -->
 
 | Threat | Abuse case | Mitigation (or N/A + reason) |
@@ -170,8 +170,8 @@ Automated scoring reads only the Test name column. A human reader uses the Statu
 
 <!--
   /speckit.specflow.brainstorm maintains this section and adds one entry per
-  session. Each entry is dated and states what the session found and decided.
-  Do not edit it by hand.
+  session. Each entry carries a date and states what the session found and
+  decided. Do not edit it by hand.
 -->
 
 <!-- Example entry:
@@ -181,15 +181,15 @@ Automated scoring reads only the Test name column. A human reader uses the Statu
 - Login attempts need a rate limit
 - An access token expires after 24 h, a refresh token after 30 d
 - An account locks after five failed attempts, which no requirement covered
-**Spec updates**: Added FR-006 for the rate limit, rewrote the US1 acceptance scenarios
+**Spec updates**: Added FR-006 for the rate limit. Rewrote the US1 acceptance scenarios.
 -->
 
 ## Changelog
 
 <!--
   One row records each spec version, newest last. When the spec changes after
-  its first approval, add a row. Then delete `.clarified` and `.analyzed`,
-  and rerun /speckit.clarify and /speckit.analyze.
+  its first approval, add a row. Then delete `.clarified` and `.analyzed`.
+  Rerun /speckit.clarify and /speckit.analyze.
 -->
 
 | Version | Date | Summary |

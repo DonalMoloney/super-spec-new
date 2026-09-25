@@ -7,7 +7,7 @@ the option space and the measured distance to upstream.
 
 Percentages are the real (rebrand-normalized) change against the vendored
 upstream at the root commit (`bda4ef0`, upstream `c20ac6c`). Upstream `HEAD`
-was still `c20ac6c` on 2026-09-11. An option a roadmap item already claims names
+was still `c20ac6c` on 2026-09-25. An option a roadmap item already claims names
 that item instead of repeating its tasks.
 
 ## Three constraints
@@ -38,7 +38,7 @@ targets.
 
 ## Measured state
 
-Measured 2026-09-21 against upstream `c20ac6c1` by rerunning the reproduce
+Measured 2026-09-25 against upstream `c20ac6c1` by rerunning the reproduce
 command below. Lowest real change first. One row the command cannot reach:
 G-30 renamed `references/superpowers-bridge.md` to
 `references/superpowers-mapping.md`, and the measurer resolves one relative
@@ -53,21 +53,21 @@ reason: `commands/gate.md`, `commands/hooks/after-analyze.md`, and
 | `templates/plan-template.md` | 23% | `prose-rephraser` |
 | `templates/spec-template.md` | 38% | `prose-rephraser` |
 | `templates/checklist-template.md` | 45% | `prose-rephraser` |
-| `templates/constitution-template.md` | 48% | `prose-rephraser` |
 | `templates/tasks-template.md` | 49% | `prose-rephraser` |
+| `templates/constitution-template.md` | 50% | `prose-rephraser` |
 | `extension.yml` | 56% | `prose-rephraser` |
 | `SKILL.md` | 57% | skill count and sample version updated |
 | `references/superpowers-mapping.md` | 57% | `prose-rephraser` |
-| `commands/execute.md` | 60% | per-command script declared in frontmatter |
-| `commands/hooks/after-tasks.md` | 60% | `prose-rephraser` |
+| `commands/execute.md` | 61% | `divergence-renamer` |
 | `commands/status.md` | 62% | per-command script declared in frontmatter |
-| `references/workflow-guide.md` | 64% | gate scripts shipped in the archive |
-| `commands/hooks/after-execute.md` | 65% | PR #70 |
-| `commands/brainstorm.md` | 66% | per-command script declared in frontmatter |
-| `commands/hooks/before-execute.md` | 70% | gate scripts shipped in the archive |
-| `commands/tasks.md` | 74% | per-command script declared in frontmatter |
+| `commands/hooks/after-tasks.md` | 65% | `divergence-renamer` |
+| `references/workflow-guide.md` | 65% | `divergence-renamer` |
+| `commands/brainstorm.md` | 67% | `divergence-renamer` |
+| `commands/hooks/after-execute.md` | 70% | `divergence-renamer` |
+| `commands/hooks/before-execute.md` | 74% | `divergence-renamer` |
+| `commands/tasks.md` | 75% | `divergence-renamer` |
 | `CHANGELOG.md` | 77% | `prose-rephraser` |
-| `commands/review.md` | 79% | per-command script declared in frontmatter |
+| `commands/review.md` | 80% | `divergence-renamer` |
 | `scripts/e2e-smoke.sh` | 83% | frontmatter asserted on both surfaces |
 | `scripts/validate-release-archive.py` | 87% | `script-refactorer` |
 | `scripts/e2e-agent-claude.sh` | 90% | Copilot CLI added to the seven e2e stages |
@@ -263,7 +263,7 @@ content had already diverged from upstream.
 
 | File | Real | Agent | Waiting on |
 |------|------|-------|------------|
-| `commands/hooks/after-tasks.md` | 60% | `prose-rephraser` | |
+| `commands/hooks/after-tasks.md` | 65% | `prose-rephraser` | |
 | `extension.yml` | 56% | `prose-rephraser` | |
 | `CHANGELOG.md` | 77% | `prose-rephraser` | |
 | `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` | |
@@ -272,7 +272,7 @@ content had already diverged from upstream.
 | `templates/plan-template.md` | 23% | `prose-rephraser` | |
 | `templates/spec-template.md` | 38% | `prose-rephraser` | |
 | `templates/checklist-template.md` | 45% | `prose-rephraser` | |
-| `templates/constitution-template.md` | 48% | `prose-rephraser` | |
+| `templates/constitution-template.md` | 50% | `prose-rephraser` | |
 | `templates/tasks-template.md` | 49% | `prose-rephraser` | |
 | `scripts/validate-release-archive.py` | 87% | `script-refactorer` | |
 
@@ -293,28 +293,31 @@ test greps command prose.
 
 The Real column counts changed lines, so it conflates a reworded file with a
 restructured one. This records the other half: the headings, functions, and
-manifest keys still spelled as upstream spells them, measured 2026-09-21
+manifest keys still spelled as upstream spells them, measured 2026-09-25
 against `c20ac6c1`. Read it before choosing a rewrite target.
 
-Structure held while prose moved. Every command file keeps upstream's
-`## Usage`, `## Process`, and `## Output`; the one heading each lost is its
-`# speckit.specflow.*` title, which the namespace
-rename moved. The three hook prompts keep 3 of 3 headings. `extension.yml`
-keeps all six top-level keys. ADR-0013 bars `prose-rephraser` from touching a
-heading, so a rewrite pass moves the Real column without moving the shape.
+Structure is moving, but only where a renamer pass has reached. Every command
+file keeps upstream's `## Usage`, `## Process`, `## Output`, and
+`## Human Checkpoints`; the two headings each lost are its
+`# speckit.specflow.*` title, which the namespace rename moved, and
+`## Superpowers Adaptation`, now `## Skill Mode Behavior`. The three hook
+prompts keep 2 of 3 headings, having traded `## Checks` for
+`## Preconditions`. `extension.yml` keeps all six top-level keys. ADR-0013
+bars `prose-rephraser` from touching a heading, so a prose pass moves the Real
+column without moving the shape; only `divergence-renamer` moves the shape.
 
 | File | Real | Named units shared |
 |------|------|--------------------|
 | `templates/plan-template.md` | 23% | 12 of 13 headings |
 | `templates/spec-template.md` | 38% | 15 of 19 headings |
 | `templates/checklist-template.md` | 45% | 11 of 12 headings |
-| `templates/constitution-template.md` | 48% | 15 of 17 headings |
+| `templates/constitution-template.md` | 50% | 15 of 17 headings |
 | `templates/tasks-template.md` | 49% | 19 of 20 headings |
-| `commands/hooks/*.md` | 60 to 70% | 3 of 3 each |
+| `commands/hooks/*.md` | 65 to 74% | 2 of 3 each |
 | `extension.yml` | 56% | 6 of 6 keys |
-| `SKILL.md` | 57% | 16 of 23 headings |
-| `references/workflow-guide.md` | 64% | 36 of 44 headings |
-| `commands/*.md` | 60 to 79% | 4 or 5 of 5 to 7 headings |
+| `SKILL.md` | 57% | 14 of 21 headings |
+| `references/workflow-guide.md` | 65% | 30 of 43 headings |
+| `commands/*.md` | 61 to 80% | 4 of 5 to 7 headings |
 | `scripts/validate-release-archive.py` | 87% | 3 of 13 functions |
 | `scripts/validate-extension-metadata.py` | 90% | 2 of 4 functions |
 | `scripts/e2e-agent-claude.sh` | 90% | 0 of 11 functions |
@@ -339,26 +342,31 @@ free prose count, never against a script's.
 
 ## Reducing what is left
 
-Wording has moved a long way; shape has not. The inherited shipped documents
-still share about 84 percent of their heading structure with upstream, because
-ADR-0013 freezes a heading during a prose pass and every pass so far was a
-prose pass. Moving shape is the only lever left.
+Wording has moved a long way; shape has moved only where a renamer pass has
+reached. The inherited shipped documents still share about 77 percent of their
+heading structure with upstream, down from 84 percent before the two renames
+recorded below. ADR-0013 freezes a heading during a prose pass, so moving shape
+is the only lever left and `divergence-renamer` is the only agent that pulls it.
 
-A heading counts as free when no script, workflow, or test in this repository
-greps it. Measured 2026-09-21 by searching every heading against `*.sh`,
-`*.py`, and `*.yml` outside `examples/`.
+A heading counts here when it is still spelled as upstream spells it and no
+script, workflow, or test in this repository greps it. A heading that is free
+but already moved buys nothing, so the count excludes it; earlier revisions of
+this table counted every free heading and so overstated what a pass could reach.
+Measured 2026-09-25 by searching every heading against `*.sh`, `*.py`, and
+`*.yml` outside `examples/`. A coincidental substring match counts as frozen, so
+each number is a floor.
 
-| File | Free headings | Risk | Yield |
-|------|---------------|------|-------|
-| `references/workflow-guide.md` | 30 of 44 | Low. A reference; content is cheap to diverge, the file name is not | Highest |
-| `SKILL.md` | 21 of 23 | Medium. Spec-kit's skill loader expects the upstream section shape | High |
-| `templates/tasks-template.md` | 17 of 20 | Medium. Renaming strands the recorded goldens | High |
-| `templates/constitution-template.md` | 11 of 17 | Medium. Same | Medium |
-| `templates/checklist-template.md` | 7 of 12 | Medium. Same | Medium |
-| `templates/plan-template.md` | 7 of 13 | Medium. Same | Medium |
-| `templates/spec-template.md` | 7 of 19 | Medium. Same | Low |
-| `commands/hooks/*.md` | 2 of 3 each | Low | Low; three headings each |
-| `commands/*.md` | 2 or 3 of 5 to 7 | High. `e2e-smoke.sh` counts each file's Process steps | Low |
+| File | Free and still upstream's | Risk | Yield |
+|------|---------------------------|------|-------|
+| `references/workflow-guide.md` | 19 of 34 | Low. A reference; content is cheap to diverge, the file name is not | Highest |
+| `templates/tasks-template.md` | 19 of 20 | Medium. Renaming strands the recorded goldens | High |
+| `templates/constitution-template.md` | 14 of 17 | Medium. Same | Medium |
+| `SKILL.md` | 13 of 21 | Medium. Spec-kit's skill loader expects the upstream section shape | Medium |
+| `templates/checklist-template.md` | 10 of 12 | Medium. Same | Medium |
+| `templates/plan-template.md` | 9 of 13 | Medium. Same | Medium |
+| `templates/spec-template.md` | 8 of 19 | Medium. Same | Low |
+| `commands/*.md` | 1 or 2 of 5 to 7 | High. `e2e-smoke.sh` counts each file's Process steps | Low |
+| `commands/hooks/*.md` | 1 of 3 each | Low | Low; one heading each |
 
 Done: the two repeated names below, each moved by one `divergence-renamer` pass
 in a single-purpose worktree, verified against `e2e-smoke.sh`,
@@ -373,17 +381,17 @@ merging.
 
 Order of attack, by yield per unit of risk:
 
-1. `references/workflow-guide.md`. Thirty free headings in the file with the
-   loosest contract. Nothing a catalog install runs asserts its section names,
-   and the Gate markers table `e2e-smoke.sh` reads is matched by its rows, not
-   by the heading above them.
-2. The two repeated names above, one renamer pass each.
-3. `templates/tasks-template.md`, then the other four in the order of the
-   table. Regenerate the goldens in the same change, because a template and its
-   recorded output drift the moment either moves.
-4. `SKILL.md`, last among the worthwhile ones. It carries the most free
-   headings after the guide, but it is the file a `~/.agents/skills/` install
-   reads first, so a section rename needs the loader checked before it lands.
+1. `references/workflow-guide.md`. Nineteen reachable headings in the file with
+   the loosest contract. Nothing a catalog install runs asserts its section
+   names, and the Gate markers table `e2e-smoke.sh` reads is matched by its
+   rows, not by the heading above them.
+2. `templates/tasks-template.md`, then the other four in the order of the
+   table. It ties the guide on count and loses on risk: regenerate the goldens
+   in the same change, because a template and its recorded output drift the
+   moment either moves.
+3. `SKILL.md`, last among the worthwhile ones. Thirteen reachable headings, and
+   it is the file a `~/.agents/skills/` install reads first, so a section rename
+   needs the loader checked before it lands.
 
 Not worth taking: the command files. Two or three free headings each, against a
 smoke test that counts Process steps per file and a workflow guide that names
