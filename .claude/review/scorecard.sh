@@ -2,10 +2,9 @@
 # Prints per-reviewer finding precision, fixed divided by fixed, rejected, and
 # rebutted, then writes the same lines to .claude/review/scorecard.md. Reads
 # the findings globs merge-gate.sh reads, from the consuming project's root,
-# and skips a file that fails schema.json.
+# and skips a file that fails validation against findings-schema.json.
 set -euo pipefail
 findings_globs=(".claude/review/*.json" "specs/*/review-findings.json")
-SCHEMA_FILE="schema.json" # the findings contract shares the directory with the reports
 # scorecard.sh is invoked from the consuming project's root, so the validator
 # is found beside this script rather than under the working directory.
 VALIDATOR="$(cd "$(dirname "$0")" && pwd)/validate-findings.py"
@@ -17,9 +16,8 @@ trap 'rm -f "$status_log"' EXIT
 for findings_glob in "${findings_globs[@]}"; do
   for file in $findings_glob; do
     [ -e "$file" ] || continue
-    if [ "$(basename "$file")" = "$SCHEMA_FILE" ]; then continue; fi
     if ! python3 "$VALIDATOR" "$file" >/dev/null 2>&1; then
-      echo "scorecard: $file does not validate against $SCHEMA_FILE; skipped." >&2
+      echo "scorecard: $file does not validate against findings-schema.json; skipped." >&2
       continue
     fi
     jq -r '.reviewer as $persona | .findings[] | [$persona, (.status // "open")] | @tsv' "$file" >> "$status_log"

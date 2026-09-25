@@ -176,11 +176,19 @@ and `session-start.sh`.
 
 - [ ] T262 Declare the block in `extension.yml`
 
-Blocked, and shipping the block today would brick the extension. Two of the
-three prerequisites cleared on 2026-09-20: every command file now carries
-frontmatter with a `scripts:` block, and `docs/agent-event-mapping.md` records
-Copilot's `toolName`, `toolArgs.command`, and `toolArgs.path`. ADR-0027 covers
-the `jq` dependency.
+Blocked, and shipping the block today would brick the extension. One of the
+three prerequisites cleared on 2026-09-20: `docs/agent-event-mapping.md`
+records Copilot's `toolName`, `toolArgs.command`, and `toolArgs.path`.
+ADR-0027 covers the `jq` dependency. The frontmatter prerequisite is not
+cleared: every command file's source carries a `scripts:` block, but a real
+install strips it. Verified on 2026-09-25 by installing this checkout with
+`specify extension add specflow --dev` into a scratch spec-kit project: the
+installed `.claude/skills/speckit-specflow-tasks/SKILL.md` frontmatter
+carries `name`, `description`, `compatibility`, and `metadata` only. The
+command's Process step still names
+`.specify/scripts/bash/resolve-template.sh` in prose and resolves templates
+correctly regardless, so this gap blocks only the `events:` block's own
+prerequisite claim, not template resolution.
 
 What remains is a handler. An `events:` entry names a command, the dispatcher
 resolves that command to one script, and that script receives a hook payload on
@@ -904,6 +912,59 @@ feature branch still succeeds.
 Verify: the blocked-commit attempt is refused; the feature-branch commit
 succeeds; `bash .claude/hooks/tests/run.sh` reports 0 failed with no fewer
 passing cases than it reported on `main` before this task.
+
+## G-51 — Release readiness: prerequisites and cleanup (working on)
+
+Executor: `general-purpose`. Effort: low. Depends on: none. Raised on
+2026-09-25 by an adversarial release-readiness audit. Scoped here to the
+uncontested, dependency-free tasks: documenting an undeclared install-time
+dependency, removing two dead references, correcting a stale prerequisite
+claim in G-26, and an environment-setup step. The audit's other findings —
+committing the working tree, tagging `v1.1.0`, and everything gated on a
+release existing — are deliberately left out of this pass: tagging and
+publishing a release is an outward-facing, hard-to-reverse action that
+belongs in its own change with its own confirmation, not bundled into a
+cleanup PR.
+
+- [x] T551 State `jq` as a prerequisite in specflow/README.md
+
+`specflow/gates/bash/merge-gate.sh:10` guards on `jq` per ADR-0027, but no
+document a user reads before installing names the dependency —
+`specflow/README.md` had no prerequisites section at all. Verify: `grep -n
+'\bjq\b' specflow/README.md` prints a line above the first `specify init`
+block; `python3 specflow/scripts/lint-standards.py` still reports 0 findings.
+
+- [x] T552 Remove the dead schema.json references
+
+`.gitignore:3` negated `.claude/review/schema.json`, and
+`.claude/review/scorecard.sh` skipped a file by that name; the findings
+contract lives at `specflow/references/findings-schema.json`, and no
+`schema.json` exists anywhere in that directory. Verify: `grep -rn
+'review/schema.json\|SCHEMA_FILE' .gitignore .claude/review/` prints nothing;
+`python3 -m pytest .claude/review/tests -q` reports 4 passed.
+
+- [x] T557 Correct G-26 T262's frontmatter prerequisite
+
+T262's body stated "every command file now carries frontmatter with a
+`scripts:` block" as a cleared prerequisite. It is cleared in the source but
+stripped at install: the registered
+`.claude/skills/speckit-specflow-tasks/SKILL.md` carries `name`,
+`description`, `compatibility`, and `metadata` only. Verify: `grep -n
+'scripts:' improvements/roadmap.md` shows the T262 paragraph no longer calls
+the block a cleared prerequisite.
+
+- [x] T558 Install ruff and mutmut locally and confirm verify.sh runs clean
+
+`which ruff` found nothing and `python3 -m mutmut --version` failed, so one
+`verify.sh` step reported skipped and 8 hook tests skipped. Both are
+declared in `requirements-dev.txt`; environment setup, not a repository
+change. Verify: `bash verify.sh` reports 0 skipped; `bash
+.claude/hooks/tests/run.sh` reports 0 skipped.
+
+Left for a separate, confirmed change: tagging `v1.1.0` and publishing the
+release, installing the published ZIP on both surfaces, making the
+release-asset README command a runnable test, and walking the 1.0.2 to 1.1.0
+upgrade path. Each depends on the tag existing.
 
 ## G-56 — A `before_tasks` hook that stops core `/speckit.tasks` on an unresolved Open Question (working on)
 
