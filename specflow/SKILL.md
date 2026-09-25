@@ -28,9 +28,13 @@ flowchart LR
   F --> G[Review]
 ```
 
-## Prerequisites
+## Specflow runs without superpowers
 
 **Required**: None. Specflow runs on its own, using the built-in fallback protocols.
+
+One gate is unconditional: `.specify/memory/constitution.md` must exist before
+any other command runs. Every command checks for it first and stops with
+guidance when it is absent.
 
 **Optional (skill mode)**: Install the [obra/superpowers](https://github.com/obra/superpowers)
 skills under `~/.agents/skills/` or `.agents/skills/` for deeper brainstorming,
@@ -52,7 +56,7 @@ The review risk tier no longer diverges: both surfaces run
 
 `references/copilot-cli.md` names the fallback behavior for each command.
 
-## Project Structure
+## Where the files land
 
 Once initialized, specflow depends on the two top-level directories spec-kit creates
 at the project root: `.specify/` for tool metadata and `specs/` for feature
@@ -96,30 +100,74 @@ failed, and tell the user to reinstall spec-kit 0.16.2 or newer. Do not fall
 back to reading `.specify/templates/<name>.md`, which holds only the core layer
 and silently drops the others.
 
-## Commands
+## Command index
 
 | Command | Purpose |
 |---------|---------|
 | `/speckit.specflow.status` | Show the current progress and name the next step (resumable) |
 | `/speckit.constitution` | Write or update the project's governance principles |
 | `/speckit.specify` | Write a feature specification with user stories |
+| `/speckit.clarify` | Resolve the spec's NEEDS CLARIFICATION markers, then write .clarified |
 | `/speckit.specflow.brainstorm` | Question edge cases and update the spec document |
 | `/speckit.plan` | Write a technical implementation plan |
 | `/speckit.specflow.tasks` | Break the plan into a phased task list |
+| `/speckit.analyze` | Check spec, plan, and tasks for inconsistency, then write .analyzed |
 | `/speckit.specflow.execute` | Run the implementation through TDD and subagents |
 | `/speckit.specflow.review` | Review the code against the spec's requirements |
 | `/speckit.specflow.gate` | Write a feature's clarify or analyze marker once its gate passes |
 | `/speckit.checklist` | Build a checklist for the given context |
 
+## Five hooks fire on spec-kit's own commands
+
+| Hook | Fires after | What it does |
+|------|-------------|---------------|
+| `after_clarify` | `/speckit.clarify` | Write the feature's `.clarified` file once the spec holds no NEEDS CLARIFICATION line |
+| `after_analyze` | `/speckit.analyze` | Write the feature's `.analyzed` file once the report holds no CRITICAL row |
+| `after_tasks` | `/speckit.tasks` | Check that every user story has tasks and that each task carries its markers |
+| `before_implement` | Before `/speckit.implement` | Check the constitution and analyze gates before `/speckit.implement` starts |
+| `after_implement` | `/speckit.implement` | Review the completed phase against the spec, the plan, and the constitution |
+
 ---
 
-## Session Resumability
+## The seven phases in order
 
-Specflow is **fully resumable across sessions**. It keeps all state as Markdown
-inside the `.specify/` directory, so an agent timeout, a closed session, or a CLI
-crash never drops progress.
+The recommended path from start to finish:
 
-### Progress Tracking
+```
+Phase 0: /speckit.constitution          → Establish project governance
+Phase 1: /speckit.specify               → Define feature requirements
+Gate:    /speckit.clarify               → Writes specs/NNN-feature-name/.clarified
+Phase 2: /speckit.specflow.brainstorm   → Clarify edge cases (iterate)
+Phase 3: /speckit.plan                  → Design technical approach
+Phase 4: /speckit.specflow.tasks        → Decompose into executable tasks
+Gate:    /speckit.analyze               → Writes specs/NNN-feature-name/.analyzed
+Phase 5: /speckit.specflow.execute      → Reads .analyzed, implements with TDD + subagents
+Phase 6: /speckit.specflow.review       → Verify against spec
+```
+
+Every phase carries an explicit **gate**: the agent checks its prerequisites before
+moving on. Two of those gates leave a marker file beside the spec, and the agent
+writes both itself.
+
+`/speckit.clarify` writes `.clarified` once no `NEEDS CLARIFICATION` is left in the
+spec. `/speckit.analyze` writes `.analyzed` only when the analysis reports zero
+critical inconsistencies. Execution stops with `ANALYZE_REQUIRED` while that marker
+is absent. Remove a marker before rerunning the command that wrote it.
+
+`/speckit.checklist` runs at any point in the workflow and writes
+`checklist-*.md` into the feature directory. Run `/speckit.specflow.brainstorm` as
+many times as it takes for the spec to hold up. The user decides when to advance to
+the next phase.
+
+---
+
+## Every command resumes from the files on disk
+
+Specflow resumes across sessions. State lives in two plain-text files:
+`progress.yml` under `specs/NNN-feature-name/`, and `.specify/superpowers.yml`.
+An agent timeout, a closed session, or a CLI crash drops no progress.
+
+### The progress file
 
 Each feature's spec directory holds a `progress.yml` file that tracks the status of every phase:
 
@@ -157,61 +205,15 @@ number, name, and status; its `tasks` mapping is optional. The `brainstorm` and
 
 Every command marks `progress.yml` `in_progress` on start and `complete` on finish.
 
-### Superpowers Status Tracking
+### The skill detection cache
 
-A **project-level file**, `.specify/superpowers.yml`, records which superpowers
-skills are available. Recording them keeps the integration **visible in the project docs**
-and **stable across sessions**, so no command re-runs detection.
+`.specify/superpowers.yml` records one entry per skill the Skill Mapping
+table in `references/superpowers-mapping.md` names, plus the superpowers
+release in `version`. No command re-runs detection while the file is
+current. [workflow-guide.md](references/workflow-guide.md) holds the
+file's shape and the events that rewrite it.
 
-```yaml
-# .specify/superpowers.yml
-last_checked: 2026-04-22T14:30:00
-version: 6.4.1
-skills:
-  brainstorming:
-    detected: true
-    path: ~/.agents/skills/brainstorming/SKILL.md
-  writing-plans:
-    detected: true
-    path: ~/.agents/skills/writing-plans/SKILL.md
-  executing-plans:
-    detected: false
-  subagent-driven-development:
-    detected: false
-  test-driven-development:
-    detected: true
-    path: .agents/skills/test-driven-development/SKILL.md
-  requesting-code-review:
-    detected: false
-  systematic-debugging:
-    detected: false
-  verification-before-completion:
-    detected: false
-  using-git-worktrees:
-    detected: false
-  dispatching-parallel-agents:
-    detected: false
-  receiving-code-review:
-    detected: false
-  finishing-a-development-branch:
-    detected: false
-```
-
-The file carries one entry per skill the Skill Mapping table in
-`references/superpowers-mapping.md` names, and `version` holds the superpowers
-release status read from the plugin manifest.
-
-**When this file is updated**:
-- On `/speckit.constitution`, at initial creation
-- On `/speckit.specflow.status`, as a re-check
-- On any command that needs a superpowers skill, as a lazy re-check when the skill was not detected before
-- A user can hand-edit the file to override the detection result
-
-**Why persist this**: the project's documentation then shows which superpowers
-skills are in use. A teammate reading `.specify/` sees them at a glance,
-without running a command.
-
-### Resume Protocol
+### The resume check runs first
 
 Before running any specflow command, the agent MUST run the **resume check** first:
 
@@ -225,19 +227,8 @@ Before running any specflow command, the agent MUST run the **resume check** fir
    "No previous progress found, starting fresh."
 6. For a phase marked `in_progress`, re-read that phase's artifacts and pick up
    where work stopped (e.g., resume brainstorming from the last logged session,
-   resume execution from the first unchecked task)
-
-### How Each Phase Resumes
-
-| Phase | Resume Signal | Resume Behavior |
-|-------|---------------|-----------------|
-| `constitution` | `constitution.md` exists but incomplete | Re-read it and ask about the sections still missing |
-| `specify` | `spec.md` exists with `[NEEDS CLARIFICATION]` markers | Pick the interview back up on the unresolved items |
-| `brainstorm` | `Brainstorm Log` has entries, `Open Questions` has `Open` items | Skip the categories already covered and continue from the open questions |
-| `plan` | `plan.md` exists with `NEEDS CLARIFICATION` fields | Fill in the technical context that's missing |
-| `tasks` | `tasks.md` exists | Check the list is complete and add any missing task |
-| `execute` | `tasks.md` has mix of `[x]` and `[ ]` checkboxes | Skip the finished tasks and resume at the first unchecked one in the current phase |
-| `review` | Review checklist partially completed | Pick review back up at the first unchecked item |
+   resume execution from the first unchecked task). The per-phase rules are in
+   [workflow-guide.md](references/workflow-guide.md) under Where each phase resumes.
 
 ---
 
@@ -473,39 +464,7 @@ user's explicit approval. **Never skip a checkpoint.**
    "security audit", "accessibility review", "code review")
 4. Write the result to `specs/NNN-feature-name/checklist-{type}.md`
 
----
-
-## Unified Workflow
-
-The recommended path from start to finish:
-
-```
-Phase 0: /speckit.constitution          → Establish project governance
-Phase 1: /speckit.specify               → Define feature requirements
-Gate:    /speckit.clarify               → Writes specs/NNN-feature-name/.clarified
-Phase 2: /speckit.specflow.brainstorm   → Clarify edge cases (iterate)
-Phase 3: /speckit.plan                  → Design technical approach
-Phase 4: /speckit.specflow.tasks        → Decompose into executable tasks
-Gate:    /speckit.analyze               → Writes specs/NNN-feature-name/.analyzed
-Phase 5: /speckit.specflow.execute      → Reads .analyzed, implements with TDD + subagents
-Phase 6: /speckit.specflow.review       → Verify against spec
-```
-
-Every phase carries an explicit **gate**: the agent checks its prerequisites before
-moving on. Two of those gates leave a marker file beside the spec, and the agent
-writes both itself.
-
-`/speckit.clarify` writes `.clarified` once no `NEEDS CLARIFICATION` is left in the
-spec. `/speckit.analyze` writes `.analyzed` only when the analysis reports zero
-critical inconsistencies. Execution stops with `ANALYZE_REQUIRED` while that marker
-is absent. Remove a marker before rerunning the command that wrote it.
-
-`/speckit.checklist` runs at any point in the workflow and writes
-`checklist-*.md` into the feature directory. Run `/speckit.specflow.brainstorm` as
-many times as it takes for the spec to hold up. The user decides when to advance to
-the next phase.
-
-## Additional Resources
+## Where to read more
 
 - A phase-by-phase walkthrough: [workflow-guide.md](references/workflow-guide.md)
 - How the superpowers integration works: [superpowers-mapping.md](references/superpowers-mapping.md)

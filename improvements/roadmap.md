@@ -330,7 +330,7 @@ sample move must land in the same commit as the matching edit to
 
 ### references/workflow-guide.md
 
-- [ ] T500 Rewrite the file's title and drop its progressive-disclosure framing
+- [x] T500 Rewrite the file's title and drop its progressive-disclosure framing
 
 Replace the title `# Running Specflow Without Superpowers` with `# The
 specflow workflow, phase by phase`: the file also documents skill mode in
@@ -344,7 +344,7 @@ bars jargon the reader is not in.
 Verify: `bash verify.sh` passes; `python3 specflow/scripts/lint-standards.py`
 reports 0 findings.
 
-- [ ] T501 Rename Phase 0 for the artifact it writes
+- [x] T501 Rename Phase 0 for the artifact it writes
 
 Replace the heading `## Phase 0: Project Initialization` with `## Phase 0:
 Constitution`. The phase writes `constitution.md`; this file's own Budgets
@@ -354,7 +354,7 @@ sections cite).
 Verify: `bash verify.sh` passes; `grep -rF 'Project Initialization' specflow/`
 returns nothing.
 
-- [ ] T502 Rename the Phase 2 mode headings to the repo's skill-mode vocabulary
+- [x] T502 Rename the Phase 2 mode headings to the repo's skill-mode vocabulary
 
 Replace `### Superpowers Integration` with `### Skill mode` and `### Built-in
 Fallback Protocol` with `### Fallback mode`. Four command files already say
@@ -364,7 +364,7 @@ verbatim.
 Verify: `bash verify.sh` passes; `grep -rF 'Built-in Fallback Protocol'
 specflow/` returns nothing.
 
-- [ ] T503 Rename the four Session Resumability subheadings from labels to claims
+- [x] T503 Rename the four Session Resumability subheadings from labels to claims
 
 Replace `` ### Progress File: `progress.yml` `` with `` ### What
 `progress.yml` holds ``, `### Resume Check Protocol` with `### The check
@@ -377,7 +377,7 @@ Verify: `bash verify.sh` passes; `grep -rF -e 'Resume Check Protocol' -e
 'Phase-Specific Resume Rules' -e 'Progress File:' -e 'Superpowers Status
 File:' specflow/` returns nothing.
 
-- [ ] T504 Rewrite the 15 sample brainstorm questions to the documentation standard
+- [x] T504 Rewrite the 15 sample brainstorm questions to the documentation standard
 
 Rewrite each of the 15 quoted questions under the five `#### Category`
 headings (lines 124-150). Keep each question's concept, its `[bracket]`
@@ -389,7 +389,7 @@ rejects. ADR-0028 authorizes rewriting sample content the same as any prose.
 Verify: `bash verify.sh` passes; `python3 specflow/scripts/lint-standards.py`
 reports 0 findings.
 
-- [ ] T505 Add an Exit Criteria section to Phases 2, 5, and 6
+- [x] T505 Add an Exit Criteria section to Phases 2, 5, and 6
 
 Four of seven phases state how a reader knows the phase is done; three do
 not. Add a `### Exit Criteria` heading with a bullet list to Phase 2 (after
@@ -405,7 +405,7 @@ above, `review-findings.json` exists, each spec gap has an Open Questions row.
 Verify: `bash verify.sh` passes; `grep -c '^### Exit Criteria'
 specflow/references/workflow-guide.md` prints 7.
 
-- [ ] T506 Rewrite the Budgets section's unwrapped prose
+- [x] T506 Rewrite the Budgets section's unwrapped prose
 
 Rewrap lines 515, 527, and 529 to the roughly 80-column width the rest of the
 file uses. Delete the mirrored clause pair "A higher ceiling buys deeper
@@ -417,7 +417,7 @@ cites.
 Verify: `bash verify.sh` passes; `grep -c '–' specflow/references/workflow-guide.md`
 prints 0.
 
-- [ ] T507 Reorder the file to lead with the phase table
+- [x] T507 Reorder the file to lead with the phase table
 
 Move `## Quick Reference` and its `### Stop codes` subsection to sit
 immediately after the intro paragraph and before `## Phase 0`. Move `##
@@ -428,7 +428,7 @@ heading this task moves.
 Verify: `bash verify.sh` passes, including the structural smoke test and both
 agent dry runs.
 
-- [ ] T508 Rename Quick Reference to name the table's columns
+- [x] T508 Rename Quick Reference to name the table's columns
 
 Replace the heading `## Quick Reference` with `## Gate and output per phase`.
 Change nothing else. Depends on: T507.
@@ -453,7 +453,7 @@ Verify: `python3 specflow/scripts/lint-standards.py` passes; `grep -n "skill
 loader expects the upstream section shape" improvements/reference.md` returns
 nothing.
 
-- [ ] T511 Move the superpowers.yml schema sample out of SKILL.md
+- [x] T511 Move the superpowers.yml schema sample out of SKILL.md
 
 Replace `SKILL.md` lines 160-212 (`### Superpowers Status Tracking` through
 the "Why persist this" paragraph) with a seven-line `### The skill detection
@@ -470,7 +470,7 @@ python3 scripts/validate-release-archive.py && bash scripts/e2e-smoke.sh &&
 python3 scripts/lint-standards.py` all pass; `grep -c 'detected:'
 references/workflow-guide.md` returns 12.
 
-- [ ] T512 Delete SKILL.md's phase-resume table in favor of the guide's
+- [x] T512 Delete SKILL.md's phase-resume table in favor of the guide's
 
 Delete `SKILL.md` lines 230-242 (`### How Each Phase Resumes` and its 7-row
 table); the guide's `### Phase-Specific Resume Rules` covers all seven phases
@@ -483,7 +483,7 @@ Verify: `cd specflow && bash scripts/e2e-smoke.sh && python3
 scripts/lint-standards.py` both pass; `grep -c 'How Each Phase Resumes'
 SKILL.md` returns 0.
 
-- [ ] T513 Correct the Session Resumability state claim
+- [x] T513 Correct the Session Resumability state claim
 
 `SKILL.md:118-120` reads "Specflow is **fully resumable across sessions**. It
 keeps all state as Markdown inside the `.specify/` directory..." — both facts
@@ -495,7 +495,7 @@ a closed session, or a CLI crash drops no progress."
 Verify: `cd specflow && bash scripts/e2e-smoke.sh && python3
 scripts/lint-standards.py` both pass.
 
-- [ ] T514 Move the phase sequence above the resumability section
+- [x] T514 Move the phase sequence above the resumability section
 
 Cut `SKILL.md` lines 476-506 (the `---` rule, `## Unified Workflow`, the
 fenced Phase 0-6 block, and the three trailing paragraphs) and paste them
@@ -507,7 +507,7 @@ scripts/validate-extension-metadata.py && python3 scripts/lint-standards.py`
 all pass; `grep -n 'Unified Workflow\|Session Resumability' SKILL.md` shows
 Unified Workflow on the lower line number.
 
-- [ ] T515 Rename SKILL.md's eight remaining upstream-spelled free headings
+- [x] T515 Rename SKILL.md's eight remaining upstream-spelled free headings
 
 Apply: `## Prerequisites` to `## Specflow runs without superpowers`; `##
 Project Structure` to `## Where the files land`; `## Commands` to `##
@@ -524,7 +524,7 @@ python3 scripts/validate-release-archive.py && bash scripts/e2e-smoke.sh &&
 python3 scripts/lint-standards.py && bash ../.claude/hooks/tests/run.sh` all
 pass.
 
-- [ ] T516 Document the five hooks in SKILL.md
+- [x] T516 Document the five hooks in SKILL.md
 
 `grep -i hook SKILL.md` returns only one line naming `test-gate.sh`; none of
 the five hooks `extension.yml` declares (`after_clarify`, `after_analyze`,
@@ -537,7 +537,7 @@ bash scripts/e2e-smoke.sh` pass; `python3 -c "import yaml,sys;
 h=yaml.safe_load(open('extension.yml'))['hooks']; t=open('SKILL.md').read();
 sys.exit(0 if all(k in t for k in h) else 1)"` exits 0.
 
-- [ ] T517 State the constitution gate in SKILL.md's Prerequisites section
+- [x] T517 State the constitution gate in SKILL.md's Prerequisites section
 
 `SKILL.md:315` states the constitution gate only inside the
 `/speckit.constitution` section. Add to Prerequisites, after the "**Required**:
@@ -547,7 +547,7 @@ and stops with guidance when it is absent." Leave line 315 as is.
 Verify: `cd specflow && bash scripts/e2e-smoke.sh && python3
 scripts/lint-standards.py` both pass.
 
-- [ ] T518 Add the clarify and analyze rows to SKILL.md's Commands table
+- [x] T518 Add the clarify and analyze rows to SKILL.md's Commands table
 
 The table lists ten commands and omits `/speckit.clarify` and
 `/speckit.analyze`, which the Unified Workflow makes mandatory gates. Insert
