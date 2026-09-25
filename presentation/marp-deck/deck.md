@@ -219,11 +219,11 @@ Sources: specflow/references/findings-schema.json; .claude/review/validate-findi
 Copy the Claude kit separately from the extension.
 
 <!--
-Count direct shell scripts in .claude/hooks and Markdown definitions in .claude/agents: 10 and 34 respectively. The schema and validator live in .claude/review. The dispatcher routes new work, fixes, refactors, and rule changes. The repository has six workflows: ci.yml, merge-gate.yml, release.yml, score-artifacts.yml, upstream-drift.yml, and presentation.yml; presentation.yml renders the deck.
+Count direct shell scripts in .claude/hooks and Markdown definitions in .claude/agents: 11 and 34 respectively. The schema and validator live in .claude/review. The dispatcher routes new work, fixes, refactors, and rule changes. The repository has six workflows: ci.yml, merge-gate.yml, release.yml, score-artifacts.yml, upstream-drift.yml, and presentation.yml; presentation.yml renders the deck.
 
 ADR-0001 keeps Claude-specific hooks outside the spec-kit archive. Copy and configure the companion kit deliberately for a consuming project. The extension targets Claude Code and GitHub Copilot CLI, but .claude settings are a Claude Code integration. Those settings are not a portable Copilot hook setup.
 
-Sources: .claude/hooks/; .claude/agents/; specflow/references/findings-schema.json; .claude/skills/specflow-dispatcher/SKILL.md; .github/workflows/; decisions.md, ADR-0001. The outline counted nine hooks; the current checkout adds mutation-gate.sh, making 10. Counts match the local inventory checked for this deck.
+Sources: .claude/hooks/; .claude/agents/; specflow/references/findings-schema.json; .claude/skills/specflow-dispatcher/SKILL.md; .github/workflows/; decisions.md, ADR-0001. Recount both directories before each render; the hook count has already moved twice since this deck's first draft.
 -->
 
 ---
