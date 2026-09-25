@@ -913,7 +913,7 @@ Verify: the blocked-commit attempt is refused; the feature-branch commit
 succeeds; `bash .claude/hooks/tests/run.sh` reports 0 failed with no fewer
 passing cases than it reported on `main` before this task.
 
-## G-51 — Release readiness: prerequisites and cleanup (working on)
+## G-51 — Release readiness: prerequisites and cleanup (merged: PR #76)
 
 Executor: `general-purpose`. Effort: low. Depends on: none. Raised on
 2026-09-25 by an adversarial release-readiness audit. Scoped here to the
