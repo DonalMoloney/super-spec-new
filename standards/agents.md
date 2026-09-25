@@ -34,7 +34,8 @@ tools: ["Read", "Bash", "Grep"]
 - `tools` is a JSON array of strings, smallest set that does the job. An agent
   that writes no file does not list `Write` or `Edit`.
 
-A reviewer that writes a findings document adds a sixth field, `stage`, last:
+A reviewer that runs at a named stage of the review stack adds a sixth field,
+`stage`, last:
 
 ```yaml
 stage: conformance
@@ -42,12 +43,13 @@ stage: conformance
 
 `stage` is the value the reviewer writes into the `stage` property of the
 document `specflow/references/findings-schema.json` describes. The schema's
-enum is the whole list of allowed values, so a reviewer that declares a stage
-absent from the enum writes a document the merge gate rejects.
+enum is the whole list of allowed values, so a reviewer declaring a stage
+absent from the enum writes a document the merge gate rejects. The property is
+optional, so a reviewer outside the stack, such as `code-reviewer`, writes a
+findings document and carries no `stage`.
 
-No other field, and no `stage` on an agent that writes no findings document. A
-field no tool reads and no agent acts on is decoration that reads as machinery,
-which is worse than an empty line.
+No other field. A field no tool reads and no agent acts on is decoration that
+reads as machinery, which is worse than an empty line.
 
 ## The description is routing text
 
