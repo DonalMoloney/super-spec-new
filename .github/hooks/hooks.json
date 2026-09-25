@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": ".github/hooks/adapter.sh preToolUse block-main-commit.sh",
+        "powershell": "bash .github/hooks/adapter.sh preToolUse block-main-commit.sh",
+        "timeoutSec": 30
+      }
+    ],
+    "postToolUse": [
+      {
+        "type": "command",
+        "bash": ".github/hooks/adapter.sh postToolUse test-gate.sh",
+        "powershell": "bash .github/hooks/adapter.sh postToolUse test-gate.sh",
+        "timeoutSec": 30
+      },
+      {
+        "type": "command",
+        "bash": ".github/hooks/adapter.sh postToolUse artifact-lint.sh",
+        "powershell": "bash .github/hooks/adapter.sh postToolUse artifact-lint.sh",
+        "timeoutSec": 30
+      }
+    ],
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": ".github/hooks/adapter.sh sessionStart session-start.sh",
+        "powershell": "bash .github/hooks/adapter.sh sessionStart session-start.sh",
+        "timeoutSec": 15
+      }
+    ]
+  }
+}

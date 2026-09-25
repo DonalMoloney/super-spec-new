@@ -391,3 +391,33 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Consequences: a future metaphorical "bridge" in prose is caught by review,
   not by `lint-standards.py`. Revisit if the banned-word rule gains a
   per-entry exclusion file, the mechanism T492's "bridging" fix did not need.
+
+## ADR-0031: Copilot CLI hooks live under `.github/hooks/`, not `.claude/`
+
+- Date: 2026-09-25
+- Status: accepted
+- Context: G-26's `events:` route stays blocked (ADR-0022). G-54 takes a
+  second route: Copilot's own hook loader, confirmed at
+  `docs.github.com/en/copilot/reference/hooks-reference` to read
+  `.github/hooks/*.json` directly, no spec-kit dispatcher involved.
+  `.github/hooks/hooks.json` registers `block-main-commit.sh` under
+  `preToolUse`; `test-gate.sh` and `artifact-lint.sh` under `postToolUse`, the
+  event each already declares in its own header comment and in
+  `docs/agent-event-mapping.md`'s table (the G-54 task text grouped
+  `test-gate.sh` with `preToolUse` instead; both sources contradict that
+  grouping, so it is not followed); and `session-start.sh` under
+  `sessionStart`. Each entry carries a `bash` and a `powershell` command; the
+  `powershell` form shells out to the same `bash` command, since no script
+  here has a native PowerShell port.
+- Decision: the four scripts stay under `.claude/hooks/` (ADR-0001), unmoved
+  and unduplicated. `.github/hooks/adapter.sh` reads the Copilot payload on
+  stdin, builds `{tool_input: {command, file_path}}` from `toolArgs.command`
+  and `toolArgs.path` per `docs/agent-event-mapping.md`'s table, and runs the
+  named gate against it. On exit 2 it prints a `preToolUse` deny
+  (`permissionDecision`, `permissionDecisionReason`) or, for a `postToolUse`
+  gate, `additionalContext`, since Copilot's contract has no post-hoc deny. No
+  entry declares a `matcher`: Copilot's literal tool-name strings are
+  unconfirmed, and each gate already treats an absent field as no match.
+- Consequences: two hook directories now exist, one per target surface. A
+  future gate script needs an adapter call added to both
+  `.claude/settings.json` and `hooks.json`.

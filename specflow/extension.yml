@@ -70,6 +70,22 @@ provides:
       file: "gates/bash/write-marker.sh"
       runtimes: ["bash"]
       description: "Write a feature's clarify or analyze marker once its gate passes"
+    - name: "block-main-commit"
+      file: "gates/bash/block-main-commit.sh"
+      runtimes: ["bash"]
+      description: "Block a commit that would land on main or master"
+    - name: "test-gate"
+      file: "gates/bash/test-gate.sh"
+      runtimes: ["bash"]
+      description: "Run the project's test command when an edit ticks a tasks.md task"
+    - name: "artifact-lint"
+      file: "gates/bash/artifact-lint.sh"
+      runtimes: ["bash"]
+      description: "Check a just-edited spec, plan, tasks, or checklist file against its template"
+    - name: "session-start"
+      file: "gates/bash/session-start.sh"
+      runtimes: ["bash"]
+      description: "Print open questions and the current feature's progress at session start"
     - name: "validate-findings"
       file: "gates/python/validate-findings.py"
       runtimes: ["python"]

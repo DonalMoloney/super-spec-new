@@ -68,10 +68,10 @@ jobs:
         run: python3 specflow/scripts/lint-standards.py
 
       - name: Shellcheck
-        run: shellcheck -S warning verify.sh .claude/hooks/*.sh .claude/hooks/tests/run.sh specflow/scripts/*.sh
+        run: shellcheck -S warning verify.sh .claude/hooks/*.sh .claude/hooks/tests/run.sh specflow/scripts/*.sh specflow/gates/bash/*.sh
 
       - name: Ruff
-        run: ruff check specflow/scripts .claude/review .claude/divergence
+        run: ruff check specflow/scripts .claude/review .claude/divergence specflow/gates/python
 
       - name: Structural smoke test
         working-directory: specflow

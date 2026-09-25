@@ -60,11 +60,7 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | Item | What it closes | Effort | Verified open by |
 |---|---|---|---|
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
-| G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 done, T262 and T263 behind three prerequisites |
-| G-52 | A traceability row can name a test that does not exist | low | No check reads the Test name column against the test tree |
-| G-53 | No catalog entry exists for spec-kit's extension search | low | `catalog.json` absent at the repository root |
-| G-54 | The gates cannot run on the Copilot CLI's own hook system | medium | `.github/hooks/` absent; distinct from G-26's spec-kit `events:` route |
-| G-55 | Four gate scripts stay outside the install archive, blocking G-26's `events:` block | medium | `block-main-commit.sh`, `test-gate.sh`, `artifact-lint.sh`, `session-start.sh` still under `.claude/` only |
+| G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 and G-55's script move done, T262 and T263 behind the remaining `post_tool_use` one-event-one-handler design question |
 | G-56 | Nothing stops spec-kit's own `/speckit.tasks` on an unresolved Open Question | low | `extension.yml`'s `hooks:` block has no `before_tasks` entry |
 
 ## G-19 — Examples produced by this fork, not upstream
@@ -723,7 +719,7 @@ directory already scheduled for deletion under T194.
 Verify: `grep -n "2224\|2200" improvements/reference.md` finds the added
 sentence.
 
-## G-52 — Lint a traceability row against a real test (backlog item 33) (working on)
+## G-52 — Lint a traceability row against a real test (backlog item 33) (merged: direct)
 
 Executor: `general-purpose`. Effort: low. Depends on: none. Raised on
 2026-09-25, claiming backlog item 33 below.
@@ -734,7 +730,7 @@ tree, so an invented test name passes the gate silently. `spec-template.md`'s
 Traceability section states "Automated scoring reads only the Test name
 column"; nothing today confirms the named test exists.
 
-- [ ] T600 Add a traceability-test-exists check to `artifact-lint.sh`, gated on `.analyzed`
+- [x] T600 Add a traceability-test-exists check to `artifact-lint.sh`, gated on `.analyzed`
 
 In the `spec.md)` case, once `$(dirname "$path")/.analyzed` exists, parse each
 `## Traceability` table row's Test name column. Read the existing recorded
@@ -748,7 +744,7 @@ existing `.clarified`-gated check's pattern in the same file.
 Verify: `bash .claude/hooks/tests/run.sh` passes with the new cases from T601
 included.
 
-- [ ] T601 Add hook tests for the new check
+- [x] T601 Add hook tests for the new check
 
 Add at least three cases to `.claude/hooks/tests/run.sh`, following the file's
 existing `lint()`/`check` helper pattern: a `spec.md` with `.analyzed` present
@@ -760,7 +756,7 @@ Verify: `bash .claude/hooks/tests/run.sh` reports 0 failed, with its printed
 pass count higher than the count on `main` before this task by exactly the
 number of new cases added.
 
-## G-53 — A catalog entry spec-kit's extension search can find (backlog item 23) (working on)
+## G-53 — A catalog entry spec-kit's extension search can find (backlog item 23) (merged: direct)
 
 Executor: `general-purpose`. Effort: low. Depends on: none. Raised on
 2026-09-25, claiming backlog item 23 below, scoped to what this environment
@@ -769,7 +765,7 @@ nothing), so the live `specify extension search specflow` check the backlog
 item names cannot run in this environment. Do the parts below and say so in
 the final report rather than fabricating that check.
 
-- [ ] T610 Add `catalog.json` at the repository root
+- [x] T610 Add `catalog.json` at the repository root
 
 Write a spec-kit catalog schema 1.0 JSON file naming `specflow`. Reuse the
 field set already agreed for this extension's catalog submission in
@@ -782,7 +778,7 @@ Verify: `python3 -c "import json; json.load(open('catalog.json'))"` exits 0;
 the entry's command and hook counts match `specflow/extension.yml`'s current
 `commands:`/`hooks:` list lengths.
 
-- [ ] T611 Add a README line naming how to list this catalog
+- [x] T611 Add a README line naming how to list this catalog
 
 Add one sentence to the root `README.md`'s install section naming the two ways
 a user points spec-kit at this catalog: listing it in
@@ -791,7 +787,7 @@ a user points spec-kit at this catalog: listing it in
 Verify: `grep -n 'extension-catalogs.yml\|SPECKIT_CATALOG_URL' README.md`
 finds the new line.
 
-## G-54 — Gate hooks on the Copilot CLI's own hook system (backlog item 28) (working on)
+## G-54 — Gate hooks on the Copilot CLI's own hook system (backlog item 28) (merged: direct)
 
 Executor: `general-purpose`. Effort: medium. Depends on: none (item 27's
 Copilot e2e script, its former blocker, is merged). Raised on 2026-09-25,
@@ -808,7 +804,7 @@ authenticated for this check), so the roadmap's live-session verify clause
 cannot be assumed to run here. Try it; if it fails to authenticate, say so in
 the final report and do not fabricate a pass.
 
-- [ ] T620 Write the Copilot hook config
+- [x] T620 Write the Copilot hook config
 
 Add `.github/hooks/specflow.json` registering `block-main-commit.sh` and
 `test-gate.sh` under `preToolUse`, `artifact-lint.sh` under `postToolUse`, and
@@ -821,7 +817,7 @@ shape, including both a `bash` and a `powershell` command per entry. The
 scripts stay under `.claude/hooks/` per ADR-0001; do not move them.
 Verify: the hook config file parses as valid JSON.
 
-- [ ] T621 Write the exit-code-to-deny-JSON adapter
+- [x] T621 Write the exit-code-to-deny-JSON adapter
 
 Add a thin wrapper script, referenced from the hook config, that runs the
 named `.claude/hooks/*.sh` gate script, translating the payload field names
@@ -834,7 +830,7 @@ Verify: piping a blocked command's hook payload through the adapter prints
 valid JSON denying the call; piping an allowed command's payload through it
 exits 0 with no deny JSON.
 
-- [ ] T622 Add a hook test for the adapter
+- [x] T622 Add a hook test for the adapter
 
 Add a case to `.claude/hooks/tests/run.sh` that runs the adapter against a
 payload shaped like a Copilot `preToolUse` event for `git commit` on `main`
@@ -842,7 +838,7 @@ and asserts the deny JSON is printed.
 Verify: `bash .claude/hooks/tests/run.sh` reports 0 failed, including the new
 case.
 
-- [ ] T623 Record the second harness hook directory as an ADR
+- [x] T623 Record the second harness hook directory as an ADR
 
 Add an ADR to `decisions.md` stating that Copilot CLI hooks live under
 `.github/hooks/` (not `.claude/`), that the gate scripts themselves are not
@@ -850,7 +846,7 @@ duplicated or moved, and that a thin adapter bridges the exit-code and
 deny-JSON contracts. Name this ADR as the one backlog item 28 asked for.
 Verify: `decisions.md` has a new ADR entry naming `.github/hooks/specflow.json`.
 
-## G-55 — Move the remaining four payload-reading gates under `specflow/gates/` (working on)
+## G-55 — Move the remaining four payload-reading gates under `specflow/gates/` (merged: direct)
 
 Executor: `general-purpose`. Effort: medium (mechanical, but high blast
 radius: one of these scripts gates every commit in this repository). Depends
@@ -870,7 +866,7 @@ a two-line `exec` wrapper pointing at the new location, so `.claude/settings.jso
 `.github/workflows/merge-gate.yml`, and `.claude/hooks/tests/run.sh` keep
 their existing paths unchanged.
 
-- [ ] T640 Move `block-main-commit.sh`, `test-gate.sh`, `artifact-lint.sh`, and `session-start.sh` to `specflow/gates/bash/`, wrapped from their old path
+- [x] T640 Move `block-main-commit.sh`, `test-gate.sh`, `artifact-lint.sh`, and `session-start.sh` to `specflow/gates/bash/`, wrapped from their old path
 
 For each of the four scripts: move the real script to
 `specflow/gates/bash/<name>.sh` unchanged (do not alter its logic in this
@@ -885,7 +881,7 @@ Verify: `cd specflow && python3 scripts/validate-extension-metadata.py &&
 python3 scripts/validate-release-archive.py` both pass, and the archive
 report lists all nine `gates/bash/*.sh` paths as present.
 
-- [ ] T641 Fix the CI shellcheck/ruff steps to cover `specflow/gates/`
+- [x] T641 Fix the CI shellcheck/ruff steps to cover `specflow/gates/`
 
 ADR-0025's own Consequences line records this gap: "The shellcheck and ruff
 steps in `ci.yml` still name only the old paths." Read `.github/workflows/ci.yml`'s
@@ -901,7 +897,7 @@ reports 0 new findings versus what those tools already reported for the
 files' content before the move (a path change alone should not introduce a
 new finding).
 
-- [ ] T642 Prove the block-main-commit wrapper still blocks a real commit on main
+- [x] T642 Prove the block-main-commit wrapper still blocks a real commit on main
 
 This is the one check that matters most: `block-main-commit.sh` is what
 prevents a commit landing directly on `main` in this repository. After moving
@@ -1108,13 +1104,14 @@ beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
 ## Suggested order
 
 D-01, D-05, G-20 through G-25, G-28 through G-42, G-43, G-44, G-45, G-46,
-G-48, G-49, G-50, and C-01 through C-09 are merged or closed. What is left, in
-order:
+G-48, G-49, G-50, G-51, G-52, G-53, G-54, G-55, and C-01 through C-09 are
+merged or closed. What is left, in order:
 
-1. G-26 T262 and T263, once the three ADR-0022 prerequisites clear.
-2. G-52, G-53, and G-54 (claimed from backlog items 33, 23, and 28) whenever a
-   session is short; none depends on another still open, and each is scoped to
-   what this environment can verify.
+1. G-26 T262 and T263. G-55 cleared the script-relocation prerequisite; what
+   remains is the `post_tool_use` one-event-one-handler design question T262's
+   own text names (`test-gate.sh` and `artifact-lint.sh` both want that
+   event, and `validate_events` takes one handler per event name).
+2. G-56, whenever a session picks it up (see its own section for status).
 3. Backlog item 26, once a release exists to upgrade from.
 4. Backlog items 34 and 36; 34 depends on G-19, 36 is no-code.
 5. G-19 whenever a live agent run is available; this environment has no API

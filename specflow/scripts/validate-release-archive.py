@@ -61,11 +61,15 @@ REQUIRED_MEMBERS = (
     # No provides entry declares it, so the manifest check below skips it.
     "references/findings-schema.json",
     # The gate scripts ship so a catalog install can run them (ADR-0025).
-    # provides.scripts declares the same five paths.
+    # provides.scripts declares the same nine paths.
     # A row here also fails when extension.yml drops the matching manifest entry.
     "gates/bash/risk-classifier.sh",
     "gates/bash/merge-gate.sh",
     "gates/bash/write-marker.sh",
+    "gates/bash/block-main-commit.sh",
+    "gates/bash/test-gate.sh",
+    "gates/bash/artifact-lint.sh",
+    "gates/bash/session-start.sh",
     "gates/python/validate-findings.py",
     "gates/python/validate-progress.py",
 )

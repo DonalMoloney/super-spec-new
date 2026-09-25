@@ -15,6 +15,11 @@ One set of command files runs on both target surfaces:
 To install specflow into a spec-kit project, follow
 [specflow/README.md](specflow/README.md#installation).
 
+Spec-kit's own catalog does not list specflow yet, so point spec-kit at the
+`catalog.json` this repository hosts: list it in
+`.specify/extension-catalogs.yml` with `install_allowed: true`, or set
+`SPECKIT_CATALOG_URL` to its raw URL.
+
 | Directory | Who reads it |
 |-----------|--------------|
 | `specflow/` | A user. It holds everything the extension installs. |

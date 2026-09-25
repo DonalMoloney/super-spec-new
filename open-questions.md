@@ -23,3 +23,14 @@ delete it, or promote it to an ADR in `decisions.md`.
   edit the example to match the trimmed template, or to treat examples as
   point-in-time snapshots exempt from this kind of drift (and say so in
   `reference.md` if it's the latter).
+
+- **`catalog.json`'s top-level `priority`/`install_allowed` fields have no
+  counterpart in github/spec-kit's own catalog files.** T610 asked for these
+  on the self-hosted `catalog.json`. A live fetch of `github/spec-kit`'s
+  `extensions/catalog.json` and `extensions/catalog.community.json` (Sept 25
+  2026) shows both keys only inside `.specify/extension-catalogs.yml`'s
+  per-source `catalogs:` list, which the installing project writes, not a
+  field either catalog file declares about itself. `catalog.json` currently
+  carries them at the top level anyway, since T610 asked for it explicitly.
+  Decide whether to drop them once a real `specify` CLI run can confirm
+  whether the parser rejects, ignores, or errors on unknown top-level keys.
