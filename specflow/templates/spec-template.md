@@ -14,7 +14,7 @@
   usable MVP (Minimum Viable Product).
 
   Assign each story a priority (P1, P2, P3), with P1 the most critical.
-  Each story meets four independence criteria:
+  Each story meets these independence criteria:
   - It can be developed without the others.
   - It can be tested without the others.
   - It can be deployed without the others.

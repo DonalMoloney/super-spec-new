@@ -16,17 +16,17 @@
 ### [PRINCIPLE_3_NAME]
 <!-- Example: III. Test-First (NON-NEGOTIABLE) -->
 [PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD is mandatory. Write the tests, get them approved, watch them fail, then implement. Red-Green-Refactor runs without exception. -->
+<!-- Example: TDD is mandatory. Write the tests, get them approved, watch them fail, then implement. Red-Green-Refactor must run without exception. -->
 
 ### [PRINCIPLE_4_NAME]
 <!-- Example: IV. Integration Testing -->
 [PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Integration tests cover four areas: a new library's contract, a contract change, communication between services, and a shared schema. -->
+<!-- Example: Integration tests cover four areas: a new library's contract tests, a contract change, communication between services, and a shared schema. -->
 
 ### [PRINCIPLE_5_NAME]
 <!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
 [PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O lets a person debug the system. The system logs in a structured format. Or version numbers follow MAJOR.MINOR.BUILD. Or start simple and apply YAGNI. -->
+<!-- Example: Text I/O lets a person debug the system. The system must log in a structured format. Or version numbers follow MAJOR.MINOR.BUILD. Or start simple and apply YAGNI. -->
 
 ## Technology Stack
 
