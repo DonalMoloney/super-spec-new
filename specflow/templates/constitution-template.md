@@ -6,27 +6,27 @@
 ### [PRINCIPLE_1_NAME]
 <!-- Example: I. Library-First -->
 [PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library. Each library stays self-contained, independently testable, and documented. An organizational-only library has no clear purpose and does not ship. -->
+<!-- Example: Every feature starts as a standalone library. Each library stays self-contained and independently testable, and each library ships with its own documentation. A library that exists only to organize code has no clear purpose, so it does not ship. -->
 
 ### [PRINCIPLE_2_NAME]
 <!-- Example: II. CLI Interface -->
 [PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes its functionality through a CLI. Input arrives as text on stdin or args; output goes to stdout, errors to stderr. The CLI supports JSON and a human-readable format. -->
+<!-- Example: Every library exposes its functionality through a CLI. Input arrives as text on stdin or as arguments. Output goes to stdout; errors go to stderr. The CLI supports JSON and a human-readable format. -->
 
 ### [PRINCIPLE_3_NAME]
 <!-- Example: III. Test-First (NON-NEGOTIABLE) -->
 [PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD is mandatory. Write the tests, get them approved, watch them fail, then implement. The Red-Green-Refactor cycle is enforced without exception. -->
+<!-- Example: TDD is mandatory. Write the tests, get them approved, watch them fail, then implement. Red-Green-Refactor runs without exception. -->
 
 ### [PRINCIPLE_4_NAME]
 <!-- Example: IV. Integration Testing -->
 [PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Integration tests cover four areas: a new library's contract tests, a contract change, inter-service communication, and a shared schema. -->
+<!-- Example: Integration tests cover four areas: a new library's contract, a contract change, communication between services, and a shared schema. -->
 
 ### [PRINCIPLE_5_NAME]
 <!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
 [PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O makes the system debuggable. Structured logging is required. Or: version with MAJOR.MINOR.BUILD. Or: start simple and apply YAGNI. -->
+<!-- Example: Text I/O lets a person debug the system. The system logs in a structured format. Or version numbers follow MAJOR.MINOR.BUILD. Or start simple and apply YAGNI. -->
 
 ## Technology Stack
 
@@ -40,8 +40,8 @@
 ## Development Workflow
 
 <!--
-  The steps below tie the project to the specflow pipeline.
-  Edit them to match the team's actual process.
+  The steps below connect the project to the specflow pipeline.
+  Edit them to match the team's process.
 -->
 
 This project follows **specification-driven development** through the specflow pipeline:
@@ -56,8 +56,8 @@ This project follows **specification-driven development** through the specflow p
 
 ### Workflow Rules
 
-- No code is written before a spec is approved
-- Every spec goes through at least one brainstorm session
+- No code precedes an approved spec
+- Every spec needs at least one brainstorm session
 - An implementation plan must pass a constitution compliance check
 - Every phase boundary needs explicit human approval
 
@@ -86,7 +86,7 @@ This project follows **specification-driven development** through the specflow p
 
 <!--
   Set which review stages this project runs and how strong a model each needs.
-  Name a model class, never a specific model or agent: the class has to resolve
+  Name a model class, never a specific model or agent: the class must resolve
   on whichever agent CLI the project uses.
 -->
 
@@ -99,18 +99,18 @@ This project follows **specification-driven development** through the specflow p
 ### Deployment Gates
 
 - [ ] All tests pass
-- [ ] All review items are resolved
+- [ ] No review item stays open
 - [ ] The constitution compliance check passes
 - [ ] [PROJECT-SPECIFIC GATE]
 
 ## Governance
 
 This constitution governs every development activity in the project.
-An amendment requires:
+An amendment needs:
 
 - A documented rationale for the change
 - Updated specs and plans
-- Confirmation that no principle is violated
+- Confirmation that the amendment violates no principle
 
 **Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
 
@@ -120,7 +120,7 @@ An amendment requires:
 - **Test command**: Run [TEST_COMMAND] before accepting a change.
 - **Forbidden dependencies**: Reject [FORBIDDEN_DEPENDENCIES].
 - **Security rules**: Enforce [SECURITY_RULES].
-- **Spec approved**: Require human approval before implementation. Record [SPEC_APPROVAL_EVIDENCE].
-- **Merge approved**: Require human approval before merging. Record [MERGE_APPROVAL_EVIDENCE].
+- **Spec approved**: Get human approval before implementation. Record [SPEC_APPROVAL_EVIDENCE].
+- **Merge approved**: Get human approval before merging. Record [MERGE_APPROVAL_EVIDENCE].
 
 Test command: [TEST_COMMAND]

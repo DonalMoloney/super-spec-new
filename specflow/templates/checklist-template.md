@@ -7,10 +7,10 @@
 
 <!--
   ============================================================================
-  These sample items illustrate the format only.
+  These sample items show the format only.
 
-  The /speckit.checklist command replaces these with items drawn from:
-  - User's specific checklist request
+  The /speckit.checklist command replaces these sample items with ones from:
+  - The user's specific checklist request
   - Feature requirements from spec.md
   - Technical context from plan.md
   - Implementation details from tasks.md

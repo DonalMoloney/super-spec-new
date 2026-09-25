@@ -11,7 +11,7 @@
 ## Technical Context
 
 <!--
-  ACTION REQUIRED: Fill each placeholder with the real technical choice.
+  Fill each placeholder with the real technical choice.
   Flag an unresolved item as NEEDS CLARIFICATION.
 -->
 
@@ -26,7 +26,7 @@
 
 ## Constitution Check
 
-*GATE: This check blocks the plan until it passes. Re-run it after the design phase.*
+*GATE: The plan must pass this check before work starts. Re-run the check after the design phase.*
 
 <!--
   Weigh the plan against every principle in the constitution.
@@ -53,8 +53,8 @@ specs/[###-feature]/
 ### Source Code (repository root)
 
 <!--
-  ACTION REQUIRED: Swap the layout below for this feature's actual structure.
-  Delete the options this feature skips and list its real paths.
+  Swap the layout below for this feature's real structure.
+  Delete the options this feature skips, and list its real paths.
 -->
 
 ```text
@@ -76,7 +76,7 @@ tests/
 <!--
   Record how tasks run here.
   `/speckit.specflow.tasks` reads it to build the task breakdown.
-  `/speckit.specflow.execute` reads it during execution.
+  `/speckit.specflow.execute` reads it while it runs the tasks.
 -->
 
 ### TDD Requirements
