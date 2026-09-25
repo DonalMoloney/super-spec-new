@@ -64,6 +64,7 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | G-52 | A traceability row can name a test that does not exist | low | No check reads the Test name column against the test tree |
 | G-53 | No catalog entry exists for spec-kit's extension search | low | `catalog.json` absent at the repository root |
 | G-54 | The gates cannot run on the Copilot CLI's own hook system | medium | `.github/hooks/` absent; distinct from G-26's spec-kit `events:` route |
+| G-55 | Four gate scripts stay outside the install archive, blocking G-26's `events:` block | medium | `block-main-commit.sh`, `test-gate.sh`, `artifact-lint.sh`, `session-start.sh` still under `.claude/` only |
 
 ## G-19 — Examples produced by this fork, not upstream
 
@@ -713,7 +714,7 @@ directory already scheduled for deletion under T194.
 Verify: `grep -n "2224\|2200" improvements/reference.md` finds the added
 sentence.
 
-## G-52 — Lint a traceability row against a real test (backlog item 33)
+## G-52 — Lint a traceability row against a real test (backlog item 33) (working on)
 
 Executor: `general-purpose`. Effort: low. Depends on: none. Raised on
 2026-09-25, claiming backlog item 33 below.
@@ -750,7 +751,7 @@ Verify: `bash .claude/hooks/tests/run.sh` reports 0 failed, with its printed
 pass count higher than the count on `main` before this task by exactly the
 number of new cases added.
 
-## G-53 — A catalog entry spec-kit's extension search can find (backlog item 23)
+## G-53 — A catalog entry spec-kit's extension search can find (backlog item 23) (working on)
 
 Executor: `general-purpose`. Effort: low. Depends on: none. Raised on
 2026-09-25, claiming backlog item 23 below, scoped to what this environment
@@ -781,7 +782,7 @@ a user points spec-kit at this catalog: listing it in
 Verify: `grep -n 'extension-catalogs.yml\|SPECKIT_CATALOG_URL' README.md`
 finds the new line.
 
-## G-54 — Gate hooks on the Copilot CLI's own hook system (backlog item 28)
+## G-54 — Gate hooks on the Copilot CLI's own hook system (backlog item 28) (working on)
 
 Executor: `general-purpose`. Effort: medium. Depends on: none (item 27's
 Copilot e2e script, its former blocker, is merged). Raised on 2026-09-25,
@@ -839,6 +840,69 @@ Add an ADR to `decisions.md` stating that Copilot CLI hooks live under
 duplicated or moved, and that a thin adapter bridges the exit-code and
 deny-JSON contracts. Name this ADR as the one backlog item 28 asked for.
 Verify: `decisions.md` has a new ADR entry naming `.github/hooks/specflow.json`.
+
+## G-55 — Move the remaining four payload-reading gates under `specflow/gates/` (working on)
+
+Executor: `general-purpose`. Effort: medium (mechanical, but high blast
+radius: one of these scripts gates every commit in this repository). Depends
+on: none. Raised on 2026-09-25. This is the stated real prerequisite for G-26
+T262: "The four scripts that do read a payload, `block-main-commit.sh`,
+`test-gate.sh`, `artifact-lint.sh`, and `session-start.sh`, are still under
+`.claude/`; ADR-0025 moved a different four [five]. Moving them is the real
+prerequisite." This group does only the move; it does not declare the
+`events:` block itself (T262 stays blocked on the `post_tool_use`
+one-event-one-handler design question named in its own text).
+
+Mirror ADR-0025 exactly (read it in `decisions.md` first, and read
+`specflow/gates/bash/risk-classifier.sh` alongside its `.claude/hooks/`
+wrapper as the reference pair): the four scripts move to
+`specflow/gates/bash/`, and each one's old path under `.claude/hooks/` becomes
+a two-line `exec` wrapper pointing at the new location, so `.claude/settings.json`,
+`.github/workflows/merge-gate.yml`, and `.claude/hooks/tests/run.sh` keep
+their existing paths unchanged.
+
+- [ ] T640 Move `block-main-commit.sh`, `test-gate.sh`, `artifact-lint.sh`, and `session-start.sh` to `specflow/gates/bash/`, wrapped from their old path
+
+For each of the four scripts: move the real script to
+`specflow/gates/bash/<name>.sh` unchanged (do not alter its logic in this
+task), and replace its old `.claude/hooks/<name>.sh` with a two-line `exec`
+wrapper matching `risk-classifier.sh`'s wrapper exactly in shape. Add all four
+new paths to `provides.scripts` in `specflow/extension.yml`, beside the five
+already listed. Add the four new paths to `RUNTIME_PAYLOAD` (or whatever the
+list is named; grep `specflow/scripts/validate-release-archive.py` for
+`"gates/bash/risk-classifier.sh"` to find it) in
+`specflow/scripts/validate-release-archive.py`.
+Verify: `cd specflow && python3 scripts/validate-extension-metadata.py &&
+python3 scripts/validate-release-archive.py` both pass, and the archive
+report lists all nine `gates/bash/*.sh` paths as present.
+
+- [ ] T641 Fix the CI shellcheck/ruff steps to cover `specflow/gates/`
+
+ADR-0025's own Consequences line records this gap: "The shellcheck and ruff
+steps in `ci.yml` still name only the old paths." Read `.github/workflows/ci.yml`'s
+shellcheck step (it lists `.claude/hooks/*.sh` and
+`specflow/scripts/*.sh` but not `specflow/gates/bash/*.sh` or
+`specflow/gates/python/*.py`) and add the missing globs to both the
+shellcheck and ruff step invocations, so all nine bash gates and both python
+gates are actually linted, closing the gap for the five ADR-0025 already
+moved as well as the four this group adds.
+Verify: running the same shellcheck/ruff commands `ci.yml` runs, by hand,
+locally, against `specflow/gates/bash/*.sh` and `specflow/gates/python/*.py`,
+reports 0 new findings versus what those tools already reported for the
+files' content before the move (a path change alone should not introduce a
+new finding).
+
+- [ ] T642 Prove the block-main-commit wrapper still blocks a real commit on main
+
+This is the one check that matters most: `block-main-commit.sh` is what
+prevents a commit landing directly on `main` in this repository. After moving
+it, attempt an actual `git commit` while checked out on `main` in a scratch
+clone or a disposable worktree (not this repository's real history) and
+confirm it is still refused with the same message, then confirm a commit on a
+feature branch still succeeds.
+Verify: the blocked-commit attempt is refused; the feature-branch commit
+succeeds; `bash .claude/hooks/tests/run.sh` reports 0 failed with no fewer
+passing cases than it reported on `main` before this task.
 
 ## Checked on 2026-09-20, no work needed
 
