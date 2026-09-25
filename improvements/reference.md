@@ -263,7 +263,7 @@ content had already diverged from upstream.
 
 | File | Real | Agent | Waiting on |
 |------|------|-------|------------|
-| `commands/hooks/after-tasks.md` | 60% | `prose-rephraser` | |
+| `commands/hooks/after-tasks.md` | 65% | `prose-rephraser` | |
 | `extension.yml` | 56% | `prose-rephraser` | |
 | `CHANGELOG.md` | 77% | `prose-rephraser` | |
 | `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` | |
@@ -272,7 +272,7 @@ content had already diverged from upstream.
 | `templates/plan-template.md` | 23% | `prose-rephraser` | |
 | `templates/spec-template.md` | 38% | `prose-rephraser` | |
 | `templates/checklist-template.md` | 45% | `prose-rephraser` | |
-| `templates/constitution-template.md` | 48% | `prose-rephraser` | |
+| `templates/constitution-template.md` | 50% | `prose-rephraser` | |
 | `templates/tasks-template.md` | 49% | `prose-rephraser` | |
 | `scripts/validate-release-archive.py` | 87% | `script-refactorer` | |
 
