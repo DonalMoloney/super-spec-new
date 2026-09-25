@@ -152,8 +152,9 @@ reads first.
 
 - **Tighten** the phase list to name the gate marker each phase produces, so it
   and `workflow-guide.md` cannot drift. Claimed by: G-22.
-- **Replace**: not warranted. Spec-kit's skill loader expects the upstream
-  section shape.
+- **Replace**: not warranted. Spec-kit 0.16.2 never reads the extension-root
+  `SKILL.md`; it renders one skill per `commands/*.md`. An external
+  `~/.agents/skills/` loader's section expectations are unverified.
 - Done: the Target surface section (D-03, PR #59) and the prose rewrite
   (PR #70).
 
@@ -194,6 +195,11 @@ added; `sample-workflow.md` walks a "User Authentication" feature no snapshot
 contains, with abbreviated outputs that show none of the markers.
 `mutation-gate-sample/` and `seeded-bug/` are this fork's, added in PR #64 and
 the scorer work.
+
+The reproduce command above excludes every path under `examples/`, so the
+about 2224 lines of verbatim upstream text in `static-landing-page/` and
+`sample-workflow.md`, at close to 0% real divergence, sit outside the
+Measured state table (2026-09-25 survey).
 
 - **Replace** the snapshot with a run of this fork's pipeline, **Add** a
   failing-gate snapshot, and **Remove** `sample-workflow.md`. All three claimed
@@ -238,7 +244,7 @@ rename lands, so the cost is known before the move.
 |------|-------|-------------|------|------------|
 | `author:` | "Specflow Contributors" | Nothing | Free | none |
 | `examples/static-landing-page/` | Upstream's feature | dry run, `score-artifacts.yml`, README | Replaced, not renamed | G-19 |
-| `commands/hooks/*.md` file names | `after-tasks`, `before-execute`, `after-execute` | Nothing; the manifest maps hooks to commands | Free, and no reason | none |
+| `commands/hooks/*.md` file names | `after-tasks`, `before-execute`, `after-execute` | Nothing; the manifest maps hooks to commands | `e2e-smoke.sh` greps `commands/hooks/after-execute.md`; `examples/link-audit/analyze-gate.md` cites `commands/hooks/before-execute.md` in prose | none |
 | `commands/*.md` file names | `status`, `brainstorm`, `tasks`, `execute`, `review` | The `file:` field in `extension.yml` | Cheap, and no reason | none |
 | Extension id `specflow` | | 27 files | Not an option | |
 | `templates/*.md` file names | | Spec-kit reads `.specify/templates/<name>`; `e2e-smoke.sh` | Not an option | |
@@ -361,7 +367,7 @@ each number is a floor.
 | `references/workflow-guide.md` | 19 of 34 | Low. A reference; content is cheap to diverge, the file name is not | Highest |
 | `templates/tasks-template.md` | 19 of 20 | Medium. Renaming strands the recorded goldens | High |
 | `templates/constitution-template.md` | 14 of 17 | Medium. Same | Medium |
-| `SKILL.md` | 13 of 21 | Medium. Spec-kit's skill loader expects the upstream section shape | Medium |
+| `SKILL.md` | 13 of 21 | Low. Spec-kit 0.16.2 never reads the extension-root `SKILL.md`; it renders one skill per `commands/*.md`. An external `~/.agents/skills/` loader's section expectations are unverified. | Medium |
 | `templates/checklist-template.md` | 10 of 12 | Medium. Same | Medium |
 | `templates/plan-template.md` | 9 of 13 | Medium. Same | Medium |
 | `templates/spec-template.md` | 8 of 19 | Medium. Same | Low |
@@ -389,9 +395,10 @@ Order of attack, by yield per unit of risk:
    table. It ties the guide on count and loses on risk: regenerate the goldens
    in the same change, because a template and its recorded output drift the
    moment either moves.
-3. `SKILL.md`, last among the worthwhile ones. Thirteen reachable headings, and
-   it is the file a `~/.agents/skills/` install reads first, so a section rename
-   needs the loader checked before it lands.
+3. `SKILL.md`, last among the worthwhile ones. Thirteen reachable headings.
+   Spec-kit 0.16.2's own loader is checked and clear: it never opens the
+   extension-root `SKILL.md`. The file a `~/.agents/skills/` install reads
+   first still wants its section expectations checked before a rename lands.
 
 Not worth taking: the command files. Two or three free headings each, against a
 smoke test that counts Process steps per file and a workflow guide that names
