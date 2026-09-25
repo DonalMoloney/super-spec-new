@@ -65,6 +65,7 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | G-53 | No catalog entry exists for spec-kit's extension search | low | `catalog.json` absent at the repository root |
 | G-54 | The gates cannot run on the Copilot CLI's own hook system | medium | `.github/hooks/` absent; distinct from G-26's spec-kit `events:` route |
 | G-55 | Four gate scripts stay outside the install archive, blocking G-26's `events:` block | medium | `block-main-commit.sh`, `test-gate.sh`, `artifact-lint.sh`, `session-start.sh` still under `.claude/` only |
+| G-56 | Nothing stops spec-kit's own `/speckit.tasks` on an unresolved Open Question | low | `extension.yml`'s `hooks:` block has no `before_tasks` entry |
 
 ## G-19 — Examples produced by this fork, not upstream
 
@@ -904,6 +905,72 @@ Verify: the blocked-commit attempt is refused; the feature-branch commit
 succeeds; `bash .claude/hooks/tests/run.sh` reports 0 failed with no fewer
 passing cases than it reported on `main` before this task.
 
+## G-56 — A `before_tasks` hook that stops core `/speckit.tasks` on an unresolved Open Question (working on)
+
+Executor: `general-purpose`. Effort: low. Depends on: none. Raised on
+2026-09-25, promoted from the Deferred list below, where it read: "cheaper
+than a sixth command now that G-24 T241 derives `e2e-smoke.sh`'s and `ci.yml`'s
+hook counts from `extension.yml`; only the manifest entry and the hook's own
+prompt remain to write."
+
+`specflow/commands/tasks.md` steps 1 and 2 stop `/speckit.specflow.tasks` with
+`CONSTITUTION_REQUIRED` or `OPEN_QUESTIONS` before it breaks a feature down,
+but nothing stops a user who runs spec-kit's own `/speckit.tasks` directly.
+`extension.yml`'s `hooks:` block declares `after_clarify`, `after_analyze`,
+`after_tasks`, and `before_implement`; it has no `before_tasks` entry, so the
+gate `before-execute.md` gives `/speckit.implement` has no counterpart for
+`/speckit.tasks`.
+
+- [ ] T650 Write `specflow/commands/hooks/before-tasks.md`
+
+Match `before-execute.md`'s shape exactly: a title, a one-paragraph
+description of when the hook fires, and a numbered `## Preconditions` list.
+Give it the same two checks as `tasks.md` steps 1 and 2, word for word in
+behavior: the Constitution gate stopping with `CONSTITUTION_REQUIRED`, and the
+Open questions gate counting `## Open Questions` rows whose Status is not
+`Resolved` and stopping with `OPEN_QUESTIONS`. Point both at
+`references/workflow-guide.md`'s stop-code table rather than restating the
+table. Verify: the file exists and
+`grep -c 'CONSTITUTION_REQUIRED\|OPEN_QUESTIONS' specflow/commands/hooks/before-tasks.md`
+prints 2.
+
+- [ ] T651 Register `before_tasks` in `extension.yml`
+
+Add a `before_tasks` entry to the `hooks:` block, positioned between
+`after_tasks` and `before_implement`. Give it the same field shape as
+`before_implement`: `command: "speckit.specflow.tasks"`, `optional: true`,
+a `priority`, a `prompt` offering to hand the break-down to
+`/speckit.specflow.tasks` instead, and a `description` naming the two checks
+T650 wrote. Verify: `cd specflow && python3 scripts/validate-extension-metadata.py`
+passes, and `grep -c '^  before_tasks:' specflow/extension.yml` prints 1.
+
+- [ ] T652 Add `before_tasks` to the stop-code table's "Printed by" columns
+
+`references/workflow-guide.md`'s stop-code table lists `OPEN_QUESTIONS` as
+printed only by `/speckit.specflow.tasks`, and `CONSTITUTION_REQUIRED` as
+printed by `/speckit.specflow.execute`, `/speckit.specflow.tasks`,
+`/speckit.specflow.gate`, and three named hooks that does not include
+`before_tasks`. Add the new hook to both rows. Verify: both rows' text
+contains `before_tasks`.
+
+- [ ] T653 Confirm the derived hook counts still pass with no further edit
+
+Run `bash specflow/scripts/e2e-smoke.sh` and, from `specflow/`,
+`python3 scripts/validate-extension-metadata.py`. G-24 T241 is recorded as
+having made both derive their hook count from `extension.yml` directly. If
+either instead has a hardcoded count that now fails, name the exact line and
+fix it in this task rather than treating it as a new item. Verify: both
+commands exit 0.
+
+- [ ] T654 Fix every other hardcoded hook count
+
+Search for a hook count or a hook-name list that predates this change:
+`grep -rn "after_clarify\|before_implement" --include=*.md . | grep -v specs/`
+finds candidates, including `AGENTS.md`'s Architecture section and
+`specflow/README.md`. Update each to include `before_tasks` and, if it states
+a count, raise it by one. Verify: the same grep shows every listed file names
+five hooks, not four.
+
 ## Checked on 2026-09-20, no work needed
 
 Measured against spec-kit 1.0.9.dev0 at `d4229c0`. Each line held, so do not
@@ -966,21 +1033,9 @@ beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
 
 - **Multi-feature concurrency** (first-wave item 11): revisit after G-14's
   `[P]` dispatch has run on three features. None has run yet.
-- **The mutation gate's CI step**: PR #64 added `.claude/hooks/mutation-gate.sh`
-  and a sample project under `specflow/examples/mutation-gate-sample/`. The
-  `merge-gate.yml` mutation step at line 90 still runs `mutmut run
-  --paths-to-mutate`, a mutmut 2 flag that mutmut 3 rejects. Replace that run
-  line with `bash .claude/hooks/mutation-gate.sh <project-dir>` in the CI wave.
-  The eight mutation cases in `.claude/hooks/tests/run.sh` fail on a machine
-  without mutmut, which CI installs from `requirements-dev.txt`. Install it
-  locally before reading a red run as a regression.
 - **Replace `execute.md` with a squad dispatcher**: the one Replace move worth
   taking, and only after G-19 gives it a snapshot to assert against on both
   runtimes.
-- **A `before_tasks` hook** that stops on unresolved Open Questions: cheaper
-  than a sixth command now that G-24 T241 derives `e2e-smoke.sh`'s and
-  `ci.yml`'s hook counts from `extension.yml`; only the manifest entry and the
-  hook's own prompt remain to write.
 - **A Copilot CLI run snapshot** under `examples/`: the Copilot e2e script
   (backlog item 27) is merged; only the live run remains.
 - **A spec-kit workflow file** (was N-06): deferred on 2026-09-20. Most of its stated value was running the gates on the Copilot
