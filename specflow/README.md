@@ -13,6 +13,10 @@ command files runs on Claude Code and on the GitHub Copilot CLI.
 
 ## Installation
 
+Specflow needs `jq` on the `PATH`. The shipped merge gate
+(`gates/bash/merge-gate.sh`) reads findings JSON with it and refuses to run
+without it.
+
 Specflow installs into an existing spec-kit project. Create one first. For
 Claude Code:
 
