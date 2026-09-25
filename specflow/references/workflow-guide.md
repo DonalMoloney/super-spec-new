@@ -1,10 +1,41 @@
-# Running Specflow Without Superpowers
+# The specflow workflow, phase by phase
 
-This guide gives phase-by-phase instructions for the specflow workflow. SKILL.md
-references this document for progressive disclosure: the agent reads only the
-matching section while it runs a command.
+Each section below is one phase, carrying its command, gate, steps, and exit
+criteria. Read only the section for the phase in progress. A phase with a
+skill alternative states it under that phase's Skill mode heading.
 
-## Phase 0: Project Initialization
+## Gate and output per phase
+
+| Phase | Command | Gate | Output |
+|-------|---------|------|--------|
+| 0 | `/speckit.constitution` | None | `.specify/memory/constitution.md` |
+| 1 | `/speckit.specify` | Constitution exists | `specs/NNN/spec.md` |
+| 2 | `/speckit.specflow.brainstorm` | Spec exists | Updated spec.md |
+| 3 | `/speckit.plan` | Spec exists | `specs/NNN/plan.md` |
+| 4 | `/speckit.specflow.tasks` | Constitution, plan, and no unresolved open question | `specs/NNN/tasks.md` |
+| 5 | `/speckit.specflow.execute` | Constitution, tasks, and `.analyzed` exist | Code + updated tasks.md |
+| 6 | `/speckit.specflow.review` | Implementation exists | Review report |
+
+### Stop codes
+
+A stopped command prints one of these codes, then the value it expected, then
+the value it found, then the command that clears the stop.
+
+| Code | Printed by | Expected | Found | Next command |
+|------|------------|----------|-------|--------------|
+| `ANALYZE_REQUIRED` | `/speckit.specflow.execute` and the `before_implement` hook | `specs/NNN-feature-name/.analyzed` | the marker absent | `/speckit.analyze NNN` |
+| `OPEN_QUESTIONS` | `/speckit.specflow.tasks` | 0 rows outside `Resolved` | the unresolved row count | `/speckit.specflow.brainstorm NNN` |
+| `CONSTITUTION_REQUIRED` | `/speckit.specflow.execute`, `/speckit.specflow.tasks`, `/speckit.specflow.gate`, and the `before_implement`, `after_clarify`, `after_analyze` hooks | `.specify/memory/constitution.md` | the file absent | `/speckit.constitution` |
+| `RESOLVER_REQUIRED` | `/speckit.specflow.tasks`, and the five resolver steps in `SKILL.md` | a resolver under `.specify/scripts/` | the variant that failed | reinstall spec-kit 0.16.2 or newer |
+
+`/speckit.specflow.gate` and the `after_clarify` and `after_analyze` hooks print
+two more. `CLARIFY_INCOMPLETE` names the `NEEDS CLARIFICATION` marker count left
+in `spec.md`, and `ANALYZE_CRITICAL` names the CRITICAL row count in the
+analysis report. Both expect 0, and both name the command to rerun.
+
+---
+
+## Phase 0: Constitution
 
 **Command**: `/speckit.constitution`
 **Gate**: None. This phase starts the workflow.
@@ -108,40 +139,40 @@ matching section while it runs a command.
 **Gate**: The target spec file must exist.
 **Output**: Spec file, updated with new edge cases, open questions, and a brainstorm log entry. `decisions.md` at the project root, updated with one entry per resolved choice.
 
-### Superpowers Integration
+### Skill mode
 
 When the `brainstorming` skill is detected (see [superpowers-mapping.md](superpowers-mapping.md)), follow this process:
 - Read the skill's SKILL.md file and follow its questioning protocol
 - Write findings into the spec file rather than a separate document
 - Ask one question at a time, in multiple-choice form where it fits, per the skill's session structure
 
-### Built-in Fallback Protocol
+### Fallback mode
 
 When superpowers brainstorming is not available, run this 5-category questioning protocol instead:
 
 #### Category 1: Boundary Conditions
 Ask about minimum and maximum values, empty states, and inputs at the edge of a range.
 - "What happens when [input] is empty?"
-- "What's the maximum number of [items] the system should handle?"
+- "What is the maximum number of [items] the system accepts?"
 - "What happens at exactly the boundary of [limit]?"
 
 #### Category 2: Error Scenarios
 Ask about failure modes, recovery, and degraded behavior.
 - "What happens when [external service] is unavailable?"
-- "How should the system recover from [failure type]?"
-- "What error message should the user see when [scenario]?"
+- "How does the system recover from [failure type]?"
+- "What error message does the user see when [scenario]?"
 
 #### Category 3: Scale & Performance
 Ask about load, concurrency, and limits on resources.
 - "What happens with [N]x expected traffic?"
-- "Are there rate limits needed for [operation]?"
-- "What's the acceptable response time for [action]?"
+- "What rate limit does [operation] need?"
+- "What is the acceptable response time for [action]?"
 
 #### Category 4: Security & Privacy
 Ask about attack vectors, data protection, and who holds authorization.
 - "Can [feature] be abused by [actor type]?"
 - "What data needs to be encrypted or redacted?"
-- "Who should NOT have access to [resource]?"
+- "Who does not have access to [resource]?"
 
 #### Category 5: User Experience
 Ask about points of confusion, accessibility, and use the design did not intend.
@@ -188,6 +219,12 @@ This phase may run more than once. Each session:
 - Reads the previous brainstorm log entries first, so it does not repeat a question
 - Focuses on the topic the user named, or on an unexplored category when none was named
 - Appends a new entry to the brainstorm log
+
+### Exit Criteria
+
+- The Brainstorm Log carries a dated entry
+- Every category is covered or skipped
+- Each resolved choice has a `decisions.md` entry
 
 ---
 
@@ -414,6 +451,12 @@ The agent MUST:
 - Wait for the user's explicit "proceed" or "continue"
 - Address any requested changes before proceeding
 
+### Exit Criteria
+
+- Every task line in `tasks.md` is checked or `skipped` with a stated reason
+- `progress.yml` records each phase status
+- Every checkpoint was confirmed
+
 ---
 
 ## Phase 6: Review
@@ -483,56 +526,40 @@ The agent MUST:
     table, add a row with the `CHK` id, the finding's `R-NNN` id, and the
     finding's status. A feature with no checklist skips this step.
 
----
+### Exit Criteria
 
-## Quick Reference
-
-| Phase | Command | Gate | Output |
-|-------|---------|------|--------|
-| 0 | `/speckit.constitution` | None | `.specify/memory/constitution.md` |
-| 1 | `/speckit.specify` | Constitution exists | `specs/NNN/spec.md` |
-| 2 | `/speckit.specflow.brainstorm` | Spec exists | Updated spec.md |
-| 3 | `/speckit.plan` | Spec exists | `specs/NNN/plan.md` |
-| 4 | `/speckit.specflow.tasks` | Constitution, plan, and no unresolved open question | `specs/NNN/tasks.md` |
-| 5 | `/speckit.specflow.execute` | Constitution, tasks, and `.analyzed` exist | Code + updated tasks.md |
-| 6 | `/speckit.specflow.review` | Implementation exists | Review report |
-
-### Stop codes
-
-A stopped command prints one of these codes, then the value it expected, then
-the value it found, then the command that clears the stop.
-
-| Code | Printed by | Expected | Found | Next command |
-|------|------------|----------|-------|--------------|
-| `ANALYZE_REQUIRED` | `/speckit.specflow.execute` and the `before_implement` hook | `specs/NNN-feature-name/.analyzed` | the marker absent | `/speckit.analyze NNN` |
-| `OPEN_QUESTIONS` | `/speckit.specflow.tasks` | 0 rows outside `Resolved` | the unresolved row count | `/speckit.specflow.brainstorm NNN` |
-| `CONSTITUTION_REQUIRED` | `/speckit.specflow.execute`, `/speckit.specflow.tasks`, `/speckit.specflow.gate`, and the `before_implement`, `after_clarify`, `after_analyze` hooks | `.specify/memory/constitution.md` | the file absent | `/speckit.constitution` |
-| `RESOLVER_REQUIRED` | `/speckit.specflow.tasks`, and the five resolver steps in `SKILL.md` | a resolver under `.specify/scripts/` | the variant that failed | reinstall spec-kit 0.16.2 or newer |
-
-`/speckit.specflow.gate` and the `after_clarify` and `after_analyze` hooks print
-two more. `CLARIFY_INCOMPLETE` names the `NEEDS CLARIFICATION` marker count left
-in `spec.md`, and `ANALYZE_CRITICAL` names the CRITICAL row count in the
-analysis report. Both expect 0, and both name the command to rerun.
+- Each reported finding scores 80 or above
+- `review-findings.json` exists
+- Each spec gap has an Open Questions row
 
 ---
 
-## Budgets
+## Review stack
 
-Each phase carries a recommended token ceiling and a suggested model class. A headless run enforces the ceiling with `claude -p --max-budget-usd`, the flag `merge-gate.yml` passes. Tune these values per organization. A higher ceiling buys deeper exploration; a lower ceiling keeps cost down.
+Four review stages run against a feature. Each stage writes findings JSON that
+conforms to `references/findings-schema.json`.
 
-| Phase | Token Ceiling | Model Class | Notes |
-|-------|---------------|-------------|-------|
-| 0 - Constitution | 150k | Haiku | Lightweight interview; mechanical |
-| 1 - Specify | 200k | Sonnet | Balanced specification; user interview |
-| 2 - Brainstorm | 250k | Opus | Thorough questioning; divergent thinking pays off |
-| 3 - Plan | 200k | Sonnet | Technical planning; research codebase |
-| 4 - Tasks | 150k | Sonnet | Task decomposition; mechanical breakdown |
-| 5 - Execute | 500k | Variable | Most expensive; actual implementation. Mix: Haiku (mechanical), Sonnet (normal), Opus (complex). |
-| 6 - Review | 300k | Opus | Multi-lens review; high-stakes reasoning. Scale with risk level (STRIDE, security, cross-model). |
+- **Stage 0: spec red-team.** `spec-red-team-reviewer` and `threat-model-reviewer`
+  attack `spec.md` before any code exists. The gate is no unresolved
+  `[NEEDS CLARIFICATION]` marker and no Critical inconsistency.
+- **Stage 1: conformance.** `conformance-reviewer` sees only `spec.md` and the diff.
+  It derives one test per acceptance criterion. The gate is a passing test for
+  every criterion.
+- **Stage 2: panel.** `correctness-reviewer`, `security-reviewer`, and
+  `maintainability-reviewer` review in parallel fresh contexts. Add
+  `performance-reviewer` for a performance-sensitive diff. A finding raised by two
+  or more personas is promoted one severity level.
+- **Stage 3: critic.** For a HIGH risk change only, `critic` audits the panel's
+  findings, not the code. It rejects any finding without a `file:line`
+  reference or a failing test. The loop stops after three rounds.
 
-**Headless gating:** In CI, pass `--max-turns 6` and `--max-budget-usd` to the `claude -p` invocation. Example: `claude -p "..." --output-format json --max-turns 6 --max-budget-usd 1.00`. The JSON output reports phase overages as `total_cost_usd`. A gate can reject a run that exceeds the ceiling.
-
-**Tuning:** Track actual spend per phase (`.claude/telemetry.jsonl`, in this repository only, plus a `jq` rollup). Adjust ceilings weekly for feature complexity and CLI speed. HIGH-risk features (auth, payments, migrations) often exceed standard ceilings by 20–50%. Allocate more budget or extend the critic loop allowance.
+The agents live in `.claude/agents/`, in this repository only, outside the
+extension archive a consuming project installs. When they are absent,
+`/speckit.specflow.review` and its built-in protocol above are the fallback for
+all four stages. The command writes the same findings shape to
+`specs/NNN-feature-name/review-findings.json`. The shipped gate reads that file
+with `bash gates/bash/merge-gate.sh 'specs/*/review-findings.json'`, run from the
+project root.
 
 ---
 
@@ -598,14 +625,14 @@ follow the normal Phase 5 path.
 
 ---
 
-## Session Resumability
+## Every command resumes from the files on disk
 
 Specflow survives a session interruption: all state lives in plain-text files.
 `.specify/memory/` holds governance state (`constitution.md`); `specs/NNN-*/`
 holds per-feature state (`spec.md`, `plan.md`, `tasks.md`, `progress.yml`). The
 agent detects the resume point from these files and continues from there.
 
-### Progress File: `progress.yml`
+### What `progress.yml` holds
 
 A feature spec directory may hold a `progress.yml` file:
 
@@ -632,7 +659,7 @@ The required top-level keys are `spec`, `status`, `current_phase`, and `phases`.
 number, name, and status; its `tasks` mapping is optional. The `brainstorm` and
 `gates` mappings are optional.
 
-### Resume Check Protocol
+### The check every command runs first
 
 Every specflow command runs this check first:
 
@@ -655,7 +682,7 @@ Every specflow command runs this check first:
 command runs its own resume check. Phase 5, step 4 writes that file at each
 phase checkpoint.
 
-### Phase-Specific Resume Rules
+### Where each phase resumes
 
 **Constitution** (`in_progress`):
 - Re-read `constitution.md`
@@ -714,7 +741,7 @@ cannot automate is `skipped`, and its task line in `tasks.md` states why.
 If `progress.yml` does not exist when a command runs, the command creates it
 and infers every prior phase as `complete` from the files already on disk.
 
-### Superpowers Status File: `superpowers.yml`
+### What `superpowers.yml` caches
 
 The project-level file `.specify/superpowers.yml` stores the superpowers
 detection result so it stays **visible in the project docs** and **doesn't
@@ -723,6 +750,7 @@ need re-detection on every command**.
 ```yaml
 # .specify/superpowers.yml
 last_checked: 2026-04-22T14:30:00
+version: 6.4.1
 skills:
   brainstorming:
     detected: true
@@ -738,6 +766,18 @@ skills:
     detected: true
     path: .agents/skills/test-driven-development/SKILL.md
   requesting-code-review:
+    detected: false
+  systematic-debugging:
+    detected: false
+  verification-before-completion:
+    detected: false
+  using-git-worktrees:
+    detected: false
+  dispatching-parallel-agents:
+    detected: false
+  receiving-code-review:
+    detected: false
+  finishing-a-development-branch:
     detected: false
 ```
 
@@ -767,29 +807,29 @@ back, in case the user installed the skill since the last session.
 
 ---
 
-## Review stack
+## Budgets
 
-Four review stages run against a feature. Each stage writes findings JSON that
-conforms to `references/findings-schema.json`.
+Each phase carries a recommended token ceiling and a suggested model class. A
+headless run enforces the ceiling with `claude -p --max-budget-usd`, the flag
+`merge-gate.yml` passes. Tune these values per organization.
 
-- **Stage 0: spec red-team.** `spec-red-team-reviewer` and `threat-model-reviewer`
-  attack `spec.md` before any code exists. The gate is no unresolved
-  `[NEEDS CLARIFICATION]` marker and no Critical inconsistency.
-- **Stage 1: conformance.** `conformance-reviewer` sees only `spec.md` and the diff.
-  It derives one test per acceptance criterion. The gate is a passing test for
-  every criterion.
-- **Stage 2: panel.** `correctness-reviewer`, `security-reviewer`, and
-  `maintainability-reviewer` review in parallel fresh contexts. Add
-  `performance-reviewer` for a performance-sensitive diff. A finding raised by two
-  or more personas is promoted one severity level.
-- **Stage 3: critic.** For a HIGH risk change only, `critic` audits the panel's
-  findings, not the code. It rejects any finding without a `file:line`
-  reference or a failing test. The loop stops after three rounds.
+| Phase | Token Ceiling | Model Class | Notes |
+|-------|---------------|-------------|-------|
+| 0 - Constitution | 150k | Haiku | Lightweight interview; mechanical |
+| 1 - Specify | 200k | Sonnet | Balanced specification; user interview |
+| 2 - Brainstorm | 250k | Opus | Thorough questioning; divergent thinking pays off |
+| 3 - Plan | 200k | Sonnet | Technical planning; research codebase |
+| 4 - Tasks | 150k | Sonnet | Task decomposition; mechanical breakdown |
+| 5 - Execute | 500k | Variable | Most expensive; implementation. Mix: Haiku (mechanical), Sonnet (normal), Opus (complex). |
+| 6 - Review | 300k | Opus | Multi-lens review; high-stakes reasoning. Scale with risk level (STRIDE, security, cross-model). |
 
-The agents live in `.claude/agents/`, in this repository only, outside the
-extension archive a consuming project installs. When they are absent,
-`/speckit.specflow.review` and its built-in protocol above are the fallback for
-all four stages. The command writes the same findings shape to
-`specs/NNN-feature-name/review-findings.json`. The shipped gate reads that file
-with `bash gates/bash/merge-gate.sh 'specs/*/review-findings.json'`, run from the
-project root.
+**Headless gating:** In CI, pass `--max-turns 6` and `--max-budget-usd` to the
+`claude -p` invocation. Example: `claude -p "..." --output-format json
+--max-turns 6 --max-budget-usd 1.00`. The JSON output reports phase overages
+as `total_cost_usd`. A gate can reject a run that exceeds the ceiling.
+
+**Tuning:** Track spend per phase (`.claude/telemetry.jsonl`, in this
+repository only, plus a `jq` rollup). Adjust ceilings weekly for feature
+complexity and CLI speed. HIGH-risk features (auth, payments, migrations)
+often exceed standard ceilings by 20 to 50 percent. Allocate more budget or
+extend the critic loop allowance.
