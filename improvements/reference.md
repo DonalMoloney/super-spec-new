@@ -76,11 +76,12 @@ reason: `commands/gate.md`, `commands/hooks/after-analyze.md`, and
 
 The installable payload has moved a long way from upstream in wording and,
 since the previous measurement, in shape as well: `extension.yml` now
-declares a sixth command (`speckit.specflow.gate`) and five hooks
-(`after_clarify`, `after_analyze`, `after_tasks`, `before_implement`,
-`after_implement`). The `commands/` and `commands/hooks/` sections below are
-corrected to match. The fork's remaining behavioral divergence lives in
-`.claude/`, `standards/`, `scripts/`, and CI, which the archive strips.
+declares a sixth command (`speckit.specflow.gate`) and six hooks
+(`after_clarify`, `after_analyze`, `after_tasks`, `before_tasks`,
+`before_implement`, `after_implement`). The `commands/` and `commands/hooks/`
+sections below are corrected to match. The fork's remaining behavioral
+divergence lives in `.claude/`, `standards/`, `scripts/`, and CI, which the
+archive strips.
 
 Reproduce the table from the repository root:
 
@@ -100,9 +101,9 @@ table above.
 
 ## commands/hooks/
 
-Five hook prompts spec-kit runs around its own commands: `after-clarify.md`,
-`after-analyze.md`, `after-tasks.md`, `before-execute.md`, and
-`after-execute.md`. The last two file names predate the rename in
+Six hook prompts spec-kit runs around its own commands: `after-clarify.md`,
+`after-analyze.md`, `after-tasks.md`, `before-tasks.md`, `before-execute.md`,
+and `after-execute.md`. The last two file names predate the rename in
 `extension.yml`'s `hooks:` block to `before_implement` and `after_implement`;
 their content already carries the new names (each file opens `# Hook:
 before_implement` or `# Hook: after_implement`), so this is a Names-table gap,
@@ -110,14 +111,9 @@ not an open option.
 
 - **Tighten** `after-tasks.md` to read `progress.yml` before writing, as
   `before-execute.md` does at step 6. Claimed by: D-01.
-- **Add** a `before_tasks` hook that stops when the spec's Open Questions table
-  has unresolved rows. Spec-kit fires `hooks.before_tasks`; upstream never
-  registered one. Cheaper than it was: G-24 T241 made `e2e-smoke.sh` and
-  `ci.yml` derive their hook count from `extension.yml`, and the hook tuple in
-  `validate-extension-metadata.py` already passes a fourth hook unedited. Only
-  the manifest and the hook's own prompt need writing. Verify: all three checks
-  stay green with no manual count edit. Claimed by: none, deferred in
-  `roadmap.md`.
+- Done: `before-tasks.md`, a `before_tasks` hook that stops when the spec's
+  Open Questions table has unresolved rows, or the constitution is missing.
+  G-56, PR pending.
 - **Extend** `after-execute.md` to write a findings file `review.md` reads.
   Done, PR #57.
 - Done: `after-clarify.md` and `after-analyze.md`, each firing

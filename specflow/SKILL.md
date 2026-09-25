@@ -117,13 +117,14 @@ and silently drops the others.
 | `/speckit.specflow.gate` | Write a feature's clarify or analyze marker once its gate passes |
 | `/speckit.checklist` | Build a checklist for the given context |
 
-## Five hooks fire on spec-kit's own commands
+## Six hooks fire on spec-kit's own commands
 
 | Hook | Fires after | What it does |
 |------|-------------|---------------|
 | `after_clarify` | `/speckit.clarify` | Write the feature's `.clarified` file once the spec holds no NEEDS CLARIFICATION line |
 | `after_analyze` | `/speckit.analyze` | Write the feature's `.analyzed` file once the report holds no CRITICAL row |
 | `after_tasks` | `/speckit.tasks` | Check that every user story has tasks and that each task carries its markers |
+| `before_tasks` | Before `/speckit.tasks` | Check the constitution and open-questions gates before `/speckit.tasks` starts |
 | `before_implement` | Before `/speckit.implement` | Check the constitution and analyze gates before `/speckit.implement` starts |
 | `after_implement` | `/speckit.implement` | Review the completed phase against the spec, the plan, and the constitution |
 

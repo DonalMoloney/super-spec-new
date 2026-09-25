@@ -109,6 +109,12 @@ hooks:
     priority: 10
     prompt: "Break the tasks down again with the writing-plans skill?"
     description: "Check that every user story has tasks and that each task carries its markers"
+  before_tasks:
+    command: "speckit.specflow.tasks"
+    optional: true
+    priority: 10
+    prompt: "Hand the task breakdown to /speckit.specflow.tasks instead?"
+    description: "Check the constitution and open-questions gates before /speckit.tasks starts"
   before_implement:
     command: "speckit.specflow.execute"
     optional: true

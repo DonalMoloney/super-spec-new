@@ -24,8 +24,8 @@ the value it found, then the command that clears the stop.
 | Code | Printed by | Expected | Found | Next command |
 |------|------------|----------|-------|--------------|
 | `ANALYZE_REQUIRED` | `/speckit.specflow.execute` and the `before_implement` hook | `specs/NNN-feature-name/.analyzed` | the marker absent | `/speckit.analyze NNN` |
-| `OPEN_QUESTIONS` | `/speckit.specflow.tasks` | 0 rows outside `Resolved` | the unresolved row count | `/speckit.specflow.brainstorm NNN` |
-| `CONSTITUTION_REQUIRED` | `/speckit.specflow.execute`, `/speckit.specflow.tasks`, `/speckit.specflow.gate`, and the `before_implement`, `after_clarify`, `after_analyze` hooks | `.specify/memory/constitution.md` | the file absent | `/speckit.constitution` |
+| `OPEN_QUESTIONS` | `/speckit.specflow.tasks` and the `before_tasks` hook | 0 rows outside `Resolved` | the unresolved row count | `/speckit.specflow.brainstorm NNN` |
+| `CONSTITUTION_REQUIRED` | `/speckit.specflow.execute`, `/speckit.specflow.tasks`, `/speckit.specflow.gate`, and the `before_implement`, `before_tasks`, `after_clarify`, `after_analyze` hooks | `.specify/memory/constitution.md` | the file absent | `/speckit.constitution` |
 | `RESOLVER_REQUIRED` | `/speckit.specflow.tasks`, and the five resolver steps in `SKILL.md` | a resolver under `.specify/scripts/` | the variant that failed | reinstall spec-kit 0.16.2 or newer |
 
 `/speckit.specflow.gate` and the `after_clarify` and `after_analyze` hooks print

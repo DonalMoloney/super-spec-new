@@ -921,7 +921,7 @@ but nothing stops a user who runs spec-kit's own `/speckit.tasks` directly.
 gate `before-execute.md` gives `/speckit.implement` has no counterpart for
 `/speckit.tasks`.
 
-- [ ] T650 Write `specflow/commands/hooks/before-tasks.md`
+- [x] T650 Write `specflow/commands/hooks/before-tasks.md`
 
 Match `before-execute.md`'s shape exactly: a title, a one-paragraph
 description of when the hook fires, and a numbered `## Preconditions` list.
@@ -934,7 +934,7 @@ table. Verify: the file exists and
 `grep -c 'CONSTITUTION_REQUIRED\|OPEN_QUESTIONS' specflow/commands/hooks/before-tasks.md`
 prints 2.
 
-- [ ] T651 Register `before_tasks` in `extension.yml`
+- [x] T651 Register `before_tasks` in `extension.yml`
 
 Add a `before_tasks` entry to the `hooks:` block, positioned between
 `after_tasks` and `before_implement`. Give it the same field shape as
@@ -944,7 +944,7 @@ a `priority`, a `prompt` offering to hand the break-down to
 T650 wrote. Verify: `cd specflow && python3 scripts/validate-extension-metadata.py`
 passes, and `grep -c '^  before_tasks:' specflow/extension.yml` prints 1.
 
-- [ ] T652 Add `before_tasks` to the stop-code table's "Printed by" columns
+- [x] T652 Add `before_tasks` to the stop-code table's "Printed by" columns
 
 `references/workflow-guide.md`'s stop-code table lists `OPEN_QUESTIONS` as
 printed only by `/speckit.specflow.tasks`, and `CONSTITUTION_REQUIRED` as
@@ -953,7 +953,7 @@ printed by `/speckit.specflow.execute`, `/speckit.specflow.tasks`,
 `before_tasks`. Add the new hook to both rows. Verify: both rows' text
 contains `before_tasks`.
 
-- [ ] T653 Confirm the derived hook counts still pass with no further edit
+- [x] T653 Confirm the derived hook counts still pass with no further edit
 
 Run `bash specflow/scripts/e2e-smoke.sh` and, from `specflow/`,
 `python3 scripts/validate-extension-metadata.py`. G-24 T241 is recorded as
@@ -962,7 +962,7 @@ either instead has a hardcoded count that now fails, name the exact line and
 fix it in this task rather than treating it as a new item. Verify: both
 commands exit 0.
 
-- [ ] T654 Fix every other hardcoded hook count
+- [x] T654 Fix every other hardcoded hook count
 
 Search for a hook count or a hook-name list that predates this change:
 `grep -rn "after_clarify\|before_implement" --include=*.md . | grep -v specs/`
