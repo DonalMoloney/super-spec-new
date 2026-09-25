@@ -89,8 +89,6 @@
 - **Scale**: What happens under 10x or 100x the expected load? Do rate limits apply?
 - **Security**: Could an attacker abuse this feature? Are there injection vectors? Could an attacker gain unauthorized access?
 - **User confusion**: Where might users misunderstand the feature? What if they use it in an unintended way?
-- **Data integrity**: What happens during concurrent modifications? What happens during a partial failure?
-- **Backwards compatibility**: Does this break existing behavior? What migration path does it need?
 
 ## Open Questions
 
@@ -123,6 +121,15 @@
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
 
+## Success Criteria *(mandatory)*
+
+### Measurable Outcomes
+
+- **SC-001**: [Measurable metric, e.g., "Users can complete task in under 2 minutes"]
+- **SC-002**: [Measurable metric, e.g., "System serves 1000 concurrent users"]
+- **SC-003**: [User satisfaction metric]
+- **SC-004**: [Business metric]
+
 ## Threat Model
 
 <!--
@@ -139,15 +146,6 @@
 | Information disclosure | [What data could leak to an unauthorized party?] | [Control, or N/A + reason] |
 | Denial of service | [What could exhaust a resource or block legitimate use?] | [Control, or N/A + reason] |
 | Elevation of privilege | [How could a user gain access beyond their role?] | [Control, or N/A + reason] |
-
-## Success Criteria *(mandatory)*
-
-### Measurable Outcomes
-
-- **SC-001**: [Measurable metric, e.g., "Users can complete task in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System serves 1000 concurrent users"]
-- **SC-003**: [User satisfaction metric]
-- **SC-004**: [Business metric]
 
 ## Traceability
 

@@ -103,17 +103,6 @@ This project follows **specification-driven development** through the specflow p
 - [ ] The constitution compliance check passes
 - [ ] [PROJECT-SPECIFIC GATE]
 
-## Governance
-
-This constitution governs every development activity in the project.
-An amendment needs:
-
-- A documented rationale for the change
-- Updated specs and plans
-- Confirmation that the amendment violates no principle
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-
 ## Code Review Rules
 
 - **Error handling**: Follow [ERROR_HANDLING_CONVENTION].
@@ -124,3 +113,14 @@ An amendment needs:
 - **Merge approved**: Get human approval before merging. Record [MERGE_APPROVAL_EVIDENCE].
 
 Test command: [TEST_COMMAND]
+
+## Governance
+
+This constitution governs every development activity in the project.
+An amendment needs:
+
+- A documented rationale for the change
+- Updated specs and plans
+- Confirmation that the amendment violates no principle
+
+**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
