@@ -83,7 +83,7 @@ tests/
 
 <!--
   Name the areas of this feature that need strict RED-GREEN-REFACTOR discipline.
-  The task breakdown flags their tasks with [TDD].
+  The task breakdown flags its tasks with [TDD].
 -->
 
 - [ ] [Component/module]: [Why TDD is needed, e.g., "Complex business logic with many edge cases"]
@@ -95,7 +95,7 @@ tests/
   Name each work stream that carries no dependency on another.
   The task breakdown flags its tasks with [SUBAGENT].
   Claude Code dispatches them as parallel subagents.
-  The Copilot CLI has one session, so it runs them in order.
+  The Copilot CLI keeps one session, so it runs them in order.
 -->
 
 - [ ] [Work stream A] shares no files or dependencies with [Work stream B]
@@ -117,7 +117,7 @@ tests/
 
 <!--
   Name the tasks that need code review before the plan continues.
-  The task breakdown flags their tasks with [REVIEW].
+  The task breakdown flags its tasks with [REVIEW].
 -->
 
 - [ ] [API contracts/interfaces]: Review before implementing consumers

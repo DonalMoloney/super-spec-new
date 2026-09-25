@@ -6,7 +6,7 @@
 ### [PRINCIPLE_1_NAME]
 <!-- Example: I. Library-First -->
 [PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library. Each library stays self-contained and independently testable, and each library ships with its own documentation. A library that exists only to organize code has no clear purpose, so it does not ship. -->
+<!-- Example: Every feature starts as a standalone library. Each library stays self-contained and independently testable, and each library ships with its own documentation. A library that exists only to organize code serves no clear purpose, so it does not ship. -->
 
 ### [PRINCIPLE_2_NAME]
 <!-- Example: II. CLI Interface -->
@@ -40,7 +40,7 @@
 ## Development Workflow
 
 <!--
-  The steps below connect the project to the specflow pipeline.
+  These steps connect the project to the specflow pipeline.
   Edit them to match the team's process.
 -->
 
@@ -65,7 +65,7 @@ This project follows **specification-driven development** through the specflow p
 
 <!--
   Name the review and testing gates that apply to this project.
-  The /speckit.specflow.review and /speckit.specflow.execute commands read these.
+  The /speckit.specflow.review command reads these. So does /speckit.specflow.execute.
 -->
 
 ### Testing Requirements
