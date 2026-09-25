@@ -2,12 +2,12 @@
 
 super-spec-new builds specflow, a [spec-kit](https://github.com/github/spec-kit)
 extension. Specflow adds edge-case brainstorming, task decomposition, test-driven
-execution, and spec review to the constitution, spec, plan, tasks, checklist
-workflow. Each command follows an
+execution, and spec review to spec-kit's workflow: constitution, spec, plan,
+tasks, checklist. Each command follows an
 [obra/superpowers](https://github.com/obra/superpowers) skill when that skill is
 installed, and a built-in protocol when it is not.
 
-One set of command files runs on both target agents:
+One set of command files runs on both target surfaces:
 
 - On Claude Code, spec-kit registers each command under `.claude/skills/`.
 - On the GitHub Copilot CLI, spec-kit registers each command under `.github/skills/`.
