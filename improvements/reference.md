@@ -410,3 +410,17 @@ divergence; it says nothing about what a new change costs. Order of preference:
    test change.
 4. A command or hook, which changes what the user sees and needs the smoke test,
    CI, and the validators updated together.
+
+## Files worth a better name
+
+Three files outside the Names table above have a name that misleads or
+collides, found by reading every shipped and tooling file name against
+`standards/code.md`'s naming rule. None sits behind a validator or the
+namespace lock-step, so each is a plain rename: `divergence-renamer` for the
+two cited from more than one file, a direct `git mv` and edit for the third.
+
+| File | Problem | Used in | Better name |
+|------|---------|---------|-------------|
+| `.claude/hooks/diff-impl.sh` | Shortens "implementation" to "impl"; its own header comment spells out "differential implementation run" | `.claude/hooks/tests/run.sh`, `specflow/references/workflow-guide.md`, `specflow/references/copilot-cli.md` | `differential-implementation.sh` |
+| `.claude/review/scorecard.sh` | Shares the verb "score" with `specflow/scripts/score-artifacts.py`, which scores golden artifacts against upstream, not reviewer precision; the two names give no hint they measure different things | `improvements/roadmap.md` (item 31), `.claude/review/tests/test_scorecard.py`, `docs/review-research.md`, `presentation/marp-deck/deck.md` | `reviewer-precision.sh` |
+| `specflow/examples/link-audit/analyze-gate.md` | Reads like a script or command name; every sibling file in the directory (`spec.md`, `plan.md`, `tasks.md`, `progress.yml`) is a document the pipeline writes, but this one is hand-written commentary on a gate stop | `specflow/examples/link-audit/README.md` | `analyze-gate-walkthrough.md` |
