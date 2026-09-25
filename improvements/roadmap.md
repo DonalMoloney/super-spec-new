@@ -61,6 +61,9 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 |---|---|---|---|
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
 | G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 done, T262 and T263 behind three prerequisites |
+| G-52 | A traceability row can name a test that does not exist | low | No check reads the Test name column against the test tree |
+| G-53 | No catalog entry exists for spec-kit's extension search | low | `catalog.json` absent at the repository root |
+| G-54 | The gates cannot run on the Copilot CLI's own hook system | medium | `.github/hooks/` absent; distinct from G-26's spec-kit `events:` route |
 
 ## G-19 — Examples produced by this fork, not upstream
 
@@ -710,6 +713,133 @@ directory already scheduled for deletion under T194.
 Verify: `grep -n "2224\|2200" improvements/reference.md` finds the added
 sentence.
 
+## G-52 — Lint a traceability row against a real test (backlog item 33)
+
+Executor: `general-purpose`. Effort: low. Depends on: none. Raised on
+2026-09-25, claiming backlog item 33 below.
+
+`.claude/hooks/artifact-lint.sh` validates `spec.md`'s section structure but
+never checks a `## Traceability` row's Test name column against the real test
+tree, so an invented test name passes the gate silently. `spec-template.md`'s
+Traceability section states "Automated scoring reads only the Test name
+column"; nothing today confirms the named test exists.
+
+- [ ] T600 Add a traceability-test-exists check to `artifact-lint.sh`, gated on `.analyzed`
+
+In the `spec.md)` case, once `$(dirname "$path")/.analyzed` exists, parse each
+`## Traceability` table row's Test name column. Read the existing recorded
+examples under `specflow/examples/*/specs/*/spec.md` first to learn the real
+format in use (a bare file path, a `file::test_name` pair, or a checklist
+item) before writing the parser. For each row whose Test name does not resolve
+to an existing file (or an existing test function inside an existing file, if
+the row names one), call `err` with the criterion ID and the name that did not
+resolve. Skip the check entirely when `.analyzed` is absent, matching the
+existing `.clarified`-gated check's pattern in the same file.
+Verify: `bash .claude/hooks/tests/run.sh` passes with the new cases from T601
+included.
+
+- [ ] T601 Add hook tests for the new check
+
+Add at least three cases to `.claude/hooks/tests/run.sh`, following the file's
+existing `lint()`/`check` helper pattern: a `spec.md` with `.analyzed` present
+and a Traceability row naming a real test, asserting exit 0; a `spec.md` with
+`.analyzed` present and a row naming a test that does not exist, asserting
+exit 2; and a `spec.md` with a bogus Traceability row but no `.analyzed` file,
+asserting exit 0 (the gate is `.analyzed`-conditional).
+Verify: `bash .claude/hooks/tests/run.sh` reports 0 failed, with its printed
+pass count higher than the count on `main` before this task by exactly the
+number of new cases added.
+
+## G-53 — A catalog entry spec-kit's extension search can find (backlog item 23)
+
+Executor: `general-purpose`. Effort: low. Depends on: none. Raised on
+2026-09-25, claiming backlog item 23 below, scoped to what this environment
+can verify: the `specify` CLI is not installed here (`which specify` finds
+nothing), so the live `specify extension search specflow` check the backlog
+item names cannot run in this environment. Do the parts below and say so in
+the final report rather than fabricating that check.
+
+- [ ] T610 Add `catalog.json` at the repository root
+
+Write a spec-kit catalog schema 1.0 JSON file naming `specflow`. Reuse the
+field set already agreed for this extension's catalog submission in
+`specflow/references/publishing.md`'s Proposed Catalog Entry JSON block
+(`download_url` pattern, `repository`, `license`, `category`,
+`provides.commands`/`provides.hooks`), read the command and hook counts live
+from `specflow/extension.yml` rather than hardcoding them, and add a
+`priority` and `install_allowed: true`.
+Verify: `python3 -c "import json; json.load(open('catalog.json'))"` exits 0;
+the entry's command and hook counts match `specflow/extension.yml`'s current
+`commands:`/`hooks:` list lengths.
+
+- [ ] T611 Add a README line naming how to list this catalog
+
+Add one sentence to the root `README.md`'s install section naming the two ways
+a user points spec-kit at this catalog: listing it in
+`.specify/extension-catalogs.yml` with `install_allowed: true`, or setting
+`SPECKIT_CATALOG_URL` to this repository's raw `catalog.json` URL.
+Verify: `grep -n 'extension-catalogs.yml\|SPECKIT_CATALOG_URL' README.md`
+finds the new line.
+
+## G-54 — Gate hooks on the Copilot CLI's own hook system (backlog item 28)
+
+Executor: `general-purpose`. Effort: medium. Depends on: none (item 27's
+Copilot e2e script, its former blocker, is merged). Raised on 2026-09-25,
+claiming backlog item 28 below. Distinct from G-26: G-26 routes through
+spec-kit's `events:` block and is blocked on moving four scripts under
+`specflow/`; this group writes Copilot's native `.github/hooks/` config
+directly, reads the gate scripts from `.claude/hooks/` unmoved (ADR-0001), and
+does not touch `extension.yml`. `docs/agent-event-mapping.md` records the
+Claude Code vs. Copilot payload field names (`.tool_input.command` vs.
+`.toolArgs.command`, etc.) already measured against `@github/copilot` 1.0.86;
+read it first. This environment has no `GH_TOKEN` scoped for a live Copilot
+CLI session (a local `copilot` binary is installed, but do not assume it is
+authenticated for this check), so the roadmap's live-session verify clause
+cannot be assumed to run here. Try it; if it fails to authenticate, say so in
+the final report and do not fabricate a pass.
+
+- [ ] T620 Write the Copilot hook config
+
+Add `.github/hooks/specflow.json` registering `block-main-commit.sh` and
+`test-gate.sh` under `preToolUse`, `artifact-lint.sh` under `postToolUse`, and
+`session-start.sh` under `sessionStart`. Fetch GitHub's [hooks
+reference](https://docs.github.com/en/copilot/reference/hooks-reference) to
+confirm the exact file name Copilot reads (`docs/agent-event-mapping.md`
+mentions Copilot's own `hooks.json`; confirm whether `.github/hooks/` takes
+one file per hook or one combined file before writing this) and the JSON
+shape, including both a `bash` and a `powershell` command per entry. The
+scripts stay under `.claude/hooks/` per ADR-0001; do not move them.
+Verify: the hook config file parses as valid JSON.
+
+- [ ] T621 Write the exit-code-to-deny-JSON adapter
+
+Add a thin wrapper script, referenced from the hook config, that runs the
+named `.claude/hooks/*.sh` gate script, translating the payload field names
+per `docs/agent-event-mapping.md`'s table, and when the gate exits 2, prints
+the JSON object Copilot's `preToolUse` contract expects on stdout to deny the
+tool call (confirm the exact shape from the hooks reference fetched in T620),
+then exits 0 so Copilot reads the JSON rather than treating a nonzero exit as
+an unrelated hook failure.
+Verify: piping a blocked command's hook payload through the adapter prints
+valid JSON denying the call; piping an allowed command's payload through it
+exits 0 with no deny JSON.
+
+- [ ] T622 Add a hook test for the adapter
+
+Add a case to `.claude/hooks/tests/run.sh` that runs the adapter against a
+payload shaped like a Copilot `preToolUse` event for `git commit` on `main`
+and asserts the deny JSON is printed.
+Verify: `bash .claude/hooks/tests/run.sh` reports 0 failed, including the new
+case.
+
+- [ ] T623 Record the second harness hook directory as an ADR
+
+Add an ADR to `decisions.md` stating that Copilot CLI hooks live under
+`.github/hooks/` (not `.claude/`), that the gate scripts themselves are not
+duplicated or moved, and that a thin adapter bridges the exit-code and
+deny-JSON contracts. Name this ADR as the one backlog item 28 asked for.
+Verify: `decisions.md` has a new ADR entry naming `.github/hooks/specflow.json`.
+
 ## Checked on 2026-09-20, no work needed
 
 Measured against spec-kit 1.0.9.dev0 at `d4229c0`. Each line held, so do not
@@ -732,51 +862,25 @@ G-24 or later. Each keeps the three constraints in `reference.md`. Facts marked
 
 ### Ship it: install, upgrade, release
 
-**23. A catalog entry users can search.** A `catalog.json` (spec-kit catalog
-schema 1.0) at the repository root, served raw from GitHub, and a README line
-telling a user to list it in `.specify/extension-catalogs.yml` with
-`install_allowed: true` or to set `SPECKIT_CATALOG_URL`. Spec-kit's own catalog
-is empty by design, so `specify extension search specflow` finds nothing and
-the only install paths are `--from <zip>` and `--dev`. *Verified:* catalogs are
-JSON files with a schema version, listed with name, url, priority, and
-`install_allowed`; check the entry fields against `docs/reference/extensions.md`
-in your spec-kit version. G-28 settles the naming collision with the three
-bridges already listed, so run it first. Verify: a CI step runs
-`SPECKIT_CATALOG_URL=<raw url> specify extension search specflow` and greps the
-id. Effort: low. Depends on: G-36 (merged).
+Item 23 was claimed as G-53 on 2026-09-25.
 
 **26. An upgrade path the smoke test walks.** `e2e-smoke.sh` installs the
 v1.0.2 release ZIP, installs the checkout over it with `--dev`, and asserts no
 stale command file or `extensions.yml` entry remains. Every user who installed
-1.0.2 upgrades through this path and it has never run. Verify: the smoke test
-reports the upgrade assertions and passes. Effort: low. Depends on: G-36
-(merged).
+1.0.2 upgrades through this path and it has never run. Blocked as of
+2026-09-25: neither `git tag` nor `gh release list` returns anything in this
+repository, so there is no v1.0.2 (or any) release to upgrade from yet. This
+item cannot start until a release is cut; see G-51 if one exists by the time
+this is picked up. Verify: the smoke test reports the upgrade assertions and
+passes. Effort: low. Depends on: G-36 (merged), a cut release.
 
 ### Prove it on both runtimes
 
-**28. Gate hooks on the Copilot CLI.** A `.github/hooks/specflow.json`
-registering the existing scripts under `preToolUse` (block-main-commit,
-test-gate), `postToolUse` (artifact-lint), and `sessionStart` (session-start).
-`copilot-cli.md` says the agent runs each gate itself as a command step, which
-is the prompt-level gate that first-wave item 2 exists to remove. The scripts
-stay in `.claude/hooks/` (ADR-0001); a thin adapter maps exit 2 to the deny
-JSON the Copilot hook expects on stdout, and the config carries both `bash` and
-`powershell` keys. Record the second harness directory as an ADR. *Verified:*
-Copilot CLI hooks live in `.github/hooks/`, support `sessionStart`,
-`sessionEnd`, `userPromptSubmitted`, `preToolUse`, `postToolUse`, and
-`errorOccurred`, and `preToolUse` denies by a JSON object on stdout, not by exit
-code. Verify: a hook test runs the adapter on a blocked command and asserts the
-deny JSON; a live Copilot session refuses `git commit` on main. Effort: medium.
-Depends on: none; the Copilot e2e script (item 27) is merged, so the live check can run.
+Item 28 was claimed as G-54 on 2026-09-25.
 
 ### Operate it
 
-**33. The lint checks a traceability row names a real test.** Once `.analyzed`
-exists, `artifact-lint.sh` reads the `## Traceability` rows and fails when the
-named test is not found in the test tree. `spec-template.md` records that the
-scorer reads only the Test name column, not whether the test exists, so an
-invented name passes. Verify: a hook test with a row naming a missing test
-blocks. Effort: low. Depends on: none.
+Item 33 was claimed as G-52 on 2026-09-25.
 
 **34. A seeded-ambiguity golden.** `examples/seeded-ambiguity/`, a spec with one
 planted ambiguity such as an undefined sort order, and a scorer dimension for
@@ -824,18 +928,16 @@ beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
 ## Suggested order
 
 D-01, D-05, G-20 through G-25, G-28 through G-42, G-43, G-44, G-45, G-46,
-G-48, G-49, and C-01 through C-09 are merged or closed. What is left, in
+G-48, G-49, G-50, and C-01 through C-09 are merged or closed. What is left, in
 order:
 
 1. G-26 T262 and T263, once the three ADR-0022 prerequisites clear.
-2. Backlog items 23 and 26 next; each depended only on G-36, now merged.
-3. Backlog item 28; item 27's live check is no longer blocked, since the
-   Copilot e2e script it needed is merged.
-4. Backlog items 33, 34, and 36 whenever a session is short; none depends on
-   another still open.
-5. G-50 (below) whenever a session is short; every task there is independent
-   of the items above.
-6. G-19 whenever a live agent run is available; this environment has no API
+2. G-52, G-53, and G-54 (claimed from backlog items 33, 23, and 28) whenever a
+   session is short; none depends on another still open, and each is scoped to
+   what this environment can verify.
+3. Backlog item 26, once a release exists to upgrade from.
+4. Backlog items 34 and 36; 34 depends on G-19, 36 is no-code.
+5. G-19 whenever a live agent run is available; this environment has no API
    key to make one.
 
 Pick the item whose `Verify:` line you can run before you start. An item whose
