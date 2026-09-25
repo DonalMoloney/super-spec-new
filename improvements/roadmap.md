@@ -623,7 +623,7 @@ change.
 
 ### templates/*.md
 
-- [ ] T530 Tighten tasks-template.md's Checkpoint Protocol to point at workflow-guide.md
+- [x] T530 Tighten tasks-template.md's Checkpoint Protocol to point at workflow-guide.md
 
 Replace the five-line numbered list under `### Checkpoint Protocol` (lines
 206-213) with two sentences naming `references/workflow-guide.md`'s Human
@@ -633,7 +633,7 @@ this body text).
 Verify: `bash specflow/scripts/e2e-smoke.sh` passes; `grep -c "Ask the user:"
 specflow/templates/tasks-template.md` returns 0.
 
-- [ ] T531 Drop tasks-template.md's Notes bullets that repeat Task Format
+- [x] T531 Drop tasks-template.md's Notes bullets that repeat Task Format
 
 Delete the four bullets under `## Notes` (lines 219-222) restating `[P]`,
 `[TDD]`, `[REVIEW]`, `[SUBAGENT]`, already defined under `## Task Format`
@@ -641,7 +641,7 @@ Delete the four bullets under `## Notes` (lines 219-222) restating `[P]`,
 Verify: `bash specflow/scripts/e2e-smoke.sh` passes; `sed -n '/## Notes/,$p'
 specflow/templates/tasks-template.md` shows exactly 3 bullets.
 
-- [ ] T532 Reorder spec-template.md's Threat Model section after Success Criteria
+- [x] T532 Reorder spec-template.md's Threat Model section after Success Criteria
 
 Move the `## Threat Model` block (lines 126-141, comment and table included)
 to sit after `### Measurable Outcomes` and before `## Traceability`, so the
@@ -651,7 +651,7 @@ Verify: `python3 specflow/scripts/score-artifacts.py <a feature dir under
 specflow/examples with a threat model>` reports the same `threat_model` and
 `spec_sections` scores as before.
 
-- [ ] T533 Trim spec-template.md's Brainstorm Prompts to the 5 fallback categories
+- [x] T533 Trim spec-template.md's Brainstorm Prompts to the 5 fallback categories
 
 Delete the `**Data integrity**` and `**Backwards compatibility**` bullets
 (lines 92-93) from `#### Brainstorm Prompts`. `superpowers-mapping.md` and
@@ -661,7 +661,7 @@ contradicting the fork's own documented behavior.
 Verify: `grep -c "Data integrity\|Backwards compatibility"
 specflow/templates/spec-template.md` returns 0.
 
-- [ ] T534 Reorder constitution-template.md's Code Review Rules before Governance
+- [x] T534 Reorder constitution-template.md's Code Review Rules before Governance
 
 Move the `## Code Review Rules` block (lines 117-126) to sit immediately
 before `## Governance` (currently line 106), so the version/ratification

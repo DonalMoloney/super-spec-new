@@ -205,21 +205,14 @@ proves the task is done. A reader then checks it without asking the implementer.
 
 ### Checkpoint Protocol
 
-At every phase boundary:
-1. Summarize what this phase completed
-2. Run the applicable tests
-3. Report the test results
-4. Ask the user: "Phase [N] complete. Proceed to Phase [N+1]?"
-5. Continue only after the user gives explicit approval
+At every phase boundary, follow `references/workflow-guide.md`'s Human Checkpoint
+Protocol. It names what the agent summarizes, reports, and waits for before the
+next phase starts.
 
 ---
 
 ## Notes
 
-- [P] tasks touch different files, with no dependencies
-- [TDD] tasks follow RED-GREEN-REFACTOR discipline
-- [REVIEW] tasks stop at a human review gate
-- [SUBAGENT] tasks qualify for parallel subagent dispatch
 - The [Story] label maps a task to its user story, for traceability
 - Commit after every task or logical group
 - Stop at any checkpoint to confirm the work independently
