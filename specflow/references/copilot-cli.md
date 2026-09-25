@@ -1,7 +1,7 @@
 # Copilot CLI Reference
 
 Specflow runs on Claude Code and on the GitHub Copilot CLI. The six commands
-and five hooks are prompt contracts, so both agents read the same files. The
+and six hooks are prompt contracts, so both agents read the same files. The
 Copilot CLI lacks four things Claude Code has, and each command names what it
 does instead.
 

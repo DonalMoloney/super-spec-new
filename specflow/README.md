@@ -82,7 +82,7 @@ specify extension list
 The output carries this line:
 
 ```
-Commands: 6 | Hooks: 5
+Commands: 6 | Hooks: 6
 ```
 
 Then run the status command inside the agent. On a fresh project it reports a
