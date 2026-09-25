@@ -22,7 +22,7 @@ To install specflow into a spec-kit project, follow
 | `standards/` | The maintainers. It holds the rules for code, prose, and slides. |
 | `presentation/` | The maintainers. It holds the Marp deck and its diagram sources. |
 | `docs/` | The maintainers. It holds the research behind two design decisions. |
-| `.claude/` | The maintainers. It holds the agents and gate scripts for this checkout. |
+| `.claude/` | The maintainers. It holds the agents and the wrapper scripts that exec the gates shipped under `specflow/gates/`. |
 
 Check a change to this repository before pushing:
 

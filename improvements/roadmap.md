@@ -672,7 +672,7 @@ Verify: `tail -12 specflow/templates/constitution-template.md` ends with the
 
 ### README.md, CHANGELOG.md, references/
 
-- [ ] T540 Move the catalog-submission section out of specflow/README.md
+- [x] T540 Move the catalog-submission section out of specflow/README.md
 
 `specflow/README.md:317-375` (59 lines) holds maintainer-facing
 catalog-submission process inside the user-facing install README. Cut it
@@ -683,7 +683,7 @@ scripts/validate-extension-metadata.py` and `python3
 scripts/validate-release-archive.py` both exit 0; `grep -rn "Submitting to
 the spec-kit catalog" specflow/` finds it only in the new file.
 
-- [ ] T541 Rewrite the root README's stale `.claude/` directory-table row
+- [x] T541 Rewrite the root README's stale `.claude/` directory-table row
 
 `README.md:25` reads "`.claude/` | The maintainers. It holds the agents and
 gate scripts for this checkout.", which predates ADR-0025 moving the real
