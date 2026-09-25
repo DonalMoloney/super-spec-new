@@ -15,10 +15,10 @@
 
   Assign each story a priority (P1, P2, P3), with P1 the most critical.
   Each story meets these independence criteria:
-  - It can be developed without the others.
-  - It can be tested without the others.
-  - It can be deployed without the others.
-  - It can be demonstrated to users without the others.
+  - You can develop it without the others.
+  - You can test it without the others.
+  - You can deploy it without the others.
+  - You can demonstrate it to users without the others.
 -->
 
 ### User Story 1 - [Brief Title] (Priority: P1)
@@ -145,7 +145,7 @@
 ### Measurable Outcomes
 
 - **SC-001**: [Measurable metric, e.g., "Users can complete task in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users"]
+- **SC-002**: [Measurable metric, e.g., "System serves 1000 concurrent users"]
 - **SC-003**: [User satisfaction metric]
 - **SC-004**: [Business metric]
 
