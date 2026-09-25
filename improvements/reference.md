@@ -39,40 +39,48 @@ targets.
 ## Measured state
 
 Measured 2026-09-25 against upstream `c20ac6c1` by rerunning the reproduce
-command below. Lowest real change first. One row the command cannot reach:
-G-30 renamed `references/superpowers-bridge.md` to
+command below, after G-50 merged. Lowest real change first. One row the
+command cannot reach: G-30 renamed `references/superpowers-bridge.md` to
 `references/superpowers-mapping.md`, and the measurer resolves one relative
 path against both roots, so that row is measured by copying upstream's file
-to the local path first. Three files carry no upstream counterpart at all and
+to the local path first. Four files carry no upstream counterpart at all and
 are left out of both the table and the reproduce command below for that
-reason: `commands/gate.md`, `commands/hooks/after-analyze.md`, and
-`commands/hooks/after-clarify.md`.
+reason: `commands/gate.md`, `commands/hooks/after-analyze.md`,
+`commands/hooks/after-clarify.md`, and `references/publishing.md` (added by
+G-50 T540; the reproduce command's exclusion list needs this fourth entry or
+it stops there and measures nothing after it alphabetically).
 
 | File | Real | Last moved by |
 |------|------|---------------|
 | `templates/plan-template.md` | 23% | `prose-rephraser` |
-| `templates/spec-template.md` | 38% | `prose-rephraser` |
+| `templates/spec-template.md` | 39% | G-50 (Brainstorm Prompts trimmed to 5 categories, Threat Model reordered) |
 | `templates/checklist-template.md` | 45% | `prose-rephraser` |
-| `templates/tasks-template.md` | 49% | `prose-rephraser` |
-| `templates/constitution-template.md` | 50% | `prose-rephraser` |
+| `templates/constitution-template.md` | 50% | G-50 (Code Review Rules reordered before Governance) |
+| `templates/tasks-template.md` | 51% | G-50 (Checkpoint Protocol and Notes tightened) |
 | `extension.yml` | 56% | `prose-rephraser` |
-| `SKILL.md` | 57% | skill count and sample version updated |
 | `references/superpowers-mapping.md` | 57% | `prose-rephraser` |
 | `commands/execute.md` | 61% | `divergence-renamer` |
-| `commands/status.md` | 62% | per-command script declared in frontmatter |
+| `commands/status.md` | 64% | G-50 (Output section added) |
 | `commands/hooks/after-tasks.md` | 65% | `divergence-renamer` |
-| `references/workflow-guide.md` | 65% | `divergence-renamer` |
-| `commands/brainstorm.md` | 67% | `divergence-renamer` |
+| `commands/brainstorm.md` | 68% | G-50 (constitution gate step added) |
+| `references/workflow-guide.md` | 70% | G-50 (retitled, reordered, headings renamed, Exit Criteria added) |
 | `commands/hooks/after-execute.md` | 70% | `divergence-renamer` |
 | `commands/hooks/before-execute.md` | 74% | `divergence-renamer` |
 | `commands/tasks.md` | 75% | `divergence-renamer` |
+| `SKILL.md` | 76% | G-50 (retitled, reordered, hooks and gates documented, 8 headings renamed) |
 | `CHANGELOG.md` | 77% | `prose-rephraser` |
 | `commands/review.md` | 80% | `divergence-renamer` |
 | `scripts/e2e-smoke.sh` | 83% | frontmatter asserted on both surfaces |
 | `scripts/validate-release-archive.py` | 87% | `script-refactorer` |
 | `scripts/e2e-agent-claude.sh` | 90% | Copilot CLI added to the seven e2e stages |
 | `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` |
-| `README.md` | 134% | `prose-rephraser` |
+| `README.md` | 126% | `prose-rephraser`, then G-50 (catalog-submission section moved to `references/publishing.md`) |
+
+`SKILL.md` is the largest single move since this table was last measured: 57%
+to 76%, the file's biggest jump on record, from G-50's title rewrite,
+reordering, and 8 heading renames. `README.md` dropped, 134% to 126%, because
+G-50 T540 moved 59 lines of catalog-submission process out to the new
+`references/publishing.md`, shortening the file both sides compare.
 
 The installable payload has moved a long way from upstream in wording and,
 since the previous measurement, in shape as well: `extension.yml` now
@@ -87,7 +95,7 @@ Reproduce the table from the repository root:
 ```bash
 git clone -q https://github.com/WangX0111/superspec "$SCRATCH/upstream"
 cd specflow && git ls-files | grep -E '\.(md|yml|py|sh)$' | grep -v '^examples/' \
-  | grep -vE 'copilot-cli\.md|lint-standards\.py|score-artifacts\.py|tests/test_(lint_standards|score_artifacts|validate_extension_metadata|validate_release_archive)\.py|commands/gate\.md|commands/hooks/after-(analyze|clarify)\.md|scripts/e2e-(agent-copilot|stages)\.sh|^gates/|references/superpowers-mapping\.md' \
+  | grep -vE 'copilot-cli\.md|lint-standards\.py|score-artifacts\.py|tests/test_(lint_standards|score_artifacts|validate_extension_metadata|validate_release_archive)\.py|commands/gate\.md|commands/hooks/after-(analyze|clarify)\.md|scripts/e2e-(agent-copilot|stages)\.sh|^gates/|references/superpowers-mapping\.md|references/publishing\.md' \
   | xargs python3 ../.claude/divergence/measure-divergence.py --local . --upstream "$SCRATCH/upstream"
 ```
 
@@ -264,8 +272,10 @@ Every shipped text file with an upstream counterpart has had its dedicated
 the pass has run and the Real column records what it measured. Mark a row
 `(working on)` before dispatching, and commit that mark to `main`. The Real
 column is the raw divergence measured above, not a proxy for whether the pass
-has run: `README.md` measured 134% both before and after its pass, because its
-content had already diverged from upstream.
+has run: `README.md` measured 134% both before and after its `prose-rephraser`
+pass, because its content had already diverged from upstream. It now measures
+126%, moved by a later, unrelated change: G-50 T540 moved 59 lines of
+catalog-submission process to `references/publishing.md`.
 
 | File | Real | Agent | Waiting on |
 |------|------|-------|------------|
@@ -274,12 +284,12 @@ content had already diverged from upstream.
 | `CHANGELOG.md` | 77% | `prose-rephraser` | |
 | `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` | |
 | `references/superpowers-mapping.md` | 57% | `prose-rephraser` | |
-| `README.md` | 134% | `prose-rephraser` | |
+| `README.md` | 126% | `prose-rephraser` | |
 | `templates/plan-template.md` | 23% | `prose-rephraser` | |
-| `templates/spec-template.md` | 38% | `prose-rephraser` | |
+| `templates/spec-template.md` | 39% | `prose-rephraser` | |
 | `templates/checklist-template.md` | 45% | `prose-rephraser` | |
 | `templates/constitution-template.md` | 50% | `prose-rephraser` | |
-| `templates/tasks-template.md` | 49% | `prose-rephraser` | |
+| `templates/tasks-template.md` | 51% | `prose-rephraser` | |
 | `scripts/validate-release-archive.py` | 87% | `script-refactorer` | |
 
 A template's Real column moves little because most of its lines cannot move.
@@ -315,15 +325,15 @@ column without moving the shape; only `divergence-renamer` moves the shape.
 | File | Real | Named units shared |
 |------|------|--------------------|
 | `templates/plan-template.md` | 23% | 12 of 13 headings |
-| `templates/spec-template.md` | 38% | 15 of 19 headings |
+| `templates/spec-template.md` | 39% | 15 of 19 headings |
 | `templates/checklist-template.md` | 45% | 11 of 12 headings |
 | `templates/constitution-template.md` | 50% | 15 of 17 headings |
-| `templates/tasks-template.md` | 49% | 19 of 20 headings |
+| `templates/tasks-template.md` | 51% | 19 of 20 headings |
 | `commands/hooks/*.md` | 65 to 74% | 2 of 3 each |
 | `extension.yml` | 56% | 6 of 6 keys |
-| `SKILL.md` | 57% | 14 of 21 headings |
-| `references/workflow-guide.md` | 65% | 30 of 43 headings |
-| `commands/*.md` | 61 to 80% | 4 of 5 to 7 headings |
+| `SKILL.md` | 76% | 4 of 21 headings |
+| `references/workflow-guide.md` | 70% | 21 of 46 headings |
+| `commands/*.md` | 61 to 80% | 4 of 6 to 7 headings |
 | `scripts/validate-release-archive.py` | 87% | 3 of 13 functions |
 | `scripts/validate-extension-metadata.py` | 90% | 2 of 4 functions |
 | `scripts/e2e-agent-claude.sh` | 90% | 0 of 11 functions |
@@ -349,25 +359,28 @@ free prose count, never against a script's.
 ## Reducing what is left
 
 Wording has moved a long way; shape has moved only where a renamer pass has
-reached. The inherited shipped documents still share about 77 percent of their
-heading structure with upstream, down from 84 percent before the two renames
-recorded below. ADR-0013 freezes a heading during a prose pass, so moving shape
-is the only lever left and `divergence-renamer` is the only agent that pulls it.
+reached. G-50 (merged 2026-09-25) executed most of what this table
+recommended for `references/workflow-guide.md` and `SKILL.md`: title
+rewrites, 4 heading renames in the guide, 8 in `SKILL.md`, and a reorder in
+both. Their rows below are stale as a result and are not yet re-measured
+against the same per-heading guard check the rest of the table used; the
+`templates/*.md` and `commands/*.md` rows are unaffected, since no G-50 task
+renamed a template or command heading.
 
 A heading counts here when it is still spelled as upstream spells it and no
 script, workflow, or test in this repository greps it. A heading that is free
 but already moved buys nothing, so the count excludes it; earlier revisions of
 this table counted every free heading and so overstated what a pass could reach.
-Measured 2026-09-25 by searching every heading against `*.sh`, `*.py`, and
+Measured 2026-09-11 by searching every heading against `*.sh`, `*.py`, and
 `*.yml` outside `examples/`. A coincidental substring match counts as frozen, so
 each number is a floor.
 
 | File | Free and still upstream's | Risk | Yield |
 |------|---------------------------|------|-------|
-| `references/workflow-guide.md` | 19 of 34 | Low. A reference; content is cheap to diverge, the file name is not | Highest |
+| `references/workflow-guide.md` | Stale (was 19 of 34 pre-G-50); needs a fresh per-heading guard check | Low. A reference; content is cheap to diverge, the file name is not | Low, most of the earlier yield is taken |
 | `templates/tasks-template.md` | 19 of 20 | Medium. Renaming strands the recorded goldens | High |
 | `templates/constitution-template.md` | 14 of 17 | Medium. Same | Medium |
-| `SKILL.md` | 13 of 21 | Low. Spec-kit 0.16.2 never reads the extension-root `SKILL.md`; it renders one skill per `commands/*.md`. An external `~/.agents/skills/` loader's section expectations are unverified. | Medium |
+| `SKILL.md` | 1 of 21 (re-verified 2026-09-25: only `` `/speckit.checklist` `` is both shared and ungrepped; the other 3 shared headings are cited in `e2e-stages.sh`/`e2e-smoke.sh`/`write-marker.sh`) | Low. Spec-kit 0.16.2 never reads the extension-root `SKILL.md`; it renders one skill per `commands/*.md`. An external `~/.agents/skills/` loader's section expectations are unverified. | Low, G-50 took the rest |
 | `templates/checklist-template.md` | 10 of 12 | Medium. Same | Medium |
 | `templates/plan-template.md` | 9 of 13 | Medium. Same | Medium |
 | `templates/spec-template.md` | 8 of 19 | Medium. Same | Low |
@@ -385,12 +398,16 @@ merging.
   sample missed `after-clarify.md` and `after-analyze.md`. All five are now
   `## Preconditions`.
 
-Order of attack, by yield per unit of risk:
+Order of attack, by yield per unit of risk, before G-50:
 
-1. `references/workflow-guide.md`. Nineteen reachable headings in the file with
-   the loosest contract. Nothing a catalog install runs asserts its section
-   names, and the Gate markers table `e2e-smoke.sh` reads is matched by its
-   rows, not by the heading above them.
+1. `references/workflow-guide.md`. Nineteen reachable headings in the file
+   with the loosest contract, with one exception: `### Gate markers` is
+   frozen at `###` depth, not free. `specflow/gates/python/validate-progress.py`
+   pins the literal `### Gate markers` in `GATE_SECTION` and raises
+   `ContractUnavailable` without it, proven by renaming it in a scratch copy
+   and watching the shipped gate exit 2. `e2e-smoke.sh` separately greps the
+   table's rows, unscoped to the heading; both checks exist, and the heading
+   check is the stricter one.
 2. `templates/tasks-template.md`, then the other four in the order of the
    table. It ties the guide on count and loses on risk: regenerate the goldens
    in the same change, because a template and its recorded output drift the
@@ -399,6 +416,11 @@ Order of attack, by yield per unit of risk:
    Spec-kit 0.16.2's own loader is checked and clear: it never opens the
    extension-root `SKILL.md`. The file a `~/.agents/skills/` install reads
    first still wants its section expectations checked before a rename lands.
+
+G-50 executed items 2 and 3 (`templates/tasks-template.md`'s reachable prose,
+`SKILL.md` down to 1 of 21) and most of item 1. What is left in
+`references/workflow-guide.md` needs a fresh per-heading guard check before
+the next pass, per the table's note above.
 
 Not worth taking: the command files. Two or three free headings each, against a
 smoke test that counts Process steps per file and a workflow guide that names
