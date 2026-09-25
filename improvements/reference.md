@@ -113,7 +113,7 @@ not an open option.
   `before-execute.md` does at step 6. Claimed by: D-01.
 - Done: `before-tasks.md`, a `before_tasks` hook that stops when the spec's
   Open Questions table has unresolved rows, or the constitution is missing.
-  G-56, PR pending.
+  G-56, PR #78.
 - **Extend** `after-execute.md` to write a findings file `review.md` reads.
   Done, PR #57.
 - Done: `after-clarify.md` and `after-analyze.md`, each firing

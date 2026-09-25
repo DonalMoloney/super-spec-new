@@ -969,7 +969,7 @@ Search for a hook count or a hook-name list that predates this change:
 finds candidates, including `AGENTS.md`'s Architecture section and
 `specflow/README.md`. Update each to include `before_tasks` and, if it states
 a count, raise it by one. Verify: the same grep shows every listed file names
-five hooks, not four.
+six hooks, not five.
 
 ## Checked on 2026-09-20, no work needed
 
