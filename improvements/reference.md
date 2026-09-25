@@ -152,9 +152,9 @@ reads first.
 
 - **Tighten** the phase list to name the gate marker each phase produces, so it
   and `workflow-guide.md` cannot drift. Claimed by: G-22.
-- **Replace**: not warranted. Spec-kit 0.16.2 never reads the extension-root
-  `SKILL.md`; it renders one skill per `commands/*.md`. An external
-  `~/.agents/skills/` loader's section expectations are unverified.
+- **Replace**: Low. Spec-kit 0.16.2 never reads the extension-root `SKILL.md`;
+  it renders one skill per `commands/*.md`. An external `~/.agents/skills/`
+  loader's section expectations are unverified.
 - Done: the Target surface section (D-03, PR #59) and the prose rewrite
   (PR #70).
 

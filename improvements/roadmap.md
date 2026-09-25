@@ -437,7 +437,7 @@ Verify: `bash verify.sh` passes; `grep -rF 'Quick Reference' specflow/
 
 ### SKILL.md
 
-- [ ] T510 Correct reference.md's claim that spec-kit's loader reads SKILL.md's sections
+- [x] T510 Correct reference.md's claim that spec-kit's loader reads SKILL.md's sections
 
 `improvements/reference.md:157` and `:364` both say spec-kit's skill loader
 expects SKILL.md's upstream section shape. Spec-kit 0.16.2's
@@ -609,7 +609,7 @@ bans evaluative adjectives about the work itself ("clear" as praise); this
 line was never touched by the file's earlier prose pass.
 Verify: `grep -n 'clear' specflow/commands/review.md` returns nothing.
 
-- [ ] T525 Correct reference.md's Names-table cost cell for the hook file names
+- [x] T525 Correct reference.md's Names-table cost cell for the hook file names
 
 `improvements/reference.md:241` lists the cost of renaming
 `before-execute.md`/`after-execute.md` as "Free, and no reason", but
@@ -695,7 +695,7 @@ Verify: `grep -n "gate scripts" README.md` no longer matches the old wording.
 
 ### examples/
 
-- [ ] T542 Record the examples/ unmeasured-upstream total in reference.md
+- [x] T542 Record the examples/ unmeasured-upstream total in reference.md
 
 `static-landing-page/` and `sample-workflow.md` hold approximately 2,224
 lines of verbatim upstream text at roughly 0% real divergence, none of it in
