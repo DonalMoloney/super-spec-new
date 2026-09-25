@@ -69,7 +69,7 @@ assert_grep() {
   else miss "$desc (pattern '$pattern' missing from ${file#$WORK/})"; return 1; fi
 }
 
-# brainstorm.md step 7 appends an ADR-lite entry for each Open Questions row the
+# brainstorm.md step 9 appends an ADR-lite entry for each Open Questions row the
 # run marks Resolved, so every resolved id must appear in decisions.md. A run
 # that resolved nothing has nothing to record.
 assert_resolved_questions_recorded() {
@@ -516,7 +516,7 @@ and add (or expand) at minimum:
   - an "## Edge Cases" section
   - an "## Open Questions" or "## Assumptions" section
 
-Per step 7 of the command, an Open Questions row you mark Resolved because a
+Per step 9 of the command, an Open Questions row you mark Resolved because a
 choice was settled also gets an ADR-lite entry appended to decisions.md at the
 project root.
 

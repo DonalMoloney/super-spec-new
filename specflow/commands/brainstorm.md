@@ -56,7 +56,7 @@ The command returns an updated spec file with refined edge cases, resolved open
 questions, and brainstorm log entries.
 
 The command also appends an ADR-lite entry to `decisions.md` for each resolved
-question that settled a choice, so a later run reads it at step 3 instead of
+question that settled a choice, so a later run reads it at step 4 instead of
 asking again.
 
 ## Iteration

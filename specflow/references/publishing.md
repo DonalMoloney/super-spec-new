@@ -1,6 +1,5 @@
-This document covers the process a maintainer follows to submit specflow to the spec-kit community catalog.
-
-## Submitting to the spec-kit catalog
+A spec-kit maintainer submits specflow to the community catalog through the
+steps below.
 
 Only a spec-kit maintainer edits the community catalog. Do not open a pull
 request against `extensions/catalog.community.json`. The

@@ -468,7 +468,8 @@ Mapping table names — it is the stale copy, not this one.
 Verify: `cd specflow && python3 scripts/validate-extension-metadata.py &&
 python3 scripts/validate-release-archive.py && bash scripts/e2e-smoke.sh &&
 python3 scripts/lint-standards.py` all pass; `grep -c 'detected:'
-references/workflow-guide.md` returns 12.
+references/workflow-guide.md` returns 15 (12 from the moved sample block, plus
+3 pre-existing prose mentions this task did not touch).
 
 - [x] T512 Delete SKILL.md's phase-resume table in favor of the guide's
 
