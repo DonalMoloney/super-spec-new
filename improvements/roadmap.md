@@ -308,7 +308,7 @@ Verify: the outcome is an ADR in `decisions.md`, whichever way it goes.
 templates, scripts, agents, assertions. Verify: each count is listed beside the
 command that produced it, and every one matches.
 
-## G-50 — Diverge more: wording, layout, and correctness fixes from the 2026-09-25 survey
+## G-50 — Diverge more: wording, layout, and correctness fixes from the 2026-09-25 survey (merged: direct)
 
 Executor: `general-purpose` per task, or `prose-rephraser`/`script-refactorer`/
 `divergence-renamer` where named. Effort: low unless stated. Depends on: none
