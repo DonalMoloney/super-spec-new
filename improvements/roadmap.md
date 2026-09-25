@@ -61,7 +61,6 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 |---|---|---|---|
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
 | G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 and G-55's script move done, T262 and T263 behind the remaining `post_tool_use` one-event-one-handler design question |
-| G-56 | Nothing stops spec-kit's own `/speckit.tasks` on an unresolved Open Question | low | `extension.yml`'s `hooks:` block has no `before_tasks` entry |
 
 ## G-19 — Examples produced by this fork, not upstream
 
@@ -962,7 +961,7 @@ release, installing the published ZIP on both surfaces, making the
 release-asset README command a runnable test, and walking the 1.0.2 to 1.1.0
 upgrade path. Each depends on the tag existing.
 
-## G-56 — A `before_tasks` hook that stops core `/speckit.tasks` on an unresolved Open Question (working on)
+## G-56 — A `before_tasks` hook that stops core `/speckit.tasks` on an unresolved Open Question (merged: PR #78)
 
 Executor: `general-purpose`. Effort: low. Depends on: none. Raised on
 2026-09-25, promoted from the Deferred list below, where it read: "cheaper
