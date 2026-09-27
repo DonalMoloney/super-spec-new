@@ -23,7 +23,6 @@ PUBLIC_DOCS = (
     "SKILL.md",
     "references/superpowers-mapping.md",
     "references/workflow-guide.md",
-    "examples/sample-workflow.md",
     "templates/constitution-template.md",
     "templates/spec-template.md",
     "templates/plan-template.md",

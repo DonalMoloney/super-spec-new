@@ -637,7 +637,7 @@ agent detects the resume point from these files and continues from there.
 A feature spec directory may hold a `progress.yml` file:
 
 ```yaml
-spec: 001-static-landing-page
+spec: 001-link-audit
 status: complete
 current_phase: 1
 brainstorm:

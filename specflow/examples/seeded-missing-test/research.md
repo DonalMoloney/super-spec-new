@@ -1,97 +1,108 @@
-# Research: Static Landing Page
+# Phase 0 Research: Link Audit CLI
 
-**Feature**: 001-static-landing-page | **Date**: 2026-05-30
+spec.md carries no `NEEDS CLARIFICATION` markers — its five Open Questions
+(Q1–Q5) were already resolved during brainstorming. This document covers the
+implementation-level decisions the spec leaves to the plan: how to invoke
+git, how to parse links, and how to keep the tool inside Constitution
+Principle I (standard library only).
 
-## Research Tasks
+## D1: How to obtain the tracked-file list (FR-001)
 
-### R-001: "Get Started" Button Destination URL
+- **Decision**: Shell out to `git ls-files -- '*.md'` via `subprocess.run`,
+  capturing stdout, and treat a non-zero return code or a `FileNotFoundError`
+  (git not on PATH) as a scan-abort (exit 2), matching User Story 3
+  Scenario 3.
+- **Rationale**: `git ls-files` is the spec's explicit source of truth
+  (FR-001); re-implementing gitignore/index semantics in Python would
+  duplicate git's own logic and risk drifting from it. `subprocess` is
+  standard library, satisfying Principle I.
+- **Alternatives considered**: A git Python binding (e.g. GitPython) —
+  rejected, it is a third-party runtime dependency and violates Principle I.
+  Walking the filesystem and re-parsing `.gitignore` — rejected, it
+  duplicates git's own file-selection logic and is more likely to diverge
+  from what `git ls-files` actually reports.
 
-**Decision**: Use `#install` as the default link target, scrolling to the install snippet section.
+## D2: How to extract inline links (FR-002)
 
-**Rationale**: The spec identifies the destination as an Open Question (OQ-001). Until a documentation URL is confirmed, an in-page anchor provides the best user experience — it takes the visitor directly to the actionable install command, which is the most useful "getting started" step. A bare `#` placeholder would be confusing; a dead external link would be worse. The `#install` anchor is meaningful, functional, and can be trivially updated later.
+- **Decision**: A single compiled regular expression matching Markdown
+  inline link syntax `[text](target)`, applied per line so each match keeps
+  its source line number for FR-006's reporting requirement. No Markdown
+  AST parser is used.
+- **Rationale**: The spec (Assumptions) scopes the feature to standard
+  inline link syntax only — reference-style links and `<a href>` are
+  explicitly out of scope. A full CommonMark parser is unnecessary
+  complexity for a single, well-bounded syntax and would add a
+  non-standard-library dependency, violating Principle I.
+- **Alternatives considered**: `markdown`/`mistune`/`commonmark` third-party
+  parsers — rejected, all are runtime dependencies outside the standard
+  library. A single whole-file regex without line tracking — rejected,
+  FR-006 requires the report to identify "the line or link text."
+- **Note on scope**: The spec does not ask for fenced-code-block exclusion
+  (a link written inside a ```` ``` ```` block is still extracted and
+  checked like any other). This is intentional minimalism, not an oversight
+  — adding it would be scope beyond FR-002 unless a future spec revision
+  asks for it.
 
-**Alternatives considered**:
-- `#` (bare anchor): Navigates nowhere; poor UX.
-- External documentation URL: Not yet available; would result in a broken link.
-- `#features`: Less actionable than `#install`; the features section informs but doesn't enable.
+## D3: How to slugify headings (FR-005, Q1)
 
----
+- **Decision**: Implement GitHub's slug algorithm directly: lowercase,
+  strip characters outside `[a-z0-9 _-]`, convert spaces to hyphens, then
+  append `-1`, `-2`, ... to the 2nd+ occurrence of an identical slug within
+  the same file, in document order.
+- **Rationale**: Q1 already resolved the convention to use; this decision
+  only fixes the implementation, which is small enough (~10 lines) that no
+  library is justified and Principle I forbids adding one.
+- **Alternatives considered**: A `slugify` PyPI package — rejected, third-
+  party runtime dependency. Rejected in favor of the direct, testable
+  implementation.
 
-### R-002: Exact Install Command
+## D4: How to percent-decode and strip query strings (FR-011)
 
-**Decision**: Display `npm install -g specflow` as the install snippet.
+- **Decision**: `urllib.parse.urlsplit` to separate the path from any query
+  string, then `urllib.parse.unquote` to percent-decode the path component,
+  before resolving it against the file system.
+- **Rationale**: Both are standard library (`urllib.parse`), satisfying
+  Principle I, and are the canonical stdlib tools for this exact
+  transformation.
+- **Alternatives considered**: Hand-rolled percent-decoding via `str.replace`
+  — rejected, reinventing a well-covered stdlib function risks subtle
+  decoding bugs (e.g. multi-byte UTF-8 sequences).
 
-**Rationale**: The project name is "SpecFlow" and npm is the most common global-install mechanism for developer tools of this type. The spec assumes this command (OQ-002). The exact package name and registry must be confirmed before production deployment, but this is the correct default for a working implementation.
+## D5: How to classify external schemes (FR-003)
 
-**Alternatives considered**:
-- `npx specflow`: Avoids global install but implies a run-once workflow; SpecFlow is a persistent CLI tool.
-- `brew install specflow`: Platform-specific; not available to all developers.
-- `curl | sh`: Security-conscious developers avoid pipe-to-shell installs.
+- **Decision**: `urllib.parse.urlsplit(target).scheme` — if non-empty (e.g.
+  `http`, `https`, `mailto`, `ftp`), skip the link entirely before any file
+  system or network call.
+- **Rationale**: Matches how browsers and Markdown renderers distinguish a
+  URL from a relative path, using only the standard library.
+- **Alternatives considered**: A fixed prefix list (`("http://", "https://",
+  "mailto:")`) — rejected, brittle against schemes not enumerated in the
+  spec's examples (e.g. `ftp://`, `tel:`); `urlsplit` generalizes correctly
+  without maintaining a list.
 
----
+## D6: Unreadable-file handling (FR-012, Q2)
 
-### R-003: Workflow Diagram CSS Approach
+- **Decision**: Wrap each tracked file's read in a `try`/`except` over
+  `OSError` and `UnicodeDecodeError`; on either, abort the scan immediately,
+  print an error naming the file and the underlying reason (from the
+  caught exception), and exit 2.
+- **Rationale**: Q2 resolved the abort-vs-skip question in favor of abort;
+  this decision only fixes which exception types to catch, matching the
+  three named causes in the Edge Cases section (permission denied, deleted
+  mid-scan, undecodable bytes).
+- **Alternatives considered**: Skip the unreadable file and continue —
+  rejected by Q2's resolution (risks a false-clean report).
 
-**Decision**: Use a CSS-only step indicator with numbered circles and connecting horizontal lines (flexbox-based).
+## D7: Test strategy for "no network access" (FR-008, SC-002)
 
-**Rationale**: The spec raises OQ-003 about CSS-drawn arrows vs step indicators. CSS arrows (`::after` pseudo-elements with border tricks or rotated elements) have inconsistent rendering across browsers and risk pushing page weight toward the 64 KB constitutional limit due to complex CSS. A step-indicator pattern (numbered circles with horizontal connecting lines) is:
-- Visually clear and universally understood
-- Lightweight in CSS (minimal rules needed)
-- Consistent across browsers
-- Fully accessible (semantic `<ol>` with visible step numbers)
-
-**Alternatives considered**:
-- CSS-drawn arrows (`border` trick): Browser rendering inconsistencies; more CSS code; risk of 64 KB budget exceedance.
-- SVG diagram inline: Would work but adds markup weight; harder to make responsive.
-- CSS Grid arrows with `clip-path`: Not supported in all target browsers; overly complex.
-
----
-
-### R-004: System Font Stack for Developer Audience
-
-**Decision**: Use the modern system font stack: `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif` for body text and `"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace` for code snippets.
-
-**Rationale**: Constitution Principle I (Zero Runtime Dependencies) prohibits external font CDN links. System fonts render fast, look native on each platform, and are familiar to developers. The monospace stack ensures install command snippets are visually distinct and appropriately technical.
-
-**Alternatives considered**:
-- Google Fonts (Inter, JetBrains Mono): Violates constitution — external network dependency.
-- Web-safe fonts only (Arial, Courier): Adequate but less polished; system font stack includes them as fallbacks.
-
----
-
-### R-005: CSS Feature Baseline for Target Browsers
-
-**Decision**: Use Flexbox as the primary layout mechanism. CSS Grid for the features card layout. Both have full support in the last 2 major versions of all target browsers.
-
-**Rationale**: The constitution limits CSS features to those with baseline support in Chrome, Firefox, Safari, and Edge (last 2 major versions). Flexbox and Grid are universally supported. `clamp()` for responsive font sizing is also baseline-supported and will be used. `forced-colors` media query is supported in all target browsers.
-
-**Alternatives considered**:
-- Float-based layout: Unnecessary; flexbox has universal support.
-- CSS Container Queries: Not yet baseline in Safari; too risky.
-
----
-
-### R-006: Responsive Breakpoint Strategy
-
-**Decision**: Mobile-first with two breakpoints:
-- Base (≥320px): Single-column, stacked layout
-- `@media (min-width: 768px)`: Two-column features grid, horizontal step indicator
-- `@media (min-width: 1024px)`: Three-column features grid, full-width step indicator
-
-**Rationale**: Constitution Principle III mandates mobile-first. Three breakpoints cover the spec's viewport range (320px–1920px+) without over-engineering. The 768px and 1024px breakpoints align with common device classes (tablet, desktop).
-
-**Alternatives considered**:
-- Four+ breakpoints: Over-engineering for a single static page.
-- Single breakpoint at 600px: Insufficient — the features grid needs two transitions (stack → 2-col → 3-col).
-
----
-
-### R-007: Print Stylesheet Strategy
-
-**Decision**: Use `@media print` to: hide decorative backgrounds/borders, set body to `serif` font, remove `max-width` constraint, force single-column layout, show all content in document order, and preserve the install snippet with a visible border.
-
-**Rationale**: FR-014 requires an ink-friendly print stylesheet. Decorative elements (hero background, card shadows, step indicator circles) should be suppressed. Content should flow linearly. The install snippet must remain visible (tracked by acceptance criteria).
-
-**Alternatives considered**:
-- Separate print CSS file: Violates single-file constraint.
-- No print styles: Violates FR-014.
+- **Decision**: A `pytest` test monkeypatches `socket.socket.connect` (and
+  `socket.create_connection`) to raise if invoked during a full CLI run
+  against a fixture repo containing every link category (external, missing
+  file, missing anchor, valid).
+- **Rationale**: SC-002 requires this to be "verifiable via network-activity
+  monitoring during the scan" — patching the stdlib socket entry point is a
+  standard-library-only way to make a negative claim ("no network call
+  occurred") into an executable assertion, satisfying Principle V.
+- **Alternatives considered**: Running the test in a network-namespace-
+  isolated sandbox — rejected as environment-dependent and not portable to
+  every CI runner the constitution targets.

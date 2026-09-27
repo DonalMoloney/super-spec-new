@@ -35,7 +35,7 @@ The rest run from inside `specflow/` (script paths are relative to that director
 | `python3 scripts/validate-release-archive.py [git-ref]` | Rebuilds the `git archive` ZIP spec-kit's catalog would download and checks it against spec-kit's size/entry limits |
 | `bash scripts/e2e-smoke.sh` | Structural end-to-end test (no LLM), ~60s: installs the extension into a fresh spec-kit project and asserts the file layout |
 | `E2E_DRY_RUN=1 bash scripts/e2e-agent-claude.sh` | Full agent-driven e2e test across all 7 workflow stages, in dry-run (no API calls) mode |
-| `ANTHROPIC_API_KEY=... bash scripts/e2e-agent-claude.sh` | Same, but drives `claude -p` through each stage (costs money) |
+| `bash scripts/e2e-agent-claude.sh` | Same, but drives `claude -p` through each stage on a `claude` login or `ANTHROPIC_API_KEY`, and spends usage |
 | `E2E_DRY_RUN=1 bash scripts/e2e-agent-copilot.sh` | The same seven stages on the GitHub Copilot CLI, in dry-run mode. Both agent scripts source `scripts/e2e-stages.sh`, which holds the stages and the assertions |
 
 CI (`.github/workflows/ci.yml`) runs the two validate scripts, the script, review and
@@ -76,11 +76,10 @@ there, so a workflow under `specflow/` never runs.
 - `specflow/references/`: `workflow-guide.md` (built-in fallback protocols) and
   `superpowers-mapping.md` (skill detection/mapping details).
 - `specflow/examples/`: teaching material, not runtime payload. `link-audit/`
-  is this fork's artifact set, constructed rather than recorded and labelled as
-  such in its README. `static-landing-page/` is upstream's real-run snapshot and
-  the only recorded one, which is why G-19 T194 does not delete it yet.
-  `seeded-bug/` is that snapshot minus one traceability row, and
-  `mutation-gate-sample/` feeds the mutation gate.
+  is a recorded run of this fork's pipeline and the scorer's golden. Each
+  `seeded-*/` directory copies that run's feature directory with one planted
+  flaw the scorer must report, and `mutation-gate-sample/` feeds the mutation
+  gate.
 - `specflow/assets/`: workflow diagrams (~12 MiB); documentation media, not runtime payload.
 - `presentation/`: the Marp deck (`marp-deck/`) with its Mermaid and SVG
   diagram sources, and `use-guide/` explaining how to render it.

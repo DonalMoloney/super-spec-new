@@ -469,4 +469,4 @@ user's explicit approval. **Never skip a checkpoint.**
 
 - A phase-by-phase walkthrough: [workflow-guide.md](references/workflow-guide.md)
 - How the superpowers integration works: [superpowers-mapping.md](references/superpowers-mapping.md)
-- A full worked example: [sample-workflow.md](https://github.com/DonalMoloney/super-spec-new/blob/main/specflow/examples/sample-workflow.md), which the install archive leaves out
+- A full recorded run: [examples/link-audit](https://github.com/DonalMoloney/super-spec-new/tree/main/specflow/examples/link-audit), which the install archive leaves out

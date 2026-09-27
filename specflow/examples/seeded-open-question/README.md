@@ -1,12 +1,12 @@
 # seeded-open-question
 
 This directory is a feature directory for `specflow/scripts/score-artifacts.py` to
-score. It is a copy of `../static-landing-page/specs/001-static-landing-page/` with one
-deliberate flaw. A `.clarified` marker file was added beside `spec.md`, while `spec.md`
-itself is untouched: two of the three rows in the `## Open Questions` table, OQ-001 and
-OQ-002, still read `Open` rather than `Resolved`. The scorer must report
-`open_questions.unresolved` as `["OQ-001", "OQ-002"]`, 1 resolved of 3 questions, and
-must score every other dimension the same as the landing page golden. Reproduce with:
+score. It is a copy of `../link-audit/specs/001-link-audit/`, the recorded run,
+with one deliberate flaw. The Status cells of Q6 and Q7 in the `## Open Questions` table
+of `spec.md` were set back from `Resolved` to `Open`, while the `.clarified` marker
+beside `spec.md` stays. A clarified spec with open questions is the gap. The scorer
+must report `open_questions.unresolved` as `["Q6", "Q7"]`, 5 resolved of 7
+questions, and must score every other dimension the same as the recorded run. Reproduce with:
 
 ```bash
 python3 specflow/scripts/score-artifacts.py specflow/examples/seeded-open-question

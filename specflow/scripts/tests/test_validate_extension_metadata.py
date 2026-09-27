@@ -14,12 +14,10 @@ EXTENSION_DIR = Path(__file__).resolve().parents[2]
 CATALOG_INSTALL_LINE = "specify extension add specflow"
 DEV_INSTALL_LINE = "specify extension add ./specflow --dev"
 
-# The validator reads examples/sample-workflow.md, so only the snapshot
-# subdirectories under examples/ are left out of the copy.
+# The validator reads no file under examples/, so the copy leaves it out.
 SKIPPED_DIRECTORIES = {
     EXTENSION_DIR / "assets",
-    EXTENSION_DIR / "examples" / "static-landing-page",
-    EXTENSION_DIR / "examples" / "seeded-bug",
+    EXTENSION_DIR / "examples",
     EXTENSION_DIR / "scripts" / "tests",
 }
 
