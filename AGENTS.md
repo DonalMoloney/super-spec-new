@@ -35,7 +35,7 @@ The rest run from inside `specflow/` (script paths are relative to that director
 | `python3 scripts/validate-release-archive.py [git-ref]` | Rebuilds the `git archive` ZIP spec-kit's catalog would download and checks it against spec-kit's size/entry limits |
 | `bash scripts/e2e-smoke.sh` | Structural end-to-end test (no LLM), ~60s: installs the extension into a fresh spec-kit project and asserts the file layout |
 | `E2E_DRY_RUN=1 bash scripts/e2e-agent-claude.sh` | Full agent-driven e2e test across all 7 workflow stages, in dry-run (no API calls) mode |
-| `ANTHROPIC_API_KEY=... bash scripts/e2e-agent-claude.sh` | Same, but drives `claude -p` through each stage (costs money) |
+| `bash scripts/e2e-agent-claude.sh` | Same, but drives `claude -p` through each stage on a `claude` login or `ANTHROPIC_API_KEY`, and spends usage |
 | `E2E_DRY_RUN=1 bash scripts/e2e-agent-copilot.sh` | The same seven stages on the GitHub Copilot CLI, in dry-run mode. Both agent scripts source `scripts/e2e-stages.sh`, which holds the stages and the assertions |
 
 CI (`.github/workflows/ci.yml`) runs the two validate scripts, the script, review and

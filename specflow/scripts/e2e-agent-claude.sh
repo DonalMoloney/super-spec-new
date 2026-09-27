@@ -14,7 +14,7 @@
 # through the GitHub Copilot CLI.
 #
 # Environment
-#   ANTHROPIC_API_KEY     required (unless E2E_DRY_RUN=1)
+#   ANTHROPIC_API_KEY     required in CI; elsewhere a `claude` login works too
 #   E2E_DRY_RUN=1         print the prompts, skip the claude call (free)
 #   E2E_MAX_BUDGET_USD    per-stage budget cap, default 0.50
 #   E2E_MAX_TURNS         per-stage turn cap, default 30
@@ -25,8 +25,8 @@
 #   E2E_RESUME_FROM=N     skip stages 1..N-1 (default: 1, run all)
 #
 # Usage
-#   ANTHROPIC_API_KEY=sk-ant-... bash scripts/e2e-agent-claude.sh
-#   E2E_DRY_RUN=1            bash scripts/e2e-agent-claude.sh    # logic test only
+#   bash scripts/e2e-agent-claude.sh                             # live, any claude auth
+#   E2E_DRY_RUN=1 bash scripts/e2e-agent-claude.sh               # logic test only
 #
 # Exit code
 #   0 if every stage's assertions pass, otherwise 1.
@@ -120,6 +120,6 @@ stage_5_tasks invoke_agent
 stage_6_execute invoke_agent
 stage_7_review invoke_agent
 
-report_summary "Set ANTHROPIC_API_KEY and re-run without E2E_DRY_RUN=1 to run the agent stages."
+report_summary "Re-run without E2E_DRY_RUN=1 to run the agent stages; claude needs a login or ANTHROPIC_API_KEY."
 [ "$FAIL" -gt 0 ] && exit 1
 exit 0
