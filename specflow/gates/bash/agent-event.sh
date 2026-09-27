@@ -36,14 +36,21 @@ CLASSIFY_EVENT='
 
 # docs/agent-event-mapping.md maps `toolArgs.command` and `toolArgs.path` to the
 # Claude Code fields. `toolArgs` arrives as an object or as a JSON string; any
-# other value carries no field a gate reads. `$args` is a jq variable.
+# other value carries no field a gate reads. `file_path` carries through only
+# when `$args` also holds `file_text`, `old_str`, or `new_str`: those are the
+# write-shaped arguments of Copilot's create and edit tools and of
+# str_replace_editor's create, str_replace, and insert commands, so a read
+# tool such as `view` never triggers a post_tool_use gate meant for a write.
+# `$args` is a jq variable.
 # shellcheck disable=SC2016
 NORMALIZE_PAYLOAD='
   if has("hook_event_name") then . else
     (.toolArgs
       | if type == "string" then (try fromjson catch null) else . end
       | if type == "object" then . else {} end) as $args
-    | {tool_input: ({command: $args.command, file_path: $args.path}
+    | {tool_input: ({command: $args.command,
+        file_path: (if ($args.file_text != null or $args.old_str != null or $args.new_str != null)
+          then $args.path else null end)}
         | with_entries(select(.value != null)))}
   end'
 

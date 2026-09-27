@@ -547,8 +547,8 @@ cd /
 # ============================= post_tool_use =============================
 r="$(tick_fixture)"; cd "$r" || exit 1
 PAYLOAD_CLAUDE_TICK='{"hook_event_name":"PostToolUse","tool_name":"Edit","tool_input":{"file_path":"specs/001-x/tasks.md"}}'
-PAYLOAD_COPILOT_TICK_OBJ='{"toolName":"edit","toolArgs":{"path":"specs/001-x/tasks.md"},"toolResult":{"resultType":"success"}}'
-PAYLOAD_COPILOT_TICK_STR='{"toolName":"edit","toolArgs":"{\"path\":\"specs/001-x/tasks.md\"}","toolResult":{"resultType":"success"}}'
+PAYLOAD_COPILOT_TICK_OBJ='{"toolName":"edit","toolArgs":{"path":"specs/001-x/tasks.md","new_str":"x"},"toolResult":{"resultType":"success"}}'
+PAYLOAD_COPILOT_TICK_STR='{"toolName":"edit","toolArgs":"{\"path\":\"specs/001-x/tasks.md\",\"new_str\":\"x\"}","toolResult":{"resultType":"success"}}'
 PAYLOAD_COPILOT_VIEW_TICK='{"toolName":"view","toolArgs":{"path":"specs/001-x/tasks.md"},"toolResult":{"resultType":"success"}}'
 check "a Copilot read of a ticked tasks.md runs no post gate" 0 "$(SPECFLOW_TEST_CMD=false ae_exit "$PAYLOAD_COPILOT_VIEW_TICK")"
 check "that read leaves stdout empty" 0 "$(status_of [ -z "$(SPECFLOW_TEST_CMD=false ae_out "$PAYLOAD_COPILOT_VIEW_TICK")" ])"
