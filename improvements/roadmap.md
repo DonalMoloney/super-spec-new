@@ -170,7 +170,7 @@ and `session-start.sh`.
 
 - [x] T262 Declare the block in `extension.yml`
 
-The `events:` block ships with three entries (pre_tool_use, post_tool_use, session_start), all pointing to the new `speckit.specflow.agent-event` command. The new command dispatches hook payloads to matching gate scripts. See ADR-0033 for the design.
+The `events:` block ships with three entries (pre_tool_use, post_tool_use, session_start), all pointing to the new `speckit.specflow.agent-event` command. The new command dispatches hook payloads to matching gate scripts. See ADR-0034 for the design.
 
 Verify: `grep -c '^events:' specflow/extension.yml` prints 1 and both validators pass.
 
