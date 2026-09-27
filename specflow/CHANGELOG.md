@@ -26,11 +26,42 @@ A release that carries more than one of these takes the highest part.
   `session_start`. On install, `specify extension add specflow` registers these
   gates in the agent's native hook system on both Claude Code and the Copilot
   CLI.
+- A `before_tasks` hook stops core `/speckit.tasks` on a missing constitution
+  or an unresolved Open Question, the same gate `before_implement` already
+  enforced.
+- A `/speckit.specflow.gate` command writes a feature's `.clarified` marker
+  after `/speckit.clarify` and its `.analyzed` marker after `/speckit.analyze`,
+  through new `after_clarify` and `after_analyze` hooks. The gate scripts these
+  hooks and `/speckit.specflow.execute` depend on now ship inside the
+  extension archive, so `execute`'s refusal to run without `.analyzed` holds
+  on an installed extension, not only in this repository.
+- `catalog.json` at the repository root lets a project point spec-kit at this
+  repository directly, by listing it in `.specify/extension-catalogs.yml` or
+  setting `SPECKIT_CATALOG_URL`, instead of waiting on the upstream community
+  catalog.
+- `/speckit.specflow.status` warns when the installed superpowers version
+  sits outside the tested `>=6.0.0 <7.0.0` range.
+- `/speckit.specflow.status` reads a version stamp from each installed
+  template and reports one as stale when it predates the installed extension
+  version.
 
 ### Changed
 
 - `SKILL.md` links the recorded link-audit run instead of the sample workflow
   walkthrough, which is removed.
+- `/speckit.specflow.brainstorm` and `/speckit.specflow.review` now check for
+  the constitution before running, the same gate the other three commands
+  already enforced.
+- `spec-template.md`'s Brainstorm Prompts cover five categories (boundary,
+  error, scale, security, user confusion), matching the documented fallback
+  protocol. The template carried seven.
+
+### Fixed
+
+- `test-gate.sh` reads the project's test command from the `Test command:`
+  line in `.specify/memory/constitution.md`. It defaulted to a path that only
+  existed inside this repository, so an installed extension blocked every
+  ticked task in a consuming project instead of testing it.
 
 ## [1.1.0] - 2026-09-20
 
