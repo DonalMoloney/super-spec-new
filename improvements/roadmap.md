@@ -59,10 +59,9 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 
 | Item | What it closes | Effort | Verified open by |
 |---|---|---|---|
-| G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
 | G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 and G-55's script move done, T262 and T263 behind the remaining `post_tool_use` one-event-one-handler design question |
 
-## G-19 — Examples produced by this fork, not upstream (working on)
+## G-19 — Examples produced by this fork, not upstream (merged: PR #81)
 
 Executor: `bdd-orchestrator`. Model: opus. Effort: high. Depends on: none.
 
@@ -1069,7 +1068,7 @@ Item 28 was claimed as G-54 on 2026-09-25.
 
 Item 33 was claimed as G-52 on 2026-09-25.
 
-**34. A seeded-ambiguity golden.** `examples/seeded-ambiguity/`, a spec with one
+**34. A seeded-ambiguity golden (closed with G-19, PR #81).** `examples/seeded-ambiguity/`, a spec with one
 planted ambiguity such as an undefined sort order, and a scorer dimension for
 whether brainstorm or clarify surfaced it as an open question. The scorer proves
 the reviewer finds a seeded bug; nothing proves the spec phase finds a seeded
@@ -1102,19 +1101,17 @@ beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
 
 ## Suggested order
 
-D-01, D-05, G-20 through G-25, G-28 through G-42, G-43, G-44, G-45, G-46,
-G-48, G-49, G-50, G-51, G-52, G-53, G-54, G-55, and C-01 through C-09 are
-merged or closed. What is left, in order:
+D-01, D-05, G-19, G-20 through G-25, G-28 through G-42, G-43, G-44, G-45,
+G-46, G-48, G-49, G-50, G-51, G-52, G-53, G-54, G-55, G-56, and C-01 through
+C-09 are merged or closed. Backlog item 34 closed with G-19 (PR #81 added
+`examples/seeded-ambiguity/`). What is left, in order:
 
 1. G-26 T262 and T263. G-55 cleared the script-relocation prerequisite; what
    remains is the `post_tool_use` one-event-one-handler design question T262's
    own text names (`test-gate.sh` and `artifact-lint.sh` both want that
    event, and `validate_events` takes one handler per event name).
-2. G-56, whenever a session picks it up (see its own section for status).
-3. Backlog item 26, once a release exists to upgrade from.
-4. Backlog items 34 and 36; 34 depends on G-19, 36 is no-code.
-5. G-19 whenever a live agent run is available; this environment has no API
-   key to make one.
+2. Backlog item 26, once a release exists to upgrade from.
+3. Backlog item 36, no code.
 
 Pick the item whose `Verify:` line you can run before you start. An item whose
 check you cannot run today is a design task, not a roadmap task.
