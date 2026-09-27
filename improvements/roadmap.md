@@ -60,7 +60,7 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | Item | What it closes | Effort | Verified open by |
 |---|---|---|---|
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
-| G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 and G-55's script move done, T262 and T263 behind the remaining `post_tool_use` one-event-one-handler design question |
+| G-26 | The gates cannot run on the Copilot CLI | medium | T261, T262, and T263 done on branch `g26-events-hook` (ADR-0033); the row clears on merge |
 
 ## G-19 — Examples produced by this fork, not upstream (working on)
 
@@ -1078,10 +1078,8 @@ D-01, D-05, G-20 through G-25, G-28 through G-42, G-43, G-44, G-45, G-46,
 G-48, G-49, G-50, G-51, G-52, G-53, G-54, G-55, and C-01 through C-09 are
 merged or closed. What is left, in order:
 
-1. G-26 T262 and T263. G-55 cleared the script-relocation prerequisite; what
-   remains is the `post_tool_use` one-event-one-handler design question T262's
-   own text names (`test-gate.sh` and `artifact-lint.sh` both want that
-   event, and `validate_events` takes one handler per event name).
+1. G-26's pull request. T262 and T263 are done on branch `g26-events-hook`;
+   ADR-0033 records how one handler serves both `post_tool_use` gates.
 2. G-56, whenever a session picks it up (see its own section for status).
 3. Backlog item 26, once a release exists to upgrade from.
 4. Backlog items 34 and 36; 34 depends on G-19, 36 is no-code.
