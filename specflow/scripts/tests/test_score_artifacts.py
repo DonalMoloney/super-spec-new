@@ -37,6 +37,9 @@ SEEDED_NO_CHANGELOG_FEATURE_DIR = (
 SEEDED_MISSING_TEST_FEATURE_DIR = (
     Path(__file__).resolve().parents[2] / "examples" / "seeded-missing-test"
 )
+SEEDED_AMBIGUITY_FEATURE_DIR = (
+    Path(__file__).resolve().parents[2] / "examples" / "seeded-ambiguity"
+)
 
 SPECFLOW_DIR = Path(__file__).resolve().parents[2]
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -988,3 +991,24 @@ def test_empty_seeded_ambiguity_marker_fails_with_the_fix():
     assert "FAIL: " in result.stderr
     assert ".seeded-ambiguity" in result.stderr
 
+
+def test_seeded_ambiguity_example_scores_the_unraised_ambiguity_zero():
+    report = score_json(SEEDED_AMBIGUITY_FEATURE_DIR)
+    assert report["seeded_ambiguity"] == {
+        "seeded": "order",
+        "surfaced": False,
+        "score": 0.0,
+    }
+
+
+def test_seeded_ambiguity_example_matches_the_golden_on_every_other_dimension():
+    golden = score_json(GOLDEN_FEATURE_DIR)
+    report = score_json(SEEDED_AMBIGUITY_FEATURE_DIR)
+    assert report["spec_sections"] == golden["spec_sections"]
+    assert report["traceability"] == golden["traceability"]
+    assert report["threat_model"] == golden["threat_model"]
+    assert report["open_questions"] == golden["open_questions"]
+    assert report["changelog"] == golden["changelog"]
+    assert report["test_exists"] == golden["test_exists"]
+    assert report["task_ids"] == golden["task_ids"]
+    assert report["needs_clarification"] == golden["needs_clarification"]

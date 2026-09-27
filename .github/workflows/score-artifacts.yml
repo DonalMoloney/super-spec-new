@@ -58,6 +58,7 @@ jobs:
           python3 scripts/score-artifacts.py examples/seeded-open-question > seeded-open-question.json
           python3 scripts/score-artifacts.py examples/seeded-no-changelog > seeded-no-changelog.json
           python3 scripts/score-artifacts.py examples/seeded-missing-test > seeded-missing-test.json
+          python3 scripts/score-artifacts.py examples/seeded-ambiguity > seeded-ambiguity.json
 
       - name: Assert golden scores held
         run: |
@@ -91,6 +92,7 @@ jobs:
               ),
               ("seeded-no-changelog.json", "changelog.rows", 0),
               ("seeded-missing-test.json", "test_exists.missing", ["FR-001"]),
+              ("seeded-ambiguity.json", "seeded_ambiguity.score", 0.0),
           )
 
 
