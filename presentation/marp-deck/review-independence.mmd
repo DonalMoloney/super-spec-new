@@ -2,7 +2,7 @@
 flowchart LR
   W[Writer model] -->|Reviews own work| S[Self-approval]
   W -->|Fresh context| R[Independent reviewer]
-  R --> C[Critic]
+  R -->|Findings| C[Critic]
   C -->|External evidence| A[Approval]
   class C focus
   classDef focus fill:#174ea6,color:#ffffff,stroke:#174ea6

@@ -1,76 +1,68 @@
-# Rendering and editing the Marp deck
+# Render and edit the Specflow decks
 
-How to view, edit, and export the Marp slide deck at `presentation/marp-deck/deck.md`.
+Use the Marp deck for PDF, PowerPoint, and presenter notes. Use the
+[SuperDeck example](../super-deck/README.md) for an interactive browser talk.
+Both explain the workflow in this checkout, checked on 27 September 2026.
 
-## Prerequisites and install
-
-Rendering or exporting the deck needs the Marp CLI (`@marp-team/marp-cli` on npm).
-Run it through `npx` with no install, or install it globally or as a dev dependency.
-The "Marp for VS Code" extension (`marp-team.marp-vscode` in the VS Code Marketplace)
-gives a live preview and export inside the editor without any CLI install.
-
-```bash
-# Ad hoc, no install:
-npx @marp-team/marp-cli@latest --version
-
-# Render the deck to HTML:
-npx @marp-team/marp-cli@latest presentation/marp-deck/deck.md -o deck.html
-
-# Or install globally:
-npm install -g @marp-team/marp-cli
-```
-
-## Rendering the deck
-
-Export `presentation/marp-deck/deck.md` to PDF or PowerPoint with the Marp CLI's
-`--pdf` or `--pptx` flag plus `-o` for the output path. PDF and PPTX export render
-each slide through headless Chrome, because the Marp CLI uses Puppeteer. A local
-Chrome or Chromium install must exist. If none is found, install one or set
-`PUPPETEER_EXECUTABLE_PATH` (or `CHROME_PATH`) to an existing browser.
+Run these commands from the repository root. Node.js and npm run the Marp
+CLI without adding a package manifest. The presentation workflow pins Marp
+4.2.3; the commands below use the same version.
 
 ```bash
-# Render to PDF:
-npx @marp-team/marp-cli@latest presentation/marp-deck/deck.md --pdf -o deck.pdf
-
-# Render to PPTX:
-npx @marp-team/marp-cli@latest presentation/marp-deck/deck.md --pptx -o deck.pptx
+npx --yes @marp-team/marp-cli@4.2.3 --version
 ```
 
-## Live preview / editing workflow
-
-While writing `presentation/marp-deck/deck.md`, run the Marp CLI in watch mode to
-get a browser preview that reloads on every save. If you already edit in VS Code,
-the "Marp for VS Code" preview pane needs no terminal process. Per this repo's
-AGENTS.md, the deck is a single `.md` file with Marp front matter (`marp: true`),
-with no build step and no framework.
+HTML export needs the custom theme. Keep the output beside the SVG files so
+relative image links resolve. Marp embeds the theme CSS, but references the
+local diagram files. Share the HTML with those SVGs, or share a PDF instead.
 
 ```bash
-npx @marp-team/marp-cli@latest -w presentation/marp-deck/deck.md
+npx --yes @marp-team/marp-cli@4.2.3 \
+  --theme-set presentation/marp-deck/global.css \
+  --bespoke.transition=false presentation/marp-deck/deck.md \
+  -o presentation/marp-deck/deck.html
 ```
 
-## Deck conventions used in this file
+PDF and PowerPoint export need a browser. Install Chrome, Edge, or Firefox;
+use `--browser-path /absolute/path/to/browser` if discovery fails. Local SVG
+access needs the flag shown below. See the [Marp CLI reference](https://github.com/marp-team/marp-cli#readme).
 
-Conventions `presentation/marp-deck/deck.md` follows. Keep these when editing it:
+```bash
+npx --yes @marp-team/marp-cli@4.2.3 \
+  --theme-set presentation/marp-deck/global.css \
+  --pdf --pdf-notes --allow-local-files \
+  presentation/marp-deck/deck.md -o /tmp/specflow-deck.pdf
 
-- **Front matter**: the file opens with Marp front matter setting `marp: true`,
-  `theme: gaia`, `paginate: true`, and `size: 16:9`.
-- **Slide separator**: a `---` horizontal-rule line on its own separates slides.
-- **Speaker notes**: each slide ends its content with an HTML comment
-  (`<!-- speaker notes: ... -->`). Marp treats a plain HTML comment on a slide as
-  that slide's presenter-view note, so the comments work in presenter mode with no
-  conversion.
-- **Single file, no build step**: per this repo's `AGENTS.md`, the deck is one
-  `.md` file with no separate framework or build tooling.
+npx --yes @marp-team/marp-cli@4.2.3 \
+  --theme-set presentation/marp-deck/global.css \
+  --pptx --allow-local-files \
+  presentation/marp-deck/deck.md -o /tmp/specflow-deck.pptx
+```
 
-## Troubleshooting
+For editing, keep the HTML open while watch mode rebuilds it. Reload the
+browser after a change. Arrow keys navigate; the presentation controls open
+presenter view. Plain HTML comments in the Markdown supply speaker notes.
 
-Common problems rendering or exporting `presentation/marp-deck/deck.md`, and fixes:
+```bash
+npx --yes @marp-team/marp-cli@4.2.3 \
+  --theme-set presentation/marp-deck/global.css \
+  --bespoke.transition=false --watch presentation/marp-deck/deck.md \
+  -o presentation/marp-deck/deck.html
+```
 
-- **PDF/PPTX export fails, Chrome/Chromium not found**: see the
-  `PUPPETEER_EXECUTABLE_PATH`/`CHROME_PATH` fix under "Rendering the deck" above.
-- **Front matter not picked up (deck renders as plain markdown, no slide breaks)**:
-  `marp: true` is missing or malformed in the YAML front matter, or the front
-  matter is not the first thing in the file. No blank line or content may precede
-  the opening `---`.
-- **Slides not splitting where expected**: the `---` separator must be on its own
-  line, with a blank line both before and after it.
+The front matter names `theme: specflow`, with pagination and a 16:9 size.
+Keep each Mermaid source beside its SVG export. Rebuild changed diagrams
+before exporting the deck; Marp reads the SVG, not the Mermaid source.
+
+```bash
+npx --yes @mermaid-js/mermaid-cli \
+  -i presentation/marp-deck/commands.mmd \
+  -o presentation/marp-deck/commands.svg -b transparent
+python3 specflow/scripts/lint-standards.py presentation
+git diff --check
+```
+
+Inspect all 18 slides for clipping and readable labels after rendering.
+Check claims against the manifest, command contracts, and native hook settings.
+Use [presentation standards](../../standards/presentations.md) for slide layout.
+Generated HTML stays ignored; commit the Markdown, CSS, Mermaid, and SVG sources.

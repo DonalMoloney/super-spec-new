@@ -2,7 +2,8 @@
 flowchart LR
   S[status] -->|Readiness| B[brainstorm]
   B -->|Design| T[tasks]
-  T -->|Work units| E[execute]
+  T -->|Ready?| G[gate]
+  G -->|Enforced| E[execute]
   E -->|Diff| R[review]
   class E focus
   classDef focus fill:#174ea6,color:#ffffff,stroke:#174ea6
