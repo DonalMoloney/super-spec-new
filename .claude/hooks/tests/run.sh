@@ -993,8 +993,8 @@ gate_src="$(cat "$GATE_WORKFLOW" 2>/dev/null || true)"
 python3 -c 'import yaml;yaml.safe_load(open("'"$GATE_WORKFLOW"'"))' >/dev/null 2>&1
 check "merge gate workflow parses as YAML" 0 $?
 high_gated="$(grep -c "level == 'HIGH'" "$GATE_WORKFLOW" 2>/dev/null || echo 0)"
-check "merge gate workflow gates two steps on HIGH risk" 0 \
-  "$(status_of [ "${high_gated:-0}" -eq 2 ])"
+check "merge gate workflow gates three steps on HIGH risk" 0 \
+  "$(status_of [ "${high_gated:-0}" -eq 3 ])"
 check "security review action is pinned to a commit" 0 \
   "$(printf '%s' "$gate_src" | grep -Eq 'claude-code-security-review@[0-9a-f]{40}$'; echo $?)"
 check "headless review CLI is pinned to a version" 0 \
