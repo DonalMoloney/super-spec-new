@@ -169,50 +169,17 @@ adapter each surface needs from exit code to deny JSON. Verify: the table
 names an event for `block-main-commit.sh`, `test-gate.sh`, `artifact-lint.sh`,
 and `session-start.sh`.
 
-- [ ] T262 Declare the block in `extension.yml`
+- [x] T262 Declare the block in `extension.yml`
 
-Blocked, and shipping the block today would brick the extension. One of the
-three prerequisites cleared on 2026-09-20: `docs/agent-event-mapping.md`
-records Copilot's `toolName`, `toolArgs.command`, and `toolArgs.path`.
-ADR-0027 covers the `jq` dependency. The frontmatter prerequisite is not
-cleared: every command file's source carries a `scripts:` block, but a real
-install strips it. Verified on 2026-09-25 by installing this checkout with
-`specify extension add specflow --dev` into a scratch spec-kit project: the
-installed `.claude/skills/speckit-specflow-tasks/SKILL.md` frontmatter
-carries `name`, `description`, `compatibility`, and `metadata` only. The
-command's Process step still names
-`.specify/scripts/bash/resolve-template.sh` in prose and resolves templates
-correctly regardless, so this gap blocks only the `events:` block's own
-prerequisite claim, not template resolution.
+The `events:` block ships with three entries (pre_tool_use, post_tool_use, session_start), all pointing to the new `speckit.specflow.agent-event` command. The new command dispatches hook payloads to matching gate scripts. See ADR-0033 for the design.
 
-What remains is a handler. An `events:` entry names a command, the dispatcher
-resolves that command to one script, and that script receives a hook payload on
-stdin and nothing else. No shipped script reads one: `speckit.specflow.gate`
-resolves to `write-marker.sh`, which takes two arguments and exits 2 without
-them, so registering it on `pre_tool_use` denies every Bash call. Reproduced
-against spec-kit `d4229c0`:
+Verify: `grep -c '^events:' specflow/extension.yml` prints 1 and both validators pass.
 
-```
-$ echo '{"toolName":"bash","toolArgs":{"command":"ls"}}' | python3 .specify/events.py speckit.specflow.gate pre_tool_use 30
-write-marker: got 0 argument(s); expected 2.
-DISPATCHER EXIT=2
-```
+- [x] T263 Assert the installed hook config in the smoke test
 
-The four scripts that do read a payload, `block-main-commit.sh`,
-`test-gate.sh`, `artifact-lint.sh`, and `session-start.sh`, are still under
-`.claude/`; ADR-0025 moved a different four. Moving them is the real
-prerequisite. Note also that `validate_events` requires each `events:` value to
-be a mapping, so one event name takes one entry: the mapping table's two
-`post_tool_use` gates cannot both register. Copilot drops the `matcher` field
-Claude Code keeps, so a gate filters by tool name itself.
+The Copilot leg of `e2e-smoke.sh` asserts that `.github/hooks/speckit.json` exists after install and names the three events registered on `agent-event`.
 
-Verify: `grep -c '^events:' specflow/extension.yml` prints 1 and both
-validators pass.
-
-- [ ] T263 Assert the installed hook config in the smoke test
-
-Verify: the Copilot leg of `e2e-smoke.sh` finds the hook file the install
-wrote and names the events in it.
+Verify: `bash specflow/scripts/e2e-smoke.sh` exits 0.
 
 ## G-43 — SKILL.md documents a progress file the validator rejects (merged: direct)
 
@@ -1076,6 +1043,11 @@ the reviewer finds a seeded bug; nothing proves the spec phase finds a seeded
 ambiguity, and the spec phase is where upstream is thinnest. Verify:
 `score-artifacts.py` scores the new golden and `score-artifacts.yml` replays it.
 Effort: medium. Depends on: G-19.
+
+**35. Assert the Claude leg's hooks in e2e-smoke.sh.** The smoke test asserts
+`.github/hooks/speckit.json` on the Copilot leg. The Claude leg should assert
+`.claude/settings.json` names the three event types from the extension. Verify:
+the Claude leg assertions pass on a fresh install. Effort: low. Depends on: G-26.
 
 **36. Upstream the resync-safe moves.** Open pull requests against
 WangX0111/superspec for the Tighten moves tagged "breaks resync: rarely": the
