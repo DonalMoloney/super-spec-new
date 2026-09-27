@@ -210,8 +210,8 @@ directory sits outside the Measured state table.
 
 - **Replace** the snapshot with a run of this fork's pipeline, **Add** a
   failing-gate snapshot, and **Remove** `sample-workflow.md`. Done under G-19.
-  `link-audit/analyze-gate.md` records the gate refusing the marker; no
-  recorded session cleared it.
+  `link-audit/analyze-gate.md` records the gate refusing the marker and the
+  rerun that cleared it.
 - **Add** a snapshot of a Copilot CLI run, so the fallback path has an example
   and a dry-run fixture. Verify: the snapshot has no `.claude/` files and every
   stage artifact. Claimed by: none. Needs a Copilot e2e script, backlog item 27.
@@ -460,4 +460,4 @@ two cited from more than one file, a direct `git mv` and edit for the third.
 |------|---------|---------|-------------|
 | `.claude/hooks/diff-impl.sh` | Shortens "implementation" to "impl"; its own header comment spells out "differential implementation run" | `.claude/hooks/tests/run.sh`, `specflow/references/workflow-guide.md`, `specflow/references/copilot-cli.md` | `differential-implementation.sh` |
 | `.claude/review/scorecard.sh` | Shares the verb "score" with `specflow/scripts/score-artifacts.py`, which scores golden artifacts against upstream, not reviewer precision; the two names give no hint they measure different things | `improvements/roadmap.md` (item 31), `.claude/review/tests/test_scorecard.py`, `docs/review-research.md`, `presentation/marp-deck/deck.md` | `reviewer-precision.sh` |
-| `specflow/examples/link-audit/analyze-gate.md` | Reads like a script or command name; every sibling file in the directory (`spec.md`, `plan.md`, `tasks.md`, `progress.yml`) is a document the pipeline writes, but this one records two sessions run after the pipeline ended | `specflow/examples/link-audit/README.md` | `analyze-gate-walkthrough.md` |
+| `specflow/examples/link-audit/analyze-gate.md` | Reads like a script or command name; every sibling file in the directory (`spec.md`, `plan.md`, `tasks.md`, `progress.yml`) is a document the pipeline writes, but this one records seven sessions run after the pipeline ended | `specflow/examples/link-audit/README.md` | `analyze-gate-walkthrough.md` |
