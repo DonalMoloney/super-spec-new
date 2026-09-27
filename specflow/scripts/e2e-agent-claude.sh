@@ -58,6 +58,24 @@ require_uvx
 open_workdir "specflow-agent-$AGENT_NAME"
 trap cleanup EXIT
 
+# acceptEdits approves file writes only, and a headless stage has nobody to
+# approve a shell command, so the stages' own commands are listed here.
+WORK_REAL="$(cd "$WORK" && pwd -P)"
+ALLOWED_TOOLS=(
+  "Bash(.specify/scripts/bash/*)"
+  "Bash($WORK/.specify/scripts/bash/*)"
+  "Bash($WORK_REAL/.specify/scripts/bash/*)"
+  "Bash(bash .specify/scripts/bash/*)"
+  "Bash(cd *)"
+  "Bash(git *)"
+  "Bash(mkdir *)"
+  "Bash(touch *)"
+  "Bash(rm -f specs/*)"
+  "Bash(python3 *)"
+  "Bash(python *)"
+  "Bash(pytest *)"
+)
+
 # Runs one workflow stage's prompt through claude -p.
 # Args: <prompt> <log path>. Requires cwd == $WORK so claude picks up
 # .claude/ and .specify/.
@@ -67,6 +85,7 @@ invoke_agent() {
   [ -n "$MODEL" ] && model_args=(--model "$MODEL")
 
   # --permission-mode acceptEdits: no interactive prompt for file writes
+  # --allowedTools: the shell commands a stage runs without approval
   # --max-turns: caps agent loops
   # --max-budget-usd: caps per-stage spend
   # --output-format text: response format; the caller does not parse it
@@ -76,6 +95,7 @@ invoke_agent() {
   # in each stage decide whether the stage delivered.
   if claude -p \
         --permission-mode acceptEdits \
+        --allowedTools "${ALLOWED_TOOLS[@]}" \
         --max-turns "$MAX_TURNS" \
         --max-budget-usd "$MAX_BUDGET" \
         --output-format text \
