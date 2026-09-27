@@ -30,10 +30,9 @@ payload to `gates/bash/agent-event.sh` on standard input.
    `session_start` from its own shape: Claude Code names the event in
    `hook_event_name`; the Copilot CLI does not, so the classification falls
    back to the fields only its own payloads carry.
-4. Normalize a Copilot payload into the `tool_input.command` /
-   `tool_input.file_path` shape the gates read, per
-   `docs/agent-event-mapping.md`. A Claude Code payload passes through
-   unchanged.
+4. Normalize a Copilot payload: copy its `.toolArgs.command` field to
+   `.tool_input.command` and its `.toolArgs.path` field to `.tool_input.file_path`,
+   the shape the gates read. A Claude Code payload passes through unchanged.
 5. Dispatch the normalized payload to the sibling gate that event runs:
    `block-main-commit.sh` on `pre_tool_use`; `test-gate.sh` then
    `artifact-lint.sh` on `post_tool_use`, both run so one block does not hide
