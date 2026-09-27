@@ -12,8 +12,8 @@ see what each stage writes into a real project.
 Stages 1 to 3 ran at commit `3697466`. Stage 4 stopped waiting for a shell
 approval that headless mode cannot give, so stages 4 to 7 resumed the same
 project at commit `f17fcc7`. It carries the shell allowlist from `2d7a76d` and a
-fix to the stage 3 assertion. Both commits install the same extension payload. That payload also carried two
-uncommitted documentation lines: the resources link in `SKILL.md` and the
+fix to the stage 3 assertion. Both commits install the same extension
+payload. That payload also carried two uncommitted documentation lines: the resources link in `SKILL.md` and the
 sample `spec:` value in `references/workflow-guide.md`.
 
 The `--dev` install copied this directory's earlier hand-built version into

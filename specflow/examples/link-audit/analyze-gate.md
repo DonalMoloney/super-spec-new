@@ -4,7 +4,11 @@ This file records seven headless `claude -p` sessions run on 2026-09-27 against
 a copy of the recorded project, after the seven-stage run had finished. All used
 `claude-sonnet-5`. Every `.clarified` and `.analyzed` write went through
 `.specify/extensions/specflow/gates/bash/write-marker.sh`, the script the
-`after_clarify` and `after_analyze` hooks run.
+`after_clarify` and `after_analyze` hooks run. Sessions 1 and 2 ran with an
+allowlist that did not name the gate scripts, so in session 2 each call to
+`write-marker.sh` waited for an approval nobody gave. The agent read the
+script's rule instead and did not write the marker. Sessions 3 to 7 allowed
+the gate scripts, and the script ran in sessions 3, 4, and 7.
 
 The stage 6 session of the main run passed the gate before implementing. Review
 then opened three Critical findings and one Important, and added Q6 and Q7 to
@@ -15,7 +19,7 @@ spec changes.
 | Session | Command | Result |
 |---------|---------|--------|
 | 1 | `/speckit.specflow.execute` | Stops with `ANALYZE_REQUIRED` |
-| 2 | `/speckit.analyze` | Gate refuses the marker: `ANALYZE_CRITICAL` |
+| 2 | `/speckit.analyze` | Report holds 3 Critical findings; no marker written |
 | 3 | `/speckit.clarify` | Resolves Q6, Q7 as FR-014, FR-015; writes `.clarified` |
 | 4 | `/speckit.specflow.tasks`, `/speckit.analyze` | Adds Phase 7 remediation tasks; writes `.analyzed` |
 | 5 | `/speckit.specflow.execute` | Fixes R-001 to R-004; 37 tests pass |
@@ -45,7 +49,7 @@ The workflow guide is explicit that `.analyzed` must never be inferred from othe
 Since this is a headless run with no user available to answer, I'm stopping here rather than bypassing the gate. Before `/speckit.specflow.execute` can proceed, someone needs to run `/speckit.analyze 001-link-audit`, which will only write the `.analyzed` marker if it reports zero critical inconsistencies.
 ```
 
-## Session 2: analyze refuses the marker with `ANALYZE_CRITICAL`
+## Session 2: analyze finds 3 Critical findings and writes no marker
 
 ```text
 ## Result: Gate refused — `.analyzed` not written
