@@ -25,6 +25,7 @@ STEPS=(
   "Script tests||specflow|python3 -m pytest scripts/tests -q"
   "Review findings validator tests||.|python3 -m pytest .claude/review/tests -q"
   "Divergence measurer tests||.|python3 -m pytest .claude/divergence/tests -q"
+  "Agent contract tests||.|python3 -m pytest .claude/agents/tests -q"
   "Hook tests||.|bash .claude/hooks/tests/run.sh"
   "CI parity tests||.|python3 -m pytest tests -q"
   "Lint Markdown against the documentation standard||.|python3 specflow/scripts/lint-standards.py"
