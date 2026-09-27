@@ -74,15 +74,15 @@ assert_grep() {
 # that resolved nothing has nothing to record.
 assert_resolved_questions_recorded() {
   local spec="$1" decisions="$2" ids id rc=0
-  ids="$(grep -E '^\|[[:space:]]*OQ-[0-9]+[[:space:]]*\|.*\|[[:space:]]*Resolved[[:space:]]*\|' "$spec" 2>/dev/null \
-         | grep -oE 'OQ-[0-9]+')"
+  ids="$(grep -E '^\|[[:space:]]*(OQ-[0-9]+|Q[0-9]+)[[:space:]]*\|.*\|[[:space:]]*Resolved[[:space:]]*\|' "$spec" 2>/dev/null \
+         | sed -E 's/^\|[[:space:]]*([^[:space:]|]+).*/\1/')"
   if [ -z "$ids" ]; then
     note "no Open Questions row marked Resolved; nothing to record in decisions.md"
     return 0
   fi
   assert_grep "  decisions.md carries an ADR-NNNN heading" '^#{2}[[:space:]]+ADR-[0-9]{4}:' "$decisions" || rc=1
   for id in $ids; do
-    if [ -f "$decisions" ] && grep -qF -- "$id" "$decisions"; then
+    if [ -f "$decisions" ] && grep -qw -- "$id" "$decisions"; then
       pass "  $id is Resolved in spec.md and recorded in decisions.md"
     else
       miss "  $id is Resolved in spec.md but absent from ${decisions#$WORK/}"
