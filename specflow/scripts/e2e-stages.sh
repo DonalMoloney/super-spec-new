@@ -92,13 +92,12 @@ assert_resolved_questions_recorded() {
   return "$rc"
 }
 
-# brainstorm.md step 9 opens each ADR's Context line with the question's ID, so
-# every ID a decisions.md Context line opens with must be Resolved in the spec.
-# A snapshot's end state may hold rows /speckit.clarify resolved, which owe no
-# ADR, so a dry run checks this direction instead of the one above.
+# A dry run checks each decisions.md Context line's question ID against the
+# spec instead of assert_resolved_questions_recorded, because a snapshot's rows
+# resolved by /speckit.clarify owe no ADR (brainstorm.md step 9).
 assert_recorded_decisions_are_resolved() {
   local spec="$1" decisions="$2" ids id rc=0
-  ids="$(sed -nE 's/^- Context:[[:space:]]*(OQ-[0-9]+|Q[0-9]+)[^0-9].*/\1/p' "$decisions" 2>/dev/null)"
+  ids="$(sed -nE 's/^- Context:[[:space:]]*(OQ-[0-9]+|Q[0-9]+)([^0-9].*)?$/\1/p' "$decisions" 2>/dev/null)"
   if [ -z "$ids" ]; then
     note "no decisions.md Context line opens with a question ID; nothing to check"
     return 0
