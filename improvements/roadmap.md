@@ -62,7 +62,7 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 | G-19 | The examples are upstream's, not this fork's | high | `static-landing-page/` and `sample-workflow.md` both present |
 | G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 and G-55's script move done, T262 and T263 behind the remaining `post_tool_use` one-event-one-handler design question |
 
-## G-19 — Examples produced by this fork, not upstream
+## G-19 — Examples produced by this fork, not upstream (working on)
 
 Executor: `bdd-orchestrator`. Model: opus. Effort: high. Depends on: none.
 
@@ -147,7 +147,7 @@ When a key exists, the live run is one session and one feature, in this order.
    order left unspecified, then add `score_seeded_ambiguity` to
    `score-artifacts.py` with a test.
 
-## G-26 — Register the gates as agent-native hooks (blocked: ADR-0022)
+## G-26 — Register the gates as agent-native hooks (blocked: ADR-0022) (working on)
 
 Executor: `bdd-orchestrator`. Model: opus. Move: Add. Effort: medium. Depends
 on: G-24. Diverges: yes.
