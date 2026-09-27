@@ -445,3 +445,21 @@ deleting them; prune anything older than a quarter that no longer guides work.
   command instead, so it has no `.claude/hooks/` counterpart).
   `validate-release-archive.py` and the CI shellcheck/ruff steps cover the new
   paths (G-55 T641).
+
+## ADR-0033: One `events:` command dispatches every gate by payload shape
+
+- Date: 2026-09-27
+- Status: accepted, supersedes the rest of ADR-0022, amends ADR-0027
+- Context: ADR-0032 shipped the four payload gates under `specflow/gates/`.
+  Spec-kit's `validate_events` takes one mapping per event, so
+  `post_tool_use` cannot name `test-gate.sh` and `artifact-lint.sh` apart.
+  The dispatcher passes the script no event name.
+- Decision: the `events:` block registers `speckit.specflow.agent-event` on
+  `pre_tool_use`, `post_tool_use`, and `session_start`. Its script,
+  `agent-event.sh`, reads the event and the surface from the payload and runs
+  the matching gates. Copilot drops `matcher`, so a Copilot path reaches the
+  post gates only beside a write argument.
+- Consequences: an install wires the gates into Claude Code and the Copilot
+  CLI, replacing ADR-0001's hand copy. A project that copied `.claude/hooks/`
+  runs each gate twice. The Copilot hook file spec-kit writes is a third route
+  beside ADR-0031's.
