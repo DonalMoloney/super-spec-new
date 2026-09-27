@@ -200,20 +200,18 @@ change here reaches every downstream artifact.
 ## examples/
 
 Export-ignored. Teaching material and the scorer's test fixture.
-`static-landing-page/` is upstream's snapshot and predates every gate this fork
-added; `sample-workflow.md` walks a "User Authentication" feature no snapshot
-contains, with abbreviated outputs that show none of the markers.
-`mutation-gate-sample/` and `seeded-bug/` are this fork's, added in PR #64 and
-the scorer work.
+`link-audit/` is a recorded run of this fork's pipeline and the scorer's
+golden. Each `seeded-*/` directory copies its feature directory with one
+planted flaw. `mutation-gate-sample/` feeds the mutation gate. No upstream
+text remains here.
 
 The reproduce command above excludes every path under `examples/`, so the
-about 2224 lines of verbatim upstream text in `static-landing-page/` and
-`sample-workflow.md`, at close to 0% real divergence, sit outside the
-Measured state table (2026-09-25 survey).
+directory sits outside the Measured state table.
 
 - **Replace** the snapshot with a run of this fork's pipeline, **Add** a
-  failing-gate snapshot, and **Remove** `sample-workflow.md`. All three claimed
-  by: G-19.
+  failing-gate snapshot, and **Remove** `sample-workflow.md`. Done under G-19.
+  `link-audit/analyze-gate.md` records the gate refusing the marker; no
+  recorded session cleared it.
 - **Add** a snapshot of a Copilot CLI run, so the fallback path has an example
   and a dry-run fixture. Verify: the snapshot has no `.claude/` files and every
   stage artifact. Claimed by: none. Needs a Copilot e2e script, backlog item 27.
@@ -253,8 +251,7 @@ rename lands, so the cost is known before the move.
 | Name | Today | Asserted in | Cost | Claimed by |
 |------|-------|-------------|------|------------|
 | `author:` | "Specflow Contributors" | Nothing | Free | none |
-| `examples/static-landing-page/` | Upstream's feature | dry run, `score-artifacts.yml`, README | Replaced, not renamed | G-19 |
-| `commands/hooks/*.md` file names | `after-tasks`, `before-execute`, `after-execute` | Nothing; the manifest maps hooks to commands | `e2e-smoke.sh` greps `commands/hooks/after-execute.md`; `examples/link-audit/analyze-gate.md` cites `commands/hooks/before-execute.md` in prose | none |
+| `commands/hooks/*.md` file names | `after-tasks`, `before-execute`, `after-execute` | Nothing; the manifest maps hooks to commands | `e2e-smoke.sh` greps `commands/hooks/after-execute.md` | none |
 | `commands/*.md` file names | `status`, `brainstorm`, `tasks`, `execute`, `review` | The `file:` field in `extension.yml` | Cheap, and no reason | none |
 | Extension id `specflow` | | 27 files | Not an option | |
 | `templates/*.md` file names | | Spec-kit reads `.specify/templates/<name>`; `e2e-smoke.sh` | Not an option | |
@@ -463,4 +460,4 @@ two cited from more than one file, a direct `git mv` and edit for the third.
 |------|---------|---------|-------------|
 | `.claude/hooks/diff-impl.sh` | Shortens "implementation" to "impl"; its own header comment spells out "differential implementation run" | `.claude/hooks/tests/run.sh`, `specflow/references/workflow-guide.md`, `specflow/references/copilot-cli.md` | `differential-implementation.sh` |
 | `.claude/review/scorecard.sh` | Shares the verb "score" with `specflow/scripts/score-artifacts.py`, which scores golden artifacts against upstream, not reviewer precision; the two names give no hint they measure different things | `improvements/roadmap.md` (item 31), `.claude/review/tests/test_scorecard.py`, `docs/review-research.md`, `presentation/marp-deck/deck.md` | `reviewer-precision.sh` |
-| `specflow/examples/link-audit/analyze-gate.md` | Reads like a script or command name; every sibling file in the directory (`spec.md`, `plan.md`, `tasks.md`, `progress.yml`) is a document the pipeline writes, but this one is hand-written commentary on a gate stop | `specflow/examples/link-audit/README.md` | `analyze-gate-walkthrough.md` |
+| `specflow/examples/link-audit/analyze-gate.md` | Reads like a script or command name; every sibling file in the directory (`spec.md`, `plan.md`, `tasks.md`, `progress.yml`) is a document the pipeline writes, but this one records two sessions run after the pipeline ended | `specflow/examples/link-audit/README.md` | `analyze-gate-walkthrough.md` |
