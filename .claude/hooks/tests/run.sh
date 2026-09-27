@@ -398,49 +398,70 @@ tl="$(printf '%s\n' "$out" | grep -n "T002 pending" | head -1 | cut -d: -f1)"
 hd="$(printf '%s\n' "$out" | grep -n "HANDOFF-MARKER" | head -1 | cut -d: -f1)"
 check "section order is open-questions, summary, task, handoff" 0 "$(if [ -n "$oq" ] && [ -n "$sm" ] && [ -n "$tl" ] && [ -n "$hd" ] && [ "$oq" -lt "$sm" ] && [ "$sm" -lt "$tl" ] && [ "$tl" -lt "$hd" ]; then echo 0; else echo 1; fi)"
 
-# --- .github/hooks/adapter.sh (Copilot CLI native hooks, ADR-0031) ---
+# --- .github/hooks/adapter.sh (Copilot CLI native hooks, ADR-0031, ADR-0035) ---
 ADAPTER="$HOOKS/../../.github/hooks/adapter.sh"
-run_adapter() { # event gate json -> prints stdout
-  printf '%s' "$3" | bash "$ADAPTER" "$1" "$2" 2>/dev/null
+run_adapter() { # event json -> prints stdout
+  printf '%s' "$2" | bash "$ADAPTER" "$1" 2>/dev/null
 }
-run_adapter_exit() { # event gate json -> prints exit code
-  printf '%s' "$3" | bash "$ADAPTER" "$1" "$2" >/dev/null 2>&1; echo $?
+run_adapter_exit() { # event json -> prints exit code
+  printf '%s' "$2" | bash "$ADAPTER" "$1" >/dev/null 2>&1; echo $?
 }
 
 check "hooks.json parses as valid JSON" 0 \
   "$(python3 -c 'import json;json.load(open("'"$HOOKS"'/../../.github/hooks/hooks.json"))' >/dev/null 2>&1; echo $?)"
+check_out "hooks.json registers one postToolUse entry, so each post gate runs once per call" "1" \
+  "$(python3 -c 'import json;print(len(json.load(open("'"$HOOKS"'/../../.github/hooks/hooks.json"))["hooks"]["postToolUse"]))' 2>/dev/null)"
 
 r="$(fresh_repo main)"; cd "$r" || exit 1
 PAYLOAD_BLOCK='{"toolName":"bash","toolArgs":{"command":"git commit -m x"}}'
-out="$(run_adapter preToolUse block-main-commit.sh "$PAYLOAD_BLOCK")"
-check "adapter denies a blocked commit on main"           0 "$(run_adapter_exit preToolUse block-main-commit.sh "$PAYLOAD_BLOCK")"
+out="$(run_adapter preToolUse "$PAYLOAD_BLOCK")"
+check "adapter denies a blocked commit on main"           0 "$(run_adapter_exit preToolUse "$PAYLOAD_BLOCK")"
 check_has "adapter's deny response names permissionDecision deny" "$out" '"permissionDecision":"deny"'
 check "adapter's deny JSON parses as JSON" 0 \
   "$(printf '%s' "$out" | python3 -c 'import json,sys;json.load(sys.stdin)' >/dev/null 2>&1; echo $?)"
 
+PAYLOAD_BLOCK_STRING='{"toolName":"bash","toolArgs":"{\"command\":\"git commit -m x\"}"}'
+out="$(run_adapter preToolUse "$PAYLOAD_BLOCK_STRING")"
+check "adapter denies a blocked commit when toolArgs is a JSON string" 0 "$(run_adapter_exit preToolUse "$PAYLOAD_BLOCK_STRING")"
+check_has "string-toolArgs deny response names permissionDecision deny" "$out" '"permissionDecision":"deny"'
+
 PAYLOAD_ALLOW='{"toolName":"bash","toolArgs":{"command":"git status"}}'
-check "adapter allows a non-commit command"               0 "$(run_adapter_exit preToolUse block-main-commit.sh "$PAYLOAD_ALLOW")"
-check "adapter prints nothing on allow" 0 "$(status_of [ -z "$(run_adapter preToolUse block-main-commit.sh "$PAYLOAD_ALLOW")" ])"
+check "adapter allows a non-commit command"               0 "$(run_adapter_exit preToolUse "$PAYLOAD_ALLOW")"
+check "adapter prints nothing on allow" 0 "$(status_of [ -z "$(run_adapter preToolUse "$PAYLOAD_ALLOW")" ])"
+
+check "adapter exits 1 when stdin is not a JSON object" 1 "$(run_adapter_exit preToolUse 'not json')"
+check "preToolUse denies a commit even when the payload carries toolResult" 0 \
+  "$(status_of test -n "$(run_adapter preToolUse '{"toolName":"bash","toolArgs":{"command":"git commit -m x"},"toolResult":{}}')")"
+check_lacks "postToolUse never answers with permissionDecision" \
+  "$(run_adapter postToolUse '{"toolName":"bash","toolArgs":{"command":"git commit -m x"}}')" 'permissionDecision'
 cd / || exit 1
 
 r="$(fresh_repo feature)"; cd "$r" || exit 1
 printf -- '- [ ] T001 first\n' > tasks.md
 git add tasks.md && git -c user.email=t@t -c user.name=t commit -q -m tasks
 printf -- '- [x] T001 first\n' > tasks.md
-PAYLOAD_EDIT="{\"toolName\":\"str_replace_editor\",\"toolArgs\":{\"path\":\"$r/tasks.md\"}}"
-out="$(SPECFLOW_TEST_CMD=false run_adapter postToolUse test-gate.sh "$PAYLOAD_EDIT")"
-check "adapter surfaces a failed postToolUse gate (exit 2)" 0 \
-  "$(SPECFLOW_TEST_CMD=false run_adapter_exit postToolUse test-gate.sh "$PAYLOAD_EDIT")"
+PAYLOAD_EDIT="{\"toolName\":\"str_replace_editor\",\"toolArgs\":{\"path\":\"$r/tasks.md\",\"old_str\":\"[ ]\",\"new_str\":\"[x]\"},\"toolResult\":{\"resultType\":\"success\"}}"
+out="$(SPECFLOW_TEST_CMD=false run_adapter postToolUse "$PAYLOAD_EDIT")"
+check "adapter surfaces a failed postToolUse gate (exit 0 with context)" 0 \
+  "$(SPECFLOW_TEST_CMD=false run_adapter_exit postToolUse "$PAYLOAD_EDIT")"
 check_has "postToolUse failure carries additionalContext"        "$out" '"additionalContext"'
 check_lacks "postToolUse response carries no permissionDecision" "$out" 'permissionDecision'
 check "adapter allows a passing postToolUse gate" 0 \
-  "$(SPECFLOW_TEST_CMD=true run_adapter_exit postToolUse test-gate.sh "$PAYLOAD_EDIT")"
+  "$(SPECFLOW_TEST_CMD=true run_adapter_exit postToolUse "$PAYLOAD_EDIT")"
+
+PAYLOAD_EDIT_STRING="$(jq -nc --arg p "$r/tasks.md" '{toolName: "edit", toolArgs: ({path: $p, old_str: "[ ]", new_str: "[x]"} | tojson), toolResult: {resultType: "success"}}')"
+check_has "postToolUse failure with string toolArgs carries additionalContext" \
+  "$(SPECFLOW_TEST_CMD=false run_adapter postToolUse "$PAYLOAD_EDIT_STRING")" '"additionalContext"'
+
+PAYLOAD_READ="{\"toolName\":\"view\",\"toolArgs\":{\"path\":\"$r/tasks.md\"},\"toolResult\":{\"resultType\":\"success\"}}"
+check "adapter runs no postToolUse gate on a read" 0 \
+  "$(status_of [ -z "$(SPECFLOW_TEST_CMD=false run_adapter postToolUse "$PAYLOAD_READ")" ])"
 cd / || exit 1
 
 r="$(fresh_repo main)"; mkdir -p "$r/specs/001-x"; cd "$r" || exit 1
 printf 'spec: 001-x\nstatus: in_progress\ncurrent_phase: 1\nphases:\n  - phase: 1\n    name: Setup\n    status: in_progress\n' > specs/001-x/progress.yml
-out="$(run_adapter sessionStart session-start.sh '{}')"
-check "adapter wraps session-start.sh output" 0 "$(run_adapter_exit sessionStart session-start.sh '{}')"
+out="$(run_adapter sessionStart '{}')"
+check "adapter wraps session-start.sh output" 0 "$(run_adapter_exit sessionStart '{}')"
 check_has "sessionStart response carries additionalContext" "$out" '"additionalContext"'
 check_has "sessionStart response carries the progress summary" "$out" '001-x'
 cd / || exit 1

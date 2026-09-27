@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Bridges a Copilot CLI hook payload to a .claude/hooks/*.sh gate script.
-# .github/hooks/hooks.json calls this as "adapter.sh <event> <gate>" and
-# pipes the Copilot payload to it on stdin. The gate script itself stays on
-# the Claude Code payload schema (ADR-0001); this script translates on the
-# way in and translates the exit code back to Copilot's response envelope on
-# the way out.
+# Runs specflow/gates/bash/agent-event.sh for a Copilot CLI native hook.
+# .github/hooks/hooks.json calls this as "adapter.sh <event>" with the Copilot
+# payload on stdin. agent-event.sh reads toolArgs as an object or a JSON
+# string, picks the gates, and prints Copilot's response JSON (ADR-0034); this
+# script adds the event the native loader names, the exit code on a block, and
+# the sessionStart wrap (ADR-0035).
 set -euo pipefail
 
 if ! command -v jq >/dev/null 2>&1; then
@@ -12,58 +12,44 @@ if ! command -v jq >/dev/null 2>&1; then
   exit 1
 fi
 
+BLOCK_EXIT=2
 event="${1:?adapter.sh: missing event (preToolUse, postToolUse, or sessionStart)}"
-gate="${2:?adapter.sh: missing gate script name}"
-script_dir="$(cd "$(dirname "$0")" && pwd)"
-gate_path="$script_dir/../../.claude/hooks/$gate"
+agent_event="$(cd "$(dirname "$0")" && pwd)/../../specflow/gates/bash/agent-event.sh"
 
-if [ ! -f "$gate_path" ]; then
-  echo "adapter.sh: gate script not found at $gate_path" >&2
+if [ ! -f "$agent_event" ]; then
+  echo "adapter.sh: agent-event.sh not found at $agent_event; expected the specflow/ directory beside .github/. Restore specflow/gates/bash/agent-event.sh." >&2
   exit 1
 fi
 
-payload="$(cat)"
-
-if [ "$event" = "sessionStart" ]; then
-  context="$(printf '%s' "$payload" | bash "$gate_path")"
-  [ -n "$context" ] && jq -nc --arg ctx "$context" '{additionalContext: $ctx}'
-  exit 0
-fi
-
-# docs/agent-event-mapping.md's field-mapping table: Copilot's toolArgs.command
-# and toolArgs.path become tool_input.command and tool_input.file_path, the
-# names every .claude/hooks/*.sh gate reads. A field absent from the Copilot
-# payload becomes an empty string, which each gate already treats as "no
-# match" rather than an error.
-claude_payload="$(printf '%s' "$payload" | jq -c '{
-  tool_input: {
-    command: (.toolArgs.command // ""),
-    file_path: (.toolArgs.path // "")
-  }
-}')"
-
-set +e
-reason="$(printf '%s' "$claude_payload" | bash "$gate_path" 2>&1 >/dev/null)"
-status=$?
-set -e
-
-[ "$status" -eq 2 ] || exit 0
-
+# agent-event.sh names the event from the payload's shape: toolResult means
+# postToolUse, toolName alone means preToolUse, neither means sessionStart.
 case "$event" in
-preToolUse)
-  # docs.github.com/en/copilot/reference/hooks-reference: a preToolUse hook
-  # denies the call with permissionDecision "deny" and a required
-  # permissionDecisionReason.
-  jq -nc --arg reason "$reason" '{permissionDecision: "deny", permissionDecisionReason: $reason}'
-  ;;
-postToolUse)
-  # The tool already ran by postToolUse, so Copilot's response has no deny
-  # field there; additionalContext is the only way to surface the gate's
-  # finding to the model.
-  jq -nc --arg ctx "$reason" '{additionalContext: $ctx}'
-  ;;
+preToolUse) shape='del(.toolResult) | .toolName //= ""' ;;
+postToolUse) shape='.toolResult //= {} | .toolName //= ""' ;;
+sessionStart) shape='del(.toolName, .toolResult)' ;;
 *)
   echo "adapter.sh: unknown event '$event'; expected preToolUse, postToolUse, or sessionStart" >&2
   exit 1
   ;;
 esac
+
+payload="$(cat)"
+# A payload that is not a JSON object passes through unshaped, so agent-event.sh
+# rejects it with its own message.
+shaped="$(printf '%s' "$payload" | jq -c "if type == \"object\" then $shape else . end" 2>/dev/null)" || shaped="$payload"
+
+if [ "$event" = "sessionStart" ]; then
+  # The events: dispatcher wraps session_start stdout for Copilot; the native
+  # loader passes stdout through, so the wrap happens here.
+  context="$(printf '%s' "$shaped" | bash "$agent_event")"
+  [ -z "$context" ] || jq -nc --arg ctx "$context" '{additionalContext: $ctx}'
+  exit 0
+fi
+
+status=0
+response="$(printf '%s' "$shaped" | bash "$agent_event")" || status=$?
+[ -z "$response" ] || printf '%s' "$response" | jq -c .
+# docs.github.com/en/copilot/reference/hooks-reference: Copilot reads a deny or
+# additionalContext from stdout, so a block exits 0 with the JSON.
+[ "$status" -eq "$BLOCK_EXIT" ] && exit 0
+exit "$status"
