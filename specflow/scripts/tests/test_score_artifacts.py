@@ -906,3 +906,80 @@ def test_seeded_missing_test_matches_the_golden_on_every_other_dimension():
         report["needs_clarification"]["count"]
         == golden["needs_clarification"]["count"]
     )
+
+
+SPEC_WITH_SORT_ORDER_QUESTION = """# Feature
+
+## Requirements
+
+- **FR-001**: The report lists every broken link.
+
+## Open Questions
+
+| # | Question | Status | Resolution |
+|---|----------|--------|------------|
+| OQ-001 | What sort order does the report use? | Open | |
+"""
+
+SPEC_WITH_SORT_ORDER_OUTSIDE_QUESTIONS = """# Feature
+
+## Requirements
+
+- **FR-001**: The report lists every broken link in an unstated sort order.
+
+## Open Questions
+
+| # | Question | Status | Resolution |
+|---|----------|--------|------------|
+| OQ-001 | Which exit code means the scan could not run? | Open | |
+"""
+
+
+def write_seeded_ambiguity(feature_dir, phrase):
+    """Write the .seeded-ambiguity marker naming phrase into feature_dir."""
+    (feature_dir / ".seeded-ambiguity").write_text(f"{phrase}\n")
+
+
+def test_unseeded_feature_scores_seeded_ambiguity_full():
+    with tempfile.TemporaryDirectory() as directory:
+        report = score_json(write_feature(directory, SPEC_WITH_SORT_ORDER_QUESTION))
+    assert report["seeded_ambiguity"] == {
+        "seeded": None,
+        "surfaced": False,
+        "score": 100.0,
+    }
+
+
+def test_seeded_ambiguity_named_in_an_open_question_scores_full():
+    with tempfile.TemporaryDirectory() as directory:
+        feature_dir = write_feature(directory, SPEC_WITH_SORT_ORDER_QUESTION)
+        write_seeded_ambiguity(feature_dir, "Sort Order")
+        report = score_json(feature_dir)
+    assert report["seeded_ambiguity"] == {
+        "seeded": "Sort Order",
+        "surfaced": True,
+        "score": 100.0,
+    }
+
+
+def test_seeded_ambiguity_named_only_outside_open_questions_scores_zero():
+    with tempfile.TemporaryDirectory() as directory:
+        feature_dir = write_feature(directory, SPEC_WITH_SORT_ORDER_OUTSIDE_QUESTIONS)
+        write_seeded_ambiguity(feature_dir, "sort order")
+        report = score_json(feature_dir)
+    assert report["seeded_ambiguity"] == {
+        "seeded": "sort order",
+        "surfaced": False,
+        "score": 0.0,
+    }
+
+
+def test_empty_seeded_ambiguity_marker_fails_with_the_fix():
+    with tempfile.TemporaryDirectory() as directory:
+        feature_dir = write_feature(directory, SPEC_WITH_SORT_ORDER_QUESTION)
+        (feature_dir / ".seeded-ambiguity").write_text("\n")
+        result = score(feature_dir)
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "FAIL: " in result.stderr
+    assert ".seeded-ambiguity" in result.stderr

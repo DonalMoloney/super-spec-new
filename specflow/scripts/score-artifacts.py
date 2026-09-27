@@ -2,10 +2,11 @@
 """Score one ``specs/NNN-slug/`` feature directory and print the report as JSON.
 
 A golden run is only useful if regressions in its artifacts are measurable, so
-this script grades eight dimensions a reviewer would otherwise check by hand:
+this script grades nine dimensions a reviewer would otherwise check by hand:
 mandatory spec sections, criterion traceability, threat model mitigation,
-open question resolution, changelog entries, traceability test resolution,
-stable task ids, and leftover clarification markers. Traceability grades
+open question resolution, a seeded ambiguity raised as an open question,
+changelog entries, traceability test resolution, stable task ids, and leftover
+clarification markers. Traceability grades
 whether each criterion has a filled test cell, not whether the reference in
 that cell resolves; test_exists grades the resolution itself. The report goes
 to stdout as a single JSON object; every failure path writes a ``FAIL:`` line
@@ -45,6 +46,7 @@ OPEN_QUESTIONS_SECTION = "Open Questions"
 OPEN_QUESTIONS_HEADER_CELL = "#"
 RESOLVED_STATUS = "Resolved"
 CLARIFIED_MARKER_FILENAME = ".clarified"
+SEEDED_AMBIGUITY_FILENAME = ".seeded-ambiguity"
 CHANGELOG_SECTION = "Changelog"
 CHANGELOG_HEADER_CELL = "Version"
 MINIMUM_CHANGELOG_ROWS = 1
@@ -260,6 +262,40 @@ def score_open_questions(spec_lines: list[str], feature_dir: Path) -> dict:
     }
 
 
+def score_seeded_ambiguity(spec_lines: list[str], feature_dir: Path) -> dict:
+    """Score whether an Open Questions row names the ambiguity seeded in feature_dir.
+
+    ``.seeded-ambiguity`` holds the planted phrase on its first line. A feature
+    directory without that file has nothing seeded and scores 100. The phrase
+    matches a row case-insensitively.
+    """
+    marker = feature_dir / SEEDED_AMBIGUITY_FILENAME
+    if not marker.is_file():
+        return {"seeded": None, "surfaced": False, "score": FULL_SCORE}
+    lines = read_lines(marker)
+    phrase = lines[0].strip() if lines else ""
+    if not phrase:
+        fail(
+            f"{marker} is empty; expected the seeded phrase on its first line. "
+            "Write the phrase or delete the file."
+        )
+    surfaced = False
+    in_section = False
+    for line in spec_lines:
+        parsed = heading(line)
+        if parsed is not None and parsed[0] <= SECTION_LEVEL:
+            level, name = parsed
+            in_section = level == SECTION_LEVEL and name == OPEN_QUESTIONS_SECTION
+            continue
+        if in_section and TABLE_ROW.match(line) and phrase.lower() in line.lower():
+            surfaced = True
+    return {
+        "seeded": phrase,
+        "surfaced": surfaced,
+        "score": FULL_SCORE if surfaced else 0.0,
+    }
+
+
 def score_changelog(spec_lines: list[str]) -> dict:
     """Score whether the Changelog table records at least one entry.
 
@@ -414,6 +450,7 @@ def build_report(feature_dir: Path) -> dict:
         "traceability": score_traceability(spec_lines),
         "threat_model": score_threat_model(spec_lines),
         "open_questions": score_open_questions(spec_lines, feature_dir),
+        "seeded_ambiguity": score_seeded_ambiguity(spec_lines, feature_dir),
         "changelog": score_changelog(spec_lines),
         "test_exists": score_test_exists(spec_lines, feature_dir),
         "task_ids": score_task_ids(feature_dir / TASKS_FILENAME),
