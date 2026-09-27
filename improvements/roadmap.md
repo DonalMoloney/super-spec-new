@@ -57,9 +57,8 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 
 ## Open work at a glance
 
-| Item | What it closes | Effort | Verified open by |
-|---|---|---|---|
-| G-26 | The gates cannot run on the Copilot CLI | medium | T261, T262, and T263 done on branch `g26-events-hook` (ADR-0034); the row clears on merge |
+Nothing is open at a glance right now; see the Backlog section below for the
+next unclaimed items.
 
 ## G-19 — Examples produced by this fork, not upstream (merged: PR #81)
 
@@ -146,7 +145,7 @@ When a key exists, the live run is one session and one feature, in this order.
    order left unspecified, then add `score_seeded_ambiguity` to
    `score-artifacts.py` with a test.
 
-## G-26 — Register the gates as agent-native hooks (blocked: ADR-0022) (working on)
+## G-26 — Register the gates as agent-native hooks (merged: PR #84)
 
 Executor: `bdd-orchestrator`. Model: opus. Move: Add. Effort: medium. Depends
 on: G-24. Diverges: yes.
