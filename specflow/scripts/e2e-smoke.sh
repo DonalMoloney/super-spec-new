@@ -55,6 +55,7 @@ EXPECTED_PROCESS_STEPS=(
   "execute 9"
   "review 10"
   "gate 4"
+  "agent-event 8"
 )
 
 # The workflow guide phase that mirrors each command, as
@@ -68,11 +69,12 @@ MIRRORED_PHASES=(
   "execute|## Phase 5: Execution|### Steps"
   "review|## Phase 6: Review|### Steps"
 )
-# The guide is phase-structured, and neither status nor gate is a phase, so
-# neither mirrors a phase. The Gate markers table under Phase 5 carries the
-# protocol gate follows. Any other command missing from MIRRORED_PHASES fails
-# below.
-UNMIRRORED_COMMANDS=("status" "gate")
+# The guide is phase-structured, and neither status nor gate nor agent-event
+# is a phase, so none of the three mirrors a phase. The Gate markers table
+# under Phase 5 carries the protocol gate follows. agent-event runs as a
+# spec-kit events hook dispatcher, outside the phase sequence entirely. Any
+# other command missing from MIRRORED_PHASES fails below.
+UNMIRRORED_COMMANDS=("status" "gate" "agent-event")
 # Backticked names that match the artifact shape but name no project state.
 # SKILL.md is the superpowers skill file a command reads; package-lock.json is
 # one of the lock files review.md lists to classify risk.
@@ -449,6 +451,46 @@ for tmpl in "${SPECFLOW_TEMPLATES[@]}"; do
               "specflow template:" \
               "$WORK_COPILOT/.specify/extensions/specflow/templates/$tmpl.md"
 done
+
+# The events: block in extension.yml registers agent-event on pre_tool_use,
+# post_tool_use, and session_start; spec-kit's Copilot writer resolves that
+# block into .github/hooks/speckit.json (docs/agent-event-mapping.md).
+assert_file "copilot: .github/hooks/speckit.json written from the events: block" \
+            "$WORK_COPILOT/.github/hooks/speckit.json"
+assert_grep "copilot: agent-event.md installed copy declares its sh script" \
+            "sh: gates/bash/agent-event.sh" \
+            "$WORK_COPILOT/.specify/extensions/specflow/commands/agent-event.md"
+SPECKIT_JSON_CHECK="$(python3 -c "
+import json, sys
+path = '$WORK_COPILOT/.github/hooks/speckit.json'
+try:
+    with open(path) as f:
+        doc = json.load(f)
+except (OSError, json.JSONDecodeError) as exc:
+    print(f'FAIL {exc}')
+    sys.exit(1)
+hooks = doc.get('hooks', {})
+for key in ('preToolUse', 'postToolUse', 'sessionStart'):
+    entries = hooks.get(key)
+    if not entries:
+        print(f'FAIL {key} is missing from speckit.json')
+        sys.exit(1)
+    if isinstance(entries, list):
+        bash_cmds = [entry.get('bash', '') for entry in entries]
+        found = any('speckit.specflow.agent-event' in cmd for cmd in bash_cmds)
+        if not found:
+            print(f'FAIL {key}.bash does not carry speckit.specflow.agent-event in any entry')
+            sys.exit(1)
+    else:
+        print(f'FAIL {key} is not a list')
+        sys.exit(1)
+print('OK')
+")"
+if [ "$SPECKIT_JSON_CHECK" = "OK" ]; then
+  pass "copilot: speckit.json's preToolUse, postToolUse, sessionStart each run speckit.specflow.agent-event"
+else
+  fail "copilot: speckit.json's preToolUse, postToolUse, sessionStart each run speckit.specflow.agent-event ($SPECKIT_JSON_CHECK)"
+fi
 
 step "3/5" "Simulate /speckit.specify (calls create-new-feature.sh directly)"
 cd "$WORK" || exit 1

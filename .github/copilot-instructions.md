@@ -31,7 +31,7 @@ or `templates/`. CI runs the same checks.
 
 ## Architecture
 
-- `specflow/extension.yml`: manifest, 6 commands, 5 templates, 9 scripts, 6 hooks.
+- `specflow/extension.yml`: manifest, 7 commands, 5 templates, 10 scripts, 6 hooks.
 - `specflow/commands/*.md`: one file per `/speckit.specflow.*` command; each is an
   Input/Output/Process behavior contract, not code.
 - `specflow/gates/`: the gate scripts `provides.scripts` declares, shipped in the

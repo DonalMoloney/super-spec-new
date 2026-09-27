@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# SessionStart hook (matcher: resume, compact). Prints open questions, the
-# current feature's progress summary, its next unchecked task, and its
-# handoff notes so a resumed session skips rediscovering state. Always exits 0.
+# SessionStart hook. Runs at session start; this repository's own
+# .claude/settings.json registers it on the resume and compact matchers.
+# Prints open questions, the current feature's progress summary, its next
+# unchecked task, and its handoff notes so a resumed session skips
+# rediscovering state. Always exits 0.
 set -u
 shopt -s nullglob
 cat >/dev/null

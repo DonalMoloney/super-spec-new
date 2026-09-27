@@ -18,6 +18,15 @@ A release that carries more than one of these takes the highest part.
 
 ## [Unreleased]
 
+### Added
+
+- A `/speckit.specflow.agent-event` command dispatches hook payloads to gate
+  scripts: `block-main-commit.sh` on `pre_tool_use`, `test-gate.sh` and
+  `artifact-lint.sh` on `post_tool_use`, and `session-start.sh` on
+  `session_start`. On install, `specify extension add specflow` registers these
+  gates in the agent's native hook system on both Claude Code and the Copilot
+  CLI.
+
 ### Changed
 
 - `SKILL.md` links the recorded link-audit run instead of the sample workflow

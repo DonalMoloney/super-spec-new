@@ -59,7 +59,7 @@ spec-kit 1.0.9.dev0 at `d4229c0`.
 
 | Item | What it closes | Effort | Verified open by |
 |---|---|---|---|
-| G-26 | The gates cannot run on the Copilot CLI | medium | Blocked by ADR-0022; T261 and G-55's script move done, T262 and T263 behind the remaining `post_tool_use` one-event-one-handler design question |
+| G-26 | The gates cannot run on the Copilot CLI | medium | T261, T262, and T263 done on branch `g26-events-hook` (ADR-0034); the row clears on merge |
 
 ## G-19 — Examples produced by this fork, not upstream (merged: PR #81)
 
@@ -168,50 +168,17 @@ adapter each surface needs from exit code to deny JSON. Verify: the table
 names an event for `block-main-commit.sh`, `test-gate.sh`, `artifact-lint.sh`,
 and `session-start.sh`.
 
-- [ ] T262 Declare the block in `extension.yml`
+- [x] T262 Declare the block in `extension.yml`
 
-Blocked, and shipping the block today would brick the extension. One of the
-three prerequisites cleared on 2026-09-20: `docs/agent-event-mapping.md`
-records Copilot's `toolName`, `toolArgs.command`, and `toolArgs.path`.
-ADR-0027 covers the `jq` dependency. The frontmatter prerequisite is not
-cleared: every command file's source carries a `scripts:` block, but a real
-install strips it. Verified on 2026-09-25 by installing this checkout with
-`specify extension add specflow --dev` into a scratch spec-kit project: the
-installed `.claude/skills/speckit-specflow-tasks/SKILL.md` frontmatter
-carries `name`, `description`, `compatibility`, and `metadata` only. The
-command's Process step still names
-`.specify/scripts/bash/resolve-template.sh` in prose and resolves templates
-correctly regardless, so this gap blocks only the `events:` block's own
-prerequisite claim, not template resolution.
+The `events:` block ships with three entries (pre_tool_use, post_tool_use, session_start), all pointing to the new `speckit.specflow.agent-event` command. The new command dispatches hook payloads to matching gate scripts. See ADR-0034 for the design.
 
-What remains is a handler. An `events:` entry names a command, the dispatcher
-resolves that command to one script, and that script receives a hook payload on
-stdin and nothing else. No shipped script reads one: `speckit.specflow.gate`
-resolves to `write-marker.sh`, which takes two arguments and exits 2 without
-them, so registering it on `pre_tool_use` denies every Bash call. Reproduced
-against spec-kit `d4229c0`:
+Verify: `grep -c '^events:' specflow/extension.yml` prints 1 and both validators pass.
 
-```
-$ echo '{"toolName":"bash","toolArgs":{"command":"ls"}}' | python3 .specify/events.py speckit.specflow.gate pre_tool_use 30
-write-marker: got 0 argument(s); expected 2.
-DISPATCHER EXIT=2
-```
+- [x] T263 Assert the installed hook config in the smoke test
 
-The four scripts that do read a payload, `block-main-commit.sh`,
-`test-gate.sh`, `artifact-lint.sh`, and `session-start.sh`, are still under
-`.claude/`; ADR-0025 moved a different four. Moving them is the real
-prerequisite. Note also that `validate_events` requires each `events:` value to
-be a mapping, so one event name takes one entry: the mapping table's two
-`post_tool_use` gates cannot both register. Copilot drops the `matcher` field
-Claude Code keeps, so a gate filters by tool name itself.
+The Copilot leg of `e2e-smoke.sh` asserts that `.github/hooks/speckit.json` exists after install and names the three events registered on `agent-event`.
 
-Verify: `grep -c '^events:' specflow/extension.yml` prints 1 and both
-validators pass.
-
-- [ ] T263 Assert the installed hook config in the smoke test
-
-Verify: the Copilot leg of `e2e-smoke.sh` finds the hook file the install
-wrote and names the events in it.
+Verify: the Copilot leg of `e2e-smoke.sh` finds the hook file the install wrote and names the events in it.
 
 ## G-43 — SKILL.md documents a progress file the validator rejects (merged: direct)
 
@@ -1084,6 +1051,11 @@ move shrinks the diff the drift check in G-23 reports, and the fork's value is
 the `.claude/` toolkit, not five prompt files. Verify: the PR links are recorded
 beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
 
+**37. Assert the Claude leg's hooks in e2e-smoke.sh.** The smoke test asserts
+the Copilot hook file on the Copilot leg. The Claude leg should assert
+`.claude/settings.json` names the three event types from the extension. Verify:
+the Claude leg assertions pass on a fresh install. Effort: low. Depends on: G-26.
+
 ## Deferred
 
 - **Multi-feature concurrency** (first-wave item 11): revisit after G-14's
@@ -1106,10 +1078,8 @@ G-46, G-48, G-49, G-50, G-51, G-52, G-53, G-54, G-55, G-56, and C-01 through
 C-09 are merged or closed. Backlog item 34 closed with G-19 (PR #81 added
 `examples/seeded-ambiguity/`). What is left, in order:
 
-1. G-26 T262 and T263. G-55 cleared the script-relocation prerequisite; what
-   remains is the `post_tool_use` one-event-one-handler design question T262's
-   own text names (`test-gate.sh` and `artifact-lint.sh` both want that
-   event, and `validate_events` takes one handler per event name).
+1. G-26's pull request. T262 and T263 are done on branch `g26-events-hook`;
+   ADR-0034 records how one handler serves both `post_tool_use` gates.
 2. Backlog item 26, once a release exists to upgrade from.
 3. Backlog item 36, no code.
 

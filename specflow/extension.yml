@@ -57,6 +57,9 @@ provides:
     - name: "speckit.specflow.gate"
       file: "commands/gate.md"
       description: "Write a feature's clarify or analyze marker, or name the check that refused"
+    - name: "speckit.specflow.agent-event"
+      file: "commands/agent-event.md"
+      description: "Dispatch a spec-kit events hook payload to the matching gate"
   scripts:
     - name: "risk-classifier"
       file: "gates/bash/risk-classifier.sh"
@@ -86,6 +89,10 @@ provides:
       file: "gates/bash/session-start.sh"
       runtimes: ["bash"]
       description: "Print open questions and the current feature's progress at session start"
+    - name: "agent-event"
+      file: "gates/bash/agent-event.sh"
+      runtimes: ["bash"]
+      description: "Classify a spec-kit events hook payload and dispatch it to the matching sibling gate"
     - name: "validate-findings"
       file: "gates/python/validate-findings.py"
       runtimes: ["python"]
@@ -143,4 +150,16 @@ hooks:
     priority: 10
     prompt: "Review the completed phase against its spec?"
     description: "Review the completed phase against the spec, the plan, and the constitution"
+events:
+  pre_tool_use:
+    command: "speckit.specflow.agent-event"
+    matcher: "Bash"
+    timeout: 30
+  post_tool_use:
+    command: "speckit.specflow.agent-event"
+    matcher: "Edit|Write"
+    timeout: 120
+  session_start:
+    command: "speckit.specflow.agent-event"
+    timeout: 15
 tags: ["superpowers", "brainstorming", "tdd", "code-review", "subagent", "workflow", "claude-code", "copilot"]

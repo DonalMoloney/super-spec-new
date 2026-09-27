@@ -237,7 +237,7 @@ deleting them; prune anything older than a quarter that no longer guides work.
 ## ADR-0022: The gates stay under `.claude/`; the `events:` block waits
 
 - Date: 2026-09-20
-- Status: superseded in part by ADR-0027, which clears both unknowns
+- Status: superseded in part by ADR-0027; superseded in remainder by ADR-0034
 - Context: G-26 asked whether spec-kit's `events:` block should register this
   repository's four gates so they run on the Copilot CLI. An `events:` entry
   names a command, not a script: the dispatcher reads that command's
@@ -463,3 +463,21 @@ deleting them; prune anything older than a quarter that no longer guides work.
   `E2E_MODEL` pins the model.
 - Consequences: a stage that needs a new command stops on approval until the
   list grows. The command contracts stay interactive.
+
+## ADR-0034: One `events:` command dispatches every gate by payload shape
+
+- Date: 2026-09-27
+- Status: accepted, supersedes the rest of ADR-0022, amends ADR-0027
+- Context: ADR-0032 shipped the four payload gates under `specflow/gates/`.
+  Spec-kit's `validate_events` takes one mapping per event, so
+  `post_tool_use` cannot name `test-gate.sh` and `artifact-lint.sh` apart.
+  The dispatcher passes the script no event name.
+- Decision: the `events:` block registers `speckit.specflow.agent-event` on
+  `pre_tool_use`, `post_tool_use`, and `session_start`. Its script,
+  `agent-event.sh`, reads the event and the surface from the payload and runs
+  the matching gates. Copilot drops `matcher`, so a Copilot path reaches the
+  post gates only beside a write argument.
+- Consequences: an install wires the gates into Claude Code and the Copilot
+  CLI, replacing ADR-0001's hand copy. A project that copied `.claude/hooks/`
+  runs each gate twice. The Copilot hook file spec-kit writes is a third route
+  beside ADR-0031's.

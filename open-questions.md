@@ -34,3 +34,5 @@ delete it, or promote it to an ADR in `decisions.md`.
   carries them at the top level anyway, since T610 asked for it explicitly.
   Decide whether to drop them once a real `specify` CLI run can confirm
   whether the parser rejects, ignores, or errors on unknown top-level keys.
+
+- **Should `.github/hooks/adapter.sh` (G-54) call `agent-event.sh` instead of translating its own?** The adapter reads `.toolArgs.command` and `.toolArgs.path` as object fields. Copilot 1.0.54 passes `toolArgs` as a JSON string, so the adapter's `jq` call fails on a string. It also maps `toolArgs.path` for reads, which the write-argument rule in `agent-event.sh` avoids. Consider having the adapter shell out to `agent-event.sh` instead of translating on its own, since that script already handles toolArgs as string-or-object and applies the write-argument filter.
