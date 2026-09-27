@@ -237,7 +237,7 @@ deleting them; prune anything older than a quarter that no longer guides work.
 ## ADR-0022: The gates stay under `.claude/`; the `events:` block waits
 
 - Date: 2026-09-20
-- Status: superseded in part by ADR-0027, which clears both unknowns
+- Status: superseded in part by ADR-0027; superseded in remainder by ADR-0033
 - Context: G-26 asked whether spec-kit's `events:` block should register this
   repository's four gates so they run on the Copilot CLI. An `events:` entry
   names a command, not a script: the dispatcher reads that command's
