@@ -17,7 +17,7 @@
 #   Stage 4  /speckit.plan, writes specs/001-.../plan.md
 #   Stage 5  /speckit.tasks, writes specs/001-.../tasks.md
 #                                     (after_tasks hook may invoke .specflow.tasks)
-#   Stage 6  /speckit.specflow.execute, writes web/index.html and progress updates
+#   Stage 6  /speckit.specflow.execute, writes src/link_audit/ and progress updates
 #   Stage 7  /speckit.specflow.review, writes checklists/review.md
 #
 # invoke_agent takes the prompt and the log path and drives the CLI in the
@@ -38,7 +38,7 @@ RESUME_WORKDIR="${E2E_RESUME_WORKDIR:-}"
 RESUME_FROM="${E2E_RESUME_FROM:-1}"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SNAPSHOT="$REPO_ROOT/examples/static-landing-page"
+SNAPSHOT="$REPO_ROOT/examples/link-audit"
 
 if [ -t 1 ]; then
   C_GREEN=$'\033[32m'; C_RED=$'\033[31m'; C_YELLOW=$'\033[33m'
@@ -74,18 +74,39 @@ assert_grep() {
 # that resolved nothing has nothing to record.
 assert_resolved_questions_recorded() {
   local spec="$1" decisions="$2" ids id rc=0
-  ids="$(grep -E '^\|[[:space:]]*OQ-[0-9]+[[:space:]]*\|.*\|[[:space:]]*Resolved[[:space:]]*\|' "$spec" 2>/dev/null \
-         | grep -oE 'OQ-[0-9]+')"
+  ids="$(grep -E '^\|[[:space:]]*(OQ-[0-9]+|Q[0-9]+)[[:space:]]*\|.*\|[[:space:]]*Resolved[[:space:]]*\|' "$spec" 2>/dev/null \
+         | sed -E 's/^\|[[:space:]]*([^[:space:]|]+).*/\1/')"
   if [ -z "$ids" ]; then
     note "no Open Questions row marked Resolved; nothing to record in decisions.md"
     return 0
   fi
   assert_grep "  decisions.md carries an ADR-NNNN heading" '^#{2}[[:space:]]+ADR-[0-9]{4}:' "$decisions" || rc=1
   for id in $ids; do
-    if [ -f "$decisions" ] && grep -qF -- "$id" "$decisions"; then
+    if [ -f "$decisions" ] && grep -qw -- "$id" "$decisions"; then
       pass "  $id is Resolved in spec.md and recorded in decisions.md"
     else
       miss "  $id is Resolved in spec.md but absent from ${decisions#$WORK/}"
+      rc=1
+    fi
+  done
+  return "$rc"
+}
+
+# A dry run checks each decisions.md Context line's question ID against the
+# spec instead of assert_resolved_questions_recorded, because a snapshot's rows
+# resolved by /speckit.clarify owe no ADR (brainstorm.md step 9).
+assert_recorded_decisions_are_resolved() {
+  local spec="$1" decisions="$2" ids id rc=0
+  ids="$(sed -nE 's/^- Context:[[:space:]]*(OQ-[0-9]+|Q[0-9]+)([^0-9].*)?$/\1/p' "$decisions" 2>/dev/null)"
+  if [ -z "$ids" ]; then
+    note "no decisions.md Context line opens with a question ID; nothing to check"
+    return 0
+  fi
+  for id in $ids; do
+    if grep -qE "^\|[[:space:]]*${id}[[:space:]]*\|.*\|[[:space:]]*Resolved[[:space:]]*\|" "$spec"; then
+      pass "  $id is recorded in decisions.md and Resolved in spec.md"
+    else
+      miss "  $id is recorded in ${decisions#$WORK/} but not Resolved in spec.md"
       rc=1
     fi
   done
@@ -418,9 +439,9 @@ stage_0_status() {
 # agent call. The snapshot is a real run's output, so it is the fixture.
 seed_dry_run_snapshot() {
   [ "$DRY_RUN" = "1" ] || return 0
-  title 0 "dry run: seeding the project from examples/static-landing-page"
+  title 0 "dry run: seeding the project from examples/link-audit"
   cp -R "$SNAPSHOT/specs" "$WORK/"
-  cp -R "$SNAPSHOT/web" "$WORK/"
+  cp -R "$SNAPSHOT/src" "$WORK/"
   cp "$SNAPSHOT/.specify/memory/constitution.md" "$WORK/.specify/memory/constitution.md"
   cp "$SNAPSHOT/decisions.md" "$WORK/decisions.md"
   pass "snapshot copied into ${WORK##*/}"
@@ -432,17 +453,17 @@ seed_dry_run_snapshot() {
 stage_1_constitution() {
   local invoke="$1"
   title 1 "/speckit.constitution: establish project principles"
-  local landing_vision='Static landing page for the specflow project.
-Audience: developers evaluating spec-kit extensions.
-Constraints: pure HTML+CSS, no build tooling, output goes to web/index.html.
-Quality bars: semantic HTML, mobile-friendly, no external network deps at runtime.'
+  local project_vision='A command-line audit of broken links in Markdown documentation.
+Audience: maintainers who run it in CI.
+Constraints: Python 3.11 standard library only, pytest for tests, source under src/link_audit/, no network access during a scan.
+Quality bars: exit 0 when no link is broken, 1 when one is, 2 when the scan cannot run; every error names the fix.'
 
   run_agent_stage "$invoke" 1 "$(cat <<EOF
 You are working in a fresh spec-kit project. Use the slash command
 /speckit.constitution to establish a constitution for this project.
 
 Project intent:
-$landing_vision
+$project_vision
 
 Run /speckit.constitution and produce .specify/memory/constitution.md with at
 least these sections: ## Core Principles, ## Quality Standards, ## Constraints.
@@ -466,11 +487,14 @@ stage_2_specify() {
   run_agent_stage "$invoke" 2 "$(cat <<EOF
 Use the slash command /speckit.specify with this feature description:
 
-"Static landing page for specflow. Three priorities:
- P1: Hero section with project name, tagline, and a 'Get Started' button.
- P2: Features grid showing the 5 core commands (status, brainstorm, tasks, execute, review).
- P3: Workflow diagram and an install command snippet.
- Output target: web/index.html, pure HTML+CSS, no JavaScript build."
+"link-audit is a Python CLI that walks the Markdown files git ls-files
+ reports, resolves each inline link target against the file system, prints the
+ unresolved ones, exits 1 when any is unresolved. Heading anchors resolve against
+ the slugified headings of the target file. External schemes are skipped, so the
+ scan needs no network. Three priorities:
+ P1: Report every relative link whose target file is missing.
+ P2: Report every file.md#anchor link whose anchor matches no heading.
+ P3: Scan only the Markdown files git ls-files reports."
 
 Run /speckit.specify, ensure spec.md is created under specs/<NNN>-<slug>/spec.md
 at the project ROOT (not under .specify/), and that it contains user scenarios
@@ -520,6 +544,11 @@ Per step 9 of the command, an Open Questions row you mark Resolved because a
 choice was settled also gets an ADR-lite entry appended to decisions.md at the
 project root.
 
+This is a headless run and no user will answer. Ask each question as the
+command directs, then answer it yourself with the option the spec and the
+constitution best support, and fold that answer into the spec. Treat the spec
+as confirmed ready once every category is covered.
+
 Run /speckit.specflow.brainstorm $SPEC_REL and stop when the spec file has
 been updated.
 EOF
@@ -537,7 +566,11 @@ EOF
     fi
     assert_grep "  ## Edge Cases section added" '^#{2,4}[[:space:]]+Edge Cases'           "$SPEC_DIR/spec.md" || FAILED_STAGE=3
     assert_grep "  ## Open Questions or Assumptions added" '^#{2,4}[[:space:]]+(Open Questions|Assumptions)' "$SPEC_DIR/spec.md" || FAILED_STAGE=3
-    assert_resolved_questions_recorded "$SPEC_DIR/spec.md" "$WORK/decisions.md" || FAILED_STAGE=3
+    if [ "$DRY_RUN" = "1" ]; then
+      assert_recorded_decisions_are_resolved "$SPEC_DIR/spec.md" "$WORK/decisions.md" || FAILED_STAGE=3
+    else
+      assert_resolved_questions_recorded "$SPEC_DIR/spec.md" "$WORK/decisions.md" || FAILED_STAGE=3
+    fi
   fi
   assert_idempotent stage_3_brainstorm
   stop_if_stage_failed
@@ -639,17 +672,24 @@ then write that marker only if the report has zero critical inconsistencies.
 If critical inconsistencies remain, stop and report them without implementing.
 
 Once the analyze gate passes, run /speckit.specflow.execute to implement the tasks in
-${SPEC_DIR#$WORK/}/tasks.md. The deliverable is a static landing page at
-web/index.html (pure HTML+CSS, no JS build tooling). Per the specflow
+${SPEC_DIR#$WORK/}/tasks.md. The deliverable is the link-audit CLI under
+src/link_audit/ with its pytest suite. Per the specflow
 contract, also keep ${SPEC_DIR#$WORK/}/progress.yml updated as tasks complete.
+
+This is a headless run and no user will answer. Treat every phase checkpoint
+as confirmed and continue to the next phase.
 EOF
 )" || FAILED_STAGE=6
 
   if [ -z "$FAILED_STAGE" ]; then
     assert_file "analyze gate marker exists" "$SPEC_DIR/.analyzed" || FAILED_STAGE=6
-    assert_file "web/index.html generated"        "$WORK/web/index.html"      || FAILED_STAGE=6
-    assert_grep "  index.html has <html>"        '<html'                     "$WORK/web/index.html" || FAILED_STAGE=6
-    assert_grep "  index.html mentions specflow" 'specflow'                "$WORK/web/index.html" || FAILED_STAGE=6
+    assert_file "src/link_audit/__init__.py generated" "$WORK/src/link_audit/__init__.py" || FAILED_STAGE=6
+    if grep -rq 'ls-files' "$WORK/src/link_audit" 2>/dev/null; then
+      pass "  src/link_audit/ reads git ls-files"
+    else
+      miss "  src/link_audit/ never calls git ls-files"
+      FAILED_STAGE=6
+    fi
     if [ -f "$SPEC_DIR/progress.yml" ]; then
       pass "progress.yml exists at ${SPEC_DIR#$WORK/}/progress.yml"
     else
@@ -666,7 +706,7 @@ stage_7_review() {
   local invoke="$1"
   title 7 "/speckit.specflow.review: review against spec"
   run_agent_stage "$invoke" 7 "$(cat <<EOF
-Run /speckit.specflow.review to review the implementation under web/ against
+Run /speckit.specflow.review to review the implementation under src/link_audit/ against
 the spec/plan/tasks at ${SPEC_DIR#$WORK/}. Per the specflow contract, write
 the review output to ${SPEC_DIR#$WORK/}/checklists/review.md as a checklist.
 EOF
@@ -689,11 +729,11 @@ report_summary() {
   echo
   echo "Final artifacts under workdir:"
   find "$WORK" -type f \
-    \( -path '*/specs/*' -o -path '*/web/*' -o -path '*/.specify/memory/*' -o -name 'AGENTS.md' -o -name 'CLAUDE.md' \) \
+    \( -path '*/specs/*' -o -path '*/src/*' -o -path '*/.specify/memory/*' -o -name 'AGENTS.md' -o -name 'CLAUDE.md' \) \
     -not -path '*/.git/*' \
     | sed "s|^$WORK/|    |" | sort
 
   [ "$DRY_RUN" = "1" ] || return 0
-  printf '\n%sDRY_RUN complete.%s %d assertions ran against examples/static-landing-page; no agent stage was called.\n' "$C_YELLOW" "$C_RST" "$PASS"
+  printf '\n%sDRY_RUN complete.%s %d assertions ran against examples/link-audit; no agent stage was called.\n' "$C_YELLOW" "$C_RST" "$PASS"
   printf '%s\n' "$1"
 }

@@ -519,14 +519,12 @@ step "4/5" "Verify specflow docs match spec-kit's real layout"
 check_drift() {
   local desc="$1"; shift
   local hits=0
-  # static-landing-page/ is a real-run e2e snapshot whose README teaches the
-  # old path in prose, so drift checks exclude that directory.
-  hits=$(grep -rEn --exclude-dir='static-landing-page' '\.specify/specs/' "$@" 2>/dev/null | wc -l | tr -d ' ')
+  hits=$(grep -rEn '\.specify/specs/' "$@" 2>/dev/null | wc -l | tr -d ' ')
   if [ "$hits" -eq 0 ]; then
     pass "$desc"
   else
     fail "$desc: $hits stale '.specify/specs/' reference(s):"
-    grep -rEn --exclude-dir='static-landing-page' '\.specify/specs/' "$@" 2>/dev/null | sed 's|^|        |'
+    grep -rEn '\.specify/specs/' "$@" 2>/dev/null | sed 's|^|        |'
   fi
 }
 

@@ -1,7 +1,7 @@
-# Specification Quality Checklist: Static Landing Page
+# Specification Quality Checklist: Link Audit CLI
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
-**Created**: 2026-05-30
+**Created**: 2026-09-27
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -31,5 +31,5 @@
 
 ## Notes
 
-- All items pass validation. Spec is ready for `/speckit-clarify` or `/speckit-plan`.
-- Assumptions section documents reasonable defaults for the "Get Started" link destination, tagline content, install command, and diagram approach.
+- Items marked incomplete require spec updates before `/speckit-clarify` or `/speckit-plan`.
+- One open question (Q1, heading slugification convention) is tracked in the spec's Open Questions table rather than as a [NEEDS CLARIFICATION] marker — it has a documented reasonable default in Assumptions and does not block scope, security, or UX, so it does not count against clarification limits.

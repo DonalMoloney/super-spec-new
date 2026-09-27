@@ -80,6 +80,10 @@ jobs:
       - name: Semgrep
         run: pipx run semgrep scan --config auto --error
 
+      - name: Install mutation-testing dependencies
+        if: steps.risk.outputs.level == 'HIGH'
+        run: python3 -m pip install -r requirements-dev.txt
+
       - name: Mutation score
         if: steps.risk.outputs.level == 'HIGH'
         run: bash .claude/hooks/mutation-gate.sh specflow/examples/mutation-gate-sample/

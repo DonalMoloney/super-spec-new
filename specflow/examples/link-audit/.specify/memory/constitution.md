@@ -1,83 +1,100 @@
 <!--
 Sync Impact Report
-Version: 1.0.0 (initial ratification)
-Principles added: I Test-First, II One Command One Job, III Exit Codes Are The
-  Contract, IV No Network During A Scan, V Errors Name The Fix
-Templates aligned: plan-template.md Constitution Check, checklist-template.md
-  Constitution Compliance
-Follow-up: none
+Version change: [none] → 1.0.0 (initial ratification)
+Modified principles: n/a (new document)
+Added sections:
+  - Core Principles: I. Standard Library Only, II. CI-First Exit Codes, III. No Network Access,
+    IV. Actionable Errors, V. Test-Driven Development
+  - Quality Standards
+  - Constraints
+  - Governance
+Removed sections: n/a
+Deferred placeholders: none — all template tokens resolved from user input.
+Templates requiring follow-up: none checked in this run (constitution-only scope); verify
+  .specify/templates/plan-template.md and tasks-template.md align with these principles the next
+  time either is touched.
 -->
 
-# Link Audit Constitution
+# link-audit Constitution
 
 ## Core Principles
 
-### I. Test-First (NON-NEGOTIABLE)
+### I. Standard Library Only
+link-audit MUST run using only the Python 3.11 standard library. No third-party runtime
+dependencies may be added to `src/link_audit/`. `pytest` is permitted, but only as a
+development/test dependency — it MUST NOT be imported by any code under `src/link_audit/`.
 
-Every behavior starts as a failing test. Write the test, run it, confirm it fails
-for the stated reason, then write the smallest change that passes it. A task that
-adds behavior without a test that failed first is rejected in review.
+**Rationale**: Maintainers run this tool in CI across many repositories with varying dependency
+policies. A zero-runtime-dependency tool installs instantly, has no supply-chain surface, and
+never breaks due to an upstream package change.
 
-### II. One Command, One Job
+### II. CI-First Exit Codes
+The CLI MUST use exit codes as its primary machine-readable contract: `0` when the scan
+completes and finds no broken link, `1` when the scan completes and finds at least one broken
+link, `2` when the scan cannot complete (e.g., invalid arguments, unreadable path, internal
+error). No other exit code may be used. Exit code semantics MUST NOT change between versions
+without a MAJOR constitution amendment.
 
-`link-audit` reports broken links. It never rewrites a file, never creates a
-branch, never opens an editor. A request to fix what the scan found becomes a
-separate command with its own spec.
+**Rationale**: CI systems branch on exit codes, not output text. A stable, three-way contract
+lets maintainers wire this into pipelines without parsing stdout.
 
-### III. Exit Codes Are The Contract
+### III. No Network Access During a Scan
+A scan MUST NOT perform any network I/O (no HTTP requests, no DNS resolution, no socket
+connections) while evaluating links. Link validity is determined by local, offline means only
+(e.g., filesystem existence checks for relative links, syntactic checks for anchors/URLs).
 
-Exit 0 means no broken link. Exit 1 means at least one broken link. Exit 2 means
-the scan could not run. Callers in CI depend on those three values, so a new
-failure mode picks one of them rather than adding a fourth.
+**Rationale**: Network calls in CI are slow, flaky, and can leak information or hang pipelines.
+An offline-only tool is deterministic and safe to run in sandboxed or air-gapped CI runners.
 
-### IV. No Network During A Scan
+### IV. Actionable Errors
+Every error the tool emits — whether a broken-link finding or a scan-level failure — MUST name
+the specific fix (e.g., the correct path, the missing file, the malformed syntax to correct). A
+message that only states "broken" or "failed" without pointing to a remedy is a defect.
 
-The scan reads the file system only. An `http`, `https`, or `mailto` target is
-skipped, not fetched. A scan stays reproducible offline, so a reviewer replays a
-CI failure on a laptop with the same result.
+**Rationale**: The audience is maintainers triaging CI failures, often without deep context on
+the tool. Actionable messages let them fix the problem without re-reading source code.
 
-### V. Errors Name The Fix
+### V. Test-Driven Development
+New behavior MUST be introduced via a failing pytest test written first, then the minimal code
+to pass it. Every exit-code path (0, 1, 2) and every category of error message MUST have a
+corresponding test under the project's pytest suite before it ships.
 
-Every error states what was expected, what was found, then what the caller does
-next. `link-audit: scan root /tmp/docs sits outside a git checkout; run it from
-inside the repository you want audited.` No apology, no stack trace on a
-user-facing path.
+**Rationale**: The tool's entire value is a trustworthy pass/fail signal in CI; regressions in
+exit-code behavior or error accuracy are high-cost and easy to miss without enforced test-first
+discipline.
 
-## Technology Stack
+## Quality Standards
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Runtime | Python 3.11 | Matches the CI image already in use |
-| CLI | `argparse` from the standard library | Keeps the install dependency-free |
-| File discovery | `git ls-files` | Honours `.gitignore` without reimplementing it |
-| Tests | pytest 8 | Matches the repository's other suites |
+- Exit code contract (Principle II) is verified by an automated test for each of the three
+  codes (0, 1, 2) before any release.
+- Every user-facing error and finding message MUST be reviewed for Principle IV compliance
+  (names the fix) as part of code review.
+- `pytest` MUST pass with zero failures before any change is merged.
+- Output MUST be deterministic: identical input documentation MUST always yield identical exit
+  codes and findings, run to run.
 
-## Development Workflow
+## Constraints
 
-This project follows specification-driven development through the specflow
-pipeline:
-
-1. **Constitution** (`/speckit.constitution`): Set and keep these principles
-2. **Specification** (`/speckit.specify`): Write requirements before any code
-3. **Brainstorming** (`/speckit.specflow.brainstorm`): Question assumptions, find edge cases
-4. **Planning** (`/speckit.plan`): Design the approach, check it against this file
-5. **Task Decomposition** (`/speckit.specflow.tasks`): Split the plan into trackable tasks
-6. **Execution** (`/speckit.specflow.execute`): Build under the discipline each task names
-7. **Review** (`/speckit.specflow.review`): Check the result against spec and constitution
-
-### Workflow Rules
-
-- No code is written before the spec is approved.
-- Every spec goes through at least one brainstorm session.
-- The plan passes a constitution compliance check before tasks are written.
-- A phase boundary pauses for human approval.
+- Language/runtime: Python 3.11, standard library only (Principle I).
+- Test framework: `pytest`, used only as a development/test dependency.
+- Source layout: all importable code lives under `src/link_audit/`.
+- Network: zero network access during a scan (Principle III).
+- Distribution: no build step may introduce a runtime dependency not present in the standard
+  library.
 
 ## Governance
 
-This constitution governs every feature under `specs/`. An amendment needs a
-version bump under semantic versioning: MAJOR for a removed or redefined
-principle, MINOR for a new principle, PATCH for wording. Amending it invalidates
-`.analyzed` for every feature it governs, so rerun `/speckit.analyze` after a
-change.
+This constitution supersedes any conflicting project practice, README guidance, or ad hoc
+convention. All pull requests and code reviews MUST verify compliance with the Core Principles
+above; any deviation MUST be justified in the PR description or rejected.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-14 | **Last Amended**: 2026-09-14
+**Amendment procedure**: Amendments are proposed via a PR that edits this file, includes an
+updated Sync Impact Report, and states the semantic version bump with rationale. A MAJOR bump
+requires removing or redefining a principle in a backward-incompatible way; a MINOR bump adds a
+principle or materially expands guidance; a PATCH bump is wording/clarification only.
+
+**Compliance review**: Any PR that adds a runtime dependency, performs network I/O during a
+scan, changes exit-code semantics, or ships an error message without a named fix MUST be
+rejected until it complies with this constitution or the constitution is amended first.
+
+**Version**: 1.0.0 | **Ratified**: 2026-09-27 | **Last Amended**: 2026-09-27

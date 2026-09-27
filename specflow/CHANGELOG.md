@@ -27,6 +27,11 @@ A release that carries more than one of these takes the highest part.
   gates in the agent's native hook system on both Claude Code and the Copilot
   CLI.
 
+### Changed
+
+- `SKILL.md` links the recorded link-audit run instead of the sample workflow
+  walkthrough, which is removed.
+
 ## [1.1.0] - 2026-09-20
 
 ### Changed
@@ -49,8 +54,8 @@ A release that carries more than one of these takes the highest part.
 
 ### Fixed
 
-- `SKILL.md` no longer links `assets/workflow-overview-en.png` or
-  `examples/sample-workflow.md`. `export-ignore` strips both directories from
+- `SKILL.md` no longer links `assets/workflow-overview-en.png` or the
+  sample workflow walkthrough. `export-ignore` strips both directories from
   an install, so both links led nowhere.
 
 ## [1.0.2] - 2026-08-07

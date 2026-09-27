@@ -237,7 +237,7 @@ deleting them; prune anything older than a quarter that no longer guides work.
 ## ADR-0022: The gates stay under `.claude/`; the `events:` block waits
 
 - Date: 2026-09-20
-- Status: superseded in part by ADR-0027; superseded in remainder by ADR-0033
+- Status: superseded in part by ADR-0027; superseded in remainder by ADR-0034
 - Context: G-26 asked whether spec-kit's `events:` block should register this
   repository's four gates so they run on the Copilot CLI. An `events:` entry
   names a command, not a script: the dispatcher reads that command's
@@ -446,7 +446,25 @@ deleting them; prune anything older than a quarter that no longer guides work.
   `validate-release-archive.py` and the CI shellcheck/ruff steps cover the new
   paths (G-55 T641).
 
-## ADR-0033: One `events:` command dispatches every gate by payload shape
+## ADR-0033: A headless e2e stage runs on a shell allowlist and answers itself
+
+- Date: 2026-09-27
+- Status: accepted
+- Context: the G-19 live run found three gaps in `e2e-agent-claude.sh`.
+  `acceptEdits` approves no shell command, so `/speckit.plan` waited on
+  `setup-plan.sh`. Brainstorm and execute wait for a user `claude -p` lacks.
+  An unpinned run put two stages on Haiku, which read core's spec template and
+  dropped this fork's sections. Outside CI a `claude` login replaces
+  `ANTHROPIC_API_KEY`.
+- Decision: `invoke_agent` passes an `--allowedTools` list, not
+  `bypassPermissions`, so a stage cannot run a command outside it. The list
+  names the gate scripts; without them the stage 6 agent wrote `.analyzed`
+  itself. The stage 3 and stage 6 prompts state that no user answers.
+  `E2E_MODEL` pins the model.
+- Consequences: a stage that needs a new command stops on approval until the
+  list grows. The command contracts stay interactive.
+
+## ADR-0034: One `events:` command dispatches every gate by payload shape
 
 - Date: 2026-09-27
 - Status: accepted, supersedes the rest of ADR-0022, amends ADR-0027

@@ -142,7 +142,7 @@ printf 'anything\n' > notes.md
 check "unrelated file ignored"                  0 "$(lint notes.md)"
 check "nonexistent path allowed"                0 "$(lint no-such-dir/spec.md)"
 cd /
-EX="$HOOKS/../../specflow/examples/static-landing-page/specs"
+EX="$HOOKS/../../specflow/examples/link-audit/specs"
 for f in "$EX"/*/spec.md "$EX"/*/plan.md "$EX"/*/tasks.md; do
   check "shipped example passes: $(basename "$(dirname "$f")")/$(basename "$f")" 0 "$(run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$f\"}}")"
 done
@@ -445,7 +445,7 @@ check_has "sessionStart response carries additionalContext" "$out" '"additionalC
 check_has "sessionStart response carries the progress summary" "$out" '001-x'
 cd / || exit 1
 
-# --- gates/bash/agent-event.sh (spec-kit events: handler, ADR-0033) ---
+# --- gates/bash/agent-event.sh (spec-kit events: handler, ADR-0034) ---
 # AC-57..AC-60 are checked live by specflow/scripts/e2e-smoke.sh's Copilot leg
 # (uvx + network), not here.
 AE="$HOOKS/../../specflow/gates/bash/agent-event.sh"
@@ -1300,8 +1300,8 @@ gate_src="$(cat "$GATE_WORKFLOW" 2>/dev/null || true)"
 python3 -c 'import yaml;yaml.safe_load(open("'"$GATE_WORKFLOW"'"))' >/dev/null 2>&1
 check "merge gate workflow parses as YAML" 0 $?
 high_gated="$(grep -c "level == 'HIGH'" "$GATE_WORKFLOW" 2>/dev/null || echo 0)"
-check "merge gate workflow gates two steps on HIGH risk" 0 \
-  "$(status_of [ "${high_gated:-0}" -eq 2 ])"
+check "merge gate workflow gates three steps on HIGH risk" 0 \
+  "$(status_of [ "${high_gated:-0}" -eq 3 ])"
 check "security review action is pinned to a commit" 0 \
   "$(printf '%s' "$gate_src" | grep -Eq 'claude-code-security-review@[0-9a-f]{40}$'; echo $?)"
 check "headless review CLI is pinned to a version" 0 \

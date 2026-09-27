@@ -13,9 +13,9 @@ SCRIPT = Path(__file__).resolve().parents[1] / "score-artifacts.py"
 GOLDEN_FEATURE_DIR = (
     Path(__file__).resolve().parents[2]
     / "examples"
-    / "static-landing-page"
+    / "link-audit"
     / "specs"
-    / "001-static-landing-page"
+    / "001-link-audit"
 )
 
 SEEDED_BUG_FEATURE_DIR = (
@@ -23,7 +23,7 @@ SEEDED_BUG_FEATURE_DIR = (
 )
 
 SEEDED_BUG_EXTRA_FILE = Path("README.md")
-SEEDED_BUG_REMOVED_SPEC_ROW = "| SC-003 | `checklists/review.md::AS3.4` | Passing |"
+SEEDED_BUG_REMOVED_SPEC_ROW = "| SC-003 | test_exit_code_reflects_unresolved_links | Passing |"
 
 SEEDED_THREAT_MODEL_FEATURE_DIR = (
     Path(__file__).resolve().parents[2] / "examples" / "seeded-threat-model"
@@ -36,6 +36,9 @@ SEEDED_NO_CHANGELOG_FEATURE_DIR = (
 )
 SEEDED_MISSING_TEST_FEATURE_DIR = (
     Path(__file__).resolve().parents[2] / "examples" / "seeded-missing-test"
+)
+SEEDED_AMBIGUITY_FEATURE_DIR = (
+    Path(__file__).resolve().parents[2] / "examples" / "seeded-ambiguity"
 )
 
 SPECFLOW_DIR = Path(__file__).resolve().parents[2]
@@ -180,27 +183,31 @@ def test_golden_run_has_all_three_mandatory_sections():
     }
 
 
-def test_golden_run_traces_all_twenty_three_criteria():
+def test_golden_run_traces_all_nineteen_criteria():
     report = score_json(GOLDEN_FEATURE_DIR)
-    assert report["traceability"]["criteria"] == 23
-    assert report["traceability"]["traced"] == 23
+    assert report["traceability"]["criteria"] == 19
+    assert report["traceability"]["traced"] == 19
     assert report["traceability"]["untraced"] == []
     assert report["traceability"]["score"] == 100.0
 
 
-def test_golden_run_tasks_all_carry_stable_ids():
+def test_golden_run_flags_the_template_format_line_as_missing_an_id():
     report = score_json(GOLDEN_FEATURE_DIR)
-    assert report["task_ids"]["tasks"] == 29
-    assert report["task_ids"]["with_id"] == 29
-    assert report["task_ids"]["without_id"] == []
-    assert report["task_ids"]["score"] == 100.0
+    assert report["task_ids"]["tasks"] == 60
+    assert report["task_ids"]["with_id"] == 59
+    assert report["task_ids"]["without_id"] == [
+        "[TaskID] [P?] [TDD?] [REVIEW?] [SUBAGENT?] [Story?] Description with file path"
+    ]
+    assert report["task_ids"]["score"] == 98.3
 
 
-def test_golden_run_finds_one_needs_clarification_marker():
+def test_golden_run_finds_three_needs_clarification_mentions():
     report = score_json(GOLDEN_FEATURE_DIR)
-    assert report["needs_clarification"]["count"] == 1
+    assert report["needs_clarification"]["count"] == 3
     assert report["needs_clarification"]["locations"] == [
-        {"file": "checklists/requirements.md", "line": 16}
+        {"file": "checklists/requirements.md", "line": 16},
+        {"file": "checklists/requirements.md", "line": 35},
+        {"file": "research.md", "line": 3},
     ]
 
 
@@ -452,8 +459,8 @@ def test_two_arguments_fails_with_empty_stdout():
 
 def test_seeded_bug_leaves_sc_003_untraced():
     report = score_json(SEEDED_BUG_FEATURE_DIR)
-    assert report["traceability"]["criteria"] == 23
-    assert report["traceability"]["traced"] == 22
+    assert report["traceability"]["criteria"] == 19
+    assert report["traceability"]["traced"] == 18
     assert report["traceability"]["untraced"] == ["SC-003"]
 
 
@@ -461,7 +468,7 @@ def test_seeded_bug_matches_the_golden_on_every_other_dimension():
     golden = score_json(GOLDEN_FEATURE_DIR)
     report = score_json(SEEDED_BUG_FEATURE_DIR)
     assert report["spec_sections"]["score"] == 100.0
-    assert report["task_ids"]["score"] == 100.0
+    assert report["task_ids"]["score"] == golden["task_ids"]["score"]
     assert (
         report["needs_clarification"]["count"]
         == golden["needs_clarification"]["count"]
@@ -678,12 +685,12 @@ def test_seeded_bug_differs_from_the_golden_only_by_the_sc_003_row():
     golden_files = files_under(GOLDEN_FEATURE_DIR)
     seeded_files = files_under(SEEDED_BUG_FEATURE_DIR)
     assert seeded_files - golden_files == {SEEDED_BUG_EXTRA_FILE}, (
-        "seeded-bug holds files the landing page golden does not, beyond "
+        "seeded-bug holds files the recorded golden does not, beyond "
         f"{SEEDED_BUG_EXTRA_FILE}: "
         f"{sorted(str(name) for name in seeded_files - golden_files)}"
     )
     assert not golden_files - seeded_files, (
-        "seeded-bug is missing files the landing page golden holds: "
+        "seeded-bug is missing files the recorded golden holds: "
         f"{sorted(str(name) for name in golden_files - seeded_files)}"
     )
     differing = sorted(
@@ -693,10 +700,10 @@ def test_seeded_bug_differs_from_the_golden_only_by_the_sc_003_row():
         != (SEEDED_BUG_FEATURE_DIR / name).read_bytes()
     )
     assert differing == ["spec.md"], (
-        "seeded-bug has drifted from the landing page golden. Only spec.md may "
+        "seeded-bug has drifted from the recorded golden. Only spec.md may "
         f"differ, but these files differ: {differing}. Re-copy the drifted "
         "files from "
-        "specflow/examples/static-landing-page/specs/001-static-landing-page/."
+        "specflow/examples/link-audit/specs/001-link-audit/."
     )
     golden_spec = (GOLDEN_FEATURE_DIR / "spec.md").read_text(encoding="utf-8")
     seeded_spec = (SEEDED_BUG_FEATURE_DIR / "spec.md").read_text(encoding="utf-8")
@@ -706,7 +713,7 @@ def test_seeded_bug_differs_from_the_golden_only_by_the_sc_003_row():
         if line.startswith(("- ", "+ "))
     ]
     assert changes == [f"- {SEEDED_BUG_REMOVED_SPEC_ROW}"], (
-        "seeded-bug spec.md must differ from the landing page golden only by "
+        "seeded-bug spec.md must differ from the recorded golden only by "
         f"the removed row {SEEDED_BUG_REMOVED_SPEC_ROW!r}, but the differences "
         f'are ("-" golden only, "+" seeded-bug only): {changes}'
     )
@@ -754,25 +761,29 @@ def test_golden_run_all_threat_model_rows_are_mitigated():
     }
 
 
-def test_golden_run_scores_open_questions_full_without_a_clarified_marker():
+def test_golden_run_resolves_all_seven_questions_under_a_clarified_marker():
     report = score_json(GOLDEN_FEATURE_DIR)
-    assert report["open_questions"]["clarified"] is False
-    assert report["open_questions"]["questions"] == 3
-    assert report["open_questions"]["score"] == 100.0
+    assert report["open_questions"] == {
+        "clarified": True,
+        "questions": 7,
+        "resolved": 7,
+        "unresolved": [],
+        "score": 100.0,
+    }
 
 
-def test_golden_run_has_no_changelog_section_and_scores_full():
+def test_golden_run_changelog_records_three_versions():
     report = score_json(GOLDEN_FEATURE_DIR)
-    assert report["changelog"] == {"present": False, "rows": 0, "score": 100.0}
+    assert report["changelog"] == {"present": True, "rows": 3, "score": 100.0}
 
 
-def test_golden_run_every_traceability_test_reference_resolves():
+def test_golden_run_names_tests_without_file_references():
     report = score_json(GOLDEN_FEATURE_DIR)
     assert report["test_exists"] == {
-        "tests": 23,
-        "found": 23,
+        "tests": 0,
+        "found": 0,
         "missing": [],
-        "score": 100.0,
+        "score": None,
     }
 
 
@@ -841,10 +852,10 @@ def test_seeded_open_question_leaves_two_questions_unresolved():
     report = score_json(SEEDED_OPEN_QUESTION_FEATURE_DIR)
     assert report["open_questions"] == {
         "clarified": True,
-        "questions": 3,
-        "resolved": 1,
-        "unresolved": ["OQ-001", "OQ-002"],
-        "score": 33.3,
+        "questions": 7,
+        "resolved": 5,
+        "unresolved": ["Q6", "Q7"],
+        "score": 71.4,
     }
 
 
@@ -886,10 +897,10 @@ def test_seeded_no_changelog_matches_the_golden_on_every_other_dimension():
 def test_seeded_missing_test_leaves_fr_001_unresolved():
     report = score_json(SEEDED_MISSING_TEST_FEATURE_DIR)
     assert report["test_exists"] == {
-        "tests": 23,
-        "found": 22,
+        "tests": 1,
+        "found": 0,
         "missing": ["FR-001"],
-        "score": 95.7,
+        "score": 0.0,
     }
 
 
@@ -906,3 +917,102 @@ def test_seeded_missing_test_matches_the_golden_on_every_other_dimension():
         report["needs_clarification"]["count"]
         == golden["needs_clarification"]["count"]
     )
+
+
+SPEC_WITH_SORT_ORDER_QUESTION = """# Feature
+
+## Requirements
+
+- **FR-001**: The report lists every broken link.
+
+## Open Questions
+
+| # | Question | Status | Resolution |
+|---|----------|--------|------------|
+| OQ-001 | What sort order does the report use? | Open | |
+"""
+
+SPEC_WITH_SORT_ORDER_OUTSIDE_QUESTIONS = """# Feature
+
+## Requirements
+
+- **FR-001**: The report lists every broken link in an unstated sort order.
+
+## Open Questions
+
+| # | Question | Status | Resolution |
+|---|----------|--------|------------|
+| OQ-001 | Which exit code means the scan could not run? | Open | |
+"""
+
+
+def write_seeded_ambiguity(feature_dir, phrase):
+    """Write the .seeded-ambiguity marker naming phrase into feature_dir."""
+    (feature_dir / ".seeded-ambiguity").write_text(f"{phrase}\n")
+
+
+def test_unseeded_feature_scores_seeded_ambiguity_full():
+    with tempfile.TemporaryDirectory() as directory:
+        report = score_json(write_feature(directory, SPEC_WITH_SORT_ORDER_QUESTION))
+    assert report["seeded_ambiguity"] == {
+        "seeded": None,
+        "surfaced": None,
+        "score": 100.0,
+    }
+
+
+def test_seeded_ambiguity_named_in_an_open_question_scores_full():
+    with tempfile.TemporaryDirectory() as directory:
+        feature_dir = write_feature(directory, SPEC_WITH_SORT_ORDER_QUESTION)
+        write_seeded_ambiguity(feature_dir, "Sort Order")
+        report = score_json(feature_dir)
+    assert report["seeded_ambiguity"] == {
+        "seeded": "Sort Order",
+        "surfaced": True,
+        "score": 100.0,
+    }
+
+
+def test_seeded_ambiguity_named_only_outside_open_questions_scores_zero():
+    with tempfile.TemporaryDirectory() as directory:
+        feature_dir = write_feature(directory, SPEC_WITH_SORT_ORDER_OUTSIDE_QUESTIONS)
+        write_seeded_ambiguity(feature_dir, "sort order")
+        report = score_json(feature_dir)
+    assert report["seeded_ambiguity"] == {
+        "seeded": "sort order",
+        "surfaced": False,
+        "score": 0.0,
+    }
+
+
+def test_empty_seeded_ambiguity_marker_fails_with_the_fix():
+    with tempfile.TemporaryDirectory() as directory:
+        feature_dir = write_feature(directory, SPEC_WITH_SORT_ORDER_QUESTION)
+        (feature_dir / ".seeded-ambiguity").write_text("\n")
+        result = score(feature_dir)
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert "FAIL: " in result.stderr
+    assert ".seeded-ambiguity" in result.stderr
+
+
+def test_seeded_ambiguity_example_scores_the_unraised_ambiguity_zero():
+    report = score_json(SEEDED_AMBIGUITY_FEATURE_DIR)
+    assert report["seeded_ambiguity"] == {
+        "seeded": "order",
+        "surfaced": False,
+        "score": 0.0,
+    }
+
+
+def test_seeded_ambiguity_example_matches_the_golden_on_every_other_dimension():
+    golden = score_json(GOLDEN_FEATURE_DIR)
+    report = score_json(SEEDED_AMBIGUITY_FEATURE_DIR)
+    assert report["spec_sections"] == golden["spec_sections"]
+    assert report["traceability"] == golden["traceability"]
+    assert report["threat_model"] == golden["threat_model"]
+    assert report["open_questions"] == golden["open_questions"]
+    assert report["changelog"] == golden["changelog"]
+    assert report["test_exists"] == golden["test_exists"]
+    assert report["task_ids"] == golden["task_ids"]
+    assert report["needs_clarification"] == golden["needs_clarification"]

@@ -52,13 +52,13 @@ jobs:
       - name: Score every golden
         run: |
           set -euo pipefail
-          python3 scripts/score-artifacts.py examples/static-landing-page/specs/001-static-landing-page > landing-page.json
           python3 scripts/score-artifacts.py examples/seeded-bug > seeded-bug.json
           python3 scripts/score-artifacts.py examples/link-audit/specs/001-link-audit > link-audit.json
           python3 scripts/score-artifacts.py examples/seeded-threat-model > seeded-threat-model.json
           python3 scripts/score-artifacts.py examples/seeded-open-question > seeded-open-question.json
           python3 scripts/score-artifacts.py examples/seeded-no-changelog > seeded-no-changelog.json
           python3 scripts/score-artifacts.py examples/seeded-missing-test > seeded-missing-test.json
+          python3 scripts/score-artifacts.py examples/seeded-ambiguity > seeded-ambiguity.json
 
       - name: Assert golden scores held
         run: |
@@ -67,40 +67,32 @@ jobs:
           import json
           from pathlib import Path
 
-          # link-audit is this fork's golden, built from the current templates,
-          # so it carries no clarification marker at all. The landing page is
-          # upstream's golden and must stay perfect until it is removed. The
-          # seeded-bug golden carries one deliberate untraced criterion, so an
-          # empty `untraced` there means the scorer stopped reporting the gap.
-          # link-audit's Traceability table names test files this repository
-          # never vendored, so test_exists is not asserted against it. Each
-          # seeded-* fixture below breaks exactly one of the four newer
-          # dimensions; a passing score there means the scorer stopped
-          # reporting that gap.
+          # link-audit is a recorded run, so its values are what the agent
+          # wrote: three prose mentions of the clarification marker, and one
+          # template format line in tasks.md without a task id. Its
+          # Traceability table names tests without a file::anchor reference,
+          # so test_exists is not asserted against it. Each seeded-* fixture
+          # below breaks exactly one dimension of that run; a passing score
+          # there means the scorer stopped reporting that gap.
           EXPECTATIONS = (
               ("link-audit.json", "spec_sections.score", 100.0),
               ("link-audit.json", "traceability.score", 100.0),
-              ("link-audit.json", "task_ids.score", 100.0),
+              ("link-audit.json", "task_ids.score", 98.3),
               ("link-audit.json", "traceability.untraced", []),
-              ("link-audit.json", "needs_clarification.count", 0),
-              ("landing-page.json", "spec_sections.score", 100.0),
-              ("landing-page.json", "traceability.score", 100.0),
-              ("landing-page.json", "task_ids.score", 100.0),
-              ("landing-page.json", "traceability.untraced", []),
-              ("landing-page.json", "needs_clarification.count", 1),
-              ("landing-page.json", "threat_model.score", 100.0),
-              ("landing-page.json", "open_questions.score", 100.0),
-              ("landing-page.json", "changelog.score", 100.0),
-              ("landing-page.json", "test_exists.score", 100.0),
+              ("link-audit.json", "needs_clarification.count", 3),
+              ("link-audit.json", "threat_model.score", 100.0),
+              ("link-audit.json", "open_questions.score", 100.0),
+              ("link-audit.json", "changelog.score", 100.0),
               ("seeded-bug.json", "traceability.untraced", ["SC-003"]),
               ("seeded-threat-model.json", "threat_model.missing_mitigation", ["Spoofing"]),
               (
                   "seeded-open-question.json",
                   "open_questions.unresolved",
-                  ["OQ-001", "OQ-002"],
+                  ["Q6", "Q7"],
               ),
               ("seeded-no-changelog.json", "changelog.rows", 0),
               ("seeded-missing-test.json", "test_exists.missing", ["FR-001"]),
+              ("seeded-ambiguity.json", "seeded_ambiguity.score", 0.0),
           )
 
 
