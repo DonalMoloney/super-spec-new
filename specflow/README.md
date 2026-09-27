@@ -271,11 +271,11 @@ has to match the name in the
 
 ## A complete run
 
-The repository keeps a verbatim snapshot of one full run: a static landing
-page Claude Code took through all seven stages, at
-[examples/static-landing-page](https://github.com/DonalMoloney/super-spec-new/tree/main/specflow/examples/static-landing-page).
-Its [README](https://github.com/DonalMoloney/super-spec-new/blob/main/specflow/examples/static-landing-page/README.md)
-states where the artifacts came from and how to reproduce them with
+The repository keeps one recorded run: a broken-link audit CLI Claude Code took
+through all seven stages, at
+[examples/link-audit](https://github.com/DonalMoloney/super-spec-new/tree/main/specflow/examples/link-audit).
+Its [README](https://github.com/DonalMoloney/super-spec-new/blob/main/specflow/examples/link-audit/README.md)
+states how the run was recorded and how to reproduce it with
 [scripts/e2e-agent-claude.sh](https://github.com/DonalMoloney/super-spec-new/blob/main/specflow/scripts/e2e-agent-claude.sh).
 Neither the snapshot nor the scripts ship in the installed extension.
 

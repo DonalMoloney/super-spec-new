@@ -138,7 +138,7 @@ printf 'anything\n' > notes.md
 check "unrelated file ignored"                  0 "$(lint notes.md)"
 check "nonexistent path allowed"                0 "$(lint no-such-dir/spec.md)"
 cd /
-EX="$HOOKS/../../specflow/examples/static-landing-page/specs"
+EX="$HOOKS/../../specflow/examples/link-audit/specs"
 for f in "$EX"/*/spec.md "$EX"/*/plan.md "$EX"/*/tasks.md; do
   check "shipped example passes: $(basename "$(dirname "$f")")/$(basename "$f")" 0 "$(run_hook artifact-lint.sh "{\"tool_input\":{\"file_path\":\"$f\"}}")"
 done

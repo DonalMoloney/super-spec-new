@@ -76,11 +76,10 @@ there, so a workflow under `specflow/` never runs.
 - `specflow/references/`: `workflow-guide.md` (built-in fallback protocols) and
   `superpowers-mapping.md` (skill detection/mapping details).
 - `specflow/examples/`: teaching material, not runtime payload. `link-audit/`
-  is this fork's artifact set, constructed rather than recorded and labelled as
-  such in its README. `static-landing-page/` is upstream's real-run snapshot and
-  the only recorded one, which is why G-19 T194 does not delete it yet.
-  `seeded-bug/` is that snapshot minus one traceability row, and
-  `mutation-gate-sample/` feeds the mutation gate.
+  is a recorded run of this fork's pipeline and the scorer's golden. Each
+  `seeded-*/` directory copies that run's feature directory with one planted
+  flaw the scorer must report, and `mutation-gate-sample/` feeds the mutation
+  gate.
 - `specflow/assets/`: workflow diagrams (~12 MiB); documentation media, not runtime payload.
 - `presentation/`: the Marp deck (`marp-deck/`) with its Mermaid and SVG
   diagram sources, and `use-guide/` explaining how to render it.
