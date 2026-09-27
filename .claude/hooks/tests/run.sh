@@ -18,6 +18,10 @@ status_of() { # command... -> prints its exit code
 run_hook() { # hook json  -> prints exit code
   printf '%s' "$2" | bash "$HOOKS/$1" >/dev/null 2>&1; echo $?
 }
+check_out() { # name expected actual
+  if [ "$2" = "$3" ]; then pass=$((pass+1)); echo "ok   $1"
+  else fail=$((fail+1)); echo "FAIL $1 (expected '$2', got '$3')"; fi
+}
 fresh_repo() { # branch
   local d; d="$(mktemp -d)"
   git -C "$d" init -q -b "$1"
@@ -441,11 +445,311 @@ check_has "sessionStart response carries additionalContext" "$out" '"additionalC
 check_has "sessionStart response carries the progress summary" "$out" '001-x'
 cd / || exit 1
 
-# --- risk-classifier.sh (run by the review pipeline against a base ref) ---
-check_out() { # name expected actual
-  if [ "$2" = "$3" ]; then pass=$((pass+1)); echo "ok   $1"
-  else fail=$((fail+1)); echo "FAIL $1 (expected '$2', got '$3')"; fi
+# --- gates/bash/agent-event.sh (spec-kit events: handler, ADR-0033) ---
+# AC-57..AC-60 are checked live by specflow/scripts/e2e-smoke.sh's Copilot leg
+# (uvx + network), not here.
+AE="$HOOKS/../../specflow/gates/bash/agent-event.sh"
+ae_out() { # json -> stdout, against $AE
+  printf '%s' "$1" | bash "$AE" 2>/dev/null
 }
+ae_err() { # json -> stderr, against $AE
+  { printf '%s' "$1" | bash "$AE" >/dev/null; } 2>&1
+}
+ae_exit() { # json -> exit code, against $AE
+  printf '%s' "$1" | bash "$AE" >/dev/null 2>&1; echo $?
+}
+ae_out_at() { # script json -> stdout
+  printf '%s' "$2" | bash "$1" 2>/dev/null
+}
+ae_err_at() { # script json -> stderr
+  { printf '%s' "$2" | bash "$1" >/dev/null; } 2>&1
+}
+ae_exit_at() { # script json -> exit code
+  printf '%s' "$2" | bash "$1" >/dev/null 2>&1; echo $?
+}
+json_field() { # json field -> value, empty when absent or json does not parse
+  printf '%s' "$1" | jq -r --arg f "$2" 'if type=="object" and has($f) then .[$f] else "" end' 2>/dev/null
+}
+has_json_key() { # json key -> 0 when the key is present on a JSON object
+  printf '%s' "$1" | jq -e --arg k "$2" 'type=="object" and has($k)' >/dev/null 2>&1
+}
+not_wrapped_as_additional_context() { # text -> 0 when it is not a JSON object carrying additionalContext
+  if printf '%s' "$1" | jq -e 'type=="object" and has("additionalContext")' >/dev/null 2>&1; then
+    return 1
+  fi
+  return 0
+}
+tick_fixture() { # -> dir holding fixture F-TICK: specs/001-x/tasks.md committed, then ticked (uncommitted)
+  local d; d="$(fresh_repo feature)"
+  mkdir -p "$d/specs/001-x"
+  printf -- '- [ ] T001 Write the parser\n' > "$d/specs/001-x/tasks.md"
+  git -C "$d" add specs/001-x/tasks.md
+  git -C "$d" -c user.email=t@t -c user.name=t commit -q -m tasks
+  printf -- '- [x] T001 Write the parser\n' > "$d/specs/001-x/tasks.md"
+  echo "$d"
+}
+plan_missing_summary_fixture() { # -> dir holding specs/001-x/plan.md committed with no ## Summary and no ticked task
+  local d; d="$(fresh_repo feature)"
+  mkdir -p "$d/specs/001-x"
+  printf '# Plan\n## Technical Context\n## Constitution Check\n' > "$d/specs/001-x/plan.md"
+  git -C "$d" add specs/001-x/plan.md
+  git -C "$d" -c user.email=t@t -c user.name=t commit -q -m plan
+  echo "$d"
+}
+stub_gates_dir() { # gate-file-name -> path to fixture F-STUB's sibling agent-event.sh
+  local base dest gate="$1"
+  base="$(mktemp -d)"; dest="$base/bash"
+  cp -R "$HOOKS/../../specflow/gates/bash" "$dest"
+  printf '#!/usr/bin/env bash\necho "STUB-ERR" >&2\nexit 1\n' > "$dest/$gate"
+  chmod +x "$dest/$gate"
+  echo "$dest/agent-event.sh"
+}
+
+# ============================= pre_tool_use =============================
+r="$(fresh_repo main)"; cd "$r" || exit 1
+PAYLOAD_CLAUDE_COMMIT='{"hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"git commit -m x"}}'
+check "Claude pre_tool_use blocks a commit that would land on main" 2 "$(ae_exit "$PAYLOAD_CLAUDE_COMMIT")"
+check_has "the block names the reason on stderr" "$(ae_err "$PAYLOAD_CLAUDE_COMMIT")" "BLOCKED: the commit would land on main"
+out="$(ae_out "$PAYLOAD_CLAUDE_COMMIT")"
+check_out "the deny JSON's permissionDecision is deny" "deny" "$(json_field "$out" permissionDecision)"
+check_has "the deny JSON's permissionDecisionReason names the reason" "$(json_field "$out" permissionDecisionReason)" "BLOCKED: the commit would land on main"
+
+PAYLOAD_COPILOT_COMMIT_OBJ='{"sessionId":"s","timestamp":1,"cwd":".","toolName":"bash","toolArgs":{"command":"git commit -m x"}}'
+PAYLOAD_COPILOT_COMMIT_STR='{"toolName":"bash","toolArgs":"{\"command\":\"git commit -m x\"}"}'
+check "Copilot preToolUse blocks a commit on main, toolArgs as an object" 2 "$(ae_exit "$PAYLOAD_COPILOT_COMMIT_OBJ")"
+check "Copilot preToolUse blocks a commit on main, toolArgs as a JSON string" 2 "$(ae_exit "$PAYLOAD_COPILOT_COMMIT_STR")"
+check_out "the object-toolArgs deny JSON's permissionDecision is deny" "deny" "$(json_field "$(ae_out "$PAYLOAD_COPILOT_COMMIT_OBJ")" permissionDecision)"
+check_out "the string-toolArgs deny JSON's permissionDecision is deny" "deny" "$(json_field "$(ae_out "$PAYLOAD_COPILOT_COMMIT_STR")" permissionDecision)"
+
+check "a non-shell Copilot tool call with a path is allowed"      0 "$(ae_exit '{"toolName":"view","toolArgs":{"path":"README.md"}}')"
+check "the allowed view call leaves stdout empty" 0 "$(status_of [ -z "$(ae_out '{"toolName":"view","toolArgs":{"path":"README.md"}}')" ])"
+check "a non-shell Copilot tool call with no toolArgs is allowed" 0 "$(ae_exit '{"toolName":"view"}')"
+check "Copilot preToolUse with toolArgs as invalid JSON is allowed" 0 "$(ae_exit '{"toolName":"bash","toolArgs":"not json"}')"
+check "invalid-toolArgs allow leaves stdout empty" 0 "$(status_of [ -z "$(ae_out '{"toolName":"bash","toolArgs":"not json"}')" ])"
+
+mkdir -p "$r/gates/bash" "$r/specflow/gates/bash"
+printf '#!/usr/bin/env bash\nexit 0\n' > "$r/gates/bash/block-main-commit.sh"
+printf '#!/usr/bin/env bash\nexit 0\n' > "$r/specflow/gates/bash/block-main-commit.sh"
+chmod +x "$r/gates/bash/block-main-commit.sh" "$r/specflow/gates/bash/block-main-commit.sh"
+check "agent-event.sh finds its sibling gates from its own directory, not the working directory" 2 "$(ae_exit "$PAYLOAD_CLAUDE_COMMIT")"
+
+check "a Copilot postToolUse payload carrying only a command is allowed" 0 \
+  "$(ae_exit '{"toolName":"bash","toolArgs":{"command":"git commit -m x"},"toolResult":{"resultType":"success"}}')"
+cd /
+
+r="$(fresh_repo feature-x)"; cd "$r" || exit 1
+check "Claude pre_tool_use allows the same commit on a feature branch" 0 "$(ae_exit "$PAYLOAD_CLAUDE_COMMIT")"
+check "stdout is empty when the commit is on a feature branch" 0 "$(status_of [ -z "$(ae_out "$PAYLOAD_CLAUDE_COMMIT")" ])"
+check "Copilot preToolUse allows the same commit on a feature branch" 0 "$(ae_exit "$PAYLOAD_COPILOT_COMMIT_OBJ")"
+check "Copilot allow leaves stdout empty" 0 "$(status_of [ -z "$(ae_out "$PAYLOAD_COPILOT_COMMIT_OBJ")" ])"
+cd /
+
+# ============================= post_tool_use =============================
+r="$(tick_fixture)"; cd "$r" || exit 1
+PAYLOAD_CLAUDE_TICK='{"hook_event_name":"PostToolUse","tool_name":"Edit","tool_input":{"file_path":"specs/001-x/tasks.md"}}'
+PAYLOAD_COPILOT_TICK_OBJ='{"toolName":"edit","toolArgs":{"path":"specs/001-x/tasks.md"},"toolResult":{"resultType":"success"}}'
+PAYLOAD_COPILOT_TICK_STR='{"toolName":"edit","toolArgs":"{\"path\":\"specs/001-x/tasks.md\"}","toolResult":{"resultType":"success"}}'
+check "Claude post_tool_use blocks a ticked task when the test command fails" 2 "$(SPECFLOW_TEST_CMD=false ae_exit "$PAYLOAD_CLAUDE_TICK")"
+check_has "the block names TEST GATE FAILED on stderr" "$(SPECFLOW_TEST_CMD=false ae_err "$PAYLOAD_CLAUDE_TICK")" "TEST GATE FAILED"
+check "Copilot postToolUse blocks the ticked task, toolArgs as an object" 2 "$(SPECFLOW_TEST_CMD=false ae_exit "$PAYLOAD_COPILOT_TICK_OBJ")"
+check "Copilot postToolUse blocks the ticked task, toolArgs as a JSON string" 2 "$(SPECFLOW_TEST_CMD=false ae_exit "$PAYLOAD_COPILOT_TICK_STR")"
+out="$(SPECFLOW_TEST_CMD=false ae_out "$PAYLOAD_COPILOT_TICK_OBJ")"
+check_has "the Copilot block's additionalContext names TEST GATE FAILED" "$(json_field "$out" additionalContext)" "TEST GATE FAILED"
+check "the Copilot block JSON carries no permissionDecision key" 1 "$(status_of has_json_key "$out" permissionDecision)"
+check "a passing test command exits 0"                0 "$(SPECFLOW_TEST_CMD=true ae_exit "$PAYLOAD_CLAUDE_TICK")"
+check_has "the pass reports which test command ran"      "$(SPECFLOW_TEST_CMD=true ae_err "$PAYLOAD_CLAUDE_TICK")" "Task marked complete; running gate: true"
+check "a passing test command leaves stdout empty"    0 "$(status_of [ -z "$(SPECFLOW_TEST_CMD=true ae_out "$PAYLOAD_CLAUDE_TICK")" ])"
+cd /
+
+r="$(plan_missing_summary_fixture)"; cd "$r" || exit 1
+PAYLOAD_CLAUDE_PLAN='{"hook_event_name":"PostToolUse","tool_name":"Edit","tool_input":{"file_path":"specs/001-x/plan.md"}}'
+check "Claude post_tool_use blocks a plan.md missing its mandatory section" 2 "$(ae_exit "$PAYLOAD_CLAUDE_PLAN")"
+check_has "the block names the missing section on stderr" "$(ae_err "$PAYLOAD_CLAUDE_PLAN")" "ARTIFACT LINT (plan.md): missing section: ## Summary"
+cd /
+
+r="$(tick_fixture)"; cd "$r" || exit 1
+printf -- '- [x] T001 Write the parser\n- [ ] T002 Parse and print\n' > specs/001-x/tasks.md
+check_has "the second post_tool_use gate still reports after the first blocks" "$(SPECFLOW_TEST_CMD=false ae_err "$PAYLOAD_CLAUDE_TICK")" "ARTIFACT LINT (tasks.md): compound task"
+out="$(SPECFLOW_TEST_CMD=false ae_out "$PAYLOAD_COPILOT_TICK_OBJ")"
+check_has "Copilot postToolUse aggregates the test gate reason into additionalContext"     "$(json_field "$out" additionalContext)" "TEST GATE FAILED"
+check_has "Copilot postToolUse aggregates the artifact lint reason into the same additionalContext" "$(json_field "$out" additionalContext)" "compound task"
+cd /
+
+r="$(fresh_repo feature)"; cd "$r" || exit 1
+printf 'readme\n' > README.md
+git add README.md && git -c user.email=t@t -c user.name=t commit -q -m readme
+PAYLOAD_CLAUDE_README='{"hook_event_name":"PostToolUse","tool_name":"Edit","tool_input":{"file_path":"README.md"}}'
+check "Claude post_tool_use allows an edit to a file no gate cares about" 0 "$(ae_exit "$PAYLOAD_CLAUDE_README")"
+check "the allowed README edit leaves stdout empty" 0 "$(status_of [ -z "$(ae_out "$PAYLOAD_CLAUDE_README")" ])"
+cd /
+
+r="$(fresh_repo main)"; cd "$r" || exit 1
+check "Copilot postToolUse with no path in toolArgs is allowed" 0 "$(ae_exit '{"toolName":"view","toolArgs":{},"toolResult":{}}')"
+cd /
+
+# ==================== cross-event field isolation ====================
+r="$(tick_fixture)"; cd "$r" || exit 1
+PAYLOAD_COPILOT_TICK_NO_RESULT='{"toolName":"edit","toolArgs":{"path":"specs/001-x/tasks.md"}}'
+check "a Copilot payload naming a tasks.md path but carrying no toolResult runs no post gate" 0 \
+  "$(SPECFLOW_TEST_CMD=false ae_exit "$PAYLOAD_COPILOT_TICK_NO_RESULT")"
+check "that pre-tool-use call leaves stdout empty" 0 \
+  "$(status_of [ -z "$(SPECFLOW_TEST_CMD=false ae_out "$PAYLOAD_COPILOT_TICK_NO_RESULT")" ])"
+PAYLOAD_CLAUDE_PRE_TASKS='{"hook_event_name":"PreToolUse","tool_name":"Edit","tool_input":{"file_path":"specs/001-x/tasks.md"}}'
+check "a Claude PreToolUse payload naming a tasks.md file_path is allowed" 0 \
+  "$(SPECFLOW_TEST_CMD=false ae_exit "$PAYLOAD_CLAUDE_PRE_TASKS")"
+cd /
+
+# ==================== session_start and unknown events ====================
+r="$(fresh_repo main)"; cd "$r" || exit 1
+printf 'SENTINEL-OQ\n' > open-questions.md
+PAYLOAD_CLAUDE_SESSION='{"hook_event_name":"SessionStart","source":"startup"}'
+check_has "Claude SessionStart passes session-start.sh's own stdout through" "$(ae_out "$PAYLOAD_CLAUDE_SESSION")" "SENTINEL-OQ"
+check "Claude SessionStart exits 0" 0 "$(ae_exit "$PAYLOAD_CLAUDE_SESSION")"
+
+PAYLOAD_COPILOT_SESSION='{"sessionId":"s","timestamp":1,"cwd":".","source":"new","initialPrompt":""}'
+out="$(ae_out "$PAYLOAD_COPILOT_SESSION")"
+check_has "Copilot sessionStart passes session-start.sh's stdout through unwrapped" "$out" "SENTINEL-OQ"
+check "Copilot sessionStart exits 0" 0 "$(ae_exit "$PAYLOAD_COPILOT_SESSION")"
+check "Copilot sessionStart's stdout is not pre-wrapped as additionalContext" 0 "$(status_of not_wrapped_as_additional_context "$out")"
+
+check "an event with no matching gate exits 0" 0 "$(ae_exit '{"hook_event_name":"Stop"}')"
+check "an event with no matching gate prints nothing on stdout" 0 "$(status_of [ -z "$(ae_out '{"hook_event_name":"Stop"}')" ])"
+cd /
+
+# ========================= errors and location =========================
+r="$(fresh_repo main)"; cd "$r" || exit 1
+STUBBED_AE="$(stub_gates_dir block-main-commit.sh)"
+check "a failing sibling gate's exit code propagates" 1 "$(ae_exit_at "$STUBBED_AE" "$PAYLOAD_CLAUDE_COMMIT")"
+check_has "the failing sibling gate's stderr propagates" "$(ae_err_at "$STUBBED_AE" "$PAYLOAD_CLAUDE_COMMIT")" "STUB-ERR"
+check "stdout stays empty when a sibling gate errors" 0 "$(status_of [ -z "$(ae_out_at "$STUBBED_AE" "$PAYLOAD_CLAUDE_COMMIT")" ])"
+cd /
+
+r="$(plan_missing_summary_fixture)"; cd "$r" || exit 1
+STUBBED_AE="$(stub_gates_dir test-gate.sh)"
+check "a block from one post_tool_use gate wins over an error from another" 2 "$(ae_exit_at "$STUBBED_AE" "$PAYLOAD_CLAUDE_PLAN")"
+cd /
+
+r="$(fresh_repo main)"; cd "$r" || exit 1
+shim="$(mktemp -d)"; ln -s "$(command -v bash)" "$shim/bash"
+check "agent-event.sh checks for jq before calling anything else" 1 "$(PATH="$shim" ae_exit "$PAYLOAD_CLAUDE_COMMIT")"
+err="$(PATH="$shim" ae_err "$PAYLOAD_CLAUDE_COMMIT")"
+check_has "the jq-missing message names the install command" "$err" "Install jq (brew install jq, apt-get install jq)"
+check_lacks "the jq-missing message names no raw command-not-found text" "$err" "command not found"
+
+check "the jq check runs before stdin is parsed" 1 "$(PATH="$shim" ae_exit 'not json')"
+err="$(PATH="$shim" ae_err 'not json')"
+check_has "invalid stdin under the jq shim still reports the jq message" "$err" "Install jq (brew install jq, apt-get install jq)"
+check_lacks "invalid stdin under the jq shim names no stdin-parsing error" "$err" "stdin is not a JSON object"
+
+check "invalid JSON text on stdin is rejected by name"  1 "$(printf 'not json' | bash "$AE" >/dev/null 2>&1; echo $?)"
+check_has "invalid JSON text on stdin names the problem" "$(printf 'not json' | bash "$AE" 2>&1 >/dev/null)" "agent-event: stdin is not a JSON object"
+check "a JSON array on stdin is rejected by name"        1 "$(printf '[]' | bash "$AE" >/dev/null 2>&1; echo $?)"
+check_has "a JSON array on stdin names the problem"      "$(printf '[]' | bash "$AE" 2>&1 >/dev/null)" "agent-event: stdin is not a JSON object"
+check "empty stdin is rejected by name"                  1 "$(printf '' | bash "$AE" >/dev/null 2>&1; echo $?)"
+check_has "empty stdin names the problem"                "$(printf '' | bash "$AE" 2>&1 >/dev/null)" "agent-event: stdin is not a JSON object"
+cd /
+
+# ============================== command file ==============================
+CMD_FILE="$HOOKS/../../specflow/commands/agent-event.md"
+check_out "agent-event.md's frontmatter names its backing script" "gates/bash/agent-event.sh" "$(python3 - "$CMD_FILE" <<'PY' 2>/dev/null
+import re, sys, yaml
+try:
+    text = open(sys.argv[1]).read()
+except FileNotFoundError:
+    print("")
+    sys.exit()
+m = re.match(r"^---\n(.*?)\n---\n", text, re.DOTALL)
+if not m:
+    print("")
+    sys.exit()
+front = yaml.safe_load(m.group(1)) or {}
+print((front.get("scripts") or {}).get("sh", ""))
+PY
+)"
+headings_ordered="$(python3 - "$CMD_FILE" <<'PY'
+import re, sys
+try:
+    text = open(sys.argv[1]).read()
+except FileNotFoundError:
+    sys.exit(1)
+headings = re.findall(r"^## (.+)$", text, re.MULTILINE)
+wanted = ["Usage", "Process", "Output"]
+positions = [headings.index(w) for w in wanted if w in headings]
+sys.exit(0 if len(positions) == 3 and positions == sorted(positions) else 1)
+PY
+echo $?)"
+check "agent-event.md's headings include Usage, Process, Output in that order" 0 "$headings_ordered"
+process_numbered="$(python3 - "$CMD_FILE" <<'PY'
+import re, sys
+try:
+    text = open(sys.argv[1]).read()
+except FileNotFoundError:
+    sys.exit(1)
+m = re.search(r"^## Process\n(.*?)(?=^## |\Z)", text, re.DOTALL | re.MULTILINE)
+if not m:
+    sys.exit(1)
+sys.exit(0 if re.search(r"^\d+\.", m.group(1), re.MULTILINE) else 1)
+PY
+echo $?)"
+check "agent-event.md's Process section holds at least one numbered step" 0 "$process_numbered"
+
+# ================================ manifest ================================
+EXT_YML="$HOOKS/../../specflow/extension.yml"
+SPECFLOW_DIR="$HOOKS/../../specflow"
+events_field() { # event field -> prints the value, empty when the event or field is absent
+  python3 - "$EXT_YML" "$1" "$2" <<'PY' 2>/dev/null
+import sys, yaml
+data = yaml.safe_load(open(sys.argv[1])) or {}
+entry = (data.get("events") or {}).get(sys.argv[2]) or {}
+print(entry.get(sys.argv[3], ""))
+PY
+}
+events_has_key() { # event key -> 0 when the key is present on that event's entry
+  python3 - "$EXT_YML" "$1" "$2" <<'PY' 2>/dev/null
+import sys, yaml
+data = yaml.safe_load(open(sys.argv[1])) or {}
+entry = (data.get("events") or {}).get(sys.argv[2]) or {}
+sys.exit(0 if sys.argv[3] in entry else 1)
+PY
+}
+check "extension.yml declares exactly one events: block" 0 \
+  "$(status_of [ "$(grep -c '^events:' "$EXT_YML" 2>/dev/null || echo 0)" -eq 1 ])"
+check_out "events.pre_tool_use.command is speckit.specflow.agent-event"  "speckit.specflow.agent-event" "$(events_field pre_tool_use command)"
+check_out "events.post_tool_use.command is speckit.specflow.agent-event" "speckit.specflow.agent-event" "$(events_field post_tool_use command)"
+check_out "events.session_start.command is speckit.specflow.agent-event" "speckit.specflow.agent-event" "$(events_field session_start command)"
+check_out "no event registers speckit.specflow.gate" "0" "$(python3 - "$EXT_YML" <<'PY' 2>/dev/null
+import sys, yaml
+data = yaml.safe_load(open(sys.argv[1])) or {}
+events = data.get("events") or {}
+print(sum(1 for cfg in events.values() if (cfg or {}).get("command") == "speckit.specflow.gate"))
+PY
+)"
+check_out "agent-event is registered in provides.commands" "1" "$(python3 - "$EXT_YML" <<'PY' 2>/dev/null
+import sys, yaml
+data = yaml.safe_load(open(sys.argv[1])) or {}
+commands = (data.get("provides") or {}).get("commands") or []
+print(sum(1 for c in commands if c.get("name") == "speckit.specflow.agent-event" and c.get("file") == "commands/agent-event.md"))
+PY
+)"
+check_out "agent-event.sh is registered in provides.scripts" "1" "$(python3 - "$EXT_YML" <<'PY' 2>/dev/null
+import sys, yaml
+data = yaml.safe_load(open(sys.argv[1])) or {}
+scripts = (data.get("provides") or {}).get("scripts") or []
+print(sum(1 for s in scripts if s.get("file") == "gates/bash/agent-event.sh"))
+PY
+)"
+check "the extension metadata validator passes" 0 "$(cd "$SPECFLOW_DIR" && python3 scripts/validate-extension-metadata.py >/dev/null 2>&1; echo $?)"
+check "the release archive validator passes"    0 "$(cd "$SPECFLOW_DIR" && python3 scripts/validate-release-archive.py    >/dev/null 2>&1; echo $?)"
+check "validate-release-archive.py's runtime-payload list carries the new gate script" 0 \
+  "$(grep -qF 'gates/bash/agent-event.sh' "$SPECFLOW_DIR/scripts/validate-release-archive.py"; echo $?)"
+check_out "events.pre_tool_use's matcher is Bash"        "Bash"       "$(events_field pre_tool_use matcher)"
+check_out "events.pre_tool_use's timeout is 30"          "30"         "$(events_field pre_tool_use timeout)"
+check_out "events.post_tool_use's matcher is Edit|Write" "Edit|Write" "$(events_field post_tool_use matcher)"
+check_out "events.post_tool_use's timeout is 120"        "120"        "$(events_field post_tool_use timeout)"
+check "events.session_start carries no matcher key" 1 "$(status_of events_has_key session_start matcher)"
+check_out "events.session_start's timeout is 15"         "15"         "$(events_field session_start timeout)"
+
+# --- risk-classifier.sh (run by the review pipeline against a base ref) ---
 
 # --- gates/bash/write-marker.sh (the shipped clarify and analyze gate) ---
 WRITE_MARKER="$HOOKS/../../specflow/gates/bash/write-marker.sh"
