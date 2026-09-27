@@ -1,6 +1,6 @@
 spec: 001-link-audit
 status: complete
-current_phase: 6
+current_phase: 7
 brainstorm:
   sessions: 1
   last_session: 2026-09-27
@@ -71,6 +71,27 @@ phases:
       T040: complete
       T041: complete
       T042: complete
+  - phase: 7
+    name: "Remediation - Fenced Code Blocks & Root-Relative Links (FR-014, FR-015, Findings R-001-R-004)"
+    status: complete
+    tasks:
+      T043: complete
+      T044: complete
+      T045: complete
+      T046: complete
+      T047: complete
+      T048: complete
+      T049: complete
+      T050: complete
+      T051: complete
+      T052: complete
+      T053: complete
+      T054: complete
+      T055: complete
+      T056: complete
+      T057: complete
+      T058: complete
+      T059: complete
 gates:
   analyzed: 2026-09-27
   analyze_attempts: 1

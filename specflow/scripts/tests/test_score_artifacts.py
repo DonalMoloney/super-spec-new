@@ -183,22 +183,22 @@ def test_golden_run_has_all_three_mandatory_sections():
     }
 
 
-def test_golden_run_traces_all_seventeen_criteria():
+def test_golden_run_traces_all_nineteen_criteria():
     report = score_json(GOLDEN_FEATURE_DIR)
-    assert report["traceability"]["criteria"] == 17
-    assert report["traceability"]["traced"] == 17
+    assert report["traceability"]["criteria"] == 19
+    assert report["traceability"]["traced"] == 19
     assert report["traceability"]["untraced"] == []
     assert report["traceability"]["score"] == 100.0
 
 
 def test_golden_run_flags_the_template_format_line_as_missing_an_id():
     report = score_json(GOLDEN_FEATURE_DIR)
-    assert report["task_ids"]["tasks"] == 43
-    assert report["task_ids"]["with_id"] == 42
+    assert report["task_ids"]["tasks"] == 60
+    assert report["task_ids"]["with_id"] == 59
     assert report["task_ids"]["without_id"] == [
         "[TaskID] [P?] [TDD?] [REVIEW?] [SUBAGENT?] [Story?] Description with file path"
     ]
-    assert report["task_ids"]["score"] == 97.7
+    assert report["task_ids"]["score"] == 98.3
 
 
 def test_golden_run_finds_three_needs_clarification_mentions():
@@ -459,8 +459,8 @@ def test_two_arguments_fails_with_empty_stdout():
 
 def test_seeded_bug_leaves_sc_003_untraced():
     report = score_json(SEEDED_BUG_FEATURE_DIR)
-    assert report["traceability"]["criteria"] == 17
-    assert report["traceability"]["traced"] == 16
+    assert report["traceability"]["criteria"] == 19
+    assert report["traceability"]["traced"] == 18
     assert report["traceability"]["untraced"] == ["SC-003"]
 
 
@@ -761,16 +761,20 @@ def test_golden_run_all_threat_model_rows_are_mitigated():
     }
 
 
-def test_golden_run_scores_open_questions_full_without_a_clarified_marker():
+def test_golden_run_resolves_all_seven_questions_under_a_clarified_marker():
     report = score_json(GOLDEN_FEATURE_DIR)
-    assert report["open_questions"]["clarified"] is False
-    assert report["open_questions"]["questions"] == 7
-    assert report["open_questions"]["score"] == 100.0
+    assert report["open_questions"] == {
+        "clarified": True,
+        "questions": 7,
+        "resolved": 7,
+        "unresolved": [],
+        "score": 100.0,
+    }
 
 
-def test_golden_run_changelog_records_two_versions():
+def test_golden_run_changelog_records_three_versions():
     report = score_json(GOLDEN_FEATURE_DIR)
-    assert report["changelog"] == {"present": True, "rows": 2, "score": 100.0}
+    assert report["changelog"] == {"present": True, "rows": 3, "score": 100.0}
 
 
 def test_golden_run_names_tests_without_file_references():

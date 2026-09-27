@@ -1,7 +1,7 @@
 # Handoff: 001-link-audit
 
-All 6 phases complete, 42/42 tasks checked off. `src/link_audit/` implements
-discovery, links, anchors, resolver, report, and cli modules. 29 pytest tests
-pass (`python3 -m pytest -q`). spec.md Traceability table updated to Passing.
-Next: none — feature is implementation-complete; `/speckit.specflow.review` is
-the natural next step.
+Phase 7 complete, 59/59 tasks checked off. R-001–R-004 all fixed (fenced-code
+exclusion in anchors.py/links.py, root-relative resolution and anchor-target
+read-error handling in resolver.py); review-findings.json all "fixed". 37
+pytest tests pass. FR-014/FR-015 Traceability rows now Passing.
+Next: none — re-run `/speckit.analyze` per the Phase 7 checkpoint.

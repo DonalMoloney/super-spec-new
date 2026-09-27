@@ -159,6 +159,45 @@ tests/
 
 ---
 
+## Phase 7: Remediation — Fenced Code Blocks & Root-Relative Links (FR-014, FR-015, Findings R-001–R-004)
+
+**Purpose**: Close the four open Critical/Important findings from `review-findings.json`. R-001 and R-002 both stem from FR-014 (fenced-code-block exclusion); R-004 stems from FR-015 (root-relative resolution); R-003 is an unhandled-exception code-quality gap in the anchor-target read path.
+
+**Independent Test**: Run `pytest -q` — every new test below fails before its paired implementation task and passes after.
+
+### R-001 / R-002 — Fenced code block exclusion (FR-014)
+
+- [x] T043 [P] [TDD] Write a failing test in `tests/test_anchors.py` asserting a heading-like line (`# ...`) inside a fenced code block (` ``` ` or `~~~`) is NOT extracted as a heading by `anchors.slugify_headings()` (FR-014, R-001)
+- [x] T044 [TDD] [REVIEW] Implement fenced-code-block state tracking in `anchors.slugify_headings()` in `src/link_audit/anchors.py`, skipping heading-pattern matching between fence delimiters, making T043 pass (depends on T043) — review the fence-state tracking logic before it is wired anywhere else, since R-001 showed a phantom heading can both mask a real broken anchor (false negative) and shift duplicate-slug numbering for genuine headings below the fence (false positive)
+- [x] T045 [P] [TDD] Write a failing test in `tests/test_links.py` asserting a link-like string (`[text](target)`) inside a fenced code block is NOT extracted as a link by `links.extract_links()` (FR-014, R-002)
+- [x] T046 [TDD] Implement fenced-code-block state tracking in `links.extract_links()` in `src/link_audit/links.py`, mirroring T044's fence-state approach, making T045 pass (depends on T045)
+- [x] T047 [P] [TDD] Write a failing end-to-end test in `tests/test_cli.py` asserting a fixture repo with a fenced code block containing both heading-like and link-like example text produces zero findings from that block's content (FR-014, SC-001 regression test for R-001/R-002)
+- [x] T048 Verify T047 passes against T044 and T046's implementations; add no production code beyond what T044/T046 require (depends on T044, T046)
+
+### R-004 — Root-relative link resolution (FR-015)
+
+- [x] T049 [P] [TDD] Write a failing test in `tests/test_resolver.py` asserting a link target beginning with `/` resolves against the repository root — not the linking file's directory and not the OS filesystem root (FR-015, R-004)
+- [x] T050 [TDD] [REVIEW] Implement root-relative resolution in `resolver.resolve_file()` in `src/link_audit/resolver.py`: when the parsed target's file part starts with `/`, join it against a repository-root parameter instead of `base_dir`, making T049 pass (depends on T049) — review that this signature change (an added repo-root parameter) doesn't break T014's existing base_dir-relative resolution for non-root-relative targets, per plan.md's Review Gates
+- [x] T051 Thread the repository root path from `cli.main()` in `src/link_audit/cli.py` into every `resolver.resolve_file()` call, so root-relative targets resolve correctly end-to-end (depends on T050)
+- [x] T052 [P] [TDD] Write a failing end-to-end test in `tests/test_cli.py` asserting a fixture repo with a root-relative link (`/docs/x.md`) to an existing file produces no finding, and one to a missing file is reported (FR-015)
+- [x] T053 Verify T052 passes against T050/T051's implementation (depends on T051)
+
+### R-003 — Unhandled read error on anchor-target file
+
+- [x] T054 [P] [TDD] Write a failing test in `tests/test_resolver.py` asserting that when the anchor-target file exists but raises `OSError` or `UnicodeDecodeError` on read, `resolver.resolve_file()` raises `LinkAuditError` naming that file and the reason, instead of propagating the raw exception (R-003)
+- [x] T055 [TDD] [REVIEW] Wrap the anchor-target file's `read_text()` call in `src/link_audit/resolver.py` (the `_check_anchor()` path) in the same `OSError`/`UnicodeDecodeError` handling already used for the linking file, raising `LinkAuditError(file=target_file, reason=...)`, making T054 pass (depends on T054) — review that `cli.py`'s existing `LinkAuditError` handler (T036) now also catches this path and still exits 2 with an actionable message, per Constitution Principle II and IV
+- [x] T056 [P] [TDD] Write a failing end-to-end test in `tests/test_cli.py` asserting the CLI exits 2 and names the specific unreadable file when a `file.md#anchor` link's target file exists but cannot be read, rather than crashing with an uncaught traceback (R-003)
+- [x] T057 Verify T056 passes against T055's implementation (depends on T055)
+
+### Close-out
+
+- [x] T058 Update `spec.md`'s Traceability table Status column from "Pending" to "Passing" for the FR-014 and FR-015 rows, now that T048 and T053 pass
+- [x] T059 Run `pytest -q` for the full suite and confirm every test passes, including the new fenced-code-block, root-relative, and anchor-target-read-error tests
+
+**Checkpoint**: Findings R-001–R-004 are all closed and FR-014/FR-015 have passing named tests. Get human approval before re-running `/speckit.analyze`.
+
+---
+
 ## Task Verification
 
 | Task | Verify |
@@ -172,6 +211,14 @@ tests/
 | T036 | `link-audit` outside a git repo exits 2 with one stderr line |
 | T037 | `link-audit` against an unreadable tracked file exits 2 naming that file |
 | T042 | `pytest -q` reports all tests passing, zero failures |
+| T044 | T043 fails before T044, passes after |
+| T046 | T045 fails before T046, passes after |
+| T048 | `pytest -q tests/test_cli.py` shows the fenced-code-block fixture test passing |
+| T050 | T049 fails before T050, passes after |
+| T053 | `pytest -q tests/test_cli.py` shows the root-relative-link fixture test passing |
+| T055 | T054 fails before T055, passes after |
+| T057 | `pytest -q tests/test_cli.py` shows the unreadable-anchor-target fixture test passing |
+| T059 | `pytest -q` reports all tests passing, zero failures |
 
 ---
 
@@ -185,6 +232,7 @@ tests/
 - **User Story 2 (Phase 4)**: Depends on Foundational; extends the `resolver.py`/`report.py`/`cli.py` surfaces US1 built (T014, T015, T016), so build it after Phase 3 completes even though its own acceptance scenarios are independent of US1's.
 - **User Story 3 (Phase 5)**: Depends on Foundational (T005 already implements the git-scoping mechanism); extends `discovery.py`'s error path and `cli.py`'s error handling (T016), so build it after Phase 3.
 - **Polish (Phase 6)**: Depends on every prior phase.
+- **Remediation (Phase 7)**: Depends on Phase 6 (all modules already exist and are implemented). R-001/R-002 tasks (T043–T048) touch `anchors.py`/`links.py` and are independent of R-004's `resolver.py` tasks (T049–T053) and R-003's `resolver.py` tasks (T054–T057); the latter two share a file but touch different functions (`resolve_file()`'s root-relative branch vs. `_check_anchor()`'s read-error handling) and should land as separate commits to keep review scoped.
 
 ### Within Each User Story
 
@@ -200,7 +248,8 @@ tests/
 - T025 (`anchors.py`) is marked `[SUBAGENT]`: it shares no file and no runtime dependency with `discovery.py` or `links.py`, so a subagent can implement it as soon as its own tests (T017, T018) exist, even though it is scheduled in Phase 4 for story-mapping purposes.
 - T038–T040 (Polish) touch different test files and can run in parallel.
 - `[TDD]` tasks (all "write a failing test" tasks, plus T026 and T034) must complete their RED step — confirm the named test fails — before the paired implementation task starts.
-- `[REVIEW]` tasks (T015, T026, T034) pause for human sign-off before the next task in their phase starts, per plan.md's Review Gates.
+- `[REVIEW]` tasks (T015, T026, T034, T044, T050, T055) pause for human sign-off before the next task in their phase starts, per plan.md's Review Gates.
+- T043, T045, T049, T052, T054, T056 (Phase 7 tests) touch different test files or different, independent assertions and can run in parallel.
 
 ---
 
@@ -216,5 +265,6 @@ tests/
 2. Add Phase 4 (US2) — broken heading anchors are caught on top of US1.
 3. Add Phase 5 (US3) — tracked-file scoping and scan-abort paths are explicitly tested and hardened.
 4. Close with Phase 6 — determinism, no-network, and aggregate-accuracy guarantees are locked in with tests, and the Traceability table is marked complete.
+5. Close remaining findings with Phase 7 — fenced-code-block exclusion (R-001/R-002), root-relative link resolution (R-004), and the anchor-target read-error path (R-003) are fixed and pinned with tests, and the FR-014/FR-015 Traceability rows move from Pending to Passing.
 
 Each checkpoint above is a point to run `pytest -q`, demo the CLI against the quickstart.md scratch repository, and get human approval before continuing.

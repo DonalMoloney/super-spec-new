@@ -86,6 +86,8 @@ A maintainer runs the link-audit CLI inside a git repository that also contains 
 - A relative link that resolves outside the repository root (e.g. `../../../etc/passwd`) is still resolved and existence-checked like any other relative link — the tool never restricts resolution to the repository root, and only ever performs a read-only existence check, never reads or executes the resolved path's contents beyond a Markdown target's own headings (see updated Threat Model row below).
 - A Markdown file listed by `git ls-files` that cannot be opened or read (permission denied, deleted mid-scan, undecodable bytes) aborts the scan with an actionable, file-naming error and exit status 2, per FR-012.
 - A symlinked Markdown file or symlinked link target is resolved and existence-checked the same as any other path; the CLI performs no additional dereferencing or validation of what a symlink points to beyond the standard OS-level existence check.
+- A `#`-prefixed line or `[text](target)`-shaped text that appears inside a fenced code block (``` or ~~~) is not treated as a real heading or link; it is excluded from both heading and link extraction, per FR-014 (see Q6 resolution).
+- A link target beginning with `/` (e.g. `/docs/setup.md`) is resolved against the repository root, not the linking file's directory and not the OS filesystem root, per FR-015 (see Q7 resolution).
 
 #### Brainstorm Prompts
 
@@ -101,6 +103,13 @@ A maintainer runs the link-audit CLI inside a git repository that also contains 
 - **Security**: Could an attacker abuse this feature? Are there injection vectors? Could an attacker gain unauthorized access?
 - **User confusion**: Where might users misunderstand the feature? What if they use it in an unintended way?
 
+## Clarifications
+
+### Session 2026-09-27
+
+- Q: Should heading extraction and link extraction skip content inside fenced code blocks (e.g. triple-backtick regions)? → A: Yes — skip fenced code block content (both ``` and ~~~ style) entirely for both heading and link extraction, matching GitHub's own rendering behavior and preserving SC-001's zero-false-positive guarantee.
+- Q: How should a link target beginning with `/` (a root-relative style link, e.g. `/docs/setup.md`) be resolved? → A: Resolve it relative to the repository root (the directory `git ls-files` runs from), not the OS filesystem root and not the linking file's directory, since that is the convention documentation tooling (including GitHub's own rendering) uses for a leading-slash link inside a repository.
+
 ## Open Questions
 
 <!--
@@ -115,8 +124,8 @@ A maintainer runs the link-audit CLI inside a git repository that also contains 
 | Q3 | How should a bare anchor (`#some-heading`) with no file part be resolved? | Resolved | Against the linking file's own slugified headings — the source file acts as its own target file, reusing the same anchor-resolution logic as `file.md#anchor` (FR-010). |
 | Q4 | Should heading-anchor validation apply to a link whose target file exists but isn't Markdown (e.g. `diagram.png#section`)? | Resolved | No — anchor validation only applies to `.md` targets. A non-Markdown file has no headings to slugify, so only the file-existence check (FR-004) applies and any anchor fragment is ignored (FR-013). |
 | Q5 | Should link targets with query strings or percent-encoding be decoded before file-system resolution? | Resolved | Yes — percent-decode the path first (so `%20` becomes a space, matching how filenames with spaces are typically linked), then strip any query string before checking existence, since link targets are file paths, not URLs (FR-011). |
-| Q6 | R-001/R-002 (code review): should heading extraction and link extraction skip lines inside fenced code blocks? | Open | Not yet resolved. Current behavior treats any `#`-prefixed line or `[text](target)`-shaped text inside a fenced code example as real, causing both false-negative anchor validation and false-positive link findings. |
-| Q7 | R-004 (code review): how should a link target beginning with `/` (a root-relative style link, e.g. `/docs/setup.md`) be resolved? | Open | Not yet resolved. Current behavior resolves it against the OS filesystem root via pathlib's absolute-path-overrides-join semantics, which will misreport nearly every such link as missing-file. |
+| Q6 | R-001/R-002 (code review): should heading extraction and link extraction skip lines inside fenced code blocks? | Resolved | Yes — skip content inside fenced code blocks (``` and ~~~ style) entirely for both heading and link extraction. This matches GitHub's own rendering behavior and preserves SC-001's zero-false-positive guarantee (FR-014). |
+| Q7 | R-004 (code review): how should a link target beginning with `/` (a root-relative style link, e.g. `/docs/setup.md`) be resolved? | Resolved | Resolve it against the repository root (the directory `git ls-files` runs from), not the OS filesystem root and not the linking file's directory — the convention most documentation tooling, including GitHub's rendering, uses for a leading-slash link (FR-015). |
 
 ## Requirements *(mandatory)*
 
@@ -135,6 +144,8 @@ A maintainer runs the link-audit CLI inside a git repository that also contains 
 - **FR-011**: Before checking a link target against the file system, the CLI MUST percent-decode the path and MUST strip any query string, so that encoded characters (e.g. `%20`) and trailing `?...` segments do not cause a false missing-file report.
 - **FR-012**: If a `git ls-files`-tracked Markdown file cannot be opened or read (permission denied, missing at read time, undecodable bytes), the CLI MUST abort the scan, print an actionable error naming the file and the reason, and exit with status 2.
 - **FR-013**: The CLI MUST NOT attempt heading-anchor validation against a target file that is not a `.md` file; for such targets, only the file-existence check (FR-004) applies, and any anchor fragment present is ignored.
+- **FR-014**: The CLI MUST NOT treat any text inside a fenced code block (delimited by matching ``` or ~~~ lines) as a heading or as a link target; such content MUST be excluded from both heading extraction (FR-005) and link extraction (FR-002).
+- **FR-015**: For a link target beginning with `/` (a root-relative path), the CLI MUST resolve the target relative to the repository root (the directory from which `git ls-files` is run), not relative to the linking file's directory and not relative to the OS filesystem root.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -189,6 +200,8 @@ Automated scoring reads only the Test name column. A human reader uses the Statu
 | FR-011 | test_percent_encoded_targets_are_decoded | Passing |
 | FR-012 | test_unreadable_file_exits_with_status_2 | Passing |
 | FR-013 | test_anchor_ignored_for_non_markdown_targets | Passing |
+| FR-014 | test_fenced_code_block_content_produces_no_findings | Passing |
+| FR-015 | test_root_relative_link_end_to_end | Passing |
 | SC-001 | test_reports_all_broken_links_no_false_positives | Passing |
 | SC-002 | test_no_network_access_during_scan | Passing |
 | SC-003 | test_exit_code_reflects_unresolved_links | Passing |

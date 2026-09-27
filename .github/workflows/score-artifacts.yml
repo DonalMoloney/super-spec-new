@@ -77,7 +77,7 @@ jobs:
           EXPECTATIONS = (
               ("link-audit.json", "spec_sections.score", 100.0),
               ("link-audit.json", "traceability.score", 100.0),
-              ("link-audit.json", "task_ids.score", 97.7),
+              ("link-audit.json", "task_ids.score", 98.3),
               ("link-audit.json", "traceability.untraced", []),
               ("link-audit.json", "needs_clarification.count", 3),
               ("link-audit.json", "threat_model.score", 100.0),
