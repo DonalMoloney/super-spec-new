@@ -89,7 +89,7 @@ Verify: `score-artifacts.py` passes on the new snapshot and
 Record a run that stops with `ANALYZE_REQUIRED` and the rerun that clears it.
 Verify: the snapshot contains the stop code and the rerun.
 
-- [ ] T194 Delete `static-landing-page/` and `sample-workflow.md`
+- [x] T194 Delete `static-landing-page/` and `sample-workflow.md`
 
 Deferred on 2026-09-20, and not for its blast radius. T191 was meant to replace
 upstream's snapshot with a run of this fork's pipeline. No API key exists in
