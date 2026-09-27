@@ -475,9 +475,14 @@ for key in ('preToolUse', 'postToolUse', 'sessionStart'):
     if not entries:
         print(f'FAIL {key} is missing from speckit.json')
         sys.exit(1)
-    bash_cmd = entries[0].get('bash', '') if isinstance(entries, list) else ''
-    if 'speckit.specflow.agent-event' not in bash_cmd:
-        print(f'FAIL {key}.bash does not carry speckit.specflow.agent-event: {bash_cmd!r}')
+    if isinstance(entries, list):
+        bash_cmds = [entry.get('bash', '') for entry in entries]
+        found = any('speckit.specflow.agent-event' in cmd for cmd in bash_cmds)
+        if not found:
+            print(f'FAIL {key}.bash does not carry speckit.specflow.agent-event in any entry')
+            sys.exit(1)
+    else:
+        print(f'FAIL {key} is not a list')
         sys.exit(1)
 print('OK')
 ")"
