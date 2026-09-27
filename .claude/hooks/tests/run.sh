@@ -557,6 +557,8 @@ check "Copilot preToolUse denies toolArgs that parses to a non-object" 2 "$(ae_e
 check "Copilot preToolUse denies a bash call with no toolArgs" 2 "$(ae_exit '{"toolName":"bash"}')"
 check "Copilot preToolUse denies a bash call with null toolArgs" 2 "$(ae_exit '{"toolName":"bash","toolArgs":null}')"
 check "Copilot preToolUse denies a powershell call with no toolArgs" 2 "$(ae_exit '{"toolName":"powershell"}')"
+check "Copilot preToolUse matches a shell toolName in any case" 2 "$(ae_exit '{"toolName":"Bash"}')"
+check "Copilot preToolUse denies a non-string toolName with no toolArgs" 2 "$(ae_exit '{"toolName":5}')"
 check "Copilot preToolUse denies a call naming no tool with no toolArgs" 2 "$(ae_exit '{"toolName":""}')"
 check "Copilot preToolUse denies a non-shell tool call whose toolArgs is not valid JSON" 2 "$(ae_exit '{"toolName":"view","toolArgs":"not json"}')"
 check "a non-shell Copilot tool call with null toolArgs is allowed" 0 "$(ae_exit '{"toolName":"view","toolArgs":null}')"
