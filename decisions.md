@@ -395,7 +395,8 @@ deleting them; prune anything older than a quarter that no longer guides work.
 ## ADR-0031: Copilot CLI hooks live under `.github/hooks/`, not `.claude/`
 
 - Date: 2026-09-25
-- Status: accepted
+- Status: accepted; the "four scripts stay under `.claude/hooks/`, unmoved and
+  unduplicated" clause is superseded by ADR-0032
 - Context: G-26's `events:` route stays blocked (ADR-0022). G-54 takes a
   second route: Copilot's own hook loader, confirmed at
   `docs.github.com/en/copilot/reference/hooks-reference` to read
@@ -422,7 +423,30 @@ deleting them; prune anything older than a quarter that no longer guides work.
   future gate script needs an adapter call added to both
   `.claude/settings.json` and `hooks.json`.
 
-## ADR-0032: A headless e2e stage runs on a shell allowlist and answers itself
+## ADR-0032: The four remaining payload-reading gates move to `specflow/gates/` too
+
+- Date: 2026-09-25
+- Status: accepted, supersedes ADR-0031's "unmoved and unduplicated" clause
+- Context: G-26 T262's real prerequisite was that `block-main-commit.sh`,
+  `test-gate.sh`, `artifact-lint.sh`, and `session-start.sh` still lived only
+  under `.claude/hooks/`, outside the archive ADR-0025 already moved five
+  other gates into. G-55 (merged 2026-09-25, the same day as ADR-0031) closed
+  that gap.
+- Decision: mirror ADR-0025 exactly for the remaining four scripts: each moves
+  to `specflow/gates/bash/`, and its old `.claude/hooks/` path becomes a
+  two-line `exec` wrapper, so `.claude/settings.json`, `merge-gate.yml`, and
+  `.claude/hooks/tests/run.sh` keep their paths. `provides.scripts` in
+  `extension.yml` lists all nine. ADR-0031's own Decision text, written the
+  same day, still says these four "stay under `.claude/hooks/`... unmoved and
+  unduplicated"; that line no longer holds.
+- Consequences: `specflow/gates/bash/` holds all seven bash gates plus two
+  python gates. `.claude/hooks/` holds a two-line wrapper for each of the six
+  gates a Claude Code hook calls directly (`write-marker.sh` backs the `gate`
+  command instead, so it has no `.claude/hooks/` counterpart).
+  `validate-release-archive.py` and the CI shellcheck/ruff steps cover the new
+  paths (G-55 T641).
+
+## ADR-0033: A headless e2e stage runs on a shell allowlist and answers itself
 
 - Date: 2026-09-27
 - Status: accepted
