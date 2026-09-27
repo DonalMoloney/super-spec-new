@@ -30,7 +30,7 @@ forward slash.
 | `/speckit.specflow.review` | `/speckit-specflow-review` |
 | `/speckit.specflow.agent-event` | Runs from spec-kit's `events:` block on hook payloads, never typed by a person |
 
-The right column repeats the skill directory name spec-kit creates at install (except agent-event, which the dispatcher calls directly on hook events).
+The right column repeats the skill directory name spec-kit creates at install. For agent-event, spec-kit creates the `speckit-specflow-agent-event` skill and the hook configuration runs it on hook events.
 
 ## Fallback per command
 
