@@ -5,9 +5,16 @@ This directory is a **verbatim snapshot** of an end-to-end run produced by
 
 A real Claude Code session was driven through the full SpecFlow workflow
 (7 stages, all spec-kit + specflow slash commands), and every artifact
-written to disk by the agent was copied here unchanged. Nothing in this
-folder is hand-edited — it shows you exactly what spec-kit + specflow
-look like after a full run.
+written to disk by the agent was copied here. Seven commits edited the
+artifacts by hand after the import in `e3a5994`:
+
+- `6f1f725` renamed superspec to specflow in seven files.
+- `fd99a49` appended a Traceability table to `spec.md`.
+- `5bf9d4b` rewrote `spec.md` for the Threat Model and Traceability sections.
+- `df50cb8` added the empty `.analyzed` marker.
+- `d96e1b4` split compound task lines in `tasks.md`.
+- `bc35f95` added `decisions.md` and changed one `spec.md` line.
+- `c855ac7` changed `progress.yml` status values to `complete`.
 
 The end product (`web/index.html`) is a standalone, dependency-free
 landing page for the SpecFlow project itself — open it in any browser:
