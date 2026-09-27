@@ -5,8 +5,8 @@
 # Claude Code in headless (-p) mode. scripts/e2e-smoke.sh covers the other
 # e2e test: structural assertions with no LLM, ~60s.
 #
-# Drives a deterministic feature ("a static landing page for the specflow
-# project") through every stage of specflow's workflow and asserts, at each
+# Drives a deterministic feature ("link-audit", a CLI that reports broken
+# Markdown links) through every stage of specflow's workflow and asserts, at each
 # stage, that the expected artifact and section structure exist. Each stage
 # is a separate `claude -p` invocation; the first failed assertion stops the
 # run. scripts/e2e-stages.sh holds the stages, the assertions, and the
