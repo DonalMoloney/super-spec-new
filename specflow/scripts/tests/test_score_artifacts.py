@@ -952,7 +952,7 @@ def test_unseeded_feature_scores_seeded_ambiguity_full():
         report = score_json(write_feature(directory, SPEC_WITH_SORT_ORDER_QUESTION))
     assert report["seeded_ambiguity"] == {
         "seeded": None,
-        "surfaced": False,
+        "surfaced": None,
         "score": 100.0,
     }
 

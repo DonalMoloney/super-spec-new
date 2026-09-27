@@ -271,7 +271,7 @@ def score_seeded_ambiguity(spec_lines: list[str], feature_dir: Path) -> dict:
     """
     marker = feature_dir / SEEDED_AMBIGUITY_FILENAME
     if not marker.is_file():
-        return {"seeded": None, "surfaced": False, "score": FULL_SCORE}
+        return {"seeded": None, "surfaced": None, "score": FULL_SCORE}
     lines = read_lines(marker)
     phrase = lines[0].strip() if lines else ""
     if not phrase:
