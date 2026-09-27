@@ -457,7 +457,9 @@ deleting them; prune anything older than a quarter that no longer guides work.
   dropped this fork's sections. Outside CI a `claude` login replaces
   `ANTHROPIC_API_KEY`.
 - Decision: `invoke_agent` passes an `--allowedTools` list, not
-  `bypassPermissions`, so a stage cannot run a command outside it. The stage 3
-  and stage 6 prompts state that no user answers. `E2E_MODEL` pins the model.
+  `bypassPermissions`, so a stage cannot run a command outside it. The list
+  names the gate scripts; without them the stage 6 agent wrote `.analyzed`
+  itself. The stage 3 and stage 6 prompts state that no user answers.
+  `E2E_MODEL` pins the model.
 - Consequences: a stage that needs a new command stops on approval until the
   list grows. The command contracts stay interactive.
