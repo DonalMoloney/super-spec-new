@@ -10,10 +10,15 @@ stage writes into a real project.
 2026-09-27, one `claude -p` session per stage, with `E2E_MODEL=claude-sonnet-5`.
 Stages 1 to 3 ran at commit `3697466`. Stage 4 stopped waiting for a shell
 approval that headless mode cannot give, so stages 4 to 7 resumed the same
-project at commit `f17fcc7`, which adds the shell allowlist to the driver. Both
-commits install the same extension payload. That payload also carried two
+project at commit `f17fcc7`. It carries the shell allowlist from `2d7a76d` and a
+fix to the stage 3 assertion. Both commits install the same extension payload. That payload also carried two
 uncommitted documentation lines: the resources link in `SKILL.md` and the
 sample `spec:` value in `references/workflow-guide.md`.
+
+The `--dev` install copied this directory's earlier hand-built version into
+the project with the rest of `examples/`. The stage 4 session found it and read
+its `plan.md`, and one sentence of that file reappears verbatim in the recorded
+`plan.md`. A catalog install strips `examples/`, so a user's run cannot see it.
 
 The stage prompts live in `scripts/e2e-stages.sh`. Two of them tell the agent
 that no user will answer: brainstorm answers its own questions, and execute
