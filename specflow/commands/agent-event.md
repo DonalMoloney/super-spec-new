@@ -7,7 +7,7 @@ scripts:
 # speckit.specflow.agent-event
 
 Dispatch a spec-kit `events:` hook payload, from Claude Code or the GitHub
-Copilot CLI, to the gate its event and surface name.
+Copilot CLI, to the gate that matches its event and surface.
 
 ## Usage
 
