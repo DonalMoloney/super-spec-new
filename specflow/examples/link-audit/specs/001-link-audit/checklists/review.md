@@ -1,73 +1,77 @@
-# Review Checklist: Broken Link Audit
+# Implementation Review: Link Audit CLI
 
-**Purpose**: Check the implementation against the spec, the constitution, the code standards
-**Created**: 2026-09-15
-**Feature**: [spec.md](../spec.md)
+**Purpose**: Review `src/link_audit/` against `specs/001-link-audit/spec.md`, `plan.md`, and `tasks.md`
+**Reviewed**: 2026-09-27
+**Reviewer**: speckit.specflow.review (built-in protocol — `requesting-code-review` not detected at `.agents/skills/` project-local or user-global path)
+**Risk tier**: STANDARD (implementation is 7 small modules, no auth/payments/migrations/infra paths, no lockfile changes)
+**Verdict**: **BLOCK** (3 open Critical findings)
 
-## Spec Compliance
+## Verification performed
 
-- [x] CHK001 US1 Scenario 1: implemented by T017 through T019, covered by `reports_missing_target`
-- [x] CHK002 US1 Scenario 2: implemented by T020, covered by `exits_0_on_clean_repository`
-- [x] CHK003 US1 Scenario 3: a directory target resolves, covered by `accepts_existing_target`
-- [x] CHK004 US2 Scenario 1: implemented by T024, covered by `rejects_missing_heading_anchor`
-- [x] CHK005 US2 Scenario 2: implemented by T023, covered by `accepts_slugified_heading_anchor`
-- [x] CHK006 US3 Scenario 1: implemented by T026, covered by `skips_http_target`
-- [x] CHK007 US3 Scenario 2: implemented by T028, covered by `honours_ignore_glob`
+- [x] Ran `pytest -q` against the full suite: 29 passed, 0 failed
+- [x] Read every module under `src/link_audit/` (`cli.py`, `discovery.py`, `links.py`, `anchors.py`, `resolver.py`, `report.py`, `errors.py`) against spec.md's FRs and plan.md's module boundaries
+- [x] Reproduced `git ls-files -- '*.md'` pathspec behavior empirically to confirm it recurses into subdirectories (FR-001 — confirmed correct, not a finding)
+- [x] Reproduced fenced-code-block heading pollution in `anchors.slugify_headings()` (R-001)
+- [x] Reproduced fenced-code-block link false-positive in `links.extract_links()` (R-002)
+- [x] Reproduced an uncaught `PermissionError` crash when an anchor-target file is unreadable (R-003)
+- [x] Reproduced pathlib's absolute-path-overrides-join behavior for a leading-slash link target (R-004)
 
-## Code Review
+## Spec Compliance (User Stories 1–3)
 
-### Correctness
+- [x] US1 (P1, missing relative link → exit 1): acceptance scenarios 1–3 all covered by `tests/test_cli.py`, `tests/test_resolver.py`; verified passing
+- [x] US2 (P2, missing heading anchor → exit 1): acceptance scenarios 1–3 covered by `tests/test_resolver.py`, `tests/test_report.py`, `tests/test_cli.py`; verified passing
+- [ ] US2 anchor resolution is undermined by R-001 for any target file containing a fenced code block
+- [x] US3 (P3, scan scoped to `git ls-files`): acceptance scenarios 1, 2, 4 covered; scenario 3 (git failure → exit 2) covered by `tests/test_discovery.py`, `tests/test_cli.py`
+- [ ] US1/US3's "zero false positives" guarantee (SC-001) is undermined by R-002 (code-fence link false positives) and R-004 (root-relative link false positives)
 
-- [x] CHK010 Every acceptance scenario has a passing test
-- [x] CHK011 Every edge case from the brainstorm session is handled
-- [x] CHK012 Error handling covers each failure path, with no silent failure
-- [x] CHK013 The scan root containment check runs before any file is read
+## Edge Case Coverage
 
-### Security
-
-- [x] CHK020 No injection vector exists: `git ls-files` runs with an argument list, never a shell string
-- [x] CHK021 N/A: the audit has no authentication surface
-- [x] CHK022 The report quotes repository-relative paths, never the absolute scan root
-- [x] CHK023 Every link target passes through the containment check in `scanner.py`
-- [x] CHK024 The STRIDE table fills every row, marking four N/A with a reason
-
-### Performance
-
-- [x] CHK030 Each target file's headings are slugged once per scan, not once per link
-- [x] CHK031 The file cap stops a runaway scan at 5000 files
-- [x] CHK032 The scan makes no network call, so no request blocks it
-
-### Code Quality
-
-- [x] CHK040 Each module owns one stage of the pipeline, per the structure decision
-- [x] CHK041 No `utils` module exists; the slug helper sits in `anchors.py`
-- [ ] CHK042 The JSON report carries a version the consumer can branch on
-- [x] CHK043 Names follow the domain vocabulary: `MarkdownFile`, `Link`, `BrokenLink`
+- [x] External-scheme links skipped without I/O (FR-003) — verified in `resolver.classify_and_decode`
+- [x] Bare anchor resolves against source file itself (FR-010) — verified in `resolver.resolve_file`
+- [x] Non-Markdown target skips anchor validation (FR-013) — verified in `resolver._check_anchor`
+- [x] Duplicate heading slugs get `-1`, `-2`, ... suffixes in document order (FR-005) — verified in `anchors.slugify_headings`
+- [x] Percent-encoding and query strings stripped before resolution (FR-011) — verified in `resolver.classify_and_decode`
+- [x] Zero tracked Markdown files exits 0 cleanly (US3 Scenario 4) — verified in `tests/test_discovery.py`
+- [x] Unreadable *linking* file aborts with exit 2 (FR-012) — verified in `cli.main`/`tests/test_cli.py`
+- [ ] Unreadable *anchor-target* file is **not** covered by FR-012's exit-2 path — crashes uncaught (R-003)
+- [ ] Fenced code blocks are not excluded from heading or link extraction — not mentioned anywhere in spec.md's Edge Cases, and not handled by the implementation (R-001, R-002)
+- [ ] A leading-slash ("root-relative") link target is not addressed by spec.md's Assumptions or Edge Cases, and the implementation's behavior for it is surprising and untested (R-004)
 
 ## Constitution Compliance
 
-- [x] CHK050 Principle I Test-First: every implementation task follows a `[TDD]` test task
-- [x] CHK051 Principle II One Command, One Job: the audit writes no file
-- [x] CHK052 Principle III Exit Codes: `cli.py` returns 0, 1, or 2, nothing else
-- [x] CHK053 Principle IV No Network: no HTTP client is imported
-- [x] CHK054 Principle V Errors Name The Fix: `LinkAuditError` states expected, found, next step
+- [x] Principle I (Standard Library Only): confirmed — only `argparse`, `pathlib`, `re`, `subprocess`, `urllib.parse`, `dataclasses`, `typing` imported under `src/link_audit/`
+- [ ] Principle II (CI-First Exit Codes — "No other exit code may be used"): **violated** by R-003 — an uncaught `PermissionError` produces an exit status that is neither 0, 1, nor 2 by design (it is whatever Python's default traceback handler emits)
+- [x] Principle III (No Network Access): confirmed — external schemes are classified and skipped before any I/O; `tests/test_cli.py` monkeypatches socket calls to raise if invoked
+- [ ] Principle IV (Actionable Errors): **violated** by R-003 — a raw traceback does not name the fix
+- [x] Principle V (Test-Driven Development): tasks.md shows `[TDD]` tasks completed in sequence; `pytest -q` passes for all named tests
+
+## Code Quality
+
+- [ ] R-001: `anchors.slugify_headings()` has no fenced-code-block awareness — reproduced misclassification of a `# bash comment` inside a ` ```bash ` block as a real heading
+- [ ] R-002: `links.extract_links()` has no fenced-code-block awareness — reproduced false-positive extraction of `[example](nonexistent-file.md)` from inside a ` ```markdown ` example block
+- [ ] R-003: `resolver._check_anchor()`'s `target_file.read_text()` (resolver.py:80) is unguarded, unlike the linking-file read in `cli.py`, which is wrapped — inconsistent error handling between the two file reads in the same pipeline
+- [ ] R-004: `resolver.resolve_file()`'s `base_dir / parsed.file_part` (resolver.py:58) silently discards `base_dir` for any target beginning with `/`, per pathlib's absolute-path-join semantics
 
 ## Test Coverage
 
-- [x] CHK060 Unit tests cover discovery, parsing, anchors, resolution
-- [x] CHK061 Integration tests drive the CLI end to end, per `test_cli.py`
-- [x] CHK062 `pytest -q` reports 47 passed in CI
-- [x] CHK063 Every `[TDD]` task recorded a failing run before its implementation
-- [x] CHK064 Every criterion lists a test in Traceability
+- [x] Every FR/SC row in spec.md's Traceability table names a test, and every named test passes (`pytest -q`: 29 passed)
+- [ ] No test in `tests/test_anchors.py` or `tests/test_links.py` exercises a fenced code block (gap tied to R-001, R-002)
+- [ ] No test in `tests/test_cli.py` or `tests/test_resolver.py` exercises an unreadable anchor-target file, only an unreadable linking file (gap tied to R-003)
+- [ ] No test exercises a leading-slash link target (gap tied to R-004)
 
 ## Review Findings
 
-| CHK ID | R-NNN | Status |
-|--------|-------|--------|
-| CHK064 | R-001 | fixed |
-| CHK042 | R-002 | open |
+| CHK | Finding | Status |
+|-----|---------|--------|
+| Edge Case Coverage — fenced code blocks (headings) | R-001 | open |
+| Edge Case Coverage — fenced code blocks (links) | R-002 | open |
+| Edge Case Coverage — unreadable anchor-target file | R-003 | open |
+| Edge Case Coverage — leading-slash link target | R-004 | open |
+| Constitution Compliance — Principle II | R-003 | open |
+| Constitution Compliance — Principle IV | R-003 | open |
+| Code Quality — anchors.py fenced-code-block awareness | R-001 | open |
+| Code Quality — links.py fenced-code-block awareness | R-002 | open |
+| Code Quality — resolver.py unguarded target read | R-003 | open |
+| Code Quality — resolver.py leading-slash join | R-004 | open |
 
-## Notes
-
-- CHK042 stays unchecked: R-002 is a Minor finding, which does not block the merge gate.
-- Findings below 80 confidence were dropped before this checklist was filled.
+See `specs/001-link-audit/review-findings.json` for full evidence and fix recommendations per finding, and `spec.md`'s Open Questions table (Q6, Q7) for the spec gaps these findings surfaced.
