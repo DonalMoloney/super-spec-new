@@ -523,6 +523,11 @@ Per step 9 of the command, an Open Questions row you mark Resolved because a
 choice was settled also gets an ADR-lite entry appended to decisions.md at the
 project root.
 
+This is a headless run and no user will answer. Ask each question as the
+command directs, then answer it yourself with the option the spec and the
+constitution best support, and fold that answer into the spec. Treat the spec
+as confirmed ready once every category is covered.
+
 Run /speckit.specflow.brainstorm $SPEC_REL and stop when the spec file has
 been updated.
 EOF
@@ -645,6 +650,9 @@ Once the analyze gate passes, run /speckit.specflow.execute to implement the tas
 ${SPEC_DIR#$WORK/}/tasks.md. The deliverable is the link-audit CLI under
 src/link_audit/ with its pytest suite. Per the specflow
 contract, also keep ${SPEC_DIR#$WORK/}/progress.yml updated as tasks complete.
+
+This is a headless run and no user will answer. Treat every phase checkpoint
+as confirmed and continue to the next phase.
 EOF
 )" || FAILED_STAGE=6
 

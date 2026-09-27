@@ -18,6 +18,7 @@
 #   E2E_DRY_RUN=1         print the prompts, skip the claude call (free)
 #   E2E_MAX_BUDGET_USD    per-stage budget cap, default 0.50
 #   E2E_MAX_TURNS         per-stage turn cap, default 30
+#   E2E_MODEL             model passed to claude --model (default: the CLI's own)
 #   KEEP_WORKDIR=1        keep the tmp project at exit (default: keep it only
 #                         when the run fails, or when E2E_RESUME_WORKDIR named it)
 #   E2E_RESUME_WORKDIR    reuse this workdir (skip prep stage)
@@ -35,6 +36,7 @@ set -uo pipefail
 AGENT_NAME="claude"
 MAX_BUDGET="${E2E_MAX_BUDGET_USD:-0.50}"
 MAX_TURNS="${E2E_MAX_TURNS:-30}"
+MODEL="${E2E_MODEL:-}"
 
 # shellcheck source=specflow/scripts/e2e-stages.sh
 . "$(dirname "${BASH_SOURCE[0]}")/e2e-stages.sh"
@@ -61,6 +63,8 @@ trap cleanup EXIT
 # .claude/ and .specify/.
 invoke_agent() {
   local prompt="$1" log="$2"
+  local model_args=()
+  [ -n "$MODEL" ] && model_args=(--model "$MODEL")
 
   # --permission-mode acceptEdits: no interactive prompt for file writes
   # --max-turns: caps agent loops
@@ -75,6 +79,7 @@ invoke_agent() {
         --max-turns "$MAX_TURNS" \
         --max-budget-usd "$MAX_BUDGET" \
         --output-format text \
+        "${model_args[@]+"${model_args[@]}"}" \
         "$prompt" >"$log" 2>&1; then
     note "claude transcript: ${log#$WORK/}"
   else
