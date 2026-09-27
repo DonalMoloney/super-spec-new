@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "reviewer": "speckit.specflow.review",
+  "verdict": "BLOCK",
+  "findings": [
+    {
+      "id": "R-001",
+      "severity": "Critical",
+      "category": "spec-compliance",
+      "location": "src/link_audit/anchors.py:29-37",
+      "evidence": "slugify_headings() scans every source line for an ATX heading with no fenced-code-block state tracking. Reproduced: source containing a fenced ```bash block with the comment line `# This is a bash comment, not a heading` produces HeadingAnchor(slug='this-is-a-bash-comment-not-a-heading') alongside the real headings. A phantom heading can absorb an anchor link that should be reported broken (false negative, violating SC-004's 'next run catches the renamed heading') or shift the duplicate-suffix count (-1, -2, ...) assigned to genuine headings below the code fence, causing a correct anchor link to be wrongly reported broken (false positive, violating SC-001's 'zero false positives'). No test in tests/test_anchors.py exercises a heading-like line inside a fenced code block.",
+      "fix": "Track fenced-code-block state (lines between ``` delimiters, including indented/tilde fences if in scope) in slugify_headings() and skip heading-pattern matching while inside a fence, mirroring how a real Markdown renderer would.",
+      "status": "open"
+    },
+    {
+      "id": "R-002",
+      "severity": "Critical",
+      "category": "spec-compliance",
+      "location": "src/link_audit/links.py:18-31",
+      "evidence": "extract_links() applies _LINK_PATTERN to every line with no fenced-code-block exclusion. Reproduced: a fenced ```markdown block containing `See [example](nonexistent-file.md) for a sample link.` (a common way to show link syntax in documentation) is extracted as Link(target_raw='nonexistent-file.md'), which the CLI then checks against the filesystem and reports as missing-file. This contradicts SC-001's 'zero false positives' guarantee for any repository that shows Markdown link syntax inside a code fence. No test in tests/test_links.py or tests/test_cli.py covers a link-like string inside a fenced code block.",
+      "fix": "Skip lines between fenced code block delimiters in extract_links(), consistent with the same exclusion needed in anchors.py (R-001).",
+      "status": "open"
+    },
+    {
+      "id": "R-003",
+      "severity": "Critical",
+      "category": "code-quality",
+      "location": "src/link_audit/resolver.py:80",
+      "evidence": "_check_anchor() calls target_file.read_text() with no exception handling. cli.py only wraps the *linking* file's read (cli.py:40-43) in try/except OSError; the *anchor target* file's read inside resolver.resolve_file() -> _check_anchor() is never wrapped. Reproduced: a tracked file.md#heading link whose target file exists but is unreadable (permission denied) crashes the CLI with an uncaught PermissionError and a raw Python traceback, rather than a controlled exit. This violates Constitution Principle II (CI-First Exit Codes: 'No other exit code may be used' — an uncaught exception's exit status is an implementation accident, not one of {0,1,2}) and Principle IV (Actionable Errors: a traceback does not name the fix).",
+      "fix": "Wrap the target_file.read_text() call in _check_anchor() (or its caller) in the same OSError/UnicodeDecodeError handling used for the linking file, raising LinkAuditError(file=target_file, reason=...) so cli.py's existing handler produces exit 2 with an actionable message.",
+      "status": "open"
+    },
+    {
+      "id": "R-004",
+      "severity": "Important",
+      "category": "spec-compliance",
+      "location": "src/link_audit/resolver.py:58",
+      "evidence": "resolve_file() computes `candidate = base_dir / parsed.file_part`. Reproduced: Path('/repo/docs') / '/guide/setup.md' evaluates to Path('/guide/setup.md') because pathlib's `/` operator discards the left operand when the right operand is absolute. A root-relative link such as `[x](/docs/setup.md)` — a common documentation convention — is silently resolved against the OS filesystem root instead of being flagged as unsupported or resolved against the repository root, so it will almost always be misreported as missing-file. spec.md's Assumptions section only states relative targets resolve against the linking file's directory; it never addresses a leading-slash target, and no edge case or acceptance scenario covers this input, so the current behavior is an unaddressed spec gap that manifests as a false positive (contradicting SC-001) for a realistic input.",
+      "fix": "Either document that a leading-slash target is out of scope and reject/skip it explicitly with a clear reason, or resolve it against the repository root, per an explicit spec decision Q6.",
+      "status": "open"
+    }
+  ]
+}

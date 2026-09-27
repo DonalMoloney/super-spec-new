@@ -1,190 +1,225 @@
-# Feature Specification: Static Landing Page
+<!-- specflow template: spec-template 1.1.0 -->
+# Feature Specification: Link Audit CLI
 
-**Feature Branch**: `001-static-landing-page`
-
-**Created**: 2026-05-30
-
+**Feature Branch**: `001-link-audit`
+**Created**: 2026-09-27
 **Status**: Draft
-
-**Input**: User description: "Static landing page for specflow. Three priorities: P1: Hero section with project name, tagline, and a 'Get Started' button. P2: Features grid showing the 5 core commands (status, brainstorm, tasks, execute, review). P3: Workflow diagram and an install command snippet. Output target: web/index.html, pure HTML+CSS, no JavaScript build."
+**Input**: User description: "link-audit is a Python CLI that walks the Markdown files git ls-files reports, resolves each inline link target against the file system, prints the unresolved ones, exits 1 when any is unresolved. Heading anchors resolve against the slugified headings of the target file. External schemes are skipped, so the scan needs no network. Three priorities: P1: Report every relative link whose target file is missing. P2: Report every file.md#anchor link whose anchor matches no heading. P3: Scan only the Markdown files git ls-files reports."
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Hero Section (Priority: P1)
+<!--
+  Order the user stories by importance, most important first.
+  Each user story stands on its own: implementing only one still ships a
+  usable MVP (Minimum Viable Product).
 
-A first-time visitor arrives at the landing page and immediately sees the project name ("SpecFlow"), a concise tagline describing what the project does, and a prominent "Get Started" call-to-action button. The visitor can click the button to navigate to documentation or a quick-start guide. The hero section fills the viewport on load, delivering an instant understanding of the project's purpose.
+  Assign each story a priority (P1, P2, P3), with P1 the most critical.
+  Each story meets these independence criteria:
+  - You can develop it without the others.
+  - You can test it without the others.
+  - You can deploy it without the others.
+  - You can demonstrate it to users without the others.
+-->
 
-**Why this priority**: The hero section is the single most important element — it communicates the project's identity and value proposition within seconds. Without it, the page has no focal point and visitors bounce.
+### User Story 1 - Catch broken relative links (Priority: P1)
 
-**Independent Test**: Can be fully tested by loading the page and verifying that (1) the project name is visible and prominent, (2) a tagline appears beneath it, and (3) a "Get Started" button is present and links to a valid destination. Delivers immediate value by establishing brand presence.
+A maintainer runs the link-audit CLI against their repository's Markdown files. The tool reports every relative link (e.g. `[docs](../guide/setup.md)`) whose target file does not exist on disk, so the maintainer can fix or remove dead links before they reach readers.
+
+**Why this priority**: A broken link to a missing file is the most damaging and most common documentation defect — it sends readers to a 404 or a dead path with no recovery. This is the minimum viable capability of the tool.
+
+**Independent Test**: Can be fully tested by pointing the CLI at a small repository containing one Markdown file with a relative link to a file that does not exist, and confirming the tool prints that link and exits with a non-zero status.
 
 **Acceptance Scenarios**:
 
-1. **Given** a visitor loads the landing page in a browser, **When** the page renders, **Then** the project name "SpecFlow" is displayed as the most prominent text element in the hero section
-2. **Given** a visitor loads the landing page, **When** the page renders, **Then** a tagline summarizing the project's purpose is visible directly beneath the project name
-3. **Given** a visitor views the hero section, **When** they click the "Get Started" button, **Then** they are navigated to the project documentation or quick-start destination
-4. **Given** a visitor loads the page on a desktop viewport (≥1024px wide), **When** the hero section renders, **Then** it occupies the full viewport height and centers content both horizontally and vertically
+1. **Given** a Markdown file with a relative link to a file that exists at the expected path, **When** the CLI scans the repository, **Then** that link is not reported and the file is treated as resolved.
+2. **Given** a Markdown file with a relative link to a file that does not exist at the expected path, **When** the CLI scans the repository, **Then** the CLI prints the unresolved link (including source file and target path) and exits with status 1.
+3. **Given** a repository where every relative link resolves successfully, **When** the CLI finishes scanning, **Then** it prints no unresolved links and exits with status 0.
 
 ---
 
-### User Story 2 - Features Grid (Priority: P2)
+### User Story 2 - Catch broken heading anchors (Priority: P2)
 
-A visitor exploring the page scrolls past the hero and encounters a features grid that showcases the five core SpecFlow commands: **status**, **brainstorm**, **tasks**, **execute**, and **review**. Each command is presented as a card with its name and a brief description of what it does. The grid arranges the cards in a visually balanced layout that is easy to scan.
+A maintainer runs the link-audit CLI to catch links of the form `file.md#anchor` where the target file exists but the anchor no longer matches any heading in that file (for example, after a heading was renamed). The tool reports these so readers aren't dropped at the top of the wrong section.
 
-**Why this priority**: The features grid educates visitors about the core capabilities, turning curiosity into understanding. It directly supports the decision to adopt the tool but is secondary to the hero's identity-establishing role.
+**Why this priority**: Anchor links rot silently whenever a heading is renamed, and this failure mode is invisible to a simple "does the file exist" check. It builds directly on P1's file-resolution logic, so it is the natural second layer of coverage.
 
-**Independent Test**: Can be fully tested by scrolling to the features section and verifying that all five commands appear as distinct cards with names and descriptions. Delivers value by communicating product capabilities.
+**Independent Test**: Can be fully tested by creating a target Markdown file with a known set of headings and a linking file with a `file.md#anchor` link whose anchor does not match any slugified heading in the target, then confirming the CLI reports it.
 
 **Acceptance Scenarios**:
 
-1. **Given** a visitor scrolls to the features section, **When** it renders, **Then** five feature cards are displayed — one each for status, brainstorm, tasks, execute, and review
-2. **Given** a visitor views the features grid, **When** they read a card, **Then** the card shows the command name and a one- or two-sentence description of its purpose
-3. **Given** a visitor views the features section on a desktop viewport, **When** the grid renders, **Then** the five cards are arranged in a balanced multi-column layout (e.g., 3 across then 2, or 5 across)
-4. **Given** a visitor views the features section on a narrow viewport (≤600px), **When** the grid renders, **Then** the cards stack vertically for readability
+1. **Given** a link `file.md#some-heading` where `file.md` exists and contains a heading that slugifies to `some-heading`, **When** the CLI scans the repository, **Then** the link is not reported.
+2. **Given** a link `file.md#missing-heading` where `file.md` exists but no heading slugifies to `missing-heading`, **When** the CLI scans the repository, **Then** the CLI prints the unresolved anchor link (including source file, target file, and anchor) and exits with status 1.
+3. **Given** a link to `file.md#anchor` where `file.md` itself does not exist, **When** the CLI scans the repository, **Then** the CLI reports it as a missing-file link (per P1) rather than duplicating it as a missing-anchor error.
 
 ---
 
-### User Story 3 - Workflow Diagram & Install Snippet (Priority: P3)
+### User Story 3 - Scan exactly the tracked Markdown files (Priority: P3)
 
-A visitor who wants to try SpecFlow finds a workflow diagram illustrating the typical command sequence (status → brainstorm → tasks → execute → review) and a copyable install command snippet. The diagram shows the flow between commands, helping the visitor understand the intended workflow. The install snippet provides the exact command needed to get started.
+A maintainer runs the link-audit CLI inside a git repository that also contains build artifacts, ignored files, or scratch notes. The tool limits its scan to the Markdown files that `git ls-files` reports, so untracked or ignored content never produces false positives or false negatives.
 
-**Why this priority**: This section converts interested visitors into users by showing them both how the tool works (diagram) and how to get it (install command). It supports adoption but depends on the hero and features sections having already established interest.
+**Why this priority**: This scoping rule keeps the tool's results trustworthy and repeatable across machines and CI, but it is a supporting constraint rather than a standalone user-facing check — it refines *what* gets scanned by P1 and P2 rather than adding a new class of defect.
 
-**Independent Test**: Can be fully tested by scrolling to the workflow section and verifying that (1) a diagram showing the five-command flow is rendered and (2) an install command snippet is displayed. Delivers value by providing an actionable next step.
+**Independent Test**: Can be fully tested by creating a repository with a tracked Markdown file containing a broken link and an untracked (or `.gitignore`d) Markdown file containing a different broken link, then confirming the CLI reports only the link from the tracked file.
 
 **Acceptance Scenarios**:
 
-1. **Given** a visitor scrolls to the workflow section, **When** it renders, **Then** a visual diagram displays the five commands connected in a sequential flow: status → brainstorm → tasks → execute → review
-2. **Given** a visitor views the workflow diagram, **When** they examine it, **Then** the directional relationship between each step is clear (left-to-right or top-to-bottom progression with arrows or connectors)
-3. **Given** a visitor views the install section, **When** they read it, **Then** an install command snippet is displayed in a monospaced, visually distinct code block
-4. **Given** a visitor views the install snippet, **When** they select the text, **Then** they can copy the complete install command
+1. **Given** a repository where `git ls-files` reports a specific set of `.md` files, **When** the CLI runs, **Then** only links found in that exact set of files are checked.
+2. **Given** a Markdown file that exists on disk but is untracked by git (not returned by `git ls-files`), **When** the CLI runs, **Then** links inside that file are neither scanned nor reported, and links elsewhere that point to that untracked file are still evaluated against the file system per P1.
+3. **Given** the CLI is invoked outside of a git repository or `git ls-files` fails, **When** the CLI runs, **Then** the CLI reports a clear error and exits with a non-zero status rather than silently scanning nothing.
+4. **Given** `git ls-files` reports zero `.md` files, **When** the CLI runs, **Then** the CLI completes the scan, reports no unresolved links, and exits with status 0.
 
 ---
 
 ### Edge Cases
 
-- What happens when the page is loaded with JavaScript disabled? Since the page is pure HTML+CSS, all content must render without any JavaScript dependency.
-- What happens on very wide viewports (≥1920px)? Content should remain readable and not stretch to fill the entire width — a max-width container should be used.
-- What happens on very small viewports (≤320px, e.g., older phones)? Content should remain legible with appropriate font sizing and stacking.
-- What happens on ultra-wide viewports (≥2560px)? Content must remain within a max-width container centered on screen — lines should not stretch to fill the full viewport width, as that destroys readability.
-- What happens when the page is printed? A `@media print` stylesheet must hide decorative elements and present content in a linear, ink-friendly flow. The hero, features, and workflow sections should be visually separated by spacing rather than color. The install snippet should remain visible and copyable in print.
-- What happens if the "Get Started" link destination doesn't exist or becomes unreachable? The button MUST still render and function as a valid hyperlink. If no external documentation URL is available, a placeholder anchor (`#`) or a scroll-to-install-section link should be used. The final destination is tracked as an Open Question.
-- What happens when the page is opened from a local `file://` URL (no HTTP server)? Since the page is self-contained with no external dependencies, it must render identically via `file://` as it does over HTTP. No protocol-relative or `//` URLs should appear anywhere in the markup.
-- What happens if the CSS for the workflow diagram (arrows, connectors, step indicators) pushes the total page weight near or over the 64 KB constitutional limit? The diagram implementation MUST be designed with page weight in mind — if CSS-drawn arrows exceed budget, a simpler step-indicator pattern (numbered circles with connecting lines) must be used instead.
-- **Security surface**: The page has no user input, no forms, no cookies, no JavaScript, and no external resource loading — therefore the attack surface is negligible. No security edge cases require mitigation beyond the constitutional constraints (single-file, no external deps, no JS).
-- **Keyboard-only navigation**: All interactive elements (the "Get Started" button, any clickable content) MUST be reachable via Tab and activatable via Enter/Space. The page MUST provide a visible focus indicator (using `:focus-visible` or `:focus` outlines) that meets WCAG AA contrast requirements. The install snippet should be selectable via keyboard (e.g., a tabindex-0 container that can receive focus for text selection).
-- **Screen reader flow**: Heading hierarchy MUST be strictly sequential (h1 → h2 → h3, no skipped levels). Landmark regions (`<header>`, `<main>`, `<section>`, `<footer>`) MUST be used to convey page structure to assistive technology. Feature cards should use appropriate ARIA roles or semantic elements so their grouping is announced correctly.
-- **Forced-colors / High Contrast mode**: When the OS applies forced colors or a high-contrast theme (e.g., Windows High Contrast mode), the page MUST remain readable and functional. CSS MUST NOT rely solely on background-color for conveying information — borders, text, and icons must use `currentColor` or explicit foreground colors that adapt to forced-colors palettes. The `forced-colors` media query SHOULD be used to adjust borders/outlines where needed.
+<!--
+  Fill in the edge cases this feature needs.
+  Use the brainstorm prompts below to start a /speckit.specflow.brainstorm session.
+-->
+
+- External-scheme links (`http://`, `https://`, `mailto:`, etc.) are skipped without any network access (FR-003).
+- A bare anchor within the same file (`#some-heading`) resolves against that same source file's own slugified headings, per FR-010.
+- When a link's target file exists but is not a Markdown file (e.g. an image or a PDF), anchor validation is skipped entirely — only file existence is checked, per FR-013.
+- When two headings in the same file slugify to the same base anchor, the second and later occurrences get a numeric suffix (`-1`, `-2`, ...) in order of appearance, matching GitHub's heading-anchor convention (see Q1 resolution and FR-005).
+- A link target containing a query string or percent-encoded characters (e.g. `%20`) is percent-decoded before the query string, if any, is stripped and the remaining path is checked against the file system, per FR-011.
+- A repository with zero tracked Markdown files completes the scan cleanly and exits 0 (see User Story 3, Acceptance Scenario 4).
+- A relative link that resolves outside the repository root (e.g. `../../../etc/passwd`) is still resolved and existence-checked like any other relative link — the tool never restricts resolution to the repository root, and only ever performs a read-only existence check, never reads or executes the resolved path's contents beyond a Markdown target's own headings (see updated Threat Model row below).
+- A Markdown file listed by `git ls-files` that cannot be opened or read (permission denied, deleted mid-scan, undecodable bytes) aborts the scan with an actionable, file-naming error and exit status 2, per FR-012.
+- A symlinked Markdown file or symlinked link target is resolved and existence-checked the same as any other path; the CLI performs no additional dereferencing or validation of what a symlink points to beyond the standard OS-level existence check.
+
+#### Brainstorm Prompts
+
+<!--
+  These prompts guide /speckit.specflow.brainstorm. Each one opens a line of
+  questioning. When the list below does not cover this feature's domain, add
+  a prompt for it.
+-->
+
+- **Boundary conditions**: What are the minimum and maximum valid inputs? What happens at the edges?
+- **Error scenarios**: What if the network is down? What if the database is unavailable? What if input is malformed?
+- **Scale**: What happens under 10x or 100x the expected load? Do rate limits apply?
+- **Security**: Could an attacker abuse this feature? Are there injection vectors? Could an attacker gain unauthorized access?
+- **User confusion**: Where might users misunderstand the feature? What if they use it in an unintended way?
+
+## Open Questions
+
+<!--
+  Each question carries a status, Open or Resolved, and a resolution summary.
+  /speckit.specflow.brainstorm updates this section as it explores each question.
+-->
+
+| # | Question | Status | Resolution |
+|---|----------|--------|------------|
+| Q1 | Should the slugification algorithm match a specific Markdown renderer's heading-anchor convention (e.g. GitHub's)? | Resolved | Yes — the CLI uses GitHub's convention: lowercase, spaces to hyphens, strip characters that aren't alphanumeric/hyphen/underscore, and append `-1`, `-2`, ... to duplicate slugs in order of appearance. This is the convention most contributors already expect from previewing Markdown on GitHub, and it removes the ambiguity the Assumptions section previously left open. |
+| Q2 | How should the CLI handle a `git ls-files`-tracked Markdown file that cannot be opened or read? | Resolved | Abort the scan with an actionable error naming the unreadable file and exit status 2. The constitution's exit-code contract (Principle II) reserves 2 for "the scan cannot complete"; silently skipping the file risks a false-clean report, which is worse than a loud, actionable failure. |
+| Q3 | How should a bare anchor (`#some-heading`) with no file part be resolved? | Resolved | Against the linking file's own slugified headings — the source file acts as its own target file, reusing the same anchor-resolution logic as `file.md#anchor` (FR-010). |
+| Q4 | Should heading-anchor validation apply to a link whose target file exists but isn't Markdown (e.g. `diagram.png#section`)? | Resolved | No — anchor validation only applies to `.md` targets. A non-Markdown file has no headings to slugify, so only the file-existence check (FR-004) applies and any anchor fragment is ignored (FR-013). |
+| Q5 | Should link targets with query strings or percent-encoding be decoded before file-system resolution? | Resolved | Yes — percent-decode the path first (so `%20` becomes a space, matching how filenames with spaces are typically linked), then strip any query string before checking existence, since link targets are file paths, not URLs (FR-011). |
+| Q6 | R-001/R-002 (code review): should heading extraction and link extraction skip lines inside fenced code blocks? | Open | Not yet resolved. Current behavior treats any `#`-prefixed line or `[text](target)`-shaped text inside a fenced code example as real, causing both false-negative anchor validation and false-positive link findings. |
+| Q7 | R-004 (code review): how should a link target beginning with `/` (a root-relative style link, e.g. `/docs/setup.md`) be resolved? | Open | Not yet resolved. Current behavior resolves it against the OS filesystem root via pathlib's absolute-path-overrides-join semantics, which will misreport nearly every such link as missing-file. |
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: The page MUST display a hero section containing the project name "SpecFlow", a tagline, and a "Get Started" button
-- **FR-002**: The "Get Started" button MUST link to the project documentation or quick-start guide
-- **FR-003**: The hero section MUST center its content vertically and horizontally within the viewport
-- **FR-004**: The page MUST display a features grid with five cards, one for each core command: status, brainstorm, tasks, execute, review
-- **FR-005**: Each feature card MUST display the command name and a brief description of its purpose
-- **FR-006**: The features grid MUST use a multi-column layout on wider viewports and stack vertically on narrow viewports
-- **FR-007**: The page MUST display a workflow diagram showing the sequential flow of the five commands
-- **FR-008**: The workflow diagram MUST indicate directional progression between commands using visual connectors (arrows or lines)
-- **FR-009**: The page MUST display an install command snippet in a monospaced code block
-- **FR-010**: The entire page MUST render correctly without any JavaScript — pure HTML and CSS only
-- **FR-011**: The page MUST be served from a single file at `web/index.html`
-- **FR-012**: The page MUST be responsive and readable across viewport widths from 320px to 1920px+
-- **FR-013**: The page content MUST be constrained to a maximum width for readability on very wide screens
-- **FR-014**: The page MUST include a `@media print` stylesheet that renders content in a linear, ink-friendly flow, hides decorative/background elements, and preserves the install snippet visibility
-- **FR-015**: The page MUST render identically when opened via `file://` protocol as it does over HTTP — no protocol-relative URLs or external resource references are permitted
-- **FR-016**: All interactive elements MUST be keyboard-reachable (Tab) and keyboard-activatable (Enter/Space) with visible focus indicators that meet WCAG AA contrast
-- **FR-017**: The install snippet container MUST be keyboard-focusable (tabindex) so users can select and copy the command without a mouse
-- **FR-018**: The page MUST remain readable and functional under OS-level forced-colors / high-contrast modes — no information conveyed by background-color alone
+- **FR-001**: The CLI MUST obtain its list of files to scan exclusively from `git ls-files`, filtered to files with a `.md` extension.
+- **FR-002**: The CLI MUST parse each scanned Markdown file and extract every inline link target (`[text](target)` syntax).
+- **FR-003**: The CLI MUST classify each link target's scheme; targets using an external scheme (e.g. `http://`, `https://`, `mailto:`, `ftp://`) MUST be skipped and MUST NOT trigger any file system or network access.
+- **FR-004**: For each remaining relative link, the CLI MUST resolve the target path against the file system relative to the linking file's location and report the link if the resolved file does not exist.
+- **FR-005**: For each link of the form `file.md#anchor` where `file.md` resolves to an existing file, the CLI MUST slugify every heading in that target file — using GitHub's convention (lowercase, spaces to hyphens, strip non-alphanumeric/hyphen/underscore characters, and append `-1`, `-2`, ... to duplicate slugs in order of appearance) — and report the link if the anchor matches none of the slugified headings.
+- **FR-006**: The CLI MUST print all unresolved links it finds, and each printed entry MUST identify the source file, the line or link text, and the unresolved target (file path and/or anchor).
+- **FR-007**: The CLI MUST exit with status code 1 if it reports one or more unresolved links, and exit with status code 0 if it finds none.
+- **FR-008**: The CLI MUST perform its entire scan without making any network requests.
+- **FR-009**: The CLI MUST report a link to a missing target file as a missing-file issue rather than also attempting anchor resolution against a nonexistent file.
+- **FR-010**: For a bare-anchor link (`#anchor`, no file part), the CLI MUST resolve the anchor against the linking file's own slugified headings, using the same slugification and reporting rules as `file.md#anchor` links.
+- **FR-011**: Before checking a link target against the file system, the CLI MUST percent-decode the path and MUST strip any query string, so that encoded characters (e.g. `%20`) and trailing `?...` segments do not cause a false missing-file report.
+- **FR-012**: If a `git ls-files`-tracked Markdown file cannot be opened or read (permission denied, missing at read time, undecodable bytes), the CLI MUST abort the scan, print an actionable error naming the file and the reason, and exit with status 2.
+- **FR-013**: The CLI MUST NOT attempt heading-anchor validation against a target file that is not a `.md` file; for such targets, only the file-existence check (FR-004) applies, and any anchor fragment present is ignored.
 
-## Threat Model
+### Key Entities *(include if feature involves data)*
 
-The page has no user input, no forms, no cookies, no JavaScript, and no external
-resource loading, so most STRIDE categories are not applicable.
-
-| Threat | Abuse case | Mitigation (or N/A + reason) |
-|--------|------------|-------------------------------|
-| Spoofing | N/A | N/A — the page has no identity or session to spoof. |
-| Tampering | A network attacker on an unencrypted connection alters the served HTML or CSS. | Serve over HTTPS; the page has no server-side state to protect beyond transport. |
-| Repudiation | N/A | N/A — the page records no user action and has no audit trail to dispute. |
-| Information disclosure | N/A | N/A — the page contains no user data, session, or secret to disclose. |
-| Denial of service | N/A | N/A — a static single file has no backend request path to exhaust. |
-| Elevation of privilege | N/A | N/A — the page has no authentication or privilege levels. |
+- **Tracked Markdown File**: A file path reported by `git ls-files` ending in `.md`; the unit of scanning.
+- **Link**: An inline Markdown link extracted from a tracked file, with a source file, a target path, and an optional anchor fragment.
+- **Heading Anchor**: A slug derived from a Markdown heading in a target file, used to validate anchor fragments in links.
+- **Unresolved Link Report**: A single reported finding identifying the source file, the target, and the reason it failed to resolve (missing file or missing anchor).
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: A visitor can identify the project name and purpose within 5 seconds of page load
-- **SC-002**: All five core commands are visible and scannable without scrolling on desktop viewports (hero + features grid above the fold or with minimal scroll)
-- **SC-003**: The install command can be selected and copied in a single text-selection action
-- **SC-004**: The page renders completely with zero JavaScript execution — validated by loading with JavaScript disabled in browser settings
-- **SC-005**: The page is fully readable and navigable on any viewport width from 320px to 1920px
+- **SC-001**: Running the CLI against a repository with N broken relative links and M broken anchor links reports all N + M issues with zero false positives, on a single pass with no configuration.
+- **SC-002**: The CLI completes a scan of a repository's tracked Markdown files and produces its full report without initiating any network connection, verifiable via network-activity monitoring during the scan.
+- **SC-003**: A maintainer can wire the CLI into a CI check using only its exit code (0 = clean, 1 = unresolved links found, 2 = scan could not complete), with no output parsing required to gate a build.
+- **SC-004**: Renaming a heading that a same-repository anchor link depends on is caught by the CLI on the next run, with the specific broken link identified in the output.
+
+## Threat Model
+
+<!--
+  Optional. Walk each STRIDE category against this feature. When a category
+  does not apply, mark its row N/A with a one-clause reason instead of
+  deleting the row.
+-->
+
+| Threat | Abuse case | Mitigation (or N/A + reason) |
+|--------|------------|-------------------------------|
+| Spoofing | N/A — local CLI tool with no identity or authentication surface | N/A |
+| Tampering | A crafted Markdown file with a malicious relative path (e.g. `../../etc/passwd`) could cause the tool to read or reference paths outside the repository | Paths resolve relative to the linking file's directory (not sandboxed to the repository root) but resolution is always a read-only existence check; the tool never writes to, executes, or reads the contents of a resolved target beyond extracting headings from a `.md` file |
+| Repudiation | N/A — tool produces stdout output and an exit code, not an audit trail of user actions | N/A |
+| Information disclosure | Printed unresolved-link paths could reveal file system structure if run against untracked/sensitive paths | Scan is restricted to `git ls-files` output only (FR-001), so disclosure is limited to already-tracked repository content |
+| Denial of service | A pathological Markdown file (e.g. extremely long lines or deeply nested links) could cause excessive scan time | Use a bounded, linear-time link-extraction approach; out of scope to defend against adversarial repository content beyond reasonable file sizes |
+| Elevation of privilege | N/A — CLI runs with the invoking user's own file system permissions and requests no elevated access | N/A |
 
 ## Traceability
 
-Each criterion maps to the validation reference that confirms it.
+Every FR and SC criterion needs at least one named test before the conformance review runs.
+Automated scoring reads only the Test name column. A human reader uses the Status column.
 
 | Criterion ID | Test name | Status |
-|---------------|-----------|--------|
-| FR-001 | `checklists/review.md::FR-001` | Passing |
-| FR-002 | `checklists/review.md::FR-002` | Passing |
-| FR-003 | `checklists/review.md::FR-003` | Passing |
-| FR-004 | `checklists/review.md::FR-004` | Passing |
-| FR-005 | `checklists/review.md::FR-005` | Passing |
-| FR-006 | `checklists/review.md::FR-006` | Passing |
-| FR-007 | `checklists/review.md::FR-007` | Passing |
-| FR-008 | `checklists/review.md::FR-008` | Passing |
-| FR-009 | `checklists/review.md::FR-009` | Passing |
-| FR-010 | `checklists/review.md::FR-010` | Passing |
-| FR-011 | `checklists/review.md::FR-011` | Passing |
-| FR-012 | `tasks.md::T027` | Pending |
-| FR-013 | `checklists/review.md::FR-013` | Passing |
-| FR-014 | `tasks.md::T028` | Pending |
-| FR-015 | `tasks.md::T029` | Pending |
-| FR-016 | `tasks.md::T023` | Failing |
-| FR-017 | `checklists/review.md::FR-017` | Passing |
-| FR-018 | `checklists/review.md::FR-018` | Failing |
-| SC-001 | `checklists/review.md::AS1.1` | Passing |
-| SC-002 | `checklists/review.md::AS2.1` | Passing |
-| SC-004 | `checklists/review.md::FR-010` | Passing |
-| SC-005 | `tasks.md::T027` | Pending |
+|--------------|-----------|--------|
+| FR-001 | test_scans_only_git_ls_files_output | Passing |
+| FR-002 | test_extracts_inline_link_targets | Passing |
+| FR-003 | test_skips_external_scheme_links | Passing |
+| FR-004 | test_reports_missing_relative_link_target | Passing |
+| FR-005 | test_reports_missing_heading_anchor | Passing |
+| FR-006 | test_report_includes_source_and_target | Passing |
+| FR-007 | test_exit_code_reflects_unresolved_links | Passing |
+| FR-008 | test_no_network_access_during_scan | Passing |
+| FR-009 | test_missing_file_not_double_reported_as_anchor_issue | Passing |
+| FR-010 | test_bare_anchor_resolves_against_same_file | Passing |
+| FR-011 | test_percent_encoded_targets_are_decoded | Passing |
+| FR-012 | test_unreadable_file_exits_with_status_2 | Passing |
+| FR-013 | test_anchor_ignored_for_non_markdown_targets | Passing |
+| SC-001 | test_reports_all_broken_links_no_false_positives | Passing |
+| SC-002 | test_no_network_access_during_scan | Passing |
+| SC-004 | test_reports_missing_heading_anchor | Passing |
 
 ## Assumptions
 
-- The "Get Started" button links to an existing documentation page or external URL; the specific destination will be determined during implementation based on available project resources
-- The workflow diagram can be implemented using pure CSS (e.g., flexbox/grid with CSS-drawn arrows) rather than an image file, keeping the page self-contained
-- The tagline content will be defined during implementation; a reasonable default such as "Specification-driven development for modern teams" may be used
-- The install command will be a standard package manager command (e.g., `npm install -g specflow` or similar); the exact command will be confirmed during implementation
-- No external font CDN or asset loading is required — system fonts or web-safe fonts are acceptable
-- The page is a standalone marketing/landing page and does not need to integrate with an existing site template
-
-## Open Questions
-
-| # | Question | Status | Notes |
-|---|----------|--------|-------|
-| OQ-001 | What is the final destination URL for the "Get Started" button? | Open | Placeholder anchor (`#`) or scroll-to-install used until a documentation URL is confirmed. Must be resolved before production deployment. |
-| OQ-002 | What is the exact install command to display in the snippet? | Open | Assumed `npm install -g specflow` but must be confirmed against actual package publish name and registry. |
-| OQ-003 | Should the workflow diagram use CSS-drawn arrows or a CSS-only step indicator (numbered circles with connecting lines)? | Resolved | Numbered steps joined by a horizontal rule, recorded as ADR-0001 in `decisions.md`. CSS-drawn arrows render differently across browsers and cost more CSS against the 64 KB budget. |
+- The tool is invoked from within a git repository (or a subdirectory of one) where `git ls-files` succeeds.
+- "Inline link" refers to standard Markdown inline link syntax `[text](target)`; reference-style links and HTML `<a href>` tags are out of scope for this feature.
+- Heading slugification follows GitHub's convention (lowercase, spaces to hyphens, punctuation stripped, duplicate slugs suffixed `-1`, `-2`, ...), per the resolution of Open Question Q1.
+- Relative link targets are resolved relative to the directory containing the linking file, not the repository root.
+- Only links pointing to other files tracked in the same repository need file-system resolution; the CLI does not need to distinguish between `.md` and non-`.md` relative targets for P1's missing-file check.
 
 ## Brainstorm Log
 
-### 2026-05-30 — Initial Brainstorm Session
+<!--
+  /speckit.specflow.brainstorm maintains this section and adds one entry per
+  session. Each entry carries a date and states what the session found and
+  decided. Do not edit it by hand.
+-->
 
-**Categories explored**: Boundary conditions, Error scenarios, Scale & performance, Security & privacy, User experience
+- **2026-09-27** — Headless brainstorm session covering all five categories (boundary, error, scale, security, UX). Resolved Q1 (GitHub-style slugification with duplicate-suffix handling) and added four new open questions (Q2–Q5), all resolved in this session: unreadable tracked file aborts with exit 2 (FR-012), bare anchors resolve against the source file itself (FR-010), anchor validation is skipped for non-Markdown targets (FR-013), and link targets are percent-decoded with query strings stripped before file-system resolution (FR-011). Corrected an internal contradiction in the Threat Model's Tampering row, which previously said paths resolve relative to the repository root while the Assumptions section said relative to the linking file's directory — the Assumptions wording is authoritative. Confirmed zero-tracked-Markdown-files and out-of-repo-root relative links both fall out of existing requirements without new FRs, and added acceptance scenario coverage for the zero-files case. Symlink handling and scan performance were reviewed and found already adequately covered by existing requirements and the Threat Model's Denial of Service row, respectively; both are now called out explicitly in Edge Cases. All five ADR-lite entries for the resolved choices were appended to `decisions.md`.
 
-**Key insights**:
+## Changelog
 
-1. **Print stylesheet needed** — The page should render cleanly when printed, with decorative elements hidden and content in a linear flow. Added FR-014.
-2. **Ultra-wide viewport handling** — Content must stay within a max-width container on ≥2560px displays. Already partially covered by FR-013 but now explicitly called out as an edge case.
-3. **"Get Started" link is unresolved** — The destination URL is unknown. Using a placeholder for now; tracked as OQ-001.
-4. **`file://` protocol support** — Page must work identically when opened locally. Added FR-015 after identifying that protocol-relative URLs would break this.
-5. **64 KB page weight budget risk** — CSS-heavy workflow diagrams could push the file size toward the constitutional limit. Added edge case with fallback strategy (simpler step indicator if arrows exceed budget).
-6. **Negligible security surface** — No forms, no JS, no external deps. Acknowledged in edge cases; no additional mitigations needed.
-7. **Accessibility beyond WCAG AA** — Added explicit edge cases and requirements (FR-016, FR-017, FR-018) for keyboard navigation, screen reader landmark structure, and forced-colors/high-contrast mode support.
+<!--
+  One row records each spec version, newest last. When the spec changes after
+  its first approval, add a row. Then delete `.clarified` and `.analyzed`.
+  Rerun /speckit.clarify and /speckit.analyze.
+-->
 
-**New requirements added**: FR-014, FR-015, FR-016, FR-017, FR-018
-**New edge cases added**: 5 (print, ultra-wide, file://, 64 KB budget, security surface, keyboard nav, screen reader, forced-colors)
-**Open questions raised**: OQ-001, OQ-002, OQ-003
+| Version | Date | Summary |
+|---------|------|---------|
+| 0.1.0 | 2026-09-27 | Initial draft. |
+| 0.2.0 | 2026-09-27 | Brainstorm session: resolved Q1–Q5, added FR-010–FR-013, expanded Edge Cases and acceptance scenarios, fixed Threat Model contradiction. |
