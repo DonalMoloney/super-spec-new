@@ -1,4 +1,7 @@
 import socket
+import sys
+
+import pytest
 
 from link_audit.cli import main
 
@@ -123,3 +126,63 @@ def test_output_is_deterministic_across_runs(make_repo, capsys):
     main([str(repo)])
     second = capsys.readouterr().out
     assert first == second
+
+
+def test_fenced_code_block_content_produces_no_findings(make_repo, capsys):
+    repo = make_repo(
+        files={
+            "index.md": (
+                "# Index\n"
+                "\n"
+                "```markdown\n"
+                "# Not A Real Heading\n"
+                "See [example](nonexistent-file.md) for a sample link.\n"
+                "```\n"
+            ),
+        }
+    )
+    code = main([str(repo)])
+    out = capsys.readouterr().out
+    assert code == 0
+    assert out == ""
+
+
+def test_root_relative_link_end_to_end(make_repo, capsys):
+    repo = make_repo(
+        files={
+            "docs/setup.md": "# Setup\n",
+            "nested/index.md": (
+                "# Index\n\n[good](/docs/setup.md)\n[bad](/docs/missing.md)\n"
+            ),
+        }
+    )
+    code = main([str(repo)])
+    out = capsys.readouterr().out
+    lines = [line for line in out.splitlines() if line]
+    assert code == 1
+    assert len(lines) == 1
+    assert "missing.md" in lines[0]
+    assert "setup.md" not in lines[0]
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX permission bits")
+def test_unreadable_anchor_target_exits_2_and_names_file(make_repo, capsys):
+    # guide.md is untracked so it is never scanned as a linking file itself
+    # (which would hit the already-handled OSError path in cli._scan);
+    # this isolates the anchor-target read path in resolver._check_anchor.
+    repo = make_repo(
+        files={"index.md": "# Index\n\n[ref](guide.md#setup)\n"},
+        untracked={"guide.md": "# Setup\n"},
+    )
+    target = repo / "guide.md"
+    target.chmod(0o000)
+    try:
+        code = main([str(repo)])
+        captured = capsys.readouterr()
+        out, err = captured.out, captured.err
+        assert code == 2
+        assert out == ""
+        assert "guide.md" in err
+        assert len(err.strip().splitlines()) == 1
+    finally:
+        target.chmod(0o644)

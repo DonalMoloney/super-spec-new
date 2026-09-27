@@ -1,6 +1,10 @@
+import sys
 from pathlib import Path
 
+import pytest
+
 from link_audit import resolver
+from link_audit.errors import LinkAuditError
 from link_audit.links import Link
 
 
@@ -76,3 +80,37 @@ def test_anchor_ignored_for_non_markdown_targets(tmp_path):
     assert resolved.file_exists is True
     assert resolved.anchor_checked is False
     assert resolved.anchor_resolved is None
+
+
+def test_root_relative_link_resolves_against_repository_root(tmp_path):
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "setup.md").write_text("# Setup\n")
+    link = Link(source_file=Path("nested/index.md"), line_number=1, text="g", target_raw="/docs/setup.md")
+    (tmp_path / "nested").mkdir()
+    parsed = resolver.classify_and_decode("/docs/setup.md")
+    resolved = resolver.resolve_file(link, parsed, tmp_path)
+    assert resolved.file_exists is True
+    assert resolved.resolved_path == tmp_path / "docs" / "setup.md"
+
+
+def test_root_relative_link_to_missing_file_is_reported(tmp_path):
+    (tmp_path / "nested").mkdir()
+    link = Link(source_file=Path("nested/index.md"), line_number=1, text="g", target_raw="/docs/missing.md")
+    parsed = resolver.classify_and_decode("/docs/missing.md")
+    resolved = resolver.resolve_file(link, parsed, tmp_path)
+    assert resolved.file_exists is False
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX permission bits")
+def test_unreadable_anchor_target_raises_link_audit_error(tmp_path):
+    target = tmp_path / "guide.md"
+    target.write_text("# Setup\n")
+    target.chmod(0o000)
+    try:
+        link = Link(source_file=Path("index.md"), line_number=1, text="g", target_raw="guide.md#setup")
+        parsed = resolver.classify_and_decode("guide.md#setup")
+        with pytest.raises(LinkAuditError) as excinfo:
+            resolver.resolve_file(link, parsed, tmp_path)
+        assert excinfo.value.file == target
+    finally:
+        target.chmod(0o644)

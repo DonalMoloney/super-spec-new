@@ -5,6 +5,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 from link_audit import anchors
+from link_audit.errors import LinkAuditError
 from link_audit.links import Link
 
 
@@ -54,8 +55,12 @@ def resolve_file(link: Link, parsed: ParsedTarget, root: Path) -> ResolvedTarget
             anchor_resolved=anchor_resolved,
         )
 
-    base_dir = (root / link.source_file).parent
-    candidate = base_dir / parsed.file_part
+    if parsed.file_part.startswith("/"):
+        # Root-relative target (FR-015): resolve against the repository root.
+        candidate = root / parsed.file_part.lstrip("/")
+    else:
+        base_dir = (root / link.source_file).parent
+        candidate = base_dir / parsed.file_part
     file_exists = candidate.exists()
 
     is_markdown = candidate.suffix == ".md"
@@ -77,6 +82,9 @@ def _check_anchor(
     # FR-013: anchor validation is skipped for non-Markdown targets.
     if anchor is None or not file_exists or not is_markdown:
         return False, None
-    source = target_file.read_text()
+    try:
+        source = target_file.read_text()
+    except (OSError, UnicodeDecodeError) as exc:
+        raise LinkAuditError(file=target_file, reason=str(exc)) from None
     slugs = {heading.slug for heading in anchors.slugify_headings(source)}
     return True, anchor in slugs

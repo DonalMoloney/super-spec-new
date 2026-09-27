@@ -6,6 +6,7 @@ from dataclasses import dataclass
 _HEADING_PATTERN = re.compile(r"^#{1,6}\s+(.*?)\s*#*\s*$")
 _STRIP_PATTERN = re.compile(r"[^\w\s-]")
 _WHITESPACE_PATTERN = re.compile(r"\s+")
+_FENCE_PATTERN = re.compile(r"^(?:```|~~~)")
 
 
 @dataclass(frozen=True)
@@ -26,7 +27,13 @@ def slugify_headings(source: str) -> list[HeadingAnchor]:
     """Extract every Markdown heading and slugify it, suffixing duplicates in order of appearance."""
     seen_counts: dict[str, int] = {}
     anchors: list[HeadingAnchor] = []
+    in_fence = False
     for line_number, line in enumerate(source.splitlines(), start=1):
+        if _FENCE_PATTERN.match(line.strip()):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
         match = _HEADING_PATTERN.match(line)
         if not match:
             continue

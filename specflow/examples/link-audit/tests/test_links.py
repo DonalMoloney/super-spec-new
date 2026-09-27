@@ -26,3 +26,18 @@ def test_extracts_inline_link_targets():
 
 def test_extract_links_returns_empty_list_for_no_links():
     assert extract_links(Path("readme.md"), "# Title\nNo links here.\n") == []
+
+
+def test_link_like_text_inside_fenced_code_block_is_not_extracted():
+    source = (
+        "# Title\n"
+        "\n"
+        "```markdown\n"
+        "See [example](nonexistent-file.md) for a sample link.\n"
+        "```\n"
+        "\n"
+        "See [real](guide.md) for more.\n"
+    )
+    links = extract_links(Path("readme.md"), source)
+    assert len(links) == 1
+    assert links[0].target_raw == "guide.md"

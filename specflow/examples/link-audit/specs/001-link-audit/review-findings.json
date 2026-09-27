@@ -1,43 +1,43 @@
 {
   "schema_version": "1.0",
   "reviewer": "speckit.specflow.review",
-  "verdict": "BLOCK",
+  "verdict": "CLEAN",
   "findings": [
     {
       "id": "R-001",
       "severity": "Critical",
       "category": "spec-compliance",
-      "location": "src/link_audit/anchors.py:29-37",
-      "evidence": "slugify_headings() scans every source line for an ATX heading with no fenced-code-block state tracking. Reproduced: source containing a fenced ```bash block with the comment line `# This is a bash comment, not a heading` produces HeadingAnchor(slug='this-is-a-bash-comment-not-a-heading') alongside the real headings. A phantom heading can absorb an anchor link that should be reported broken (false negative, violating SC-004's 'next run catches the renamed heading') or shift the duplicate-suffix count (-1, -2, ...) assigned to genuine headings below the code fence, causing a correct anchor link to be wrongly reported broken (false positive, violating SC-001's 'zero false positives'). No test in tests/test_anchors.py exercises a heading-like line inside a fenced code block.",
-      "fix": "Track fenced-code-block state (lines between ``` delimiters, including indented/tilde fences if in scope) in slugify_headings() and skip heading-pattern matching while inside a fence, mirroring how a real Markdown renderer would.",
-      "status": "open"
+      "location": "src/link_audit/anchors.py:30-36",
+      "evidence": "slugify_headings() now tracks fenced-code-block state via _FENCE_PATTERN and an in_fence toggle, skipping heading-pattern matching for any line between ``` or ~~~ delimiters. Verified against test_heading_like_line_inside_fenced_code_block_is_not_extracted (tests/test_anchors.py) and the end-to-end fixture test_fenced_code_block_content_produces_no_findings (tests/test_cli.py), both passing.",
+      "fix": "Fixed: fence-state tracking implemented in slugify_headings(), mirroring a real Markdown renderer's fenced-code-block exclusion.",
+      "status": "fixed"
     },
     {
       "id": "R-002",
       "severity": "Critical",
       "category": "spec-compliance",
-      "location": "src/link_audit/links.py:18-31",
-      "evidence": "extract_links() applies _LINK_PATTERN to every line with no fenced-code-block exclusion. Reproduced: a fenced ```markdown block containing `See [example](nonexistent-file.md) for a sample link.` (a common way to show link syntax in documentation) is extracted as Link(target_raw='nonexistent-file.md'), which the CLI then checks against the filesystem and reports as missing-file. This contradicts SC-001's 'zero false positives' guarantee for any repository that shows Markdown link syntax inside a code fence. No test in tests/test_links.py or tests/test_cli.py covers a link-like string inside a fenced code block.",
-      "fix": "Skip lines between fenced code block delimiters in extract_links(), consistent with the same exclusion needed in anchors.py (R-001).",
-      "status": "open"
+      "location": "src/link_audit/links.py:22-28",
+      "evidence": "extract_links() now applies the same fence-state tracking as anchors.py, skipping link-pattern matching for any line between ``` or ~~~ delimiters. Verified against test_link_like_text_inside_fenced_code_block_is_not_extracted (tests/test_links.py) and the shared end-to-end fixture test_fenced_code_block_content_produces_no_findings (tests/test_cli.py), both passing.",
+      "fix": "Fixed: fence-state tracking implemented in extract_links(), consistent with the anchors.py exclusion (R-001).",
+      "status": "fixed"
     },
     {
       "id": "R-003",
       "severity": "Critical",
       "category": "code-quality",
-      "location": "src/link_audit/resolver.py:80",
-      "evidence": "_check_anchor() calls target_file.read_text() with no exception handling. cli.py only wraps the *linking* file's read (cli.py:40-43) in try/except OSError; the *anchor target* file's read inside resolver.resolve_file() -> _check_anchor() is never wrapped. Reproduced: a tracked file.md#heading link whose target file exists but is unreadable (permission denied) crashes the CLI with an uncaught PermissionError and a raw Python traceback, rather than a controlled exit. This violates Constitution Principle II (CI-First Exit Codes: 'No other exit code may be used' — an uncaught exception's exit status is an implementation accident, not one of {0,1,2}) and Principle IV (Actionable Errors: a traceback does not name the fix).",
-      "fix": "Wrap the target_file.read_text() call in _check_anchor() (or its caller) in the same OSError/UnicodeDecodeError handling used for the linking file, raising LinkAuditError(file=target_file, reason=...) so cli.py's existing handler produces exit 2 with an actionable message.",
-      "status": "open"
+      "location": "src/link_audit/resolver.py:85-88",
+      "evidence": "_check_anchor() now wraps target_file.read_text() in try/except (OSError, UnicodeDecodeError), raising LinkAuditError(file=target_file, reason=str(exc)) instead of letting the raw exception propagate. Traced the call path: resolve_file() (called from cli._scan(), itself called inside cli.main()'s try block) lets this LinkAuditError bubble up uncaught to main()'s existing except LinkAuditError handler, which prints '{file}: {reason}' to stderr and returns exit 2 — the same contract used for the linking-file read. Verified against test_unreadable_anchor_target_raises_link_audit_error (tests/test_resolver.py) and test_unreadable_anchor_target_exits_2_and_names_file (tests/test_cli.py), both passing.",
+      "fix": "Fixed: the anchor-target read is now guarded identically to the linking-file read, routing through the existing exit-2 / actionable-error contract (Constitution Principles II and IV).",
+      "status": "fixed"
     },
     {
       "id": "R-004",
       "severity": "Important",
       "category": "spec-compliance",
-      "location": "src/link_audit/resolver.py:58",
-      "evidence": "resolve_file() computes `candidate = base_dir / parsed.file_part`. Reproduced: Path('/repo/docs') / '/guide/setup.md' evaluates to Path('/guide/setup.md') because pathlib's `/` operator discards the left operand when the right operand is absolute. A root-relative link such as `[x](/docs/setup.md)` — a common documentation convention — is silently resolved against the OS filesystem root instead of being flagged as unsupported or resolved against the repository root, so it will almost always be misreported as missing-file. spec.md's Assumptions section only states relative targets resolve against the linking file's directory; it never addresses a leading-slash target, and no edge case or acceptance scenario covers this input, so the current behavior is an unaddressed spec gap that manifests as a false positive (contradicting SC-001) for a realistic input.",
-      "fix": "Either document that a leading-slash target is out of scope and reject/skip it explicitly with a clear reason, or resolve it against the repository root, per an explicit spec decision Q6.",
-      "status": "open"
+      "location": "src/link_audit/resolver.py:58-63",
+      "evidence": "resolve_file() now explicitly branches on parsed.file_part.startswith('/'): a root-relative target joins against root.lstrip-adjusted path (root / parsed.file_part.lstrip('/')) instead of base_dir / parsed.file_part, which previously let pathlib's absolute-path-overrides-join semantics silently resolve against the OS filesystem root. The non-root-relative branch (base_dir / parsed.file_part) is unchanged, confirming no regression to FR-004's base_dir-relative resolution. Verified against test_root_relative_link_resolves_against_repository_root, test_root_relative_link_to_missing_file_is_reported (tests/test_resolver.py), and test_root_relative_link_end_to_end (tests/test_cli.py), all passing.",
+      "fix": "Fixed: root-relative targets now resolve against the repository root (FR-015), matching spec.md's Q7 resolution.",
+      "status": "fixed"
     }
   ]
 }

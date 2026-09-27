@@ -14,7 +14,10 @@ file's GitHub-slugified headings (P2), and the scan is scoped exclusively to
 the files `git ls-files` reports (P3). External-scheme links are skipped.
 The CLI prints every unresolved link and exits 0 (clean), 1 (unresolved
 links found), or 2 (scan could not complete), per the constitution's
-exit-code contract.
+exit-code contract. Content inside fenced code blocks is excluded from
+both heading and link extraction (FR-014), and a root-relative link
+target (e.g. `/docs/x.md`) resolves against the repository root rather
+than the linking file's directory or the OS filesystem root (FR-015).
 
 ## Technical Context
 
@@ -62,9 +65,9 @@ src/link_audit/
 ├── __init__.py
 ├── cli.py            # argparse surface; orchestrates discovery → parsing → resolution → report; owns exit codes
 ├── discovery.py       # runs `git ls-files`, filters to *.md, surfaces exit-2 errors for git failures
-├── links.py           # extracts inline [text](target) links from Markdown source, with source line numbers
-├── anchors.py          # extracts headings from Markdown source and slugifies them (GitHub convention, FR-005)
-├── resolver.py         # percent-decodes + strips query strings (FR-011), classifies scheme (FR-003), resolves file/anchor targets, applies FR-009/FR-010/FR-013
+├── links.py           # extracts inline [text](target) links from Markdown source, with source line numbers; excludes fenced code block content (FR-014)
+├── anchors.py          # extracts headings from Markdown source and slugifies them (GitHub convention, FR-005); excludes fenced code block content (FR-014)
+├── resolver.py         # percent-decodes + strips query strings (FR-011), classifies scheme (FR-003), resolves file/anchor targets — a leading-slash target resolves against the repository root (FR-015) — applies FR-009/FR-010/FR-013
 └── report.py           # Finding record (source, target, reason) and stdout rendering (FR-006)
 
 tests/
@@ -91,6 +94,8 @@ mocking.
 - [ ] `anchors.py`: GitHub slugification (lowercase, hyphenation, char-stripping, duplicate-suffix `-1`/`-2`) is a precise, easy-to-get-subtly-wrong algorithm (FR-005) that needs a pinning test per rule.
 - [ ] `resolver.py`: the FR-009/FR-010/FR-013 precedence rules (missing-file vs. missing-anchor, bare anchors, non-Markdown targets) are the highest-risk logic for silent false negatives and need one test per rule.
 - [ ] `discovery.py`: the exit-2 paths (git failure, unreadable tracked file) are safety-critical per Principle II and need explicit failure-path tests, not just the happy path.
+- [ ] `links.py`/`anchors.py`: fenced-code-block exclusion (FR-014) is a state machine that is easy to get wrong at fence boundaries and needs a pinning test.
+- [ ] `resolver.py`: root-relative link resolution (FR-015) needs a pinning test to prevent `pathlib`'s absolute-path-overrides-join behavior from silently resolving a leading-slash target against the OS filesystem root instead of the repository root.
 
 ### Independent Work Streams
 
