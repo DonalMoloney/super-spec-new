@@ -421,3 +421,19 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Consequences: two hook directories now exist, one per target surface. A
   future gate script needs an adapter call added to both
   `.claude/settings.json` and `hooks.json`.
+
+## ADR-0032: A headless e2e stage runs on a shell allowlist and answers itself
+
+- Date: 2026-09-27
+- Status: accepted
+- Context: the G-19 live run found three gaps in `e2e-agent-claude.sh`.
+  `acceptEdits` approves no shell command, so `/speckit.plan` waited on
+  `setup-plan.sh`. Brainstorm and execute wait for a user `claude -p` lacks.
+  An unpinned run put two stages on Haiku, which read core's spec template and
+  dropped this fork's sections. Outside CI a `claude` login replaces
+  `ANTHROPIC_API_KEY`.
+- Decision: `invoke_agent` passes an `--allowedTools` list, not
+  `bypassPermissions`, so a stage cannot run a command outside it. The stage 3
+  and stage 6 prompts state that no user answers. `E2E_MODEL` pins the model.
+- Consequences: a stage that needs a new command stops on approval until the
+  list grows. The command contracts stay interactive.
