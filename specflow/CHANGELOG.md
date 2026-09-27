@@ -20,11 +20,12 @@ A release that carries more than one of these takes the highest part.
 
 ### Added
 
-- Spec-kit's `events:` block now wires the merge gate (`merge-gate.sh`), test gate
-  (`test-gate.sh`), artifact lint gate (`artifact-lint.sh`), and session-start gate
-  (`session-start.sh`) into Claude Code and Copilot CLI hooks. A new `/speckit.specflow.agent-event`
-  command dispatches hook payloads to the matching gate script. On install, `specify extension add specflow`
-  registers the gates on `pre_tool_use`, `post_tool_use`, and `session_start` events.
+- A `/speckit.specflow.agent-event` command dispatches hook payloads to gate
+  scripts: `block-main-commit.sh` on `pre_tool_use`, `test-gate.sh` and
+  `artifact-lint.sh` on `post_tool_use`, and `session-start.sh` on
+  `session_start`. On install, `specify extension add specflow` registers these
+  gates in the agent's native hook system on both Claude Code and the Copilot
+  CLI.
 
 ## [1.1.0] - 2026-09-20
 
