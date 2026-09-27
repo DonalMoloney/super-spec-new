@@ -396,7 +396,8 @@ deleting them; prune anything older than a quarter that no longer guides work.
 
 - Date: 2026-09-25
 - Status: accepted; the "four scripts stay under `.claude/hooks/`, unmoved and
-  unduplicated" clause is superseded by ADR-0032
+  unduplicated" clause is superseded by ADR-0032; the adapter's translation
+  and its per-gate `hooks.json` entries are superseded by ADR-0035
 - Context: G-26's `events:` route stays blocked (ADR-0022). G-54 takes a
   second route: Copilot's own hook loader, confirmed at
   `docs.github.com/en/copilot/reference/hooks-reference` to read
@@ -481,3 +482,20 @@ deleting them; prune anything older than a quarter that no longer guides work.
   CLI, replacing ADR-0001's hand copy. A project that copied `.claude/hooks/`
   runs each gate twice. The Copilot hook file spec-kit writes is a third route
   beside ADR-0031's.
+
+## ADR-0035: The Copilot adapter runs `agent-event.sh` instead of translating
+
+- Date: 2026-09-27
+- Status: accepted, supersedes ADR-0031's translation clause
+- Context: `adapter.sh` read `toolArgs` as an object. Copilot 1.0.54 sends a
+  JSON string, so `jq` exited 5 and a commit on main went through. The
+  adapter also passed a read's `path` to the post gates.
+- Decision: `adapter.sh <event>` shapes the payload so `agent-event.sh`
+  classifies it as that event, pipes it there, and prints the JSON compacted.
+  A block exits 0, per the hooks reference. `sessionStart` output is wrapped
+  in `additionalContext`, which the `events:` dispatcher does on its own
+  route. `hooks.json` holds one `postToolUse` entry at 125 s, the `events:`
+  route's post timeout, because `agent-event.sh` runs both post gates.
+- Consequences: a handler error now exits nonzero instead of passing. A new
+  gate needs no `hooks.json` change. Whether Copilot reads a deny on exit 2
+  is open.

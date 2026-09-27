@@ -35,4 +35,10 @@ delete it, or promote it to an ADR in `decisions.md`.
   Decide whether to drop them once a real `specify` CLI run can confirm
   whether the parser rejects, ignores, or errors on unknown top-level keys.
 
-- **Should `.github/hooks/adapter.sh` (G-54) call `agent-event.sh` instead of translating its own?** The adapter reads `.toolArgs.command` and `.toolArgs.path` as object fields. Copilot 1.0.54 passes `toolArgs` as a JSON string, so the adapter's `jq` call fails on a string. It also maps `toolArgs.path` for reads, which the write-argument rule in `agent-event.sh` avoids. Consider having the adapter shell out to `agent-event.sh` instead of translating on its own, since that script already handles toolArgs as string-or-object and applies the write-argument filter.
+- **Does the Copilot CLI read a `permissionDecision` deny from stdout when the
+  hook exits 2?** `docs/agent-event-mapping.md`'s Exit code contract says it
+  does, and `agent-event.sh` exits 2 with the deny JSON on the `events:`
+  route. `.github/hooks/adapter.sh` exits 0 with the same JSON instead, per
+  the hooks reference (ADR-0035). If Copilot ignores stdout on a nonzero exit,
+  the `events:` route never denies on Copilot. Confirm against a live Copilot
+  run, then align one route with the other.
