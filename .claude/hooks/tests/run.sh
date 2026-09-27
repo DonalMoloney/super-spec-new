@@ -430,6 +430,10 @@ check "adapter allows a non-commit command"               0 "$(run_adapter_exit 
 check "adapter prints nothing on allow" 0 "$(status_of [ -z "$(run_adapter preToolUse "$PAYLOAD_ALLOW")" ])"
 
 check "adapter exits 1 when stdin is not a JSON object" 1 "$(run_adapter_exit preToolUse 'not json')"
+check_has "adapter denies a bash call whose toolArgs is not valid JSON" \
+  "$(run_adapter preToolUse '{"toolName":"bash","toolArgs":"not json"}')" '"permissionDecision":"deny"'
+check_has "adapter denies a bash call with no toolArgs" \
+  "$(run_adapter preToolUse '{"toolName":"bash"}')" '"permissionDecision":"deny"'
 check "preToolUse denies a commit even when the payload carries toolResult" 0 \
   "$(status_of test -n "$(run_adapter preToolUse '{"toolName":"bash","toolArgs":{"command":"git commit -m x"},"toolResult":{}}')")"
 check_lacks "postToolUse never answers with permissionDecision" \
@@ -545,8 +549,18 @@ check_out "the string-toolArgs deny JSON's permissionDecision is deny" "deny" "$
 check "a non-shell Copilot tool call with a path is allowed"      0 "$(ae_exit '{"toolName":"view","toolArgs":{"path":"README.md"}}')"
 check "the allowed view call leaves stdout empty" 0 "$(status_of [ -z "$(ae_out '{"toolName":"view","toolArgs":{"path":"README.md"}}')" ])"
 check "a non-shell Copilot tool call with no toolArgs is allowed" 0 "$(ae_exit '{"toolName":"view"}')"
-check "Copilot preToolUse with toolArgs as invalid JSON is allowed" 0 "$(ae_exit '{"toolName":"bash","toolArgs":"not json"}')"
-check "invalid-toolArgs allow leaves stdout empty" 0 "$(status_of [ -z "$(ae_out '{"toolName":"bash","toolArgs":"not json"}')" ])"
+check "Copilot preToolUse denies toolArgs that is not valid JSON" 2 "$(ae_exit '{"toolName":"bash","toolArgs":"not json"}')"
+check_out "the invalid-toolArgs deny JSON's permissionDecision is deny" "deny" "$(json_field "$(ae_out '{"toolName":"bash","toolArgs":"not json"}')" permissionDecision)"
+check_has "the invalid-toolArgs deny names toolArgs on stderr" "$(ae_err '{"toolName":"bash","toolArgs":"not json"}')" "BLOCKED: toolArgs"
+check "Copilot preToolUse denies an empty toolArgs string" 2 "$(ae_exit '{"toolName":"bash","toolArgs":""}')"
+check "Copilot preToolUse denies toolArgs that parses to a non-object" 2 "$(ae_exit '{"toolName":"bash","toolArgs":"[\"git commit -m x\"]"}')"
+check "Copilot preToolUse denies a bash call with no toolArgs" 2 "$(ae_exit '{"toolName":"bash"}')"
+check "Copilot preToolUse denies a bash call with null toolArgs" 2 "$(ae_exit '{"toolName":"bash","toolArgs":null}')"
+check "Copilot preToolUse denies a powershell call with no toolArgs" 2 "$(ae_exit '{"toolName":"powershell"}')"
+check "Copilot preToolUse denies a call naming no tool with no toolArgs" 2 "$(ae_exit '{"toolName":""}')"
+check "Copilot preToolUse denies a non-shell tool call whose toolArgs is not valid JSON" 2 "$(ae_exit '{"toolName":"view","toolArgs":"not json"}')"
+check "a non-shell Copilot tool call with null toolArgs is allowed" 0 "$(ae_exit '{"toolName":"view","toolArgs":null}')"
+check "a bash call whose toolArgs object carries no command is allowed" 0 "$(ae_exit '{"toolName":"bash","toolArgs":{}}')"
 
 mkdir -p "$r/gates/bash" "$r/specflow/gates/bash"
 printf '#!/usr/bin/env bash\nexit 0\n' > "$r/gates/bash/block-main-commit.sh"

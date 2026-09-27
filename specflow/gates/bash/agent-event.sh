@@ -54,6 +54,21 @@ NORMALIZE_PAYLOAD='
         | with_entries(select(.value != null)))}
   end'
 
+# A Copilot pre_tool_use whose `toolArgs` is present but resolves to no object,
+# or is absent on a shell tool, carries a command no gate can read. An empty
+# `tool_input` would read as "no command", so the call is denied instead
+# (ADR-0036). `bash` is the only shell name docs/agent-event-mapping.md records;
+# `powershell` is Copilot's Windows shell, and an empty `toolName` names nothing.
+# shellcheck disable=SC2016
+UNREADABLE_TOOL_ARGS='
+  (has("hook_event_name") | not) and (
+    if .toolArgs != null then
+      (.toolArgs | if type == "string" then (try fromjson catch null) else . end | type) != "object"
+    else
+      (.toolName | type != "string" or . == "" or (ascii_downcase | IN("bash", "powershell")))
+    end)'
+UNREADABLE_TOOL_ARGS_REASON="BLOCKED: toolArgs is missing or does not parse as a JSON object, so block-main-commit.sh cannot read the command. Expected toolArgs as an object or a JSON string holding one; check the payload the agent sends."
+
 print_stderr() { # text -> the text on stderr, newline-terminated, nothing when empty
   [ -z "$1" ] || printf '%s\n' "$1" >&2
 }
@@ -65,12 +80,16 @@ run_gate() { # gate-file-name payload
   gate_stderr="$(printf '%s' "$2" | bash "$GATES_DIR/$1" 2>&1 >/dev/null)" || gate_status=$?
 }
 
+deny_tool_use() { # reason
+  print_stderr "$1"
+  jq -n --arg reason "$1" '{permissionDecision: "deny", permissionDecisionReason: $reason}'
+  exit "$BLOCK_EXIT"
+}
+
 run_pre_tool_use() { # payload
   run_gate "$PRE_TOOL_USE_GATE" "$1"
+  [ "$gate_status" -ne "$BLOCK_EXIT" ] || deny_tool_use "$gate_stderr"
   print_stderr "$gate_stderr"
-  if [ "$gate_status" -eq "$BLOCK_EXIT" ]; then
-    jq -n --arg reason "$gate_stderr" '{permissionDecision: "deny", permissionDecisionReason: $reason}'
-  fi
   exit "$gate_status"
 }
 
@@ -109,7 +128,13 @@ event="$(printf '%s' "$payload" | jq -r "$CLASSIFY_EVENT")"
 gate_payload="$(printf '%s' "$payload" | jq -c "$NORMALIZE_PAYLOAD")"
 
 case "$event" in
-  pre_tool_use) run_pre_tool_use "$gate_payload" ;;
+  pre_tool_use)
+    # A jq error prints nothing, so it denies too.
+    if [ "$(printf '%s' "$payload" | jq -r "$UNREADABLE_TOOL_ARGS" 2>/dev/null || true)" != "false" ]; then
+      deny_tool_use "$UNREADABLE_TOOL_ARGS_REASON"
+    fi
+    run_pre_tool_use "$gate_payload"
+    ;;
   post_tool_use) run_post_tool_use "$gate_payload" ;;
   session_start) run_session_start "$gate_payload" ;;
 esac
