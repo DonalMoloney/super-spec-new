@@ -115,6 +115,7 @@ and silently drops the others.
 | `/speckit.specflow.execute` | Run the implementation through TDD and subagents |
 | `/speckit.specflow.review` | Review the code against the spec's requirements |
 | `/speckit.specflow.gate` | Write a feature's clarify or analyze marker once its gate passes |
+| `/speckit.specflow.agent-event` | Run by spec-kit's `events:` block on hook payloads; not typed by a person |
 | `/speckit.checklist` | Build a checklist for the given context |
 
 ## Six hooks fire on spec-kit's own commands

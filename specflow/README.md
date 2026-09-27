@@ -1,7 +1,7 @@
 # Specflow for spec-kit
 
 Specflow is a [spec-kit](https://github.com/github/spec-kit) extension. It adds
-six commands to the spec-kit workflow. Each command follows the matching
+seven commands to the spec-kit workflow. Each command follows the matching
 [obra/superpowers](https://github.com/obra/superpowers) skill if that skill is
 installed, and a built-in protocol if it is not. Spec-kit keeps the documents:
 constitution, spec, plan, tasks, checklist. Specflow questions the spec for
@@ -82,7 +82,7 @@ specify extension list
 The output carries this line:
 
 ```
-Commands: 6 | Hooks: 6
+Commands: 7 | Hooks: 6
 ```
 
 Then run the status command inside the agent. On a fresh project it reports a

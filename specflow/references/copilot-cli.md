@@ -1,6 +1,6 @@
 # Copilot CLI Reference
 
-Specflow runs on Claude Code and on the GitHub Copilot CLI. The six commands
+Specflow runs on Claude Code and on the GitHub Copilot CLI. The seven commands
 and six hooks are prompt contracts, so both agents read the same files. The
 Copilot CLI lacks four things Claude Code has, and each command names what it
 does instead.
@@ -28,8 +28,9 @@ forward slash.
 | `/speckit.specflow.tasks` | `/speckit-specflow-tasks` |
 | `/speckit.specflow.execute` | `/speckit-specflow-execute` |
 | `/speckit.specflow.review` | `/speckit-specflow-review` |
+| `/speckit.specflow.agent-event` | Runs from spec-kit's `events:` block on hook payloads, never typed by a person |
 
-The right column repeats the skill directory name spec-kit creates at install.
+The right column repeats the skill directory name spec-kit creates at install (except agent-event, which the dispatcher calls directly on hook events).
 
 ## Fallback per command
 
@@ -41,6 +42,7 @@ The right column repeats the skill directory name spec-kit creates at install.
 | `/speckit.specflow.execute` | `[P]` and `[SUBAGENT]` tasks run one at a time in order. `[TDD]` tasks follow the inline write-test, fail, implement, pass loop. Before ticking a task, the agent runs the constitution's test command itself, which `test-gate.sh` does on Claude Code. Claude Code runs `subagent-driven-development` for execute; the Copilot CLI has no subagents, so it runs `executing-plans` instead. |
 | `/speckit.specflow.review` | The built-in five-dimension protocol runs once in the session. The risk tier comes from `gates/bash/risk-classifier.sh`, which the install carries. |
 | `/speckit.specflow.gate` | No change. The command runs `gates/bash/write-marker.sh` and prints what it wrote or why it refused. |
+| `/speckit.specflow.agent-event` | Runs on spec-kit hook payloads; no person-facing fallback. |
 
 ## Gate scripts
 

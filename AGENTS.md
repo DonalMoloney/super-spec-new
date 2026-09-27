@@ -56,14 +56,14 @@ there, so a workflow under `specflow/` never runs.
 - `README.md`: the repository's human-facing entry point. States what specflow
   is, the install command, and links out to `specflow/README.md` for full
   usage; distinct from the agent-facing trio named above.
-- `specflow/extension.yml`: the manifest, which declares the 6 commands, 5 templates,
-  9 scripts, and 6 hooks (`after_clarify`, `after_analyze`, `after_tasks`,
+- `specflow/extension.yml`: the manifest, which declares the 7 commands, 5 templates,
+  10 scripts, and 6 hooks (`after_clarify`, `after_analyze`, `after_tasks`,
   `before_tasks`, `before_implement`, `after_implement`) spec-kit's catalog reads.
 - `specflow/commands/*.md`: one file per `/speckit.specflow.*` command (`status`,
-  `brainstorm`, `tasks`, `execute`, `review`, `gate`). Each is a behavior contract of
+  `brainstorm`, `tasks`, `execute`, `review`, `gate`, `agent-event`). Each is a behavior contract of
   Input, Output, and numbered Process steps, not code.
 - `specflow/commands/hooks/*.md`: the 6 hook prompts.
-- `specflow/gates/`: the 9 scripts `provides.scripts` declares, under `bash/` and
+- `specflow/gates/`: the 10 scripts `provides.scripts` declares, under `bash/` and
   `python/`. No `export-ignore` rule strips this directory, so a catalog install
   carries them and the Copilot CLI can run them (ADR-0025, ADR-0032). A two-line script
   under `.claude/hooks/` execs each shipped bash gate, so `.claude/settings.json`
