@@ -1,6 +1,6 @@
 # Agent event mapping
 
-Spec-kit's `events:` block wires the four gate scripts into Claude Code and Copilot CLI hooks. This page documents the payload format each surface sends and how the dispatcher reaches the gates.
+Read this before changing how a gate script runs from spec-kit's `events:` block. Each surface sends a different payload, and one handler, `agent-event.sh`, reaches every gate from both.
 
 Measured against spec-kit 1.0.9.dev0 at `d4229c0`, `@github/copilot` 1.0.54, and ADR-0032.
 
@@ -30,9 +30,9 @@ A missing command file, a missing `scripts:` block, or a missing script all retu
 
 | Event | Claude Code | Copilot CLI | Handler script | What it does |
 |---|---|---|---|---|
-| `pre_tool_use` | `PreToolUse`, matcher `Bash`, timeout 30 s | `preToolUse`, no matcher, timeout 35 s | `agent-event.sh` → `block-main-commit.sh` | Block a commit that would land on main or master |
-| `post_tool_use` | `PostToolUse`, matcher `Edit\|Write`, timeout 120 s | `postToolUse`, no matcher, timeout 125 s | `agent-event.sh` → `test-gate.sh`, then `artifact-lint.sh` | Run the test command and check the edited artifact against its template |
-| `session_start` | `SessionStart`, timeout 15 s | `sessionStart`, timeout 20 s | `agent-event.sh` → `session-start.sh` | Print open questions and progress at session start |
+| `pre_tool_use` | `PreToolUse`, matcher `Bash`, timeout 35 s | `preToolUse`, no matcher, timeout 35 s | `agent-event.sh` → `block-main-commit.sh` | Block a commit that would land on main or master |
+| `post_tool_use` | `PostToolUse`, matcher `Edit\|Write`, timeout 125 s | `postToolUse`, no matcher, timeout 125 s | `agent-event.sh` → `test-gate.sh`, then `artifact-lint.sh` | Run the test command and check the edited artifact against its template |
+| `session_start` | `SessionStart`, timeout 20 s | `sessionStart`, timeout 20 s | `agent-event.sh` → `session-start.sh` | Print open questions and progress at session start |
 
 ## Payload format
 
@@ -87,16 +87,20 @@ Or, on `postToolUse`:
 
 Copilot's `toolArgs` arrives as either an object or a JSON string. The `agent-event.sh` handler parses both.
 
-## Field mapping to Claude format
+## Normalization
 
-`agent-event.sh` normalizes Copilot payloads to Claude's shape:
+Claude Code payloads pass unchanged. For a Copilot payload, `agent-event.sh`
+normalizes to `{tool_input: {command?, file_path?}}`:
 
-- `.hook_event_name` is derived from the presence of `toolResult` (post), `toolName` (pre), or neither (session start).
-- `.tool_name` is copied from `.toolName`.
-- `.tool_input.command` is copied from `.toolArgs.command` when present.
-- `.tool_input.file_path` is copied from `.toolArgs.path` only when `toolArgs` also carries `file_text`, `old_str`, or `new_str` (write operations). A read operation (path with no write fields) has no file_path.
+- `.tool_input.command` receives `.toolArgs.command` when present.
+- `.tool_input.file_path` receives `.toolArgs.path` only when `toolArgs` also
+  carries `file_text`, `old_str`, or `new_str` (the write-shaped arguments of
+  Copilot's edit and create tools). A read operation, which carries a path but
+  no write fields, has no file_path.
 
-This field-presence filter (checking for write arguments) prevents post-event handlers from running on reads, where `matcher` is absent on Copilot and would otherwise match Edit or Write tool calls to file reads.
+This write-argument filter prevents a post_tool_use gate from running on reads,
+where Copilot's lack of a matcher would otherwise trigger it on a read of
+tasks.md.
 
 ## Exit code contract
 
@@ -123,8 +127,13 @@ Post block:
 
 ## Timeout rules
 
-- `timeoutSec` in Copilot's hook config is the declared timeout plus a five-second buffer.
-- On timeout, spec-kit's dispatcher returns exit 2. Claude Code reports a blocking "timed out" message. Copilot passes silently.
+Spec-kit declares `timeout: 30` (pre_tool_use), `timeout: 120` (post_tool_use),
+and `timeout: 15` (session_start) in the `events:` block. On both Claude Code
+and Copilot CLI, the dispatcher adds a five-second buffer to each declared
+timeout and writes the total to the agent's native config. The dispatcher kills
+the script at the declared timeout, not the buffered value. On timeout, the
+dispatcher returns exit 2; Claude Code reports a blocking "timed out" message,
+and Copilot passes silently.
 - A project raises the ceiling in `.specify/integration-events.yml`.
 
 ## Superpowers and fallback
