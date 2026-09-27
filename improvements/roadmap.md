@@ -179,7 +179,7 @@ Verify: `grep -c '^events:' specflow/extension.yml` prints 1 and both validators
 
 The Copilot leg of `e2e-smoke.sh` asserts that `.github/hooks/speckit.json` exists after install and names the three events registered on `agent-event`.
 
-Verify: `bash specflow/scripts/e2e-smoke.sh` exits 0.
+Verify: the Copilot leg of `e2e-smoke.sh` finds the hook file the install wrote and names the events in it.
 
 ## G-43 — SKILL.md documents a progress file the validator rejects (merged: direct)
 
@@ -1044,11 +1044,6 @@ ambiguity, and the spec phase is where upstream is thinnest. Verify:
 `score-artifacts.py` scores the new golden and `score-artifacts.yml` replays it.
 Effort: medium. Depends on: G-19.
 
-**35. Assert the Claude leg's hooks in e2e-smoke.sh.** The smoke test asserts
-`.github/hooks/speckit.json` on the Copilot leg. The Claude leg should assert
-`.claude/settings.json` names the three event types from the extension. Verify:
-the Claude leg assertions pass on a fresh install. Effort: low. Depends on: G-26.
-
 **36. Upstream the resync-safe moves.** Open pull requests against
 WangX0111/superspec for the Tighten moves tagged "breaks resync: rarely": the
 after-tasks progress read (D-01), the status marker column (D-07), the
@@ -1056,6 +1051,11 @@ compound-task rule (D-06), and the Copilot fallback rows (D-03). Every accepted
 move shrinks the diff the drift check in G-23 reports, and the fork's value is
 the `.claude/` toolkit, not five prompt files. Verify: the PR links are recorded
 beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
+
+**37. Assert the Claude leg's hooks in e2e-smoke.sh.** The smoke test asserts
+the Copilot hook file on the Copilot leg. The Claude leg should assert
+`.claude/settings.json` names the three event types from the extension. Verify:
+the Claude leg assertions pass on a fresh install. Effort: low. Depends on: G-26.
 
 ## Deferred
 
