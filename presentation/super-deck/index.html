@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An interactive Specflow presentation: follow a feature from constitution to review.">
+  <title>Specflow | From intent to evidence</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="deck.css">
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js","gsap":"https://cdn.jsdelivr.net/npm/gsap@3.15.0/index.js"}}
+  </script>
+</head>
+<body>
+  <header><a href="#/intent" class="wordmark">specflow<span> / super-deck</span></a><span class="edition">A feature, made inspectable · 27 September 2026</span></header>
+  <main>
+    <div class="copy" aria-live="polite">
+      <p class="eyebrow" id="chapter">01 / The whole workflow</p>
+      <h1 id="title">From intent<br>to evidence.</h1>
+      <p class="description" id="description">A specification becomes code through explicit, reviewable steps.</p>
+      <p class="detail" id="detail">Spec-kit governance. Optional superpowers skills. Specflow checks.</p>
+      <div id="gate-controls" hidden>
+        <label><input id="analyzed" type="checkbox"> Record a passing analysis</label>
+        <button id="attempt" type="button">Try execution <span aria-hidden="true">→</span></button>
+        <p id="gate-result" role="status">Illustrative gate: the constitution is already present.</p>
+      </div>
+      <a class="action" id="action" href="../../specflow/README.md" hidden>Read the installation guide <span aria-hidden="true">↗</span></a>
+      <p class="byline" id="byline">Donal Moloney · Specflow</p>
+    </div>
+    <figure id="world" aria-label="A persistent three-dimensional diagram of the Specflow workflow">
+      <canvas id="scene" aria-hidden="true"></canvas>
+      <div id="labels" aria-label="Inspect workflow artifacts"></div>
+      <div id="fallback" hidden>Constitution → Spec → Plan → Tasks → Execute → Review</div>
+      <figcaption><span id="scene-caption">One feature. A visible chain of evidence.</span><span>SELECT A STAGE TO INSPECT</span></figcaption>
+    </figure>
+    <aside id="inspection" hidden aria-live="polite"><button id="close-inspection" aria-label="Close artifact details">×</button><h2 id="artifact-title"></h2><p id="artifact-description"></p><code id="artifact-path"></code></aside>
+  </main>
+  <footer>
+    <span class="counter" id="counter">01 / 09</span>
+    <nav id="chapters" aria-label="Presentation chapters"></nav>
+    <div class="navigation"><button id="notes-toggle" aria-expanded="false" aria-controls="notes">Notes</button><button id="previous" aria-label="Previous slide">←</button><button id="next" aria-label="Next slide">→</button></div>
+  </footer>
+  <aside id="notes" hidden><h2>Presenter notes</h2><p id="note-copy"></p><a id="source-link">Read source</a></aside>
+  <p id="render-status" role="status" hidden></p>
+  <noscript><p class="no-script">Enable JavaScript for navigation, or read <a href="../marp-deck/deck.md">the Marp deck</a>.</p></noscript>
+  <script type="module" src="deck.js"></script>
+</body>
+</html>

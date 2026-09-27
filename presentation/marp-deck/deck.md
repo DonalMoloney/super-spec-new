@@ -22,7 +22,7 @@ Spec-kit governance with superpowers execution skills and adversarial review.
 
 Donal Moloney
 
-20 September 2026
+27 September 2026
 
 <!--
 Specflow connects the artifacts that define a change to the skills that implement it. Spec-kit owns governance; superpowers supplies optional execution skills. Specflow adds commands, saved state, and checks between those responsibilities.
@@ -63,7 +63,7 @@ Read the diagram as a division of responsibility. Spec-kit produces the constitu
 
 Delegation to superpowers is optional. Feature progress lives in progress.yml, and skill detection lives in .specify/superpowers.yml. A resumed command reads this state before continuing. The workflow does not depend on remembering the previous conversation.
 
-Sources: AGENTS.md, Architecture and Gotchas; specflow/extension.yml; specflow/references/workflow-guide.md.
+Sources: AGENTS.md, Architecture; specflow/extension.yml; specflow/references/workflow-guide.md.
 -->
 
 ---
@@ -84,18 +84,20 @@ Sources: improvements/roadmap.md; specflow/commands/execute.md; .claude/hooks/me
 
 ---
 
-## Five commands connect the workflow
+## Six commands connect the workflow
 
 ![w:1080](commands.svg)
 
 Each command can use a built-in fallback.
 
 <!--
-All five names share the /speckit.specflow. prefix. Status reports readiness and can run again between steps. Brainstorm develops the design; tasks decomposes the plan; execute drives implementation; review checks the result.
+All six names share the /speckit.specflow. prefix on Claude Code. Copilot CLI uses hyphenated skill names, such as /speckit-specflow-status. Status reports readiness; brainstorm develops the design; tasks decomposes the plan; gate checks readiness before execute drives implementation; review checks the result.
+
+Gate sits between tasks and execute because execute enforces it: execute stops with ANALYZE_REQUIRED when the .analyzed marker gate writes is missing. The .clarified marker gate can also write is a separate, earlier, non-blocking check that overlaps the brainstorm-to-tasks step instead.
 
 This diagram orders Specflow entry points, not every required step. Spec-kit commands create the constitution and spec, clarify requirements, write the plan, analyze artifacts, and check readiness between these points. Missing skills never remove the built-in workflow. Saved YAML state lets interrupted work continue.
 
-Sources: specflow/extension.yml, commands; AGENTS.md, Gotchas; specflow/commands/status.md. The manifest declares five commands.
+Sources: specflow/extension.yml; specflow/commands/status.md; specflow/commands/gate.md; specflow/commands/execute.md; specflow/README.md. The manifest declares six commands, six workflow hooks, five templates, and nine scripts.
 -->
 
 ---
@@ -111,7 +113,7 @@ The constitution must exist before any Specflow command runs. It gives later rev
 
 Spec-kit owns these artifacts. They record the rules, desired behavior, implementation choices, remaining work, and readiness evidence. Feature artifacts live under specs/NNN-*/ at the consuming project root. The constitution lives at .specify/memory/constitution.md.
 
-Sources: AGENTS.md, Architecture and Gotchas; specflow/commands/execute.md; specflow/templates/tasks-template.md.
+Sources: AGENTS.md, Architecture; specflow/commands/execute.md; specflow/templates/tasks-template.md.
 -->
 
 ---
@@ -127,7 +129,7 @@ Test-driven development, or TDD, starts with a failing behavior check. Implement
 
 Specflow maps commands to the relevant superpowers skills. Detection chooses the protocol; governance sets the prerequisites. The workflow guide supplies the fallback when a skill is absent. Optional skills must never become an installation gate.
 
-Sources: specflow/references/superpowers-mapping.md; specflow/references/workflow-guide.md; AGENTS.md, Gotchas.
+Sources: specflow/references/superpowers-mapping.md; specflow/references/workflow-guide.md; AGENTS.md, Architecture.
 -->
 
 ---
@@ -148,18 +150,18 @@ Sources: specflow/commands/execute.md; .claude/hooks/artifact-lint.sh; .claude/h
 
 ---
 
-## The first 18 roadmap groups have merged
+## Shipped gates still need runtime wiring
 
 ![w:1080](roadmap.svg)
 
-The first roadmap wave is merged. Adoption still needs configuration.
+Both CLIs have hook settings; automatic registration remains open.
 
 <!--
-The count covers the first roadmap wave, G-01 through G-18, merged between PR #8 and PR #53. The current roadmap records the completed first wave before listing open work. The diagram groups adjacent group numbers for readability; it does not claim dated merge order.
+The first roadmap wave, G-01 through G-18, merged between PR #8 and PR #53. Later changes added the gate command, shipped scripts, and native Copilot hook settings. The manifest now declares nine scripts, including the Python findings and progress validators.
 
-Gate hooks belong to G-01 and G-06; review agents to G-05; the continuous integration (CI) merge gate to G-09; Agent Teams to G-14; cost governance to G-16; logging to G-07. Merged means those implementation groups landed. A consuming repository still needs to install and configure the checks it intends to enforce.
+G-26 still leaves automatic spec-kit events registration and its installed-config smoke assertion open. Native Copilot settings already exist at .github/hooks/hooks.json; do not confuse those with an extension events block. G-19 still needs a recorded run of this fork: examples/link-audit is constructed teaching material, and static-landing-page is the upstream recorded snapshot.
 
-Sources: improvements/roadmap.md, first-wave record; git log --merges --first-parent main. This retains the roadmap correction merged into the original deck.
+Sources: specflow/extension.yml; .github/hooks/hooks.json; improvements/roadmap.md, G-19 and G-26; specflow/examples/link-audit/README.md. Status checked against the checkout on 27 September 2026; roadmap completion labels alone do not prove runtime behavior.
 -->
 
 ---
@@ -173,7 +175,9 @@ Risk triggers the critic; CI hosts additional checks.
 <!--
 The proposed stack has seven layers. The four defaults are a spec pre-mortem, a hardened reviewer, a multi-persona panel, and reviewer-written tests. The remaining layers are a critic loop, cross-model review, and test amplification with static application security testing (SAST).
 
-The roadmap assigns the critic to high-risk changes and places cross-model review and SAST in CI. These are adoption policies, not a claim that the committed workflow runs every layer. Current CI runs headless Claude review when credentials exist, adds security review and mutation checks for HIGH risk, and treats Semgrep and mutation results as advisory. It does not automatically establish different-vendor review.
+The roadmap assigns the critic to high-risk changes and places cross-model review and SAST in continuous integration (CI). These are adoption policies, not a claim that the committed workflow runs every layer. Current CI runs headless Claude review when credentials exist, adds security review and mutation checks for HIGH risk, and runs Semgrep with --error. Semgrep and mutation step failures fail the job. This does not establish different-vendor review.
+
+The checked-in headless review prompt still names the removed .claude/review/schema.json. The findings contract lives at specflow/references/findings-schema.json. Treat that stale CI reference as an open defect, not proof of a successful live review.
 
 Sources: docs/review-research.md, sections 3.7 and 3.10; .github/workflows/merge-gate.yml. The four-plus-three count comes from the proposed seven-layer stack.
 -->
@@ -189,9 +193,9 @@ Sensitive paths and recognized dependency files also trigger HIGH.
 <!--
 The classifier compares the base ref with HEAD. Changed lines are additions plus deletions. The comparisons are strictly greater than 400 lines or 15 files: exactly those counts stay STANDARD unless a path rule triggers HIGH. A binary file contributes to the file count without contributing lines.
 
-Sensitive paths include auth, payments, billing, migrations, infra, secrets, and crypto. Dependency matching covers the filenames listed in the script, not every possible manifest. Reviewer precision scorecards are a separate calibration proposal. Finding events are not yet emitted, so do not present scorecards as populated operational metrics.
+Sensitive paths include auth, payments, billing, migrations, infra, secrets, and crypto. Dependency matching covers the filenames listed in the script, not every possible manifest. The scorecard script now reads validated findings JSON and computes fixed / (fixed + rejected + rebutted) per reviewer. It needs adjudicated findings; its existence does not establish measured reviewer accuracy.
 
-Sources: .claude/hooks/risk-classifier.sh; decisions.md, ADR-0005; .claude/hooks/README.md; docs/review-research.md, section 3.9.
+Sources: specflow/gates/bash/risk-classifier.sh; .claude/review/scorecard.sh; decisions.md, ADR-0005; docs/review-research.md, section 3.9.
 -->
 
 ---
@@ -216,12 +220,12 @@ Sources: specflow/references/findings-schema.json; .claude/review/validate-findi
 
 ![w:1080](kit.svg)
 
-Copy the Claude kit separately from the extension.
+Configure each CLI's hooks after installing the extension.
 
 <!--
-Count direct shell scripts in .claude/hooks and Markdown definitions in .claude/agents: 11 and 34 respectively. The schema and validator live in .claude/review. The dispatcher routes new work, fixes, refactors, and rule changes. The repository has six workflows: ci.yml, merge-gate.yml, release.yml, score-artifacts.yml, upstream-drift.yml, and presentation.yml; presentation.yml renders the deck.
+Count direct shell scripts in .claude/hooks and Markdown definitions in .claude/agents: 11 and 34 respectively. Several shell files wrap the shipped gates. The schema lives at specflow/references/findings-schema.json; the validator lives under specflow/gates/python/, with a compatibility wrapper in .claude/review. The repository has six workflows; presentation.yml renders and lints this deck.
 
-ADR-0001 keeps Claude-specific hooks outside the spec-kit archive. Copy and configure the companion kit deliberately for a consuming project. The extension targets Claude Code and GitHub Copilot CLI, but .claude settings are a Claude Code integration. Those settings are not a portable Copilot hook setup.
+The extension ships shared gates under specflow/gates/. Agent definitions, dispatcher skills, and native CLI settings remain separate from the archive. Claude uses .claude/settings.json. Copilot uses .github/hooks/hooks.json and its adapter, which calls the .claude hook wrappers. Those wrappers expect this checkout's specflow/gates layout; copying .claude alone into an installed project does not satisfy that path. Adapt paths to .specify/extensions/specflow/gates/ when configuring a consumer.
 
 Sources: .claude/hooks/; .claude/agents/; specflow/references/findings-schema.json; .claude/skills/specflow-dispatcher/SKILL.md; .github/workflows/; decisions.md, ADR-0001. Recount both directories before each render; the hook count has already moved twice since this deck's first draft.
 -->
@@ -237,9 +241,9 @@ Match each check to its actual event.
 <!--
 Read this as the developer's sequence of work, not a chain of hook events. The Bash PreToolUse hook checks commits to main. After Edit or Write, PostToolUse runs artifact linting and the test gate. The merge gate runs in the pull-request workflow. A commit does not itself trigger Edit or Write hooks.
 
-SessionStart reloads context on resume or compaction, and Stop records activity. Check event names against the installed Claude Code version before copying settings. Check model identifiers, budgets, and credentials in CI. Scripts on disk provide no protection until the intended event or workflow invokes them.
+Claude SessionStart reloads context on resume or compaction, and Stop records activity and cost. Copilot preToolUse calls the commit guard; postToolUse calls the test and artifact checks; sessionStart restores context. Its adapter turns a preToolUse refusal into deny JSON, but postToolUse reports context after the edit has happened. Check model identifiers, budgets, and credentials in CI. Scripts on disk provide no protection until the intended event or workflow invokes them.
 
-Sources: .claude/settings.json; .claude/hooks/test-gate.sh; .claude/hooks/block-main-commit.sh; .github/workflows/merge-gate.yml.
+Sources: .claude/settings.json; .github/hooks/hooks.json; .github/hooks/adapter.sh; specflow/gates/bash/test-gate.sh; .github/workflows/merge-gate.yml.
 -->
 
 ---
@@ -247,16 +251,16 @@ Sources: .claude/settings.json; .claude/hooks/test-gate.sh; .claude/hooks/block-
 ## Install the extension, then check readiness
 
 ```text
-specify init . --integration claude
-/plugin install superpowers@claude-plugins-official
-specify extension add specflow
+specify init --here --integration claude
+specify extension add /path/to/super-spec-new/specflow --dev
+/speckit.constitution
 /speckit.specflow.status
 ```
 
 <!--
-This mixes terminal and Claude Code commands; it is not a shell script. Run specify init and specify extension add in the terminal. Run /plugin install and /speckit.specflow.status inside Claude Code. The plugin step is optional because built-in fallback protocols cover missing skills.
+This mixes terminal and Claude Code commands; it is not a shell script. Run specify init and specify extension add in the consuming project's terminal. Replace /path/to/super-spec-new with the absolute path to this checkout. Run /speckit.constitution and /speckit.specflow.status inside Claude Code.
 
-The sequence assumes specify-cli is installed and the configured catalog contains this extension. The README also documents local development installation from the specflow directory. Before checking status, create or approve the constitution with /speckit.constitution if it is missing. Status checks readiness and skill detection; it cannot waive the constitution gate. Installing the extension does not copy the companion kit.
+Install specify-cli with spec-kit >=0.16.2 and put jq on PATH. This local-checkout route does not depend on a published release or catalog entry. Catalog installation needs this repository's catalog configured; the default catalog does not list specflow. Verify the install with specify extension list: Commands: 6 | Hooks: 6. For Copilot use --integration copilot and /speckit-specflow-status. Superpowers remains optional; detection reads .agents/skills/ and ~/.agents/skills/. Installing the extension does not copy native CLI settings or the companion agents.
 
 Sources: specflow/README.md, Installation; specflow/extension.yml; specflow/commands/status.md; decisions.md, ADR-0001. These audience instructions are not commands run while editing the deck.
 -->
@@ -304,5 +308,5 @@ Start with a constitution rewrite that names the rules reviewers will enforce. T
 
 That exercise gives the team a concrete adoption decision. Keep the baseline when its rules and failure messages are understandable. Add later review layers against problems observed in that run. The immediate action is to adopt and exercise the baseline on one feature.
 
-Source: docs/review-research.md, Part 8, days 0 to 30; AGENTS.md, Gotchas. One feature is the proposed starting scope.
+Source: docs/review-research.md, Part 8, days 0 to 30; AGENTS.md, Architecture. One feature is the proposed starting scope.
 -->
