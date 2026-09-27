@@ -34,6 +34,10 @@ payload to `gates/bash/agent-event.sh` on standard input.
    `.tool_input.command` and its `.toolArgs.path` field to `.tool_input.file_path`
    only when toolArgs also carries `file_text`, `old_str`, or `new_str` (write operations).
    A Claude Code payload passes through unchanged. A read operation (path with no write fields) has no file_path.
+   On `pre_tool_use`, deny the call and exit 2 without running a gate when
+   `toolArgs` is present but does not parse as a JSON object. Deny it too when
+   `toolArgs` is absent or null and `toolName` is `bash` or `powershell` in
+   any case, empty, or not a string.
 5. Dispatch the normalized payload to the sibling gate that event runs:
    `block-main-commit.sh` on `pre_tool_use`; `test-gate.sh` then
    `artifact-lint.sh` on `post_tool_use`, both run so one block does not hide

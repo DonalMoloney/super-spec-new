@@ -43,17 +43,11 @@ delete it, or promote it to an ADR in `decisions.md`.
   the `events:` route never denies on Copilot. Confirm against a live Copilot
   run, then align one route with the other.
 
-- **A malformed or missing `toolArgs` bypasses `block-main-commit.sh`.**
-  `specflow/gates/bash/agent-event.sh`'s `NORMALIZE_PAYLOAD` (line 46) turns a
-  `toolArgs` string that fails `fromjson`, an empty string, or a missing
-  `toolArgs` field into `{}`. `tool_input.command` then has no value, gets
-  stripped by `with_entries(select(.value != null))`, and
-  `block-main-commit.sh` runs against a payload with no `command` at all, so
-  it finds nothing to block. This lets a commit on `main` through on both the
-  `.github/hooks/adapter.sh` route and spec-kit's own merged `events:` route
-  (G-26). Found and reported, not fixed, while resolving a separate adapter
-  bug (PR #86), because `agent-event.sh` is shared with the already-merged
-  `events:` route and a fix there has wider blast radius than that task's
-  scope. Decide whether `NORMALIZE_PAYLOAD` should fail closed (treat an
-  unparseable or missing `toolArgs` as a payload the gate must still see, or
-  as a hard stop) instead of silently defaulting to `{}`.
+- **`block-main-commit.sh` still allows four commit shapes on main.** A
+  work-verifier pass on ADR-0036 found them, all present before that change:
+  `git -C . commit` and `(git commit)` fail the segment anchor; a first commit
+  on an unborn `main` reads the branch as `HEAD`; a Copilot shell tool under a
+  name other than `bash` or `powershell` with no `toolArgs` passes; and on the
+  `events:` route a `pre_tool_use` payload carrying `toolResult` classifies as
+  `post_tool_use`, so the commit gate never runs. Decide which to close and
+  whether the unborn-branch case reads `git symbolic-ref` instead.

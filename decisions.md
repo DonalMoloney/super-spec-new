@@ -499,3 +499,19 @@ deleting them; prune anything older than a quarter that no longer guides work.
 - Consequences: a handler error now exits nonzero instead of passing. A new
   gate needs no `hooks.json` change. Whether Copilot reads a deny on exit 2
   is open.
+
+## ADR-0036: An unreadable Copilot `toolArgs` denies the tool call
+
+- Date: 2026-09-27
+- Status: accepted
+- Context: `agent-event.sh` turned a `toolArgs` that failed `fromjson`, an
+  empty string, or an absent field into `{}`. `block-main-commit.sh` read no
+  command and allowed a commit on main on both Copilot routes.
+- Decision: on a Copilot `pre_tool_use`, a present `toolArgs` that resolves
+  to no object denies the call for any tool. An absent or null `toolArgs`
+  denies a `bash` or `powershell` call, or one naming no tool; other tools
+  pass. The deny exits 2 with the deny JSON, because exit 1 only warns on
+  Claude Code. A `jq` error denies too.
+- Consequences: a non-shell tool with no arguments still passes. A Copilot
+  shell tool under another name with no `toolArgs` passes; only `bash` is
+  recorded in `docs/agent-event-mapping.md`.
