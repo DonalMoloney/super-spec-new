@@ -67,6 +67,7 @@ MINIMAL_LAYOUT = {
     "gates/bash/test-gate.sh": "#!/usr/bin/env bash\n",
     "gates/bash/artifact-lint.sh": "#!/usr/bin/env bash\n",
     "gates/bash/session-start.sh": "#!/usr/bin/env bash\n",
+    "gates/bash/agent-event.sh": "#!/usr/bin/env bash\n",
     "gates/python/validate-findings.py": "#!/usr/bin/env python3\n",
     "gates/python/validate-progress.py": "#!/usr/bin/env python3\n",
     "commands/status.md": "# status\n",
