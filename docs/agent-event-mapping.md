@@ -102,6 +102,12 @@ This write-argument filter prevents a post_tool_use gate from running on reads,
 where Copilot's lack of a matcher would otherwise trigger it on a read of
 tasks.md.
 
+A Copilot `preToolUse` call is denied before any gate runs when `toolArgs`
+is present but does not parse as a JSON object, or is absent on a `bash` or
+`powershell` call or a call naming no tool. Normalization would otherwise
+leave `.tool_input.command` empty, and `block-main-commit.sh` allows an empty
+command (ADR-0036).
+
 ## Exit code contract
 
 - **Exit 0**: gates passed (or the event has no gate).
