@@ -92,6 +92,28 @@ assert_resolved_questions_recorded() {
   return "$rc"
 }
 
+# brainstorm.md step 9 opens each ADR's Context line with the question's ID, so
+# every ID a decisions.md Context line opens with must be Resolved in the spec.
+# A snapshot's end state may hold rows /speckit.clarify resolved, which owe no
+# ADR, so a dry run checks this direction instead of the one above.
+assert_recorded_decisions_are_resolved() {
+  local spec="$1" decisions="$2" ids id rc=0
+  ids="$(sed -nE 's/^- Context:[[:space:]]*(OQ-[0-9]+|Q[0-9]+)[^0-9].*/\1/p' "$decisions" 2>/dev/null)"
+  if [ -z "$ids" ]; then
+    note "no decisions.md Context line opens with a question ID; nothing to check"
+    return 0
+  fi
+  for id in $ids; do
+    if grep -qE "^\|[[:space:]]*${id}[[:space:]]*\|.*\|[[:space:]]*Resolved[[:space:]]*\|" "$spec"; then
+      pass "  $id is recorded in decisions.md and Resolved in spec.md"
+    else
+      miss "  $id is recorded in ${decisions#$WORK/} but not Resolved in spec.md"
+      rc=1
+    fi
+  done
+  return "$rc"
+}
+
 # Counts the rows of a spec's `## Open Questions` table whose Status cell is not
 # `Resolved`, the rule step 2 of commands/tasks.md states. A spec carrying no
 # such table counts zero, which is the gate's pass case.
@@ -545,7 +567,11 @@ EOF
     fi
     assert_grep "  ## Edge Cases section added" '^#{2,4}[[:space:]]+Edge Cases'           "$SPEC_DIR/spec.md" || FAILED_STAGE=3
     assert_grep "  ## Open Questions or Assumptions added" '^#{2,4}[[:space:]]+(Open Questions|Assumptions)' "$SPEC_DIR/spec.md" || FAILED_STAGE=3
-    assert_resolved_questions_recorded "$SPEC_DIR/spec.md" "$WORK/decisions.md" || FAILED_STAGE=3
+    if [ "$DRY_RUN" = "1" ]; then
+      assert_recorded_decisions_are_resolved "$SPEC_DIR/spec.md" "$WORK/decisions.md" || FAILED_STAGE=3
+    else
+      assert_resolved_questions_recorded "$SPEC_DIR/spec.md" "$WORK/decisions.md" || FAILED_STAGE=3
+    fi
   fi
   assert_idempotent stage_3_brainstorm
   stop_if_stage_failed
