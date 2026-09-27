@@ -2,7 +2,7 @@
 
 Read this before changing how a gate script runs from spec-kit's `events:` block. Each surface sends a different payload, and one handler, `agent-event.sh`, reaches every gate from both.
 
-Measured against spec-kit 1.0.9.dev0 at `d4229c0`, `@github/copilot` 1.0.54, and ADR-0032.
+Measured against spec-kit 1.0.9.dev0 at `d4229c0`. The Copilot field names come from `@github/copilot` 1.0.86; the string form of `toolArgs` and the write argument names come from 1.0.54's `app.js`.
 
 ## How a handler resolves
 
@@ -128,13 +128,13 @@ Post block:
 ## Timeout rules
 
 Spec-kit declares `timeout: 30` (pre_tool_use), `timeout: 120` (post_tool_use),
-and `timeout: 15` (session_start) in the `events:` block. On both Claude Code
-and Copilot CLI, the dispatcher adds a five-second buffer to each declared
-timeout and writes the total to the agent's native config. The dispatcher kills
-the script at the declared timeout, not the buffered value. On timeout, the
-dispatcher returns exit 2; Claude Code reports a blocking "timed out" message,
-and Copilot passes silently.
-- A project raises the ceiling in `.specify/integration-events.yml`.
+and `timeout: 15` (session_start) in the `events:` block. The install step
+writes each declared timeout plus 5 s into the agent's native hook config, on
+both surfaces. The dispatcher kills the script at the declared timeout and
+returns exit 2 with empty stdout. Claude Code reports that exit as a blocking
+"timed out" message. Copilot 1.0.54 finds no JSON on stdout, shows stderr as a
+warning, and lets the tool call stand. A project raises the ceiling in
+`.specify/integration-events.yml`.
 
 ## Superpowers and fallback
 
