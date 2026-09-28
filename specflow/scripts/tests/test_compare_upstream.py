@@ -451,6 +451,43 @@ def test_review_probe_hit_script_error_is_recorded_as_an_error_entry(tmp_path):
         assert "review-probe-hit.py exited 2" in entry["error"]
 
 
+# --- Rule: the review probe project excludes the planted fault's answer (CR-001) ---
+
+
+def test_review_probe_project_excludes_the_readme_and_analyze_gate_but_keeps_the_code_and_spec(
+    tmp_path,
+):
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    manifest_path = tmp_path / "project-manifest.txt"
+    write_stub(
+        bin_dir,
+        "claude",
+        f'[ -f "{manifest_path}" ] || find "$PWD" -type f > "{manifest_path}"\n'
+        "echo '{\"total_cost_usd\": 0.01}'\n"
+        "exit 0\n",
+    )
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "review",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert manifest_path.exists(), "claude was never invoked for the review probe"
+    manifest = manifest_path.read_text().splitlines()
+    assert not any(entry.endswith("/README.md") for entry in manifest), manifest
+    assert not any(entry.endswith("/analyze-gate.md") for entry in manifest), manifest
+    assert any(entry.endswith("/src/link_audit/resolver.py") for entry in manifest), manifest
+    assert any(entry.endswith("/specs/001-link-audit/spec.md") for entry in manifest), manifest
+
+
 # --- Rule: an upstream failure is recorded, never patched around ---
 
 

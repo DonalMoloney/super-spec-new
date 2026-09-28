@@ -401,12 +401,18 @@ seed_spec_probe_project() {
   cp "$LINK_AUDIT_CONSTITUTION" "$project_dir/.specify/memory/constitution.md"
 }
 
-# Seeds a fresh project for the review probe (T594): a full copy of
-# examples/seeded-review-bug/, which already carries its own
-# .specify/memory/constitution.md.
+# Seeds a fresh project for the review probe (T594): a copy of
+# examples/seeded-review-bug/'s code and feature artifacts, which already
+# carry the example's own .specify/memory/constitution.md. Excludes
+# README.md and analyze-gate.md, which name the planted fault's file and
+# line directly (CR-001), and the working copy's untracked __pycache__ and
+# .pytest_cache directories, so the project under review cannot read the
+# answer instead of finding it.
 seed_review_probe_project() {
   local project_dir="$1"
   cp -R "$SEEDED_REVIEW_BUG_DIR/." "$project_dir/"
+  rm -f "$project_dir/README.md" "$project_dir/analyze-gate.md"
+  find "$project_dir" -type d \( -name '__pycache__' -o -name '.pytest_cache' \) -exec rm -rf {} +
 }
 
 # Prints one line per file under project_dir: its path relative to
