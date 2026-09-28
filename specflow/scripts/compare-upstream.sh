@@ -182,6 +182,37 @@ dry_run_entries() {
   done
 }
 
+# Defaults COMPARE_RESULTS to a scratch path when unset, and exits 1 when it
+# resolves to the committed examples/upstream-comparison/results.json, so
+# neither run mode overwrites the checked-in file by accident.
+resolve_compare_results_path() {
+  if [ -z "${COMPARE_RESULTS:-}" ]; then
+    local results_dir
+    results_dir="$(mktemp -d -t compare-upstream-results)"
+    COMPARE_RESULTS="$results_dir/results.json"
+  fi
+
+  if [ "$(normalize_path "$COMPARE_RESULTS")" = "$(normalize_path "$COMMITTED_RESULTS")" ]; then
+    printf 'COMPARE_RESULTS resolves to the committed %s; refusing to write there. Point COMPARE_RESULTS elsewhere.\n' "$COMMITTED_RESULTS" >&2
+    exit 1
+  fi
+}
+
+# Reads compact-JSON entries from stdin and wraps them with the three keys
+# every results.json carries once per file: the model a run used, the
+# fork commit under test, and the pinned upstream commit.
+assemble_results_json() {
+  local fork_commit
+  fork_commit="$(git -C "$FORK_ROOT" rev-parse HEAD)"
+  if [ -n "$MODEL" ]; then
+    jq -s --arg model "$MODEL" --arg fork_commit "$fork_commit" --arg upstream_commit "$UPSTREAM_COMMIT" \
+      '{model: $model, fork_commit: $fork_commit, upstream_commit: $upstream_commit, entries: .}'
+  else
+    jq -s --arg fork_commit "$fork_commit" --arg upstream_commit "$UPSTREAM_COMMIT" \
+      '{model: null, fork_commit: $fork_commit, upstream_commit: $upstream_commit, entries: .}'
+  fi
+}
+
 if [ "$DRY_RUN" = "1" ]; then
   if ! command -v jq >/dev/null 2>&1; then
     printf 'compare-upstream.sh: jq is not installed; a dry run writes results.json with it. Install jq (brew install jq, apt-get install jq), then rerun.\n' >&2
@@ -191,15 +222,7 @@ if [ "$DRY_RUN" = "1" ]; then
   COMPARE_PROBES="${COMPARE_PROBES:-all}"
   resolve_probes_to_run "$COMPARE_PROBES"
 
-  if [ -z "${COMPARE_RESULTS:-}" ]; then
-    DRY_RUN_RESULTS_DIR="$(mktemp -d -t compare-upstream-results)"
-    COMPARE_RESULTS="$DRY_RUN_RESULTS_DIR/results.json"
-  fi
-
-  if [ "$(normalize_path "$COMPARE_RESULTS")" = "$(normalize_path "$COMMITTED_RESULTS")" ]; then
-    printf 'COMPARE_RESULTS resolves to the committed %s; a dry run refuses to write there. Point COMPARE_RESULTS elsewhere.\n' "$COMMITTED_RESULTS" >&2
-    exit 1
-  fi
+  resolve_compare_results_path
 
   printf 'Dry run results file: %s\n' "$COMPARE_RESULTS" >&2
 
@@ -209,9 +232,125 @@ if [ "$DRY_RUN" = "1" ]; then
   print_claude_invocation "$ALLOWED_TOOLS_SUPERSPEC" "$(superspec_probe_prompt)"
 
   mkdir -p "$(dirname "$COMPARE_RESULTS")"
-  dry_run_entries | jq -s '{entries: .}' > "$COMPARE_RESULTS"
+  dry_run_entries | assemble_results_json > "$COMPARE_RESULTS"
 
   exit 0
 fi
+
+if ! command -v jq >/dev/null 2>&1; then
+  printf 'compare-upstream.sh: jq is not installed; a run writes results.json with it. Install jq (brew install jq, apt-get install jq), then rerun.\n' >&2
+  exit 1
+fi
+
+COMPARE_PROBES="${COMPARE_PROBES:-all}"
+resolve_probes_to_run "$COMPARE_PROBES"
+
+resolve_compare_results_path
+
+if [ -z "$UPSTREAM_CHECKOUT" ]; then
+  printf 'compare-upstream.sh: COMPARE_UPSTREAM_CHECKOUT is unset. Live cloning of the pinned upstream commit is not wired yet; set COMPARE_UPSTREAM_CHECKOUT to an existing checkout.\n' >&2
+  exit 1
+fi
+
+SPECFLOW_INSTALL_OK=0
+SPECFLOW_INSTALL_ERROR=""
+SUPERSPEC_INSTALL_OK=0
+SUPERSPEC_INSTALL_ERROR=""
+
+# Installs one pipeline via uvx, once per script run, and records the
+# outcome in that pipeline's SPECFLOW_/SUPERSPEC_-prefixed globals. A
+# pipeline whose install fails never reaches a claude call (item 14).
+install_pipeline() {
+  local pipeline="$1" path="$2" stderr_file
+  stderr_file="$(mktemp -t compare-upstream-install)"
+  if uvx --from git+https://github.com/github/spec-kit.git specify extension add "$path" --dev >/dev/null 2>"$stderr_file"; then
+    case "$pipeline" in
+      specflow) SPECFLOW_INSTALL_OK=1 ;;
+      superspec) SUPERSPEC_INSTALL_OK=1 ;;
+    esac
+  else
+    case "$pipeline" in
+      specflow) SPECFLOW_INSTALL_ERROR="$(cat "$stderr_file")" ;;
+      superspec) SUPERSPEC_INSTALL_ERROR="$(cat "$stderr_file")" ;;
+    esac
+  fi
+  rm -f "$stderr_file"
+}
+
+# UPSTREAM_CHECKOUT is only ever read here, passed through as an argument to
+# uvx; the script never cds into it or runs a mutating command against it
+# (item 16).
+install_pipeline specflow "$FORK_ROOT"
+install_pipeline superspec "$UPSTREAM_CHECKOUT"
+
+RESULTS_ENTRIES_FILE="$(mktemp -t compare-upstream-entries)"
+
+# Appends one compact-JSON entry to RESULTS_ENTRIES_FILE for one pipeline,
+# probe, and run index: an error entry when that pipeline's install failed
+# (item 14) or claude exited nonzero (item 15), otherwise an ok entry
+# carrying claude's reported cost (item 19).
+run_probe_entry() {
+  local pipeline="$1" probe="$2" run="$3" allowed_tools="$4" prompt="$5"
+  local install_ok install_error
+  case "$pipeline" in
+    specflow) install_ok="$SPECFLOW_INSTALL_OK"; install_error="$SPECFLOW_INSTALL_ERROR" ;;
+    superspec) install_ok="$SUPERSPEC_INSTALL_OK"; install_error="$SUPERSPEC_INSTALL_ERROR" ;;
+  esac
+
+  if [ "$install_ok" != "1" ]; then
+    jq -nc --arg pipeline "$pipeline" --arg probe "$probe" --argjson run "$run" \
+      --arg error "$install_error" \
+      '{pipeline: $pipeline, probe: $probe, run: $run, status: "error", hit: null, error: $error, cost_usd: null}' \
+      >> "$RESULTS_ENTRIES_FILE"
+    return
+  fi
+
+  local stdout_file stderr_file exit_code claude_args
+  stdout_file="$(mktemp -t compare-upstream-probe-out)"
+  stderr_file="$(mktemp -t compare-upstream-probe-err)"
+  claude_args=(-p --permission-mode acceptEdits --allowedTools "$allowed_tools"
+    --max-budget-usd "$MAX_BUDGET" --max-turns "$MAX_TURNS" --output-format json)
+  if [ -n "$MODEL" ]; then
+    claude_args+=(--model "$MODEL")
+  fi
+  claude_args+=(-- "$prompt")
+
+  claude "${claude_args[@]}" >"$stdout_file" 2>"$stderr_file"
+  exit_code=$?
+
+  if [ "$exit_code" -ne 0 ]; then
+    jq -nc --arg pipeline "$pipeline" --arg probe "$probe" --argjson run "$run" \
+      --arg error "$(cat "$stderr_file")" \
+      '{pipeline: $pipeline, probe: $probe, run: $run, status: "error", hit: null, error: $error, cost_usd: null}' \
+      >> "$RESULTS_ENTRIES_FILE"
+  else
+    local cost
+    cost="$(jq -r 'if (type == "object") and has("total_cost_usd") then (.total_cost_usd | tostring) else "null" end' "$stdout_file" 2>/dev/null)"
+    if [ -z "$cost" ]; then
+      cost="null"
+    fi
+    jq -nc --arg pipeline "$pipeline" --arg probe "$probe" --argjson run "$run" --argjson cost "$cost" \
+      '{pipeline: $pipeline, probe: $probe, run: $run, status: "ok", hit: null, error: null, cost_usd: $cost}' \
+      >> "$RESULTS_ENTRIES_FILE"
+  fi
+
+  rm -f "$stdout_file" "$stderr_file"
+}
+
+for pipeline in specflow superspec; do
+  case "$pipeline" in
+    specflow) allowed_tools="$ALLOWED_TOOLS_SPECFLOW"; prompt="$(specflow_probe_prompt)" ;;
+    superspec) allowed_tools="$ALLOWED_TOOLS_SUPERSPEC"; prompt="$(superspec_probe_prompt)" ;;
+  esac
+  for probe in "${PROBES_TO_RUN[@]}"; do
+    for ((run = 1; run <= COMPARE_RUNS; run++)); do
+      run_probe_entry "$pipeline" "$probe" "$run" "$allowed_tools" "$prompt"
+    done
+  done
+done
+
+mkdir -p "$(dirname "$COMPARE_RESULTS")"
+assemble_results_json < "$RESULTS_ENTRIES_FILE" > "$COMPARE_RESULTS"
+rm -f "$RESULTS_ENTRIES_FILE"
 
 exit 0
