@@ -9,6 +9,10 @@
     "model": { "type": "string" },
     "stage": { "enum": ["spec-red-team","threat-model","conformance","correctness","security","maintainability","performance","payload-compatibility","release-archive","critic"] },
     "verdict": { "enum": ["BLOCK","CONCERNS","CLEAN"] },
+    "checks": {
+      "type": "array",
+      "items": { "type": "string", "description": "one check performed, in one line" }
+    },
     "findings": {
       "type": "array",
       "items": {

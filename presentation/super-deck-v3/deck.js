@@ -1,10 +1,10 @@
-[
+const slides = [
   {
     "id": "intent",
     "chapter": "A feature, end to end",
     "title": "Intent becomes<br>inspectable.",
     "description": "Spec-kit defines the artifacts. Specflow adds commands, gates, and resumable execution.",
-    "detail": "Six commands · five templates · nine shipped scripts · six workflow hooks.",
+    "detail": "Seven commands · five templates · ten shipped scripts · six workflow hooks.",
     "focus": -1,
     "camera": [
       10,
@@ -18,7 +18,7 @@
     ],
     "gate": 0,
     "caption": "One persistent scene. Every boundary has a reason.",
-    "note": "Spec-kit owns the constitution, spec, plan, tasks, and checklist. Specflow adds six commands, five extension templates, nine scripts under specflow/gates/, and six hooks in extension.yml. Superpowers skills remain optional; built-in protocols cover missing skills. The extension targets Claude Code and GitHub Copilot CLI. The 3D scene explains the contracts, it does not call an agent or execute a feature.",
+    "note": "Spec-kit owns the constitution, spec, plan, tasks, and checklist. Specflow adds seven commands, five extension templates, ten scripts under specflow/gates/, six hooks, and an events block in extension.yml. Superpowers skills remain optional; built-in protocols cover missing skills. The extension targets Claude Code and GitHub Copilot CLI. The 3D scene explains the contracts, it does not call an agent or execute a feature.",
     "source": "../../specflow/extension.yml",
     "proof": [
       [
@@ -94,7 +94,7 @@
     ],
     "gate": 0,
     "caption": "CONSTITUTION_REQUIRED stops execution before code changes.",
-    "note": "Execute, tasks, and gate check .specify/memory/constitution.md before proceeding. The constitution sets principles the plan, task breakdown, implementation, and review must follow. In the example, the offline rule means external URL schemes are skipped. The check proves that a file exists; it cannot prove that the team's rules are complete or suitable.",
+    "note": "Brainstorm, tasks, execute, review, and gate check .specify/memory/constitution.md before proceeding; status and agent-event report the gap instead of stopping. The constitution sets principles the plan, task breakdown, implementation, and review must follow. In the example, the offline rule means external URL schemes are skipped. The check proves that a file exists; it cannot prove that the team's rules are complete or suitable.",
     "source": "../../specflow/commands/execute.md",
     "proof": [
       [
@@ -524,7 +524,7 @@
     ],
     "gate": 1,
     "caption": "Shipping a gate script does not register a native hook.",
-    "note": "The extension manifest declares six hooks: after_clarify and after_analyze are required; the other four are optional. Claude event wiring lives in .claude/settings.json; Copilot uses .github/hooks/hooks.json plus adapter.sh. Copilot's preToolUse handler can deny a command; postToolUse can only add context after the edit. The native Copilot config registers block-main-commit before tools, test-gate and artifact-lint after tools, and session-start on sessionStart. G-26's spec-kit events registration remains open.",
+    "note": "The extension manifest declares six hooks: after_clarify and after_analyze are required; the other four are optional. Claude event wiring lives in .claude/settings.json; Copilot uses .github/hooks/hooks.json plus adapter.sh. Copilot's preToolUse handler can deny a command; postToolUse can only add context after the edit. The native Copilot config registers one adapter.sh entry per event; the adapter pipes the payload to agent-event.sh, which picks the gates. extension.yml's events block registers speckit.specflow.agent-event on pre_tool_use, post_tool_use, and session_start, so a catalog install wires the gates on both surfaces.",
     "source": "../../specflow/commands/execute.md",
     "proof": [
       [
@@ -537,7 +537,7 @@
       ],
       [
         "HOOKS",
-        "Native settings are separate from extension.yml."
+        "extension.yml events plus per-surface native config."
       ]
     ],
     "spread": 0,
@@ -562,7 +562,7 @@
     ],
     "gate": 1,
     "caption": "Human approval accepts the evidence for shipping.",
-    "note": "The extension archive ships the nine shared gate scripts under specflow/gates/. Native hook configuration and the companion .claude agents require separate setup. The default spec-kit catalog does not list this fork; use the checkout or release-asset instructions in specflow/README.md. CI runs structural validation, hook tests, the review workflow, and a dry-run agent workflow. No constructed example or passing schema check proves that an agent run produced correct product behavior.",
+    "note": "The extension archive ships the ten shared gate scripts under specflow/gates/. Native hook configuration and the companion .claude agents require separate setup. The default spec-kit catalog does not list this fork; use the checkout or release-asset instructions in specflow/README.md. CI runs structural validation, hook tests, the review workflow, and a dry-run agent workflow. No constructed example or passing schema check proves that an agent run produced correct product behavior.",
     "source": "../../specflow/README.md",
     "proof": [
       [

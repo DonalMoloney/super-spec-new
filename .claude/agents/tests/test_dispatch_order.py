@@ -9,6 +9,8 @@ AGENTS_DIR = Path(__file__).resolve().parents[1]
 ORCHESTRATOR = AGENTS_DIR / "bdd-orchestrator.md"
 DISPATCH_HEADING = "## Process (dispatch order)"
 PHASE_COUNT = 16
+# ADR-0044 in decisions.md fixes the directory every phase writes its report to.
+REPORT_DIR = ".claude/bdd/<feature-slug>"
 
 EXPECTED_ORDER = [
     "requirements-analyst",
@@ -85,6 +87,19 @@ def dispatched_agents(markdown: str) -> list[str]:
     return agents
 
 
+def missing_phase_reports(markdown: str, agents_dir: Path) -> list[str]:
+    """Return the report paths ADR-0044 requires that the phase agents' own prompts omit.
+
+    Raises `FileNotFoundError` when a dispatched phase has no agent file in `agents_dir`.
+    """
+    missing = []
+    for number, agent in enumerate(dispatched_agents(markdown), start=1):
+        report = f"{REPORT_DIR}/{number:02d}-{agent}.md"
+        if report not in (agents_dir / f"{agent}.md").read_text():
+            missing.append(report)
+    return missing
+
+
 def frontmatter_model(agent_file: Path) -> str:
     """Return the `model:` value from an agent file's YAML frontmatter."""
     frontmatter = FRONTMATTER.match(agent_file.read_text())
@@ -148,6 +163,19 @@ def test_phase_agent_routes_to_its_adr_model(agent):
     assert frontmatter_model(AGENTS_DIR / f"{agent}.md") == EXPECTED_MODEL[agent], (
         f"{agent} is routed off the ADR-0003/ADR-0014 model class"
     )
+
+
+def test_every_phase_agent_names_the_report_it_writes(orchestrator_markdown):
+    assert missing_phase_reports(orchestrator_markdown, AGENTS_DIR) == [], (
+        "ADR-0044: the orchestrator reads each phase's report before the next dispatch, "
+        "so a phase naming no report halts the pipeline"
+    )
+
+
+def test_report_check_flags_a_phase_that_names_no_report(tmp_path):
+    (tmp_path / "gherkin-writer.md").write_text("Writes the scenarios and no report.\n")
+    markdown = f"{DISPATCH_HEADING}\n\n1. `gherkin-writer`: write the scenarios.\n\n## Stop\n"
+    assert missing_phase_reports(markdown, tmp_path) == [f"{REPORT_DIR}/01-gherkin-writer.md"]
 
 
 def test_missing_model_field_names_the_agent(tmp_path):

@@ -20,6 +20,34 @@ A release that carries more than one of these takes the highest part.
 
 ### Changed
 
+- The five templates now match the gates and the review pipeline that read
+  them. `spec-template.md` states the `path::identifier` form the artifact
+  lint gate parses in a Traceability row, adds a `Decided in` column to Open
+  Questions for the ADR the brainstorm command writes, drops its third sample
+  user story, replaces the two unmeasurable Success Criteria samples, and
+  renames `### Key Entities *(include if feature involves data)*` to
+  `### Entities` with the condition in the body. `tasks-template.md` replaces
+  each sample task that named no verifiable outcome, folds `## Path
+  Conventions` into one line pointing at plan.md, and renames
+  `## Dependencies & Execution Order` to `## Task order`.
+  `constitution-template.md`'s Review Stages table names the four stages
+  `/speckit.specflow.review` runs and the risk classifier that triggers the
+  panel, and its Code Review Rules keep one `Test command:` line, the one
+  `test-gate.sh` reads. `checklist-template.md` rewrites four items that
+  contradicted `standards/code.md` or could not be checked, marks Performance
+  as conditional on a stated limit, and states the finding status values the
+  merge gate accepts. `plan-template.md`'s Constitution Check table takes an
+  Evidence column in place of Notes, and Human Checkpoints points at the
+  workflow guide's protocol instead of restating it.
+- `spec-template.md`'s five Functional Requirement samples each show a
+  different kind of requirement instead of repeating "specific capability".
+  `plan-template.md`'s Constitution Check names the sections whose completion
+  triggers its re-run, in place of an undefined "design phase", and its
+  Independent Work Streams comment states that `/speckit.specflow.tasks`
+  derives the `[P]` marker from it as well as `[SUBAGENT]`.
+- `README.md`'s command table lists `/speckit.specflow.agent-event`, and the
+  install and upgrade sections count seven registered skill directories, not
+  six.
 - Six section headings read better. In `references/workflow-guide.md`, Phase
   2's `### Process` is `### Steps`, which the other seven phases already
   used, and `### Iteration` is `### Repeat runs`. In `tasks-template.md`,

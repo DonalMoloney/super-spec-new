@@ -24,8 +24,9 @@
 # CI if the archive regains excluded paths, loses runtime files, or approaches
 # any of the limits above.
 
-# Documentation media — rendered from the repository on GitHub, never read at
-# runtime. This is the payload that broke catalog installs.
+# Documentation media, rendered from the repository on GitHub and never read at
+# runtime. G-58 deleted the directory, so the rule now guards the name: a binary
+# added back under it is stripped from the archive rather than shipped.
 assets/            export-ignore
 
 # Sample project and real-run snapshots — teaching material for readers of the

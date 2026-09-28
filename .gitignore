@@ -1,6 +1,7 @@
 diff.md
 .claude/review/*.json
 .claude/review/.merge-approved
+.claude/bdd/
 .claude/telemetry.jsonl
 .claude/.current-phase
 __pycache__/

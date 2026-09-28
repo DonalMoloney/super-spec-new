@@ -222,7 +222,7 @@ tests/
 
 ---
 
-## Dependencies & Execution Order
+## Task order
 
 ### Phase Dependencies
 

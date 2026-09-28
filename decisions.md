@@ -640,3 +640,38 @@ deleting them; prune anything older than a quarter that no longer guides work.
   three stacked nouns, became `## Phase without progress.yml`.
 - Consequences: the measure rose 1 to 6 points per file as a side effect, not
   a target. G-57 applies the same bar to the remaining headings.
+
+## ADR-0044: Squad artifacts live in files the next agent and the gate can read
+
+- Date: 2026-09-28
+- Status: accepted
+- Context: every BDD consumer demanded a prior report as a path, but no phase
+  wrote one, so the orchestrator's NOT VERIFIED rule halted the pipeline at
+  phase 1. Nine staged reviewers returned findings JSON the merge gate never
+  saw, and the critic's `rejected` status still blocked under ADR-0006.
+- Decision: each phase agent writes its report to
+  `.claude/bdd/<feature-slug>/NN-<agent>.md` and returns the path. Each staged
+  reviewer writes `.claude/review/<agent>.json`, as ADR-0029 already required
+  of `code-reviewer`. The critic clears a finding by editing its status to
+  `rebutted` in the panel's own file. A guard passes on exit code 0, not on an
+  output line no guard prints.
+- Consequences: `.claude/bdd/` is gitignored. The orchestrator records the
+  starting ref at phase 0 and passes paths, never summaries.
+
+## ADR-0045: Nested subagent dispatch works; `bdd-orchestrator` keeps its design
+
+- Date: 2026-09-28
+- Status: accepted, resolves open-questions.md's dispatch-nesting question
+- Context: `bdd-orchestrator` and `implementation-engineer` list `Task` and may
+  themselves run as subagents, but whether Claude Code lets a subagent
+  dispatch a further subagent was unconfirmed. `.claude/settings.json` sets
+  `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`, which may lift the limit.
+- Decision: a minimal probe settles it. A `general-purpose` subagent called
+  the Agent tool itself, spawned a second `general-purpose` leaf agent, and
+  received its result ("LEAF OK") with no error. Nesting works at least one
+  level deep under this setting, so `bdd-orchestrator` keeps its
+  subagent-dispatch design rather than becoming a skill run in the main
+  session.
+- Consequences: a future check should confirm nesting holds under
+  `bdd-orchestrator`'s actual parallel `[P]` batch pattern, not only one
+  serial nested call, before relying on it under load.

@@ -26,17 +26,18 @@
 
 ## Constitution Check
 
-*GATE: The plan must pass this check before work starts. Re-run the check after the design phase.*
+*GATE: The plan must pass this check before work starts. Re-run the check once the Project Structure and Execution Strategy sections are filled.*
 
 <!--
   Weigh the plan against every principle in the constitution.
-  Mark each principle PASS, NEEDS ATTENTION, or VIOLATION, and state why.
+  Mark each principle PASS, NEEDS ATTENTION, or VIOLATION, and name the
+  command, file, or plan section a reader runs or opens to confirm the status.
 -->
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| [Principle 1 from constitution] | PASS / NEEDS ATTENTION / VIOLATION | [explanation] |
-| [Principle 2 from constitution] | PASS / NEEDS ATTENTION / VIOLATION | [explanation] |
+| Principle | Status | Evidence |
+|-----------|--------|----------|
+| [Principle 1 from constitution] | PASS / NEEDS ATTENTION / VIOLATION | [command, path, or plan section that shows it] |
+| [Principle 2 from constitution] | PASS / NEEDS ATTENTION / VIOLATION | [command, path, or plan section that shows it] |
 
 ## Project Structure
 
@@ -93,7 +94,8 @@ tests/
 
 <!--
   Name each work stream that carries no dependency on another.
-  The task breakdown flags its tasks with [SUBAGENT].
+  The task breakdown flags its tasks with [SUBAGENT], and marks tasks
+  inside one stream [P] when they touch different files.
   Claude Code dispatches them as parallel subagents.
   The Copilot CLI keeps one session, so it runs them in order.
 -->
@@ -108,10 +110,11 @@ tests/
   Each gate marks a phase boundary in the task breakdown.
 -->
 
-1. After the foundational setup, check that the project structure and the dependencies are correct
-2. After each user story, check that its behavior matches the acceptance scenarios
-3. After every story lands, run the full test suite before the polish phase starts
-4. Before the merge, review the work against the spec
+The agent pauses at every phase boundary and follows the Human Checkpoint
+Protocol in `references/workflow-guide.md`. List here only a checkpoint this
+feature adds inside a phase, with what the reviewer checks at it.
+
+- [ ] [Checkpoint]: [what the reviewer confirms before work continues]
 
 ### Review Gates
 

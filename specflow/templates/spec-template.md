@@ -50,21 +50,7 @@
 
 ---
 
-### User Story 3 - [Brief Title] (Priority: P3)
-
-[Describe this user flow in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
-
-**Acceptance Scenarios**:
-
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-
----
-
-[Add more user stories as needed, each with an assigned priority]
+[Add a user story for each further priority (P3, P4, and so on), in the same shape]
 
 ### Edge Cases
 
@@ -97,26 +83,28 @@
   /speckit.specflow.brainstorm updates this section as it explores each question.
 -->
 
-| # | Question | Status | Resolution |
-|---|----------|--------|------------|
-| Q1 | [Question discovered during brainstorming] | Open | |
-| Q2 | [Another question] | Resolved | [How it was resolved] |
+| # | Question | Status | Resolution | Decided in |
+|---|----------|--------|------------|------------|
+| Q1 | [Question discovered during brainstorming] | Open | | |
+| Q2 | [Another question] | Resolved | [How it was resolved] | [ADR id in decisions.md] |
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability]
-- **FR-002**: System MUST [specific capability]
+- **FR-001**: System MUST [core capability, e.g., "accept a CSV upload up to 10 MiB"]
+- **FR-002**: System MUST [error behavior, e.g., "reject a malformed row with a line-numbered message"]
 - **FR-003**: Users MUST be able to [key interaction]
-- **FR-004**: System MUST [data requirement]
-- **FR-005**: System MUST [behavior]
+- **FR-004**: System MUST [data requirement, e.g., "keep the upload history for 90 days"]
+- **FR-005**: System MUST [observable behavior a test can check]
 
 *Mark unclear requirements explicitly:*
 
 - **FR-006**: System MUST [capability] [NEEDS CLARIFICATION: reason]
 
-### Key Entities *(include if feature involves data)*
+### Entities
+
+Fill this section only when the feature stores or exchanges data.
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
 - **[Entity 2]**: [What it represents, relationships to other entities]
@@ -125,10 +113,12 @@
 
 ### Measurable Outcomes
 
-- **SC-001**: [Measurable metric, e.g., "Users can complete task in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System serves 1000 concurrent users"]
-- **SC-003**: [User satisfaction metric]
-- **SC-004**: [Business metric]
+Each criterion names a number and the command or observation that reads it.
+The Traceability table then cites the test that runs that command.
+
+- **SC-001**: [e.g., "A user completes [task] in under 2 min, timed in the usability test script"]
+- **SC-002**: [e.g., "The [endpoint] serves 1000 concurrent requests under 200 ms p95, per the load test"]
+- **SC-003**: [e.g., "Support tickets about [task] fall below 5 per month, per the ticket export"]
 
 ## Threat Model
 
@@ -152,10 +142,15 @@
 Every FR and SC criterion needs at least one named test before the conformance review runs.
 Automated scoring reads only the Test name column. A human reader uses the Status column.
 
+Write the Test name as `path::identifier`, with the path relative to the
+repository root or to this feature directory. Once `.analyzed` exists, the
+artifact lint gate rejects a row whose file is missing or whose identifier the
+file does not define. For a `.py` file the identifier is a function name.
+
 | Criterion ID | Test name | Status |
 |--------------|-----------|--------|
-| FR-001 | [test file or checklist item that verifies it] | [Pending/Passing/Failing] |
-| SC-001 | [test file or checklist item that verifies it] | [Pending/Passing/Failing] |
+| FR-001 | `tests/test_[feature].py::test_[behavior]` | [Pending/Passing/Failing] |
+| SC-001 | `tests/test_[feature].py::test_[measure]` | [Pending/Passing/Failing] |
 
 ## Assumptions
 

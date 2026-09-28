@@ -8,7 +8,7 @@ set -euo pipefail
 findings_file="${1:-}"
 reason="${2:-}"
 if [ -z "$findings_file" ] || [ ! -f "$findings_file" ]; then
-  echo "rebut-findings: findings document '$findings_file' not found; expected the path of a file matching .claude/review/schema.json. Pass the file as the first argument." >&2
+  echo "rebut-findings: findings document '$findings_file' not found; expected the path of a file matching specflow/references/findings-schema.json. Pass the file as the first argument." >&2
   exit 2
 fi
 if [ -z "$reason" ]; then

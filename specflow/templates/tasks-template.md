@@ -26,12 +26,7 @@ description: "Task list template for feature implementation"
 
 **Story labels**: `[US1]`, `[US2]`, and further labels tie a task to its user story.
 
-## Path Conventions
-
-- **Single project**: `src/`, `tests/` at repository root
-- **Web app**: `backend/src/`, `frontend/src/`
-- **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Match these paths to the structure decisions in plan.md
+**Paths**: every path in a task follows the Project Structure section of plan.md.
 
 <!--
   ============================================================================
@@ -70,10 +65,10 @@ description: "Task list template for feature implementation"
 
 **Critical**: No user story starts until this phase finishes.
 
-- [ ] T004 [TDD] Set up the core data models
-- [ ] T005 [P] Implement the shared utilities
-- [ ] T006 [P] [REVIEW] Set up the API routing
-- [ ] T007 Configure the error handling
+- [ ] T004 [TDD] Add the [Entity] model in src/models/
+- [ ] T005 [P] Add the config loader in src/config/
+- [ ] T006 [P] [REVIEW] Add the API router in src/api/
+- [ ] T007 Add the `NotFoundError` type in src/errors/
 
 **Execution notes**: For a task marked [TDD], write the test first and run it. Confirm it fails, then implement.
 For a task marked [REVIEW], pause for a human review of the API contracts before building a consumer.
@@ -100,7 +95,7 @@ For a task marked [REVIEW], pause for a human review of the API contracts before
 - [ ] T011 [P] [US1] Create the [Entity2] model in src/models/
 - [ ] T012 [US1] Implement the [Service] in src/services/ (depends on T010, T011)
 - [ ] T013 [US1] Implement the [endpoint/feature] in src/
-- [ ] T014 [US1] [REVIEW] Add input validation
+- [ ] T014 [US1] [REVIEW] Reject an empty `email` field with 400
 
 **Execution notes**: If `subagent-driven-development` is available, dispatch T010 and T011
 as parallel subagents. T014 needs review before the next task starts.
@@ -119,7 +114,7 @@ as parallel subagents. T014 needs review before the next task starts.
 - [ ] T015 [P] [SUBAGENT] [US2] Create the [Entity] model
 - [ ] T016 [US2] Implement the [Service]
 - [ ] T017 [US2] Implement the [endpoint/feature]
-- [ ] T018 [US2] If needed, integrate with the User Story 1 components
+- [ ] T018 [US2] Call the [Service] from the User Story 1 [endpoint]
 
 **Checkpoint**: User Stories 1 and 2 both work independently. Get human approval.
 
@@ -133,13 +128,13 @@ as parallel subagents. T014 needs review before the next task starts.
 
 **Purpose**: Polish work that spans multiple user stories
 
-- [ ] TXXX [P] [SUBAGENT] Update the documentation
-- [ ] TXXX Clean up the code
-- [ ] TXXX [P] Optimize performance
-- [ ] TXXX [REVIEW] Harden security
-- [ ] TXXX Run the full test suite
+- [ ] TXXX [P] [SUBAGENT] Document the [endpoint] in README.md
+- [ ] TXXX Remove the duplicate [parser] call from [Service]
+- [ ] TXXX [P] Cut the [endpoint] response below [N] ms at [M] rows
+- [ ] TXXX [REVIEW] Close every file handle [Service] opens
+- [ ] TXXX Run [TEST_COMMAND] with zero failures
 
-**Execution notes**: Most polish tasks run in parallel. The final security hardening
+**Execution notes**: Most polish tasks run in parallel. The resource cleanup task
 needs review. Every test must pass before this phase ends.
 
 ---
@@ -157,7 +152,7 @@ proves the task is done. A reader then checks it without asking the implementer.
 
 ---
 
-## Dependencies & Execution Order
+## Task order
 
 ### Phase Dependencies
 

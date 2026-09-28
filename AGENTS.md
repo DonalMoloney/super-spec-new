@@ -24,7 +24,7 @@ agent-facing docs this repo needs.
 
 Run `bash verify.sh` from the repository root before pushing. It walks the steps
 `.github/workflows/ci.yml` runs, in that order, stops at the first failure, and
-prints the four steps it leaves to CI. `tests/test_ci_parity.py` fails when the
+prints the two steps it leaves to CI. `tests/test_ci_parity.py` fails when the
 script and the workflow drift apart, so the script cannot fall behind silently.
 
 The rest run from inside `specflow/` (script paths are relative to that directory):
@@ -80,7 +80,6 @@ there, so a workflow under `specflow/` never runs.
   `seeded-*/` directory copies that run's feature directory with one planted
   flaw the scorer must report, and `mutation-gate-sample/` feeds the mutation
   gate.
-- `specflow/assets/`: workflow diagrams (~12 MiB); documentation media, not runtime payload.
 - `presentation/`: the Marp deck (`marp-deck/`) with its Mermaid and SVG
   diagram sources, and `use-guide/` explaining how to render it.
 - **Namespace lock-step**: `extension.yml`'s `extension.id` must equal the prefix on
@@ -185,9 +184,12 @@ These apply to any agent working this repo, not only Claude Code. The **GitHub
 Copilot CLI** target has no equivalent of `~/.claude/CLAUDE.md` to fall back on, so
 this is the one place both surfaces read:
 
+### Decision-making
+
 - **Surface confusion instead of guessing**: if a command file's Process step, a
   spec's requirement, or a task's scope is ambiguous, name the ambiguity and ask
-  rather than silently picking one interpretation.
+  rather than silently picking one interpretation. A stop condition covers this: the
+  agent stops and reports instead of interpreting.
 - **State a verification plan before multi-step edits**: e.g. "1. Edit
   `extension.yml` → verify: `validate-extension-metadata.py` passes. 2. Update the
   matching command doc → verify: namespace still matches." Don't call a change done
@@ -195,6 +197,26 @@ this is the one place both surfaces read:
 - **No speculative scope**: this reinforces the [Task decomposition](#task-decomposition)
   rule above. Implement exactly the requested item, not adjacent "while we're at it"
   improvements.
+
+### Evidence and verification
+
+- **Claim without output is not a claim**: every assertion carries the command run
+  and the output it printed. A test passed only when `pytest` ran and printed zero
+  failures. A file path confirmed by reading the file at that path, not by
+  remembering it. Paraphrased evidence is hearsay.
+- **Run everything yourself**: never accept a report, a summary, or a pasted log as
+  verification. Reproduce the original state, run the command, read the diff,
+  re-run the test. "According to the previous agent" is not evidence.
+
+### Handoff protocol
+
+- **Name the next agent or the user**: every handoff statement says who receives
+  what. "Hand off to `code-reviewer`" is complete; "The next step is review" is
+  not. Hand off without naming either the receiving agent or the decision the user
+  makes next.
+- **Pass files as paths, not summaries**: when one agent dispatches the next,
+  pass a file path where a summary belongs. The receiving agent reads the file
+  itself and forms its own judgment, which is why it is called in the first place.
 
 ## Roadmap execution workflow
 

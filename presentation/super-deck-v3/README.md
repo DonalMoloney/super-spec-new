@@ -30,7 +30,7 @@ All scene objects are built once. Reduced motion makes transitions immediate.
 
 The link-audit snapshot was constructed, not recorded. Its named tests belong
 to a proposed consuming project; no implementation lives in the example.
-Content is sourced from the checkout as of 27 September 2026.
+Content is sourced from the checkout as of 28 September 2026, at tag v1.1.0.
 
 This folder carries its own HTML, CSS, and JavaScript, preserving
 [version 2](../super-deck-v2/README.md). It uses SuperDeck's pinned Three.js 0.186.1

@@ -7,7 +7,7 @@ the option space and the measured distance to upstream.
 
 Percentages are the real (rebrand-normalized) change against the vendored
 upstream at the root commit (`bda4ef0`, upstream `c20ac6c`). Upstream `HEAD`
-was still `c20ac6c` on 2026-09-25. An option a roadmap item already claims names
+was still `c20ac6c` on 2026-09-28. An option a roadmap item already claims names
 that item instead of repeating its tasks.
 
 ## Three constraints
@@ -38,17 +38,19 @@ targets.
 
 ## Measured state
 
-Measured 2026-09-25 against upstream `c20ac6c1` by rerunning the reproduce
-command below, after G-50 merged. Lowest real change first. One row the
+Measured 2026-09-28 against upstream `c20ac6c1` by rerunning the reproduce
+command below, after PR #92 merged. Lowest real change first. One row the
 command cannot reach: G-30 renamed `references/superpowers-bridge.md` to
 `references/superpowers-mapping.md`, and the measurer resolves one relative
 path against both roots, so that row is measured by copying upstream's file
-to the local path first. Twelve files carry no upstream counterpart at all and
-are left out of both the table and the reproduce command below for that
+to the local path first. Thirteen files carry no upstream counterpart at all
+and are left out of both the table and the reproduce command below for that
 reason: `commands/gate.md`, `commands/hooks/after-analyze.md`,
 `commands/hooks/after-clarify.md`, `references/publishing.md` (added by
 G-50 T540), `commands/hooks/before-tasks.md` (added by G-56, PR #78,
-registering the `before_tasks` hook upstream never shipped), `scripts/compare-upstream.sh`,
+registering the `before_tasks` hook upstream never shipped),
+`commands/agent-event.md` (added by G-26, PR #84, backing the `events:`
+block ADR-0034 registers), `scripts/compare-upstream.sh`,
 `scripts/review-probe-hit.py`, `scripts/tests/test_compare_upstream.py`,
 `scripts/tests/test_review_probe_hit.py`, `scripts/tests/test_review_probe_hit_cli.py`,
 `scripts/tests/test_seeded_review_bug.py`, and `scripts/tests/planted_violation_oracle.py`
@@ -58,45 +60,48 @@ missing counterpart and never reaches the files after it alphabetically.
 
 | File | Real | Last moved by |
 |------|------|---------------|
-| `templates/plan-template.md` | 23% | `prose-rephraser` |
-| `templates/spec-template.md` | 39% | G-50 (Brainstorm Prompts trimmed to 5 categories, Threat Model reordered) |
-| `templates/checklist-template.md` | 45% | `prose-rephraser` |
-| `templates/constitution-template.md` | 50% | G-50 (Code Review Rules reordered before Governance) |
-| `templates/tasks-template.md` | 51% | G-50 (Checkpoint Protocol and Notes tightened) |
+| `templates/plan-template.md` | 28% | PR #92, then the Constitution Check trigger and `[P]` note |
+| `templates/checklist-template.md` | 48% | PR #92 (aligned with the gates and reviewers that read it) |
+| `templates/constitution-template.md` | 53% | PR #92 |
+| `templates/tasks-template.md` | 54% | PR #92 |
 | `references/superpowers-mapping.md` | 57% | `prose-rephraser` |
+| `templates/spec-template.md` | 58% | PR #92, then the FR example lines |
 | `commands/execute.md` | 61% | `divergence-renamer` |
-| `extension.yml` | 62% | G-56 (`before_tasks` hook registered, PR #78) |
-| `commands/status.md` | 64% | G-50 (Output section added) |
 | `commands/hooks/after-tasks.md` | 65% | `divergence-renamer` |
-| `commands/brainstorm.md` | 68% | G-50 (constitution gate step added) |
-| `references/workflow-guide.md` | 70% | G-50 (retitled, reordered, headings renamed, Exit Criteria added) |
-| `commands/hooks/after-execute.md` | 70% | `divergence-renamer` |
-| `commands/hooks/before-execute.md` | 74% | `divergence-renamer` |
+| `commands/status.md` | 65% | ADR-0043 (`## Phase without progress.yml`) |
+| `extension.yml` | 67% | G-26 (`events:` block registered, PR #84) |
+| `references/workflow-guide.md` | 71% | G-57 (`### Steps`, `### Repeat runs`) |
+| `commands/brainstorm.md` | 74% | ADR-0043 (`## Repeat runs`) |
+| `commands/hooks/after-execute.md` | 74% | ADR-0043 (`## Stop behavior`) |
 | `commands/tasks.md` | 75% | `divergence-renamer` |
 | `SKILL.md` | 76% | G-50 (retitled, reordered, hooks and gates documented, 8 headings renamed) |
-| `CHANGELOG.md` | 77% | `prose-rephraser` |
+| `commands/hooks/before-execute.md` | 78% | ADR-0043 (`## Stop behavior`) |
 | `commands/review.md` | 80% | `divergence-renamer` |
-| `scripts/e2e-smoke.sh` | 83% | frontmatter asserted on both surfaces |
+| `scripts/e2e-smoke.sh` | 85% | G-57 and G-26 (heading and hook assertions added) |
+| `CHANGELOG.md` | 87% | the entries after 1.1.0 |
 | `scripts/validate-release-archive.py` | 87% | `script-refactorer` |
-| `scripts/e2e-agent-claude.sh` | 90% | Copilot CLI added to the seven e2e stages |
-| `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` |
-| `README.md` | 127% | `prose-rephraser`, then G-50 (catalog-submission section moved to `references/publishing.md`) |
+| `scripts/validate-extension-metadata.py` | 91% | ADR-0041 (catalog counts held to `extension.yml`) |
+| `scripts/e2e-agent-claude.sh` | 95% | G-19 (live run, PR #81) |
+| `README.md` | 129% | G-58 (PNG links dropped, PR #91) |
 
-`SKILL.md` is the largest single move since this table was last measured: 57%
-to 76%, the file's biggest jump on record, from G-50's title rewrite,
-reordering, and 8 heading renames. `README.md` dropped, 134% to 127%, because
-G-50 T540 moved 59 lines of catalog-submission process out to the new
-`references/publishing.md`, shortening the file both sides compare.
-`extension.yml` moved again after this table's last refresh: G-56 (PR #78)
-registered the `before_tasks` hook, raising it from 56% to 62% with no
-`prose-rephraser` pass involved.
+Six rows moved since the 2026-09-27 measurement, five of them templates.
+PR #92's alignment of the five templates with the gates and reviewers that
+read them moved `spec-template.md` furthest, 39% to 58%, and the other four
+between 1 and 5 points. A follow-up functional pass on 2026-09-28 rewrote
+the FR example lines in `spec-template.md`, named the Constitution Check
+re-run trigger in `plan-template.md`, and taught its Independent Work
+Streams comment the `[P]` marker `commands/tasks.md` derives from it.
+`CHANGELOG.md` rose 86% to 87% from post-1.1.0 entries. Every other row
+held.
 
 The installable payload has moved a long way from upstream in wording and,
 since the previous measurement, in shape as well: `extension.yml` now
-declares a sixth command (`speckit.specflow.gate`) and six hooks
+declares seven commands (`speckit.specflow.gate` and
+`speckit.specflow.agent-event` beyond the original five), six hooks
 (`after_clarify`, `after_analyze`, `after_tasks`, `before_tasks`,
-`before_implement`, `after_implement`). The `commands/` and `commands/hooks/`
-sections below are corrected to match. The fork's remaining behavioral
+`before_implement`, `after_implement`), and an `events:` block binding
+`pre_tool_use`, `post_tool_use`, and `session_start` per ADR-0034. The
+`commands/` and `commands/hooks/` sections below are corrected to match. The fork's remaining behavioral
 divergence lives in `.claude/`, `standards/`, `scripts/`, and CI, which the
 archive strips.
 
@@ -105,7 +110,7 @@ Reproduce the table from the repository root:
 ```bash
 git clone -q https://github.com/WangX0111/superspec "$SCRATCH/upstream"
 cd specflow && git ls-files | grep -E '\.(md|yml|py|sh)$' | grep -v '^examples/' \
-  | grep -vE 'copilot-cli\.md|lint-standards\.py|score-artifacts\.py|tests/test_(lint_standards|score_artifacts|validate_extension_metadata|validate_release_archive|compare_upstream|review_probe_hit_cli|review_probe_hit|seeded_review_bug)\.py|commands/gate\.md|commands/hooks/(after-(analyze|clarify)|before-tasks)\.md|scripts/e2e-(agent-copilot|stages)\.sh|scripts/compare-upstream\.sh|scripts/review-probe-hit\.py|scripts/tests/planted_violation_oracle\.py|^gates/|references/superpowers-mapping\.md|references/publishing\.md' \
+  | grep -vE 'copilot-cli\.md|lint-standards\.py|score-artifacts\.py|tests/test_(lint_standards|score_artifacts|validate_extension_metadata|validate_release_archive|compare_upstream|review_probe_hit_cli|review_probe_hit|seeded_review_bug)\.py|commands/(gate|agent-event)\.md|commands/hooks/(after-(analyze|clarify)|before-tasks)\.md|scripts/e2e-(agent-copilot|stages)\.sh|scripts/compare-upstream\.sh|scripts/review-probe-hit\.py|scripts/tests/planted_violation_oracle\.py|^gates/|references/superpowers-mapping\.md|references/publishing\.md' \
   | xargs python3 ../.claude/divergence/measure-divergence.py --local . --upstream "$SCRATCH/upstream"
 ```
 
@@ -147,8 +152,8 @@ Command names are asserted in `e2e-smoke.sh`, `e2e-agent-claude.sh`, and
   ADR-lite entries. G-17 covers the read. Claimed by: G-20.
 - **Replace** `execute.md` with a dispatcher over the `.claude/agents/` squad on
   Claude Code, keeping the sequential walk as the Copilot fallback. Verify: both
-  paths pass the agent e2e in dry run. Claimed by: none, deferred in
-  `roadmap.md` until G-19 lands a snapshot to assert against.
+  paths pass the agent e2e in dry run. Dropped on 2026-09-28: the install
+  archive strips `.claude/agents/`, so a shipped command cannot dispatch it.
 - Done: a sixth command, `gate.md` (`speckit.specflow.gate`), writes a
   feature's `.clarified` or `.analyzed` marker from the `after_clarify` and
   `after_analyze` hooks. `extension.yml` lists it under `provides.commands`;
@@ -236,15 +241,17 @@ Export-ignored, so divergence here never reaches an installed extension.
 
 ## assets/
 
-12 MiB of workflow diagrams, export-ignored because one PNG broke install for
-every user (upstream issue #6).
+Deleted. The directory held 12 MiB of workflow diagrams, export-ignored
+because one PNG broke install for every user (upstream issue #6).
 
-- **Remove** the PNGs and check in Mermaid or SVG source beside the deck under
-  `presentation/`, per `standards/presentations.md`. Verify:
-  `validate-release-archive.py` passes and the README renders the diagram from
-  source. Claimed by: none.
+- Done: both PNGs removed and replaced by
+  `presentation/marp-deck/pipeline-overview.mmd` and its rendered `.svg`,
+  linked from `specflow/README.md`. G-58, PR #91.
 - **Add** or **Extend**: not an option. There is no reason to ship a binary the
-  archive strips.
+  archive strips. `.gitattributes` keeps its `assets/ export-ignore` rule and
+  `validate-release-archive.py` keeps `assets/` in `EXCLUDED_PREFIXES`, so a
+  directory added back under that name is stripped from the archive rather
+  than shipped.
 
 ## Names
 
@@ -254,8 +261,8 @@ rename lands, so the cost is known before the move.
 | Name | Today | Asserted in | Cost | Claimed by |
 |------|-------|-------------|------|------------|
 | `author:` | "Specflow Contributors" | Nothing | Free | none |
-| `commands/hooks/*.md` file names | `after-tasks`, `before-execute`, `after-execute` | Nothing; the manifest maps hooks to commands | `e2e-smoke.sh` greps `commands/hooks/after-execute.md` | none |
-| `commands/*.md` file names | `status`, `brainstorm`, `tasks`, `execute`, `review` | The `file:` field in `extension.yml` | Cheap, and no reason | none |
+| `commands/hooks/*.md` file names | `after-clarify`, `after-analyze`, `before-tasks`, `after-tasks`, `before-execute`, `after-execute` | Nothing; the manifest maps hooks to commands | `e2e-smoke.sh` greps `commands/hooks/after-execute.md` | none |
+| `commands/*.md` file names | `status`, `brainstorm`, `tasks`, `execute`, `review`, `gate`, `agent-event` | The `file:` field in `extension.yml` | Cheap, and no reason | none |
 | Extension id `specflow` | | 27 files | Not an option | |
 | `templates/*.md` file names | | Spec-kit reads `.specify/templates/<name>`; `e2e-smoke.sh` | Not an option | |
 | `superpowers.yml` cache name | | Every command and the smoke test | Not an option | |
@@ -276,24 +283,25 @@ the pass has run and the Real column records what it measured. Mark a row
 column is the raw divergence measured above, not a proxy for whether the pass
 has run: `README.md` measured 134% both before and after its `prose-rephraser`
 pass, because its content had already diverged from upstream. It now measures
-127%, moved by a later, unrelated change: G-50 T540 moved 59 lines of
-catalog-submission process to `references/publishing.md`. `extension.yml`
-measured 56% at its `prose-rephraser` pass and now measures 62%, moved by
-G-56's `before_tasks` hook registration, also unrelated to the pass.
+129%, moved by two later, unrelated changes: G-50 T540 moved 59 lines of
+catalog-submission process to `references/publishing.md`, and G-58 dropped the
+PNG links. `extension.yml` measured 56% at its `prose-rephraser` pass and now
+measures 67%, moved by G-56's `before_tasks` hook registration and G-26's
+`events:` block, also unrelated to the pass.
 
 | File | Real | Agent | Waiting on |
 |------|------|-------|------------|
 | `commands/hooks/after-tasks.md` | 65% | `prose-rephraser` | |
-| `extension.yml` | 62% | `prose-rephraser` | |
-| `CHANGELOG.md` | 77% | `prose-rephraser` | |
-| `scripts/validate-extension-metadata.py` | 90% | `script-refactorer` | |
+| `extension.yml` | 67% | `prose-rephraser` | |
+| `CHANGELOG.md` | 87% | `prose-rephraser` | |
+| `scripts/validate-extension-metadata.py` | 91% | `script-refactorer` | |
 | `references/superpowers-mapping.md` | 57% | `prose-rephraser` | |
-| `README.md` | 127% | `prose-rephraser` | |
-| `templates/plan-template.md` | 23% | `prose-rephraser` | |
-| `templates/spec-template.md` | 39% | `prose-rephraser` | |
-| `templates/checklist-template.md` | 45% | `prose-rephraser` | |
-| `templates/constitution-template.md` | 50% | `prose-rephraser` | |
-| `templates/tasks-template.md` | 51% | `prose-rephraser` | |
+| `README.md` | 129% | `prose-rephraser` | |
+| `templates/plan-template.md` | 28% | `prose-rephraser` | |
+| `templates/spec-template.md` | 58% | `prose-rephraser` | |
+| `templates/checklist-template.md` | 48% | `prose-rephraser` | |
+| `templates/constitution-template.md` | 53% | `prose-rephraser` | |
+| `templates/tasks-template.md` | 54% | `prose-rephraser` | |
 | `scripts/validate-release-archive.py` | 87% | `script-refactorer` | |
 
 A template's Real column moves little because most of its lines cannot move.
@@ -313,34 +321,37 @@ test greps command prose.
 
 The Real column counts changed lines, so it conflates a reworded file with a
 restructured one. This records the other half: the headings, functions, and
-manifest keys still spelled as upstream spells them, measured 2026-09-25
+manifest keys still spelled as upstream spells them, measured 2026-09-28
 against `c20ac6c1`. Read it before choosing a rewrite target.
 
-Structure is moving, but only where a renamer pass has reached. Every command
-file keeps upstream's `## Usage`, `## Process`, `## Output`, and
-`## Human Checkpoints`; the two headings each lost are its
-`# speckit.specflow.*` title, which the namespace rename moved, and
-`## Superpowers Adaptation`, now `## Skill Mode Behavior`. The three hook
-prompts keep 2 of 3 headings, having traded `## Checks` for
-`## Preconditions`. `extension.yml` keeps all six top-level keys. ADR-0013
-bars `prose-rephraser` from touching a heading, so a prose pass moves the Real
-column without moving the shape; only `divergence-renamer` moves the shape.
+Structure is moving, but only where a renamer pass has reached. A count below
+is heading lines, not unique headings, so a name upstream uses in several
+places counts once per use. Every command file keeps upstream's `## Usage`,
+`## Process`, and `## Output`; each lost its `# speckit.specflow.*` title to
+the namespace rename and `## Superpowers Adaptation`, now
+`## Skill Mode Behavior`. `commands/status.md` lost a third to ADR-0043.
+`commands/hooks/after-tasks.md` keeps 2 of 3 headings; the other two prompts
+keep 1, having traded `## Checks` for `## Preconditions` and then `## Gate`
+for `## Stop behavior`. `extension.yml` keeps all six of upstream's top-level
+keys and adds a seventh, `events:`. ADR-0013 bars `prose-rephraser` from
+touching a heading, so a prose pass moves the Real column without moving the
+shape; only `divergence-renamer` moves the shape.
 
 | File | Real | Named units shared |
 |------|------|--------------------|
-| `templates/plan-template.md` | 23% | 12 of 13 headings |
-| `templates/spec-template.md` | 39% | 15 of 19 headings |
-| `templates/checklist-template.md` | 45% | 11 of 12 headings |
-| `templates/constitution-template.md` | 50% | 15 of 17 headings |
-| `templates/tasks-template.md` | 51% | 19 of 20 headings |
-| `commands/hooks/*.md` | 65 to 74% | 2 of 3 each |
-| `extension.yml` | 62% | 6 of 6 keys |
-| `SKILL.md` | 76% | 4 of 21 headings |
-| `references/workflow-guide.md` | 70% | 21 of 46 headings |
-| `commands/*.md` | 61 to 80% | 4 of 6 to 7 headings |
+| `templates/plan-template.md` | 28% | 11 of 13 headings |
+| `templates/spec-template.md` | 58% | 13 of 18 headings |
+| `templates/checklist-template.md` | 48% | 11 of 12 headings |
+| `templates/constitution-template.md` | 53% | 15 of 17 headings |
+| `templates/tasks-template.md` | 54% | 14 of 19 headings |
+| `commands/hooks/*.md` | 65 to 78% | 1 or 2 of 3 |
+| `extension.yml` | 67% | 6 of 7 keys |
+| `SKILL.md` | 76% | 5 of 22 headings |
+| `references/workflow-guide.md` | 71% | 22 of 47 headings |
+| `commands/*.md` | 61 to 80% | 3 to 4 of 6 to 7 headings |
 | `scripts/validate-release-archive.py` | 87% | 3 of 13 functions |
-| `scripts/validate-extension-metadata.py` | 90% | 2 of 4 functions |
-| `scripts/e2e-agent-claude.sh` | 90% | 0 of 11 functions |
+| `scripts/validate-extension-metadata.py` | 91% | 2 of 4 functions |
+| `scripts/e2e-agent-claude.sh` | 95% | 0 of 11 functions |
 
 A template's Real column cannot move much, because most of its lines are not
 prose. Of the lines each template still shares with upstream:
@@ -475,7 +486,7 @@ two cited from more than one file, a direct `git mv` and edit for the third.
 | File | Problem | Used in | Better name |
 |------|---------|---------|-------------|
 | `.claude/hooks/diff-impl.sh` | Shortens "implementation" to "impl"; its own header comment spells out "differential implementation run" | `.claude/hooks/tests/run.sh`, `specflow/references/workflow-guide.md`, `specflow/references/copilot-cli.md` | `differential-implementation.sh` |
-| `.claude/review/scorecard.sh` | Shares the verb "score" with `specflow/scripts/score-artifacts.py`, which scores golden artifacts against upstream, not reviewer precision; the two names give no hint they measure different things | `improvements/roadmap.md` (item 31), `.claude/review/tests/test_scorecard.py`, `docs/review-research.md`, `presentation/marp-deck/deck.md` | `reviewer-precision.sh` |
+| `.claude/review/scorecard.sh` | Shares the verb "score" with `specflow/scripts/score-artifacts.py`, which scores golden artifacts against upstream, not reviewer precision; the two names give no hint they measure different things | `.claude/review/tests/test_scorecard.py`, `docs/review-research.md`, `presentation/marp-deck/deck.md` | `reviewer-precision.sh` |
 | `specflow/examples/link-audit/analyze-gate.md` | Reads like a script or command name; every sibling file in the directory (`spec.md`, `plan.md`, `tasks.md`, `progress.yml`) is a document the pipeline writes, but this one records seven sessions run after the pipeline ended | `specflow/examples/link-audit/README.md` | `analyze-gate-walkthrough.md` |
 
 ## Diverging further, and how to tell a real move from churn
@@ -503,10 +514,14 @@ candidates.
 
 - **Frozen by a contract.** `constitution-template.md`'s `## Core Principles`
   is grepped by `e2e-stages.sh`. `spec-template.md`'s three `*(mandatory)*`
-  headings and `tasks-template.md`'s `## Phase N:` lines feed
-  `score-artifacts.py`'s `spec_sections` dimension against both goldens. A
-  bracket placeholder such as `### [PRINCIPLE_1_NAME]` is substituted at run
-  time. None of these moves without moving its contract first.
+  headings feed `score-artifacts.py`'s `spec_sections` dimension against both
+  goldens, and `artifact-lint.sh` requires them by name along with
+  `plan-template.md`'s `## Summary`, `## Technical Context`, and
+  `## Constitution Check`. A bracket placeholder such as
+  `### [PRINCIPLE_1_NAME]` is substituted at run time. None of these moves
+  without moving its contract first. `tasks-template.md`'s `## Phase N:`
+  lines are not among them: `score-artifacts.py` carries no `Phase` pattern,
+  re-checked 2026-09-27.
 - **Already the right name.** `## Usage`, `## Process`, `## Output`,
   `## Summary`, `## Notes`, `## Security`, `## Performance`,
   `## Correctness`. A shorter or plainer name does not exist. Leave them.
@@ -553,17 +568,15 @@ breaks. A row is a candidate, not a decision: check its contracts first.
 
 | Heading | File | Rule it breaks | Candidate |
 |---------|------|----------------|-----------|
-| `## Dependencies & Execution Order` | `templates/tasks-template.md` | Two ideas joined by an ampersand | Split, or `## Task order` |
-| `## Phase N: Polish & Cross-Cutting Concerns` | `templates/tasks-template.md` | Ampersand, and "cross-cutting concerns" is jargon | Contract first: the scorer reads `## Phase` lines |
-| `## Superpowers Execution` | `templates/tasks-template.md` | Abstract pairing; the section is about what each marker does | `## What each marker runs` |
-| `## Complexity Tracking` | `templates/plan-template.md` | Names an activity, not what the section holds | `## Complexity exceptions` |
-| `## Technical Context` | `templates/plan-template.md` | "Context" is the vaguest available noun | `## Stack and constraints` |
-| `### Key Entities *(include if feature involves data)*` | `templates/spec-template.md` | Instruction inside a heading; "key" is a banned adjective | Move the parenthetical into the body |
+| `## Dependencies & Execution Order` | `templates/tasks-template.md` | Two ideas joined by an ampersand | Moved to `## Task order` under G-60, in the template and every golden copy |
+| `## Phase N: Polish & Cross-Cutting Concerns` | `templates/tasks-template.md` | Ampersand, and "cross-cutting concerns" is jargon | Free: no scorer pattern reads `## Phase`; the goldens carry the heading |
+| `## Technical Context` | `templates/plan-template.md` | "Context" is the vaguest available noun | Frozen: `artifact-lint.sh` requires the name on a filled plan.md |
+| `### Key Entities *(include if feature involves data)*` | `templates/spec-template.md` | Instruction inside a heading; "key" is a banned adjective | Moved to `### Entities` under G-60, with the condition as the section's first sentence |
 | `## [Custom Category]` | `templates/checklist-template.md` | Placeholder, frozen | None |
-| `## Path Conventions` | `templates/tasks-template.md` | Reads as policy; the section lists paths | `## Where files go` |
+| `## Path Conventions` | `templates/tasks-template.md` | Reads as policy; the section lists paths | Dropped under G-60: one line points at plan.md's Project Structure |
 
 `SKILL.md`'s four shared headings are the core command names
 (`/speckit.specify`, `/speckit.plan`, `/speckit.constitution`,
 `/speckit.checklist`). They are spec-kit's, not upstream's, and never move.
 
-G-57 in `roadmap.md` executes against this section.
+G-57's remaining renames were dropped on 2026-09-28; a rename here needs a reason of its own.
