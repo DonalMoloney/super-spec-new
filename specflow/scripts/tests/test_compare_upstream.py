@@ -507,6 +507,112 @@ def test_spec_probe_scorer_crash_is_recorded_as_an_error_entry(tmp_path):
         assert "stub scorer crashed" in entry["error"]
 
 
+def test_spec_probe_project_seeds_files_byte_identical_to_the_example(tmp_path):
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    capture_dir = tmp_path / "capture"
+    write_stub(
+        bin_dir,
+        "claude",
+        f'if [ ! -d "{capture_dir}" ]; then\n'
+        f'  mkdir -p "{capture_dir}"\n'
+        f'  cp "$PWD/specs/001-link-audit/spec.md" "{capture_dir}/spec.md"\n'
+        f'  cp "$PWD/specs/001-link-audit/.seeded-ambiguity" "{capture_dir}/.seeded-ambiguity"\n'
+        f'  cp "$PWD/.specify/memory/constitution.md" "{capture_dir}/constitution.md"\n'
+        "fi\n"
+        "echo '{\"total_cost_usd\": 0.01}'\n"
+        "exit 0\n",
+    )
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert capture_dir.exists(), "claude was never invoked for the spec probe"
+    seeded_dir = SPECFLOW_DIR / "examples" / "seeded-ambiguity"
+    link_audit_constitution = (
+        SPECFLOW_DIR / "examples" / "link-audit" / ".specify" / "memory" / "constitution.md"
+    )
+    assert (capture_dir / "spec.md").read_bytes() == (seeded_dir / "spec.md").read_bytes()
+    assert (capture_dir / ".seeded-ambiguity").read_bytes() == (
+        seeded_dir / ".seeded-ambiguity"
+    ).read_bytes()
+    assert (capture_dir / "constitution.md").read_bytes() == link_audit_constitution.read_bytes()
+
+
+SEEDED_AMBIGUITY_SURFACE_CASES = [(True, 100, True), (False, 0, False)]
+
+
+@pytest.mark.parametrize(
+    "append_row,expected_score,expected_hit", SEEDED_AMBIGUITY_SURFACE_CASES
+)
+def test_spec_probe_score_matches_the_real_scorer(
+    tmp_path, append_row, expected_score, expected_hit
+):
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    capture_dir = tmp_path / "capture"
+    insert_row = (
+        'python3 -c \'\n'
+        "import sys\n"
+        'path = sys.argv[1]\n'
+        'text = open(path, encoding="utf-8").read()\n'
+        'marker = "## Open Questions\\n"\n'
+        'row = "\\n| Q8 | Does execution order matter? | Resolved | Yes. |\\n"\n'
+        'text = text.replace(marker, marker + row, 1)\n'
+        'open(path, "w", encoding="utf-8").write(text)\n'
+        "' \"$PWD/specs/001-link-audit/spec.md\"\n"
+        if append_row
+        else ""
+    )
+    write_stub(
+        bin_dir,
+        "claude",
+        f"{insert_row}"
+        f'[ -d "{capture_dir}" ] || cp -R "$PWD/specs/001-link-audit" "{capture_dir}"\n'
+        "echo '{\"total_cost_usd\": 0.01}'\n"
+        "exit 0\n",
+    )
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert capture_dir.exists(), "claude was never invoked for the spec probe"
+
+    scorer = subprocess.run(
+        [sys.executable, str(SPECFLOW_DIR / "scripts" / "score-artifacts.py"), str(capture_dir)],
+        capture_output=True,
+        text=True,
+    )
+    assert scorer.returncode == 0, scorer.stdout + scorer.stderr
+    real_score = int(json.loads(scorer.stdout)["seeded_ambiguity"]["score"])
+    assert real_score == expected_score
+
+    data = load_results(results_path)
+    spec_entries = [entry for entry in data["entries"] if entry["probe"] == "spec"]
+    assert spec_entries, "no spec entries written"
+    for entry in spec_entries:
+        assert entry["score"] == expected_score
+        assert entry["hit"] is expected_hit
+
+
 # --- Rule: the review probe checks whether review output names the planted fault (T594) ---
 
 
@@ -608,6 +714,39 @@ def test_review_probe_project_excludes_the_readme_analyze_gate_and_prior_review_
     assert any(entry.endswith("/src/link_audit/resolver.py") for entry in manifest), manifest
     assert any(entry.endswith("/specs/001-link-audit/spec.md") for entry in manifest), manifest
     assert any(entry.endswith("/specs/001-link-audit/tasks.md") for entry in manifest), manifest
+
+
+# --- Rule: each pipeline/run gets its own fresh project directory ---
+
+
+def test_each_pipeline_run_gets_its_own_project_directory(tmp_path):
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    cwd_log = tmp_path / "cwds.txt"
+    write_stub(
+        bin_dir,
+        "claude",
+        f'printf "%s\\n" "$PWD" >> "{cwd_log}"\n'
+        "echo '{\"total_cost_usd\": 0.01}'\n"
+        "exit 0\n",
+    )
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert cwd_log.exists(), "claude was never invoked"
+    cwds = cwd_log.read_text().splitlines()
+    assert len(cwds) == 2, cwds
+    assert cwds[0] != cwds[1], cwds
 
 
 # --- Rule: an upstream failure is recorded, never patched around ---
@@ -767,6 +906,63 @@ def test_live_runs_init_call_carries_non_interactive(tmp_path):
     init_calls = [call for call in calls if "specify init" in call]
     assert init_calls, "uvx was never called with specify init"
     assert all("--non-interactive" in call for call in init_calls)
+
+
+# --- Rule: the live claude invocation carries the same caps and format the dry run previews ---
+
+
+def test_live_claude_invocation_carries_budget_turns_and_output_format_flags(tmp_path):
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    claude_log = recording_stub(bin_dir, "claude")
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+            "E2E_MAX_BUDGET_USD": "0.75",
+            "E2E_MAX_TURNS": "12",
+            "E2E_MODEL": None,
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    calls = claude_log.read_text().splitlines()
+    assert calls, "claude was never invoked"
+    for call in calls:
+        assert "--max-budget-usd 0.75" in call, call
+        assert "--max-turns 12" in call, call
+        assert "--output-format json" in call, call
+        assert "--model" not in call, call
+        assert "bypassPermissions" not in call, call
+
+
+def test_live_claude_invocation_carries_the_model_flag_only_when_e2e_model_is_set(tmp_path):
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    claude_log = recording_stub(bin_dir, "claude")
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+            "E2E_MODEL": "claude-sonnet-x",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    calls = claude_log.read_text().splitlines()
+    assert calls, "claude was never invoked"
+    for call in calls:
+        assert "--model claude-sonnet-x" in call, call
 
 
 # --- Rule: results.json carries a fixed shape ---
