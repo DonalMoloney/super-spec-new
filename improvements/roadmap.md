@@ -1143,7 +1143,7 @@ Executor: `documentation-scribe`. Model: sonnet. Effort: low. Depends on: none.
 
 `specflow/assets/workflow-overview-en.png` (12 MiB) and
 `workflow-overview-zh.png` (1.9 MiB) are unreferenced by any shipped file.
-`SKILL.md` dropped its link to the English PNG in the 1.0.3 release (the PNG
+`SKILL.md` dropped its link to the English PNG in the 1.1.0 release (the PNG
 had already broken `specify extension add specflow` once, upstream issue #6,
 `CHANGELOG.md`'s 1.0.2 entry), and nothing links the Chinese one; ADR-0010
 dropped Chinese docs from this fork entirely. `assets/` is `export-ignore`d,
