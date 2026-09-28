@@ -16,6 +16,20 @@ The extension ships prompts, not code. Pick the version part from the change:
 
 A release that carries more than one of these takes the highest part.
 
+## [Unreleased]
+
+### Changed
+
+- Six section headings read better. In `references/workflow-guide.md`, Phase
+  2's `### Process` is `### Steps`, which the other seven phases already
+  used, and `### Iteration` is `### Repeat runs`. In `tasks-template.md`,
+  `## Superpowers Execution` is `## Execution rules`, because every bullet
+  under it also states what to do without superpowers;
+  `### Execution Discipline by Marker` is `### What each marker requires`;
+  and `### Within Each User Story` is `### Order within a user story`. In
+  `plan-template.md`, `## Complexity Tracking` is
+  `## Justified constitution violations`, which is what its table holds.
+
 ## [1.1.0] - 2026-09-27
 
 ### Added
