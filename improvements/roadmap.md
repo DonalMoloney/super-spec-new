@@ -1164,7 +1164,7 @@ Verify: `python3 scripts/validate-release-archive.py` passes from `specflow/`,
 history, and the new SVG renders (open it or `npx @marp-team/marp-cli` if it
 is wired into the deck).
 
-## G-59 — Run upstream and this fork on the same seeded input, and record which catches the flaw
+## G-59 — Run upstream and this fork on the same seeded input, and record which catches the flaw (working on)
 
 Executor: `bdd-orchestrator`. Effort: medium. Depends on: none.
 
