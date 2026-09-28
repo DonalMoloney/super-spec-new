@@ -39,6 +39,15 @@ A release that carries more than one of these takes the highest part.
   merge gate accepts. `plan-template.md`'s Constitution Check table takes an
   Evidence column in place of Notes, and Human Checkpoints points at the
   workflow guide's protocol instead of restating it.
+- `spec-template.md`'s five Functional Requirement samples each show a
+  different kind of requirement instead of repeating "specific capability".
+  `plan-template.md`'s Constitution Check names the sections whose completion
+  triggers its re-run, in place of an undefined "design phase", and its
+  Independent Work Streams comment states that `/speckit.specflow.tasks`
+  derives the `[P]` marker from it as well as `[SUBAGENT]`.
+- `README.md`'s command table lists `/speckit.specflow.agent-event`, and the
+  install and upgrade sections count seven registered skill directories, not
+  six.
 - Six section headings read better. In `references/workflow-guide.md`, Phase
   2's `### Process` is `### Steps`, which the other seven phases already
   used, and `### Iteration` is `### Repeat runs`. In `tasks-template.md`,

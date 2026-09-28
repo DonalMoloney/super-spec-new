@@ -12,7 +12,7 @@ bash verify.sh
 ```
 
 The script walks the steps `.github/workflows/ci.yml` runs, in that order, and
-stops at the first failure. It prints the four steps it leaves to CI.
+stops at the first failure. It prints the two steps it leaves to CI.
 `tests/test_ci_parity.py` fails when the script and the workflow drift apart,
 so the script cannot fall behind without anyone noticing.
 

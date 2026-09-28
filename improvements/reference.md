@@ -7,7 +7,7 @@ the option space and the measured distance to upstream.
 
 Percentages are the real (rebrand-normalized) change against the vendored
 upstream at the root commit (`bda4ef0`, upstream `c20ac6c`). Upstream `HEAD`
-was still `c20ac6c` on 2026-09-25. An option a roadmap item already claims names
+was still `c20ac6c` on 2026-09-28. An option a roadmap item already claims names
 that item instead of repeating its tasks.
 
 ## Three constraints
@@ -38,8 +38,8 @@ targets.
 
 ## Measured state
 
-Measured 2026-09-27 against upstream `c20ac6c1` by rerunning the reproduce
-command below, after G-58 merged. Lowest real change first. One row the
+Measured 2026-09-28 against upstream `c20ac6c1` by rerunning the reproduce
+command below, after PR #92 merged. Lowest real change first. One row the
 command cannot reach: G-30 renamed `references/superpowers-bridge.md` to
 `references/superpowers-mapping.md`, and the measurer resolves one relative
 path against both roots, so that row is measured by copying upstream's file
@@ -58,12 +58,12 @@ three rows and stopped until this revision.
 
 | File | Real | Last moved by |
 |------|------|---------------|
-| `templates/plan-template.md` | 23% | `prose-rephraser` |
-| `templates/spec-template.md` | 39% | G-50 (Brainstorm Prompts trimmed to 5 categories, Threat Model reordered) |
-| `templates/checklist-template.md` | 45% | `prose-rephraser` |
-| `templates/constitution-template.md` | 50% | G-50 (Code Review Rules reordered before Governance) |
-| `templates/tasks-template.md` | 53% | G-57 (three headings renamed) |
+| `templates/plan-template.md` | 28% | PR #92, then the Constitution Check trigger and `[P]` note |
+| `templates/checklist-template.md` | 48% | PR #92 (aligned with the gates and reviewers that read it) |
+| `templates/constitution-template.md` | 53% | PR #92 |
+| `templates/tasks-template.md` | 54% | PR #92 |
 | `references/superpowers-mapping.md` | 57% | `prose-rephraser` |
+| `templates/spec-template.md` | 58% | PR #92, then the FR example lines |
 | `commands/execute.md` | 61% | `divergence-renamer` |
 | `commands/hooks/after-tasks.md` | 65% | `divergence-renamer` |
 | `commands/status.md` | 65% | ADR-0043 (`## Phase without progress.yml`) |
@@ -76,20 +76,21 @@ three rows and stopped until this revision.
 | `commands/hooks/before-execute.md` | 78% | ADR-0043 (`## Stop behavior`) |
 | `commands/review.md` | 80% | `divergence-renamer` |
 | `scripts/e2e-smoke.sh` | 85% | G-57 and G-26 (heading and hook assertions added) |
-| `CHANGELOG.md` | 86% | the 1.1.0 release entries |
+| `CHANGELOG.md` | 87% | the entries after 1.1.0 |
 | `scripts/validate-release-archive.py` | 87% | `script-refactorer` |
 | `scripts/validate-extension-metadata.py` | 91% | ADR-0041 (catalog counts held to `extension.yml`) |
 | `scripts/e2e-agent-claude.sh` | 95% | G-19 (live run, PR #81) |
 | `README.md` | 129% | G-58 (PNG links dropped, PR #91) |
 
-Twelve rows moved since the 2026-09-25 measurement, none by a prose pass.
-`scripts/e2e-agent-claude.sh` moved furthest, 90% to 95%, from G-19's live
-run. ADR-0043's three heading renames account for four rows on their own:
-`commands/brainstorm.md` 68% to 74%, `commands/hooks/before-execute.md` 74%
-to 78%, `commands/hooks/after-execute.md` 70% to 74%, and
-`commands/status.md` 64% to 65%. `CHANGELOG.md` rose 77% to 86% as the 1.1.0
-entries landed, and `extension.yml` 62% to 67% when G-26 registered the
-`events:` block. `references/superpowers-mapping.md` held at 57%.
+Six rows moved since the 2026-09-27 measurement, five of them templates.
+PR #92's alignment of the five templates with the gates and reviewers that
+read them moved `spec-template.md` furthest, 39% to 58%, and the other four
+between 1 and 5 points. A follow-up functional pass on 2026-09-28 rewrote
+the FR example lines in `spec-template.md`, named the Constitution Check
+re-run trigger in `plan-template.md`, and taught its Independent Work
+Streams comment the `[P]` marker `commands/tasks.md` derives from it.
+`CHANGELOG.md` rose 86% to 87% from post-1.1.0 entries. Every other row
+held.
 
 The installable payload has moved a long way from upstream in wording and,
 since the previous measurement, in shape as well: `extension.yml` now
@@ -290,15 +291,15 @@ measures 67%, moved by G-56's `before_tasks` hook registration and G-26's
 |------|------|-------|------------|
 | `commands/hooks/after-tasks.md` | 65% | `prose-rephraser` | |
 | `extension.yml` | 67% | `prose-rephraser` | |
-| `CHANGELOG.md` | 86% | `prose-rephraser` | |
+| `CHANGELOG.md` | 87% | `prose-rephraser` | |
 | `scripts/validate-extension-metadata.py` | 91% | `script-refactorer` | |
 | `references/superpowers-mapping.md` | 57% | `prose-rephraser` | |
 | `README.md` | 129% | `prose-rephraser` | |
-| `templates/plan-template.md` | 23% | `prose-rephraser` | |
-| `templates/spec-template.md` | 39% | `prose-rephraser` | |
-| `templates/checklist-template.md` | 45% | `prose-rephraser` | |
-| `templates/constitution-template.md` | 50% | `prose-rephraser` | |
-| `templates/tasks-template.md` | 53% | `prose-rephraser` | |
+| `templates/plan-template.md` | 28% | `prose-rephraser` | |
+| `templates/spec-template.md` | 58% | `prose-rephraser` | |
+| `templates/checklist-template.md` | 48% | `prose-rephraser` | |
+| `templates/constitution-template.md` | 53% | `prose-rephraser` | |
+| `templates/tasks-template.md` | 54% | `prose-rephraser` | |
 | `scripts/validate-release-archive.py` | 87% | `script-refactorer` | |
 
 A template's Real column moves little because most of its lines cannot move.
@@ -318,7 +319,7 @@ test greps command prose.
 
 The Real column counts changed lines, so it conflates a reworded file with a
 restructured one. This records the other half: the headings, functions, and
-manifest keys still spelled as upstream spells them, measured 2026-09-25
+manifest keys still spelled as upstream spells them, measured 2026-09-28
 against `c20ac6c1`. Read it before choosing a rewrite target.
 
 Structure is moving, but only where a renamer pass has reached. A count below
@@ -336,11 +337,11 @@ shape; only `divergence-renamer` moves the shape.
 
 | File | Real | Named units shared |
 |------|------|--------------------|
-| `templates/plan-template.md` | 23% | 11 of 13 headings |
-| `templates/spec-template.md` | 39% | 15 of 19 headings |
-| `templates/checklist-template.md` | 45% | 11 of 12 headings |
-| `templates/constitution-template.md` | 50% | 15 of 17 headings |
-| `templates/tasks-template.md` | 53% | 16 of 20 headings |
+| `templates/plan-template.md` | 28% | 11 of 13 headings |
+| `templates/spec-template.md` | 58% | 13 of 18 headings |
+| `templates/checklist-template.md` | 48% | 11 of 12 headings |
+| `templates/constitution-template.md` | 53% | 15 of 17 headings |
+| `templates/tasks-template.md` | 54% | 14 of 19 headings |
 | `commands/hooks/*.md` | 65 to 78% | 1 or 2 of 3 |
 | `extension.yml` | 67% | 6 of 7 keys |
 | `SKILL.md` | 76% | 5 of 22 headings |
@@ -483,7 +484,7 @@ two cited from more than one file, a direct `git mv` and edit for the third.
 | File | Problem | Used in | Better name |
 |------|---------|---------|-------------|
 | `.claude/hooks/diff-impl.sh` | Shortens "implementation" to "impl"; its own header comment spells out "differential implementation run" | `.claude/hooks/tests/run.sh`, `specflow/references/workflow-guide.md`, `specflow/references/copilot-cli.md` | `differential-implementation.sh` |
-| `.claude/review/scorecard.sh` | Shares the verb "score" with `specflow/scripts/score-artifacts.py`, which scores golden artifacts against upstream, not reviewer precision; the two names give no hint they measure different things | `improvements/roadmap.md` (item 31), `.claude/review/tests/test_scorecard.py`, `docs/review-research.md`, `presentation/marp-deck/deck.md` | `reviewer-precision.sh` |
+| `.claude/review/scorecard.sh` | Shares the verb "score" with `specflow/scripts/score-artifacts.py`, which scores golden artifacts against upstream, not reviewer precision; the two names give no hint they measure different things | `.claude/review/tests/test_scorecard.py`, `docs/review-research.md`, `presentation/marp-deck/deck.md` | `reviewer-precision.sh` |
 | `specflow/examples/link-audit/analyze-gate.md` | Reads like a script or command name; every sibling file in the directory (`spec.md`, `plan.md`, `tasks.md`, `progress.yml`) is a document the pipeline writes, but this one records seven sessions run after the pipeline ended | `specflow/examples/link-audit/README.md` | `analyze-gate-walkthrough.md` |
 
 ## Diverging further, and how to tell a real move from churn

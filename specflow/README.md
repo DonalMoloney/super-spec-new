@@ -122,12 +122,13 @@ Suggested next step: /speckit.specflow.execute 001
 | `/speckit.specflow.execute` | Implement each task under TDD, subagents, and checkpoints |
 | `/speckit.specflow.review` | Read the implementation back against the spec |
 | `/speckit.specflow.gate` | Write a feature's clarify or analyze marker once its gate passes |
+| `/speckit.specflow.agent-event` | Route a hook payload to the matching gate scripts; the agent's hooks call it, a user never types it |
 
 The table names the Claude Code form. On the GitHub Copilot CLI each command is
 a skill whose name swaps the dots for hyphens, so a user types
 `/speckit-specflow-status` there.
 
-Those six sit beside the commands spec-kit ships itself
+Those seven sit beside the commands spec-kit ships itself
 (`/speckit.constitution`, `/speckit.specify`, `/speckit.plan`,
 `/speckit.tasks`, `/speckit.checklist`).
 
@@ -166,7 +167,7 @@ the same id, so pass `--force`:
 specify extension add specflow --from <new release asset URL> --force
 ```
 
-The install replaces `.specify/extensions/specflow/` along with the six
+The install replaces `.specify/extensions/specflow/` along with the seven
 registered skill directories. It leaves the project's own files untouched: the
 constitution, the feature directories under `specs/`, and
 `.specify/superpowers.yml`.
