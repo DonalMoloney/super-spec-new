@@ -60,7 +60,7 @@ rest as dropped.
 2. G-59, the upstream comparison. Its result ranks every later divergence item:
    a gap it finds outranks a heading rename.
 
-## Backlog item 26 — An upgrade path the smoke test walks
+## Backlog item 26 — An upgrade path the smoke test walks (working on)
 
 `e2e-smoke.sh` installs the published release ZIP, installs the checkout over
 it with `--dev`, and asserts no stale command file or `extensions.yml` entry
