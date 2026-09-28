@@ -1,4 +1,4 @@
-"""Outside oracle for the FR-012 violation planted in seeded-review-bug.
+"""Assert resolve_file raises LinkAuditError on an undecodable anchor target, per FR-012.
 
 Importable module, not collected by plain pytest: its file name carries no
 `test_` prefix, so the shipped `python_files = test_*.py` convention skips it
@@ -33,7 +33,8 @@ def _load_link_audit_src() -> Path:
     raw = os.environ.get("LINK_AUDIT_SRC")
     if raw is None:
         raise MissingLinkAuditSrcError(
-            "LINK_AUDIT_SRC is unset; expected a path to a src/link_audit/ directory."
+            "LINK_AUDIT_SRC is unset; expected a path to a src/link_audit/ "
+            "directory. Set it before running this module."
         )
     return Path(raw).resolve()
 
