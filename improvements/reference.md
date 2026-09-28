@@ -511,10 +511,14 @@ candidates.
 
 - **Frozen by a contract.** `constitution-template.md`'s `## Core Principles`
   is grepped by `e2e-stages.sh`. `spec-template.md`'s three `*(mandatory)*`
-  headings and `tasks-template.md`'s `## Phase N:` lines feed
-  `score-artifacts.py`'s `spec_sections` dimension against both goldens. A
-  bracket placeholder such as `### [PRINCIPLE_1_NAME]` is substituted at run
-  time. None of these moves without moving its contract first.
+  headings feed `score-artifacts.py`'s `spec_sections` dimension against both
+  goldens, and `artifact-lint.sh` requires them by name along with
+  `plan-template.md`'s `## Summary`, `## Technical Context`, and
+  `## Constitution Check`. A bracket placeholder such as
+  `### [PRINCIPLE_1_NAME]` is substituted at run time. None of these moves
+  without moving its contract first. `tasks-template.md`'s `## Phase N:`
+  lines are not among them: `score-artifacts.py` carries no `Phase` pattern,
+  re-checked 2026-09-27.
 - **Already the right name.** `## Usage`, `## Process`, `## Output`,
   `## Summary`, `## Notes`, `## Security`, `## Performance`,
   `## Correctness`. A shorter or plainer name does not exist. Leave them.
@@ -561,12 +565,12 @@ breaks. A row is a candidate, not a decision: check its contracts first.
 
 | Heading | File | Rule it breaks | Candidate |
 |---------|------|----------------|-----------|
-| `## Dependencies & Execution Order` | `templates/tasks-template.md` | Two ideas joined by an ampersand | Split, or `## Task order` |
-| `## Phase N: Polish & Cross-Cutting Concerns` | `templates/tasks-template.md` | Ampersand, and "cross-cutting concerns" is jargon | Contract first: the scorer reads `## Phase` lines |
-| `## Technical Context` | `templates/plan-template.md` | "Context" is the vaguest available noun | `## Stack and constraints` |
-| `### Key Entities *(include if feature involves data)*` | `templates/spec-template.md` | Instruction inside a heading; "key" is a banned adjective | Move the parenthetical into the body |
+| `## Dependencies & Execution Order` | `templates/tasks-template.md` | Two ideas joined by an ampersand | Moved to `## Task order` under G-60, in the template and every golden copy |
+| `## Phase N: Polish & Cross-Cutting Concerns` | `templates/tasks-template.md` | Ampersand, and "cross-cutting concerns" is jargon | Free: no scorer pattern reads `## Phase`; the goldens carry the heading |
+| `## Technical Context` | `templates/plan-template.md` | "Context" is the vaguest available noun | Frozen: `artifact-lint.sh` requires the name on a filled plan.md |
+| `### Key Entities *(include if feature involves data)*` | `templates/spec-template.md` | Instruction inside a heading; "key" is a banned adjective | Moved to `### Entities` under G-60, with the condition as the section's first sentence |
 | `## [Custom Category]` | `templates/checklist-template.md` | Placeholder, frozen | None |
-| `## Path Conventions` | `templates/tasks-template.md` | Reads as policy; the section lists paths | `## Where files go` |
+| `## Path Conventions` | `templates/tasks-template.md` | Reads as policy; the section lists paths | Dropped under G-60: one line points at plan.md's Project Structure |
 
 `SKILL.md`'s four shared headings are the core command names
 (`/speckit.specify`, `/speckit.plan`, `/speckit.constitution`,

@@ -708,7 +708,7 @@ existing `.clarified`-gated check's pattern in the same file.
 Verify: `bash .claude/hooks/tests/run.sh` passes with the new cases from T601
 included.
 
-- [x] T601 Add hook tests for the new check
+- [x] T655 Add hook tests for the new check
 
 Add at least three cases to `.claude/hooks/tests/run.sh`, following the file's
 existing `lint()`/`check` helper pattern: a `spec.md` with `.analyzed` present
@@ -729,7 +729,7 @@ nothing), so the live `specify extension search specflow` check the backlog
 item names cannot run in this environment. Do the parts below and say so in
 the final report rather than fabricating that check.
 
-- [x] T610 Add `catalog.json` at the repository root
+- [x] T664 Add `catalog.json` at the repository root
 
 Write a spec-kit catalog schema 1.0 JSON file naming `specflow`. Reuse the
 field set already agreed for this extension's catalog submission in
@@ -742,7 +742,7 @@ Verify: `python3 -c "import json; json.load(open('catalog.json'))"` exits 0;
 the entry's command and hook counts match `specflow/extension.yml`'s current
 `commands:`/`hooks:` list lengths.
 
-- [x] T611 Add a README line naming how to list this catalog
+- [x] T665 Add a README line naming how to list this catalog
 
 Add one sentence to the root `README.md`'s install section naming the two ways
 a user points spec-kit at this catalog: listing it in
@@ -1234,3 +1234,34 @@ is not ready, whatever the order above says.
 - `git status --porcelain` prints nothing on `main`.
 - `CHANGELOG.md` has no `[Unreleased]` entries left; each one moved under the
   tag's heading with the version the rule in that file picks.
+
+## G-60 — Align the five templates with the gates and the review pipeline that read them (merged: PR #92)
+
+Executor: `general-purpose`. Effort: low. Depends on: none. Raised on
+2026-09-27 from a read of each template against `artifact-lint.sh`,
+`test-gate.sh`, `score-artifacts.py`, `findings-schema.json`, and
+`superpowers-mapping.md`. The prose passes were done, so the remaining
+divergence is where a template still taught something this fork's own gates,
+standards, or reviewers contradict.
+
+- [x] T655 Rewrite tasks-template.md's sample tasks that name no verifiable outcome. Verify: no sample task line reads "utilities", "Clean up", "Optimize", or "Harden".
+- [x] T656 Fold tasks-template.md's Path Conventions into one line pointing at plan.md's Project Structure. Verify: `grep -c "## Path Conventions" specflow/templates/tasks-template.md` returns 0.
+- [x] T657 Rename `## Dependencies & Execution Order` to `## Task order` in tasks-template.md and every golden tasks.md. Verify: `grep -rl "## Task order" specflow/examples | wc -l` prints 7.
+- [x] T658 State the `path::identifier` Traceability form artifact-lint.sh parses in spec-template.md. Verify: `grep -c "path::identifier" specflow/templates/spec-template.md` returns 1.
+- [x] T659 Replace spec-template.md's unmeasurable Success Criteria samples. Verify: `grep -c "Business metric\|satisfaction metric" specflow/templates/spec-template.md` returns 0.
+- [x] T660 Add a `Decided in` column to spec-template.md's Open Questions table, after Resolution. Verify: `pytest specflow/scripts/tests/test_score_artifacts.py` passes.
+- [x] T661 Drop spec-template.md's User Story 3 block. Verify: `grep -c "User Story 3" specflow/templates/spec-template.md` returns 0.
+- [x] T662 Rename `### Key Entities *(include if feature involves data)*` to `### Entities` in spec-template.md and every golden spec.md, with the condition as the body's first sentence. Verify: `grep -rl "^### Entities" specflow/examples | wc -l` prints 7.
+- [x] T663 Rewrite constitution-template.md's Review Stages rows to the four stages the review command runs. Verify: the table names Stage 0 to Stage 3.
+- [x] T664 Keep one `Test command:` line in constitution-template.md, with a comment naming the gate that reads it. Verify: `grep -c "Test command" specflow/templates/constitution-template.md` returns 2, the comment and the line.
+- [x] T665 Fix checklist-template.md's CHK013, CHK031, CHK041, CHK042, CHK043 to checkable statements. Verify: each item names an observable.
+- [x] T666 Mark checklist-template.md's Performance section conditional on a stated limit. Verify: the section opens with the condition.
+- [x] T667 State the findings status values in checklist-template.md's Review Findings comment. Verify: the comment lists the five enum values.
+- [x] T668 Replace plan-template.md's Constitution Check Notes column with Evidence. Verify: `grep -c "| Evidence |" specflow/templates/plan-template.md` returns 1.
+- [x] T669 Point plan-template.md's Human Checkpoints at the workflow guide's protocol. Verify: the section cites `references/workflow-guide.md`.
+- [x] T670 Correct reference.md's frozen-heading paragraph and candidate table. Verify: the table marks `## Technical Context` frozen and the three moved rows as moved.
+
+Left out: a gate requiring a Task Verification row for every task. The
+recorded golden has 17 rows for 59 tasks, so the gate would fail the recorded
+run or need seven golden files given 42 invented rows. Backlog it with the
+golden regeneration.
