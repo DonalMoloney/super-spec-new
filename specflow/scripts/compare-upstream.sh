@@ -372,7 +372,7 @@ write_error_entry() {
 # PROJECT_DIR. On failure, removes it, clears PROJECT_DIR, and reports the
 # failing step's stderr in PROJECT_DIR_ERROR. `cd ""` succeeds and stays in
 # the caller's cwd rather than failing, so a mktemp that produced no
-# directory is checked directly instead of being used as a cwd (CR-003).
+# directory is checked directly instead of being used as a cwd.
 prepare_probe_project() {
   local pipeline_path="$1"
   local step_stderr

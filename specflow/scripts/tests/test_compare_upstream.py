@@ -190,7 +190,7 @@ def test_compare_probes_invalid_value_exits_1_with_its_message():
     assert "spec, review, or all" in result.stderr
 
 
-# --- Rule: COMPARE_RUNS only accepts a positive integer (fix round 3, F7) ---
+# --- Rule: COMPARE_RUNS only accepts a positive integer ---
 
 
 def test_compare_runs_given_a_non_numeric_value_exits_nonzero_with_a_message(tmp_path):
@@ -352,7 +352,7 @@ def test_dry_run_pointed_at_the_committed_results_json_refuses_to_run():
         assert not committed.exists()
 
 
-# --- Rule: a live run writes the committed results file by default (CR-002) ---
+# --- Rule: a live run writes the committed results file by default ---
 
 
 def test_a_live_run_with_compare_results_unset_writes_the_committed_path_under_fork_root(tmp_path):
@@ -563,7 +563,7 @@ def test_review_probe_hit_script_error_is_recorded_as_an_error_entry(tmp_path):
         assert "review-probe-hit.py exited 2" in entry["error"]
 
 
-# --- Rule: the review probe project excludes the planted fault's answer (CR-001) ---
+# --- Rule: the review probe project excludes the planted fault's answer ---
 
 
 def test_review_probe_project_excludes_the_readme_analyze_gate_and_prior_review_output(
@@ -845,7 +845,7 @@ def test_entrys_cost_reflects_claudes_reported_json(tmp_path, claude_json, expec
         assert any(entry["cost_usd"] == float(expected_cost) for entry in data["entries"])
 
 
-# --- Rule: a failed claude call records its cause and its cost (fix round 2) ---
+# --- Rule: a failed claude call records its cause and its cost ---
 
 CLAUDE_BUDGET_ERROR_JSON = (
     '{"type":"result","subtype":"error_max_budget_usd","is_error":true,'
@@ -932,7 +932,7 @@ def test_a_claude_call_reporting_is_error_true_on_exit_0_is_recorded_as_an_error
         assert "error_max_budget_usd" in entry["error"]
 
 
-# --- Rule: every mktemp template works on GNU coreutils, not only BSD (CR-003) ---
+# --- Rule: every mktemp template works on GNU coreutils, not only BSD ---
 
 
 def test_dry_run_succeeds_with_a_gnu_style_mktemp_on_path(tmp_path):
@@ -971,7 +971,7 @@ def test_a_live_run_succeeds_with_a_gnu_style_mktemp_on_path(tmp_path):
     assert data["entries"], "no entries written"
 
 
-# --- Rule: the upstream scratch clone is removed at exit (CR-006) ---
+# --- Rule: the upstream scratch clone is removed at exit ---
 
 
 def test_a_dry_run_leaves_no_upstream_scratch_directory_behind(tmp_path):
