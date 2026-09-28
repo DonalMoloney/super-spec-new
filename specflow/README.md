@@ -181,9 +181,11 @@ the project should carry nothing from specflow.
 
 ### `CONSTITUTION_REQUIRED`
 
-Every command reads `.specify/memory/constitution.md` first and stops when that
-file is missing. Run `/speckit.constitution` to write it, then start the
-original command again.
+The brainstorm, tasks, execute, review, and gate commands read
+`.specify/memory/constitution.md` first and stop when that file is missing. Run
+`/speckit.constitution` to write it, then start the original command again.
+`status` reports the missing file instead of stopping. `agent-event` reads
+nothing under `.specify/memory/`.
 
 ### The template resolver fails
 
