@@ -19,6 +19,7 @@ COMPARE_RESULTS. Two further behaviors these tests check directly:
 import json
 import os
 import re
+import shutil
 import stat
 import subprocess
 import sys
@@ -63,6 +64,32 @@ def recording_stub(bin_dir, name, exit_code=0):
     log = bin_dir / f"{name}.calls"
     write_stub(bin_dir, name, f'printf "%s\\n" "$*" >> "{log}"\nexit {exit_code}\n')
     return log
+
+
+def gnu_mktemp_stub(bin_dir):
+    """Write an mktemp stub that rejects a template with fewer than 3 X's.
+
+    GNU coreutils mktemp (CI's ubuntu-latest) rejects such a template;
+    BSD mktemp (macOS, where these tests run) does not, so nothing local
+    catches the bug without this stub. A template ending in the
+    conventional `.XXXXXX` delegates to the real mktemp on PATH; anything
+    else exits 1 with GNU's own message.
+    """
+    real_mktemp = shutil.which("mktemp")
+    error_line = '    printf "mktemp: too few X%ss in template %%s\\n" "$template" >&2\n' % "'"
+    write_stub(
+        bin_dir,
+        "mktemp",
+        'template=""\n'
+        'for arg in "$@"; do template="$arg"; done\n'
+        'case "$template" in\n'
+        f'  *XXX*) exec "{real_mktemp}" "$@" ;;\n'
+        "  *)\n"
+        + error_line
+        + "    exit 1\n"
+        "    ;;\n"
+        "esac\n",
+    )
 
 
 def git_checkout(root):
@@ -892,3 +919,42 @@ def test_a_claude_call_reporting_is_error_true_on_exit_0_is_recorded_as_an_error
         assert entry["status"] == "error"
         assert entry["hit"] is None
         assert "error_max_budget_usd" in entry["error"]
+
+
+# --- Rule: every mktemp template works on GNU coreutils, not only BSD (CR-003) ---
+
+
+def test_dry_run_succeeds_with_a_gnu_style_mktemp_on_path(tmp_path):
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    gnu_mktemp_stub(bin_dir)
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {"E2E_DRY_RUN": "1", "COMPARE_RESULTS": str(results_path)},
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "too few X" not in result.stderr
+
+
+def test_a_live_run_succeeds_with_a_gnu_style_mktemp_on_path(tmp_path):
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    gnu_mktemp_stub(bin_dir)
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    write_stub(bin_dir, "claude", "echo '{\"total_cost_usd\": 0.01}'\nexit 0\n")
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "too few X" not in result.stderr
+    data = load_results(results_path)
+    assert data["entries"], "no entries written"

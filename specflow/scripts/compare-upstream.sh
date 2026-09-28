@@ -48,7 +48,8 @@ UPSTREAM_CHECKOUT="${COMPARE_UPSTREAM_CHECKOUT:-}"
 
 UPSTREAM_URL="https://github.com/WangX0111/superspec"
 UPSTREAM_COMMIT="c20ac6c1ba069cc9a72dacb8044b7b193d3dde81"
-UPSTREAM_SCRATCH_DIR="$(mktemp -u -d -t compare-upstream)/superspec"
+UPSTREAM_SCRATCH_ROOT="$(mktemp -d -t compare-upstream-upstream.XXXXXX)"
+UPSTREAM_SCRATCH_DIR="$UPSTREAM_SCRATCH_ROOT/superspec"
 UPSTREAM_CHECKOUT_ERROR=""
 
 MAX_BUDGET="${E2E_MAX_BUDGET_USD:-0.50}"
@@ -242,7 +243,7 @@ resolve_compare_results_path() {
   if [ -z "${COMPARE_RESULTS:-}" ]; then
     if [ "$DRY_RUN" = "1" ]; then
       local results_dir
-      results_dir="$(mktemp -d -t compare-upstream-results)"
+      results_dir="$(mktemp -d -t compare-upstream-results.XXXXXX)"
       COMPARE_RESULTS="$results_dir/results.json"
     else
       COMPARE_RESULTS="$COMMITTED_RESULTS"
@@ -325,7 +326,7 @@ ensure_upstream_checkout() {
   fi
 
   local step_stderr
-  step_stderr="$(mktemp -t compare-upstream-clone)"
+  step_stderr="$(mktemp -t compare-upstream-clone.XXXXXX)"
   mkdir -p "$(dirname "$UPSTREAM_SCRATCH_DIR")"
 
   if ! git clone "$UPSTREAM_URL" "$UPSTREAM_SCRATCH_DIR" >/dev/null 2>"$step_stderr"; then
@@ -347,7 +348,7 @@ ensure_upstream_checkout() {
 
 ensure_upstream_checkout || true
 
-RESULTS_ENTRIES_FILE="$(mktemp -t compare-upstream-entries)"
+RESULTS_ENTRIES_FILE="$(mktemp -t compare-upstream-entries.XXXXXX)"
 
 # Appends one compact-JSON error entry to RESULTS_ENTRIES_FILE: hit and
 # score stay null, so every failure path (a bad checkout, a failed install,
@@ -365,13 +366,21 @@ write_error_entry() {
 # into it, so no run carries over another run's specs/, findings, or
 # .specify/ state. On success, leaves the project directory in
 # PROJECT_DIR. On failure, removes it, clears PROJECT_DIR, and reports the
-# failing step's stderr in PROJECT_DIR_ERROR.
+# failing step's stderr in PROJECT_DIR_ERROR. `cd ""` succeeds and stays in
+# the caller's cwd rather than failing, so a mktemp that produced no
+# directory is checked directly instead of being used as a cwd (CR-003).
 prepare_probe_project() {
   local pipeline_path="$1"
   local step_stderr
-  PROJECT_DIR="$(mktemp -d -t compare-upstream-project)"
   PROJECT_DIR_ERROR=""
-  step_stderr="$(mktemp -t compare-upstream-project-step)"
+
+  if ! PROJECT_DIR="$(mktemp -d -t compare-upstream-project.XXXXXX)"; then
+    PROJECT_DIR_ERROR="mktemp -d failed to create a project directory."
+    PROJECT_DIR=""
+    return 1
+  fi
+
+  step_stderr="$(mktemp -t compare-upstream-project-step.XXXXXX)"
 
   if ! (cd "$PROJECT_DIR" && uvx --from git+https://github.com/github/spec-kit.git \
         specify init --here --integration claude --ignore-agent-tools --force \
@@ -517,8 +526,8 @@ score_probe_entry() {
   local feature_dir="$project_dir/$PROBE_FEATURE_DIR"
   local score_stdout score_stderr score_val hit_val
 
-  score_stdout="$(mktemp -t compare-upstream-score-out)"
-  score_stderr="$(mktemp -t compare-upstream-score-err)"
+  score_stdout="$(mktemp -t compare-upstream-score-out.XXXXXX)"
+  score_stderr="$(mktemp -t compare-upstream-score-err.XXXXXX)"
 
   if ! python3 "$FORK_ROOT/specflow/scripts/score-artifacts.py" "$feature_dir" \
       >"$score_stdout" 2>"$score_stderr"; then
@@ -548,10 +557,10 @@ review_probe_entry() {
   local after_manifest final_text_file path review_exit hit_val
   local changed_args=() baseline_args=()
 
-  after_manifest="$(mktemp -t compare-upstream-manifest-after)"
+  after_manifest="$(mktemp -t compare-upstream-manifest-after.XXXXXX)"
   project_manifest "$project_dir" > "$after_manifest"
 
-  final_text_file="$(mktemp -t compare-upstream-final-text)"
+  final_text_file="$(mktemp -t compare-upstream-final-text.XXXXXX)"
   jq -r 'if (type == "object") then (.result // "") else "" end' "$stdout_file" 2>/dev/null > "$final_text_file"
 
   while IFS= read -r path; do
@@ -646,7 +655,7 @@ run_probe_entry() {
     spec) seed_spec_probe_project "$project_dir" ;;
     review)
       seed_review_probe_project "$project_dir"
-      before_manifest="$(mktemp -t compare-upstream-manifest-before)"
+      before_manifest="$(mktemp -t compare-upstream-manifest-before.XXXXXX)"
       project_manifest "$project_dir" > "$before_manifest"
       ;;
   esac
@@ -654,8 +663,8 @@ run_probe_entry() {
   build_allowed_tools "$project_dir" "$pipeline"
 
   local stdout_file stderr_file exit_code claude_args
-  stdout_file="$(mktemp -t compare-upstream-probe-out)"
-  stderr_file="$(mktemp -t compare-upstream-probe-err)"
+  stdout_file="$(mktemp -t compare-upstream-probe-out.XXXXXX)"
+  stderr_file="$(mktemp -t compare-upstream-probe-err.XXXXXX)"
   claude_args=(-p --permission-mode acceptEdits --allowedTools "${ALLOWED_TOOLS_RUN[@]}"
     --max-budget-usd "$MAX_BUDGET" --max-turns "$MAX_TURNS" --output-format json)
   if [ -n "$MODEL" ]; then
