@@ -3,7 +3,7 @@
 `deck.md` contains 18 Marp slides with presenter notes and sourced claims.
 The talk opens with why self-review can't prove independence, then moves
 through governance mechanics, implementation proof, and adoption. The title
-slide is dated 27 September 2026. Repository checks qualify historical claims
+slide is dated 28 September 2026. Repository checks qualify historical claims
 in the notes.
 
 ## Slide sequence
@@ -18,7 +18,7 @@ in the notes.
 | 6 | The constitution gates every command. | `artifacts.svg` |
 | 7 | Execution skills work inside agreed rules. | `skills.svg` |
 | 8 | Checks confirm compliance, not product correctness. | `correctness-gap.svg` |
-| 9 | Shipped gates still need runtime wiring. | `roadmap.svg` |
+| 9 | An install wires the gates into both CLIs. | `roadmap.svg` |
 | 10 | Four default layers precede additional review. | `review-stack.svg` |
 | 11 | Risk rises above the size limits. | `risk.svg` |
 | 12 | Findings make decisions inspectable. | Text |
@@ -29,11 +29,11 @@ in the notes.
 | 17 | Humans approve intent; review stays bounded. | Text |
 | 18 | Adopt the constitution-and-hooks baseline on one feature. | Action |
 
-The roadmap diagram separates shipped scripts from runtime registration.
+The roadmap diagram traces a shipped gate to the install that registers it.
 The review diagram describes the proposed policy. Its notes
 separate that policy from the committed CI behavior. The hook diagram shows
 work boundaries, not a literal chain of hook events. The notes name the
-Copilot adapter and the remaining stale schema reference in CI.
+Copilot adapter and the contract the headless review reads.
 
 ## Edit and render
 

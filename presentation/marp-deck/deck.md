@@ -22,7 +22,7 @@ Spec-kit governance with superpowers execution skills and adversarial review.
 
 Donal Moloney
 
-27 September 2026
+28 September 2026
 
 <!--
 Specflow connects the artifacts that define a change to the skills that implement it. Spec-kit owns governance; superpowers supplies optional execution skills. Specflow adds commands, saved state, and checks between those responsibilities.
@@ -91,13 +91,13 @@ Sources: improvements/roadmap.md; specflow/commands/execute.md; .claude/hooks/me
 Each command can use a built-in fallback.
 
 <!--
-All six names share the /speckit.specflow. prefix on Claude Code. Copilot CLI uses hyphenated skill names, such as /speckit-specflow-status. Status reports readiness; brainstorm develops the design; tasks decomposes the plan; gate checks readiness before execute drives implementation; review checks the result.
+All seven names share the /speckit.specflow. prefix on Claude Code. Copilot CLI uses hyphenated skill names, such as /speckit-specflow-status. Status reports readiness; brainstorm develops the design; tasks decomposes the plan; gate checks readiness before execute drives implementation; review checks the result.
 
 Gate sits between tasks and execute because execute enforces it: execute stops with ANALYZE_REQUIRED when the .analyzed marker gate writes is missing. The .clarified marker gate can also write is a separate, earlier, non-blocking check that overlaps the brainstorm-to-tasks step instead.
 
 This diagram orders Specflow entry points, not every required step. Spec-kit commands create the constitution and spec, clarify requirements, write the plan, analyze artifacts, and check readiness between these points. Missing skills never remove the built-in workflow. Saved YAML state lets interrupted work continue.
 
-Sources: specflow/extension.yml; specflow/commands/status.md; specflow/commands/gate.md; specflow/commands/execute.md; specflow/README.md. The manifest declares six commands, six workflow hooks, five templates, and nine scripts.
+Sources: specflow/extension.yml; specflow/commands/status.md; specflow/commands/gate.md; specflow/commands/execute.md; specflow/README.md. The manifest declares seven commands, six workflow hooks, five templates, and ten scripts. The seventh command, agent-event, dispatches a hook payload to a gate instead of joining the workflow, so the diagram shows six.
 -->
 
 ---
@@ -150,18 +150,20 @@ Sources: specflow/commands/execute.md; .claude/hooks/artifact-lint.sh; .claude/h
 
 ---
 
-## Shipped gates still need runtime wiring
+## An install wires the gates into both CLIs
 
 ![w:1080](roadmap.svg)
 
-Both CLIs have hook settings; automatic registration remains open.
+A project that also copies .claude/hooks runs each gate twice.
 
 <!--
-The first roadmap wave, G-01 through G-18, merged between PR #8 and PR #53. Later changes added the gate command, shipped scripts, and native Copilot hook settings. The manifest now declares nine scripts, including the Python findings and progress validators.
+The first roadmap wave, G-01 through G-18, merged between PR #8 and PR #53. Later changes added the gate command, the shipped scripts, and the events registration. The manifest now declares ten scripts, including the Python findings and progress validators.
 
-G-26 still leaves automatic spec-kit events registration and its installed-config smoke assertion open. Native Copilot settings already exist at .github/hooks/hooks.json; do not confuse those with an extension events block. G-19 still needs a recorded run of this fork: examples/link-audit is constructed teaching material, and static-landing-page is the upstream recorded snapshot.
+One events: entry registers speckit.specflow.agent-event on pre_tool_use, post_tool_use, and session_start. Spec-kit passes the script no event name, so agent-event.sh reads the event and the surface from the payload and runs the matching gates. Copilot drops matcher, so a Copilot path reaches the post gates only beside a write argument. The native .github/hooks/hooks.json route remains, and its adapter pipes the payload to the same agent-event.sh.
 
-Sources: specflow/extension.yml; .github/hooks/hooks.json; improvements/roadmap.md, G-19 and G-26; specflow/examples/link-audit/README.md. Status checked against the checkout on 27 September 2026; roadmap completion labels alone do not prove runtime behavior.
+Registration is not the same as a recorded run. Copilot reads a deny on exit 2 and on exit 0; exit 1 discards stdout and the call proceeds, so a gate that cannot find jq fails open on both surfaces.
+
+Sources: specflow/extension.yml, events:; specflow/gates/bash/agent-event.sh; .github/hooks/adapter.sh; decisions.md, ADR-0034, ADR-0035 and ADR-0042. Status checked against the checkout on 28 September 2026; a declared registration alone does not prove runtime behavior.
 -->
 
 ---
@@ -177,7 +179,7 @@ The proposed stack has seven layers. The four defaults are a spec pre-mortem, a 
 
 The roadmap assigns the critic to high-risk changes and places cross-model review and SAST in continuous integration (CI). These are adoption policies, not a claim that the committed workflow runs every layer. Current CI runs headless Claude review when credentials exist, adds security review and mutation checks for HIGH risk, and runs Semgrep with --error. Semgrep and mutation step failures fail the job. This does not establish different-vendor review.
 
-The checked-in headless review prompt still names the removed .claude/review/schema.json. The findings contract lives at specflow/references/findings-schema.json. Treat that stale CI reference as an open defect, not proof of a successful live review.
+The headless review prompt names the findings contract at specflow/references/findings-schema.json, and the gate validates the returned document against it before the merge gate reads it. A schema-valid document is still not proof of a successful live review.
 
 Sources: docs/review-research.md, sections 3.7 and 3.10; .github/workflows/merge-gate.yml. The four-plus-three count comes from the proposed seven-layer stack.
 -->
@@ -220,12 +222,12 @@ Sources: specflow/references/findings-schema.json; .claude/review/validate-findi
 
 ![w:1080](kit.svg)
 
-Configure each CLI's hooks after installing the extension.
+The install wires the gates; agents and skills need copying.
 
 <!--
 Count direct shell scripts in .claude/hooks and Markdown definitions in .claude/agents: 11 and 34 respectively. Several shell files wrap the shipped gates. The schema lives at specflow/references/findings-schema.json; the validator lives under specflow/gates/python/, with a compatibility wrapper in .claude/review. The repository has six workflows; presentation.yml renders and lints this deck.
 
-The extension ships shared gates under specflow/gates/. Agent definitions, dispatcher skills, and native CLI settings remain separate from the archive. Claude uses .claude/settings.json. Copilot uses .github/hooks/hooks.json and its adapter, which calls the .claude hook wrappers. Those wrappers expect this checkout's specflow/gates layout; copying .claude alone into an installed project does not satisfy that path. Adapt paths to .specify/extensions/specflow/gates/ when configuring a consumer.
+The extension ships shared gates under specflow/gates/. Agent definitions, dispatcher skills, and native CLI settings remain separate from the archive. Claude uses .claude/settings.json. Copilot uses .github/hooks/hooks.json and its adapter, which pipes the payload to specflow/gates/bash/agent-event.sh. The .claude wrappers exec the same shipped gates, so both routes expect this checkout's specflow/gates layout; copying .claude alone into an installed project does not satisfy that path. Adapt paths to .specify/extensions/specflow/gates/ when configuring a consumer.
 
 Sources: .claude/hooks/; .claude/agents/; specflow/references/findings-schema.json; .claude/skills/specflow-dispatcher/SKILL.md; .github/workflows/; decisions.md, ADR-0001. Recount both directories before each render; the hook count has already moved twice since this deck's first draft.
 -->
@@ -260,7 +262,7 @@ specify extension add /path/to/super-spec-new/specflow --dev
 <!--
 This mixes terminal and Claude Code commands; it is not a shell script. Run specify init and specify extension add in the consuming project's terminal. Replace /path/to/super-spec-new with the absolute path to this checkout. Run /speckit.constitution and /speckit.specflow.status inside Claude Code.
 
-Install specify-cli with spec-kit >=0.16.2 and put jq on PATH. This local-checkout route does not depend on a published release or catalog entry. Catalog installation needs this repository's catalog configured; the default catalog does not list specflow. Verify the install with specify extension list: Commands: 6 | Hooks: 6. For Copilot use --integration copilot and /speckit-specflow-status. Superpowers remains optional; detection reads .agents/skills/ and ~/.agents/skills/. Installing the extension does not copy native CLI settings or the companion agents.
+Install specify-cli with spec-kit >=0.16.2 and put jq on PATH. This local-checkout route does not depend on a published release or catalog entry. Catalog installation needs this repository's catalog configured; the default catalog does not list specflow. Verify the install with specify extension list: Commands: 7 | Hooks: 6. For Copilot use --integration copilot and /speckit-specflow-status. Superpowers remains optional; detection reads .agents/skills/ and ~/.agents/skills/. Installing the extension registers the gates through its events: block, and copies neither the companion agents nor either CLI's own settings file.
 
 Sources: specflow/README.md, Installation; specflow/extension.yml; specflow/commands/status.md; decisions.md, ADR-0001. These audience instructions are not commands run while editing the deck.
 -->
@@ -292,7 +294,7 @@ Spec approval accepts intent. Merge approval accepts the evidence for shipping.
 <!--
 The adoption policy keeps two human approvals: spec approval confirms the behavior the team wants to build, and merge approval confirms that the implementation and its evidence satisfy that decision. Neither approval follows automatically from a model verdict; treat both as team policy that must be configured and practiced, since a command prompt alone does not establish branch protection.
 
-More reviewers create more text, not automatic independence. The roadmap advises against panels of five or more reviewers and unbounded debate; a smaller panel with explicit lenses makes evidence and duplicate findings easier to trace. Choose a finite critic budget before starting, and add costly review only when risk or observed defects justify it. Try the CLI's own agents and worktrees before adopting another orchestrator.
+More reviewers create more text, not automatic independence. The review research advises against panels of five or more reviewers and unbounded debate; a smaller panel with explicit lenses makes evidence and duplicate findings easier to trace. Choose a finite critic budget before starting, and add costly review only when risk or observed defects justify it. Try the CLI's own agents and worktrees before adopting another orchestrator.
 
 Sources: docs/review-research.md, Part 8 and its human-gate rules; docs/review-research.md, section 3.12; the operating limits in the supplied deck outline. The count of two refers to spec approval and merge approval; the panel limit is a project recommendation, not a universal research threshold.
 -->
