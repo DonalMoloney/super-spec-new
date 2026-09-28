@@ -59,8 +59,9 @@ records the rest as dropped.
 ## Order of work
 
 1. Backlog item 26, the upgrade path, now that a release exists to upgrade from.
-2. G-59, the upstream comparison. Its result ranks every later divergence item:
-   a gap it finds outranks a heading rename.
+2. G-59, the upstream comparison, in progress on its branch: T591 to T594
+   are done and T595 waits on a model and cost cap choice. Its result ranks
+   every later divergence item: a gap it finds outranks a heading rename.
 
 ## Backlog item 26 — An upgrade path the smoke test walks (working on)
 
@@ -71,7 +72,7 @@ has never run. Unblocked on 2026-09-28: `v1.1.0` is tagged and its release
 carries `specflow-v1.1.0.zip`. Verify: the smoke test reports the upgrade
 assertions and passes. Effort: low. Depends on: none.
 
-## G-59 — Run upstream and this fork on the same seeded input, and record which catches the flaw
+## G-59 — Run upstream and this fork on the same seeded input, and record which catches the flaw (working on)
 
 Executor: `bdd-orchestrator`. Effort: medium. Depends on: none.
 
@@ -88,9 +89,11 @@ Two probes, one per phase where the fork claims to add the most:
   `examples/seeded-ambiguity/spec.md`, whose duplicate-heading suffix order is
   unstated. `score-artifacts.py`'s `seeded_ambiguity` dimension scores the
   resulting spec: 100 if an Open Questions row raises the order, 0 if not.
-- **Review probe.** Both review commands run on a copy of
-  `examples/link-audit/src/link_audit/` carrying one planted off-by-one bug.
-  A run catches the bug when a finding names the planted file and line.
+- **Review probe.** Both review commands run on a copy of `examples/link-audit/`
+  whose `src/link_audit/resolver.py` carries one planted spec violation: the
+  catch clause at line 87 drops `UnicodeDecodeError`, breaking FR-012, and
+  the copied tests still pass. A run catches the bug when a finding names the
+  planted file and line.
 
 Upstream installs as `superspec` (`extension.id` at `c20ac6c`), so its
 commands are `/speckit.superspec.*`. The e2e stages hardcode
@@ -99,11 +102,11 @@ their own script instead of the e2e stages. LLM output varies, so each probe
 runs 3 times per pipeline and the result records the hit count, not one
 verdict.
 
-- [ ] T591 Add `examples/seeded-review-bug/`, a copy of `link-audit/src/` with one planted off-by-one. Verify: `pytest` in the copy fails exactly one test, and its README names the file, line, and fault.
-- [ ] T592 Add `scripts/compare-upstream.sh`, which installs one extension into a fresh `specify init` project given a checkout path plus a command namespace. Verify: `E2E_DRY_RUN=1` prints both install commands with no agent call.
-- [ ] T593 Run the spec probe through `compare-upstream.sh`, writing each run's `seeded_ambiguity` score to a JSON result file. Verify: the dry run writes a result file with 6 entries marked `dry-run`.
-- [ ] T594 Run the review probe through `compare-upstream.sh`, writing whether each run's findings name the planted file and line. Verify: the dry run writes 6 entries marked `dry-run`.
-- [ ] T595 Record one live run as `examples/upstream-comparison/results.json`. Verify: the file holds 12 entries with no `dry-run` value.
+- [x] T591 Add `examples/seeded-review-bug/`, a copy of `link-audit/` with one planted spec violation the shipped tests miss. A bug a failing test exposes finds itself, so it cannot separate two reviewers. Verify: the copy's own `pytest` passes, one test kept outside the copy fails against it, and its README names the file, line, fault, plus the FR it breaks.
+- [x] T592 Add `scripts/compare-upstream.sh`, which installs one extension into a fresh `specify init` project given a checkout path plus a command namespace. Verify: `E2E_DRY_RUN=1` prints both install commands with no agent call.
+- [x] T593 Run the spec probe through `compare-upstream.sh`, writing each run's `seeded_ambiguity` score to a JSON result file. Verify: the dry run writes a result file with 6 entries marked `dry-run`.
+- [x] T594 Run the review probe through `compare-upstream.sh`, writing whether each run's findings name the planted file and line. Verify: the dry run writes 6 entries marked `dry-run`.
+- [ ] T595 Record one live run as `examples/upstream-comparison/results.json`. Verify: the file holds 12 entries with no `dry-run` value. Paused on 2026-09-28: a live probe ran past the 0.50 USD per-call default of `E2E_MAX_BUDGET_USD`, so the run needs a model and a cap chosen first.
 - [ ] T596 Add `examples/upstream-comparison/README.md` stating the hit counts, the model, and both commits compared. Verify: every number in it matches `results.json`.
 - [ ] T597 Link the comparison from `specflow/README.md`. Verify: `lint-standards.py` passes on the changed README.
 
@@ -129,6 +132,10 @@ any further divergence pass.
 - **A spec-kit bundle** (was N-08): deferred on 2026-09-20. It composes the
   workflow above with a preset, and ADR-0021 ruled a preset out, so it cannot
   start until both are worth reopening.
+- **Re-routing the agents onto the Claude 5 model family**: set aside on
+  2026-09-28. ADR-0003 and ADR-0014 route by the opus, sonnet, and haiku
+  classes, so the move needs an ADR amending both before any `model:` field
+  changes.
 
 ## Ready to release
 
@@ -158,6 +165,8 @@ is not ready, whatever the order above says.
 - `git status --porcelain` prints nothing on `main`.
 - `CHANGELOG.md` has no `[Unreleased]` entries left; each one moved under the
   tag's heading with the version the rule in that file picks.
+
+## Divergence option space
 
 For each part of the extension, the ways it can diverge from upstream
 superspec without breaking spec-kit's install contract. Read it when choosing
@@ -210,8 +219,6 @@ registering the `before_tasks` hook upstream never shipped), and
 block ADR-0034 registers). The reproduce command's exclusion list needs each
 new entry added the day it lands, or the measurer exits nonzero on the first
 missing counterpart and never reaches the files after it alphabetically.
-`commands/agent-event.md` landed without that edit, so the command printed
-three rows and stopped until this revision.
 
 | File | Real | Last moved by |
 |------|------|---------------|
@@ -233,7 +240,7 @@ three rows and stopped until this revision.
 | `commands/hooks/before-execute.md` | 78% | ADR-0043 (`## Stop behavior`) |
 | `commands/review.md` | 80% | `divergence-renamer` |
 | `scripts/e2e-smoke.sh` | 85% | G-57 and G-26 (heading and hook assertions added) |
-| `CHANGELOG.md` | 87% | the entries after 1.1.0 |
+| `CHANGELOG.md` | 88% | the entries after 1.1.0 |
 | `scripts/validate-release-archive.py` | 87% | `script-refactorer` |
 | `scripts/validate-extension-metadata.py` | 91% | ADR-0041 (catalog counts held to `extension.yml`) |
 | `scripts/e2e-agent-claude.sh` | 95% | G-19 (live run, PR #81) |
@@ -246,7 +253,7 @@ between 1 and 5 points. A follow-up functional pass on 2026-09-28 rewrote
 the FR example lines in `spec-template.md`, named the Constitution Check
 re-run trigger in `plan-template.md`, and taught its Independent Work
 Streams comment the `[P]` marker `commands/tasks.md` derives from it.
-`CHANGELOG.md` rose 86% to 87% from post-1.1.0 entries. Every other row
+`CHANGELOG.md` rose 86% to 88% from post-1.1.0 entries. Every other row
 held.
 
 The installable payload has moved a long way from upstream in wording and,
@@ -256,9 +263,8 @@ declares seven commands (`speckit.specflow.gate` and
 (`after_clarify`, `after_analyze`, `after_tasks`, `before_tasks`,
 `before_implement`, `after_implement`), and an `events:` block binding
 `pre_tool_use`, `post_tool_use`, and `session_start` per ADR-0034. The
-`commands/` and `commands/hooks/` sections below are corrected to match. The fork's remaining behavioral
-divergence lives in `.claude/`, `standards/`, `scripts/`, and CI, which the
-archive strips.
+fork's remaining behavioral divergence lives in `.claude/`, `standards/`,
+`scripts/`, and CI, which the archive strips.
 
 Reproduce the table from the repository root:
 
