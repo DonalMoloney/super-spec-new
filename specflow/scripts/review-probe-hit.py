@@ -3,13 +3,13 @@
 
 A review probe plants one known fault at a file and a line, runs a review
 agent against it, and checks whether the agent's output names that location.
-``is_hit`` recognizes the location forms criteria-decisions.md's Q8 lists:
-``<file>:<n>``, ``<file> line <n>`` on the same text line, a ``<a>-<b>``
-range overlapping the accepted window, a JSON object carrying ``file`` and
-``line`` keys, and a path that merely ends in the planted file's relative
-path. ``judge`` counts a hit only from a changed file's contents or the
-agent's final text; a match sitting only in a baseline file, one the review
-run neither wrote nor touched, proves nothing about what the run found.
+``is_hit`` recognizes these location forms: ``<file>:<n>``, ``<file> line
+<n>`` on the same text line, a ``<a>-<b>`` range overlapping the accepted
+window, a JSON object carrying ``file`` and ``line`` keys, and a path that
+merely ends in the planted file's relative path. ``judge`` counts a hit only
+from a changed file's contents or the agent's final text; a match sitting
+only in a baseline file, one the review run neither wrote nor touched,
+proves nothing about what the run found.
 
 The filename carries a hyphen so it cannot be imported with a normal
 ``import`` statement; a caller loads it with ``importlib.util`` instead, the

@@ -1,26 +1,24 @@
 #!/usr/bin/env python3
 """Tests for review-probe-hit.py, the T594 review-probe hit check.
 
-specflow/scripts/review-probe-hit.py does not exist yet. Its assumed public
-interface (stated for implementation-engineer, not built here):
+Loads specflow/scripts/review-probe-hit.py the way test_lint_standards.py
+loads lint-standards.py, then calls its importable functions directly:
 
-  Importable, loaded the way test_lint_standards.py loads lint-standards.py:
-    is_hit(content, planted_file, planted_line, window) -> bool
-        True when content names the planted file at a line within
-        [planted_line - window, planted_line + window], by any of the forms
-        criteria-decisions.md Q8 lists: "<file>:<n>", "<file> line <n>" on the
-        same text line, a "<a>-<b>" range overlapping the window, a JSON
-        object with "file" and "line" keys, or a path merely ending in
-        planted_file's relative path.
-    judge(planted_file, planted_line, window=3, changed_contents=(),
-          final_text="", baseline_contents=()) -> bool
-        True only when a match in changed_contents or final_text passes
-        is_hit; a match found only in baseline_contents (a file the review
-        run did not create or change) never counts.
+  is_hit(content, planted_file, planted_line, window) -> bool
+      True when content names the planted file at a line within
+      [planted_line - window, planted_line + window]: "<file>:<n>",
+      "<file> line <n>" on the same text line, a "<a>-<b>" range
+      overlapping the window, a JSON object with "file" and "line" keys,
+      or a path merely ending in planted_file's relative path.
+  judge(planted_file, planted_line, window=3, changed_contents=(),
+      final_text="", baseline_contents=()) -> bool
+      True only when a match in changed_contents or final_text passes
+      is_hit; a match found only in baseline_contents (a file the review
+      run did not create or change) never counts.
 
-  A CLI, `python3 review-probe-hit.py`, wires argv onto the same functions;
-  this file exercises the importable functions directly, per
-  criteria-decisions.md's "tests call it through its CLI/public function".
+review-probe-hit.py also exposes a CLI, `python3 review-probe-hit.py`, that
+wires argv onto the same functions; this file exercises the importable
+functions directly.
 """
 
 import importlib.util

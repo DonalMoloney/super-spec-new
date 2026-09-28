@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """Tests for the T591 seeded-review-bug example and its outside oracle.
 
-specflow/examples/seeded-review-bug/ does not exist yet (it is a copy of
+specflow/examples/seeded-review-bug/ is a copy of
 specflow/examples/link-audit/ with one planted spec violation the shipped
-tests miss), and specflow/scripts/tests/planted_violation_oracle.py, the
-pytest module the shipped suite never collects, does not exist yet either.
-Every test here fails until both are written; writing them belongs to
-implementation-engineer, not to this file.
+tests miss. specflow/scripts/tests/planted_violation_oracle.py is the
+pytest module that catches the violation; the shipped `python_files =
+test_*.py` convention never collects it in a plain pytest run.
 """
 
 import difflib
