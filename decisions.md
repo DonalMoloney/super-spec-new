@@ -692,3 +692,22 @@ deleting them; prune anything older than a quarter that no longer guides work.
   work, the option space, and the measured divergence.
 - Consequences: `roadmap.md` grows long. Every file that cited the old
   `reference.md` by path is repointed to `improvements/roadmap.md`.
+
+## ADR-0047: G-59 merged to `main` directly, with no PR
+
+- Date: 2026-09-28
+- Status: accepted, one-time deviation from the "How to use this file"
+  convention in `improvements/roadmap.md`
+- Context: G-59's live comparison run (T595-T597) finished clean (12 calls,
+  all `ok`, $5.85 total) while a second, unrelated worktree
+  (`backlog-26-upgrade-path`) was still mid-run under a separate
+  `bdd-orchestrator` dispatch. The user asked directly, mid-session, to land
+  everything finished into `main` rather than wait on a PR review cycle.
+- Decision: merge the `g59-upstream-comparison` branch straight into `main`
+  and push, skipping the PR step the roadmap's own workflow otherwise
+  requires. `backlog-26-upgrade-path` was left alone: its agent still had
+  uncommitted, unverified work, so nothing there was merged.
+- Consequences: G-59's commits reached `main` with no independent review.
+  The work is a results-recording task (a live script run plus a README
+  stating its output), not new production code, which bounds the risk.
+  Treat a direct merge as the exception, not a new default.

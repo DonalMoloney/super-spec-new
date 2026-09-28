@@ -13,7 +13,10 @@ its statement and its ticked tasks. G-01 to G-18 merged between PR #8 and PR
 #53, the Q-01 to Q-28 cleanup wave in PR #53, and G-19 to G-58 and G-60 by
 2026-09-28. G-57's second pass closed with no PR of its own: G-60's own
 change took its last worthwhile candidates, and the candidate inventory below
-records the rest as dropped.
+records the rest as dropped. G-59 merged into `main` directly on 2026-09-28,
+also with no PR of its own (a deviation from the one-worktree-one-PR
+convention, made on explicit user instruction to land same-day work fast;
+see `decisions.md`).
 
 ## How to use this file
 
@@ -59,9 +62,12 @@ records the rest as dropped.
 ## Order of work
 
 1. Backlog item 26, the upgrade path, now that a release exists to upgrade from.
-2. G-59, the upstream comparison, in progress on its branch: T591 to T594
-   are done and T595 waits on a model and cost cap choice. Its result ranks
-   every later divergence item: a gap it finds outranks a heading rename.
+2. G-59's result (merged 2026-09-28): the spec probe tied 1-of-3 hits between
+   specflow and superspec, and the review probe hit 2-of-3 for specflow
+   against 1-of-3 for superspec, though that probe is not blind (see
+   `examples/upstream-comparison/README.md`). Neither result surfaced a gap
+   that outranks a heading rename, so the divergence option space below is
+   unchanged by it.
 
 ## Backlog item 26 — An upgrade path the smoke test walks (working on)
 
@@ -71,50 +77,6 @@ remains. Every user who installs a release upgrades through this path and it
 has never run. Unblocked on 2026-09-28: `v1.1.0` is tagged and its release
 carries `specflow-v1.1.0.zip`. Verify: the smoke test reports the upgrade
 assertions and passes. Effort: low. Depends on: none.
-
-## G-59 — Run upstream and this fork on the same seeded input, and record which catches the flaw (working on)
-
-Executor: `bdd-orchestrator`. Effort: medium. Depends on: none.
-
-No recorded run compares this fork with upstream. Every golden under
-`specflow/examples/` scores this fork's output against itself, so the claim
-that the fork is better rests on the divergence percentage, which counts
-changed lines and says nothing about outcomes. G-57 showed the percentage has
-stopped moving. This group replaces it with a measure of results: give both
-pipelines the same flawed input and record which one reports the flaw.
-
-Two probes, one per phase where the fork claims to add the most:
-
-- **Spec probe.** Both brainstorm commands run on
-  `examples/seeded-ambiguity/spec.md`, whose duplicate-heading suffix order is
-  unstated. `score-artifacts.py`'s `seeded_ambiguity` dimension scores the
-  resulting spec: 100 if an Open Questions row raises the order, 0 if not.
-- **Review probe.** Both review commands run on a copy of `examples/link-audit/`
-  whose `src/link_audit/resolver.py` carries one planted spec violation: the
-  catch clause at line 87 drops `UnicodeDecodeError`, breaking FR-012, and
-  the copied tests still pass. A run catches the bug when a finding names the
-  planted file and line.
-
-Upstream installs as `superspec` (`extension.id` at `c20ac6c`), so its
-commands are `/speckit.superspec.*`. The e2e stages hardcode
-`/speckit.specflow.*` and assert this fork's artifacts, so the probes live in
-their own script instead of the e2e stages. LLM output varies, so each probe
-runs 3 times per pipeline and the result records the hit count, not one
-verdict.
-
-- [x] T591 Add `examples/seeded-review-bug/`, a copy of `link-audit/` with one planted spec violation the shipped tests miss. A bug a failing test exposes finds itself, so it cannot separate two reviewers. Verify: the copy's own `pytest` passes, one test kept outside the copy fails against it, and its README names the file, line, fault, plus the FR it breaks.
-- [x] T592 Add `scripts/compare-upstream.sh`, which installs one extension into a fresh `specify init` project given a checkout path plus a command namespace. Verify: `E2E_DRY_RUN=1` prints both install commands with no agent call.
-- [x] T593 Run the spec probe through `compare-upstream.sh`, writing each run's `seeded_ambiguity` score to a JSON result file. Verify: the dry run writes a result file with 6 entries marked `dry-run`.
-- [x] T594 Run the review probe through `compare-upstream.sh`, writing whether each run's findings name the planted file and line. Verify: the dry run writes 6 entries marked `dry-run`.
-- [x] T595 Record one live run as `examples/upstream-comparison/results.json`. Verify: the file holds 12 entries with no `dry-run` value. Recorded 2026-09-28 with `claude-sonnet-5` at a $2.00 per-call cap: 12 calls, all `ok`, $5.85 total.
-- [x] T596 Add `examples/upstream-comparison/README.md` stating the hit counts, the model, and both commits compared. Verify: every number in it matches `results.json`.
-- [x] T597 Link the comparison from `specflow/README.md`. Verify: `lint-standards.py` passes on the changed README.
-
-Verify for the group: `bash verify.sh` reports 0 failed, and
-`examples/upstream-comparison/results.json` exists from a live run. Either
-outcome counts as done: a probe where upstream matches the fork is a finding,
-and it goes into the divergence option space below as a gap to close before
-any further divergence pass.
 
 ## Deferred
 
