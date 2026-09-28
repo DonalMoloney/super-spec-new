@@ -43,18 +43,18 @@ command below, after G-50 merged. Lowest real change first. One row the
 command cannot reach: G-30 renamed `references/superpowers-bridge.md` to
 `references/superpowers-mapping.md`, and the measurer resolves one relative
 path against both roots, so that row is measured by copying upstream's file
-to the local path first. Eleven files carry no upstream counterpart at all and
+to the local path first. Twelve files carry no upstream counterpart at all and
 are left out of both the table and the reproduce command below for that
 reason: `commands/gate.md`, `commands/hooks/after-analyze.md`,
 `commands/hooks/after-clarify.md`, `references/publishing.md` (added by
 G-50 T540), `commands/hooks/before-tasks.md` (added by G-56, PR #78,
 registering the `before_tasks` hook upstream never shipped), `scripts/compare-upstream.sh`,
 `scripts/review-probe-hit.py`, `scripts/tests/test_compare_upstream.py`,
-`scripts/tests/test_review_probe_hit.py`, `scripts/tests/test_seeded_review_bug.py`,
-and `scripts/tests/planted_violation_oracle.py` (all added by G-59). The reproduce
-command's exclusion list needs each new entry added the day it lands, or the
-measurer exits nonzero on the first missing counterpart and never reaches the
-files after it alphabetically.
+`scripts/tests/test_review_probe_hit.py`, `scripts/tests/test_review_probe_hit_cli.py`,
+`scripts/tests/test_seeded_review_bug.py`, and `scripts/tests/planted_violation_oracle.py`
+(all added by G-59). The reproduce command's exclusion list needs each new
+entry added the day it lands, or the measurer exits nonzero on the first
+missing counterpart and never reaches the files after it alphabetically.
 
 | File | Real | Last moved by |
 |------|------|---------------|
@@ -105,7 +105,7 @@ Reproduce the table from the repository root:
 ```bash
 git clone -q https://github.com/WangX0111/superspec "$SCRATCH/upstream"
 cd specflow && git ls-files | grep -E '\.(md|yml|py|sh)$' | grep -v '^examples/' \
-  | grep -vE 'copilot-cli\.md|lint-standards\.py|score-artifacts\.py|tests/test_(lint_standards|score_artifacts|validate_extension_metadata|validate_release_archive|compare_upstream|review_probe_hit|seeded_review_bug)\.py|commands/gate\.md|commands/hooks/(after-(analyze|clarify)|before-tasks)\.md|scripts/e2e-(agent-copilot|stages)\.sh|scripts/compare-upstream\.sh|scripts/review-probe-hit\.py|scripts/tests/planted_violation_oracle\.py|^gates/|references/superpowers-mapping\.md|references/publishing\.md' \
+  | grep -vE 'copilot-cli\.md|lint-standards\.py|score-artifacts\.py|tests/test_(lint_standards|score_artifacts|validate_extension_metadata|validate_release_archive|compare_upstream|review_probe_hit_cli|review_probe_hit|seeded_review_bug)\.py|commands/gate\.md|commands/hooks/(after-(analyze|clarify)|before-tasks)\.md|scripts/e2e-(agent-copilot|stages)\.sh|scripts/compare-upstream\.sh|scripts/review-probe-hit\.py|scripts/tests/planted_violation_oracle\.py|^gates/|references/superpowers-mapping\.md|references/publishing\.md' \
   | xargs python3 ../.claude/divergence/measure-divergence.py --local . --upstream "$SCRATCH/upstream"
 ```
 
