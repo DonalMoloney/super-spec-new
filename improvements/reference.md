@@ -259,8 +259,8 @@ rename lands, so the cost is known before the move.
 | Name | Today | Asserted in | Cost | Claimed by |
 |------|-------|-------------|------|------------|
 | `author:` | "Specflow Contributors" | Nothing | Free | none |
-| `commands/hooks/*.md` file names | `after-tasks`, `before-execute`, `after-execute` | Nothing; the manifest maps hooks to commands | `e2e-smoke.sh` greps `commands/hooks/after-execute.md` | none |
-| `commands/*.md` file names | `status`, `brainstorm`, `tasks`, `execute`, `review` | The `file:` field in `extension.yml` | Cheap, and no reason | none |
+| `commands/hooks/*.md` file names | `after-clarify`, `after-analyze`, `before-tasks`, `after-tasks`, `before-execute`, `after-execute` | Nothing; the manifest maps hooks to commands | `e2e-smoke.sh` greps `commands/hooks/after-execute.md` | none |
+| `commands/*.md` file names | `status`, `brainstorm`, `tasks`, `execute`, `review`, `gate`, `agent-event` | The `file:` field in `extension.yml` | Cheap, and no reason | none |
 | Extension id `specflow` | | 27 files | Not an option | |
 | `templates/*.md` file names | | Spec-kit reads `.specify/templates/<name>`; `e2e-smoke.sh` | Not an option | |
 | `superpowers.yml` cache name | | Every command and the smoke test | Not an option | |

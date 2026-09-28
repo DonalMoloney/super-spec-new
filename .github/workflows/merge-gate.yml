@@ -52,7 +52,7 @@ jobs:
           set -euo pipefail
           # Pinned so an upstream release cannot change what the gate reviews.
           npm install -g @anthropic-ai/claude-code@2.1.278
-          timeout 300 claude -p "Read .claude/review/schema.json, then review the diff of $BASE_REF...HEAD against standards/code.md and against the feature spec under specs/, if one exists. Return one JSON object matching that schema, with reviewer set to headless-ci and stage set to correctness. Report at least one finding, or show criterion by criterion that the diff adds no untested behavior, no swallowed error, and no change the task did not name." \
+          timeout 300 claude -p "Read specflow/references/findings-schema.json, then review the diff of $BASE_REF...HEAD against standards/code.md and against the feature spec under specs/, if one exists. Return one JSON object matching that schema, with reviewer set to headless-ci and stage set to correctness. Report at least one finding, or show criterion by criterion that the diff adds no untested behavior, no swallowed error, and no change the task did not name." \
             --output-format json \
             --allowedTools "Read,Grep,Bash(git diff:*)" \
             --permission-mode plan \
@@ -60,7 +60,7 @@ jobs:
           # --output-format json wraps the answer in a result envelope. The
           # findings document merge-gate.sh reads is the .result string.
           if ! jq -e '.result | fromjson' review-envelope.json > headless-ci.json; then
-            echo "headless review: .result holds no findings document; expected JSON matching .claude/review/schema.json. Read the envelope below, then rerun the job." >&2
+            echo "headless review: .result holds no findings document; expected JSON matching specflow/references/findings-schema.json. Read the envelope below, then rerun the job." >&2
             cat review-envelope.json >&2
             exit 1
           fi
