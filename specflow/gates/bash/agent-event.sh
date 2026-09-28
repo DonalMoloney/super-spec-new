@@ -22,15 +22,16 @@ SESSION_START_GATE="session-start.sh"
 GATES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Claude Code names the event in `hook_event_name`. The Copilot CLI does not:
-# only its postToolUse payload carries `toolResult`, and only a tool call
-# carries `toolName`.
+# only its postToolUse payload carries a `toolResult`, and only a tool call
+# carries `toolName`. A present but null `toolResult` reads as pre_tool_use,
+# because a payload the handler misreads as post_tool_use skips the commit gate.
 CLASSIFY_EVENT='
   if has("hook_event_name") then
     if .hook_event_name == "PreToolUse" then "pre_tool_use"
     elif .hook_event_name == "PostToolUse" then "post_tool_use"
     elif .hook_event_name == "SessionStart" then "session_start"
     else "unmatched" end
-  elif has("toolResult") then "post_tool_use"
+  elif .toolResult != null then "post_tool_use"
   elif has("toolName") then "pre_tool_use"
   else "session_start" end'
 
@@ -56,12 +57,11 @@ NORMALIZE_PAYLOAD='
         | with_entries(select(.value != null)))}
   end'
 
-# An unreadable `toolArgs` normalizes to no command, which block-main-commit.sh allows (ADR-0036).
-UNREADABLE_TOOL_ARGS='
-  (has("hook_event_name") | not) and (
-    if .toolArgs != null then (tool_args | type) != "object"
-    else (.toolName | type != "string" or . == "" or (ascii_downcase | . == "bash" or . == "powershell"))
-    end)'
+# An unreadable `toolArgs` normalizes to no command, which block-main-commit.sh
+# allows, so every Copilot tool call needs one that resolves to an object
+# (ADR-0038). Only `bash` is recorded in docs/agent-event-mapping.md, so a shell
+# under another name is indistinguishable from a tool that runs nothing.
+UNREADABLE_TOOL_ARGS='(has("hook_event_name") | not) and (tool_args | type) != "object"'
 UNREADABLE_TOOL_ARGS_REASON="BLOCKED: toolArgs is missing or does not parse as a JSON object, so block-main-commit.sh cannot read the command. Expected toolArgs as an object or a JSON string holding one; check the payload the agent sends."
 
 print_stderr() { # text -> the text on stderr, newline-terminated, nothing when empty

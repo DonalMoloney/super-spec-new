@@ -536,3 +536,37 @@ deleting them; prune anything older than a quarter that no longer guides work.
   `test_agent_contract.py` checks all of it and now runs in `ci.yml`.
 - Consequences: a new agent has a shape to copy and a test that rejects the
   gaps. A stage added to the schema with no reviewer behind it now fails.
+
+## ADR-0038: A Copilot `pre_tool_use` payload the handler cannot read denies the call
+
+- Date: 2026-09-27
+- Status: accepted, supersedes ADR-0036's "other tools pass" clause
+- Context: ADR-0036 denied an absent `toolArgs` only for `bash`, `powershell`,
+  and a call naming no tool. `docs/agent-event-mapping.md` records one shell
+  name, `bash`, so a shell under any other name passed with no command and
+  `block-main-commit.sh` allowed the commit. `CLASSIFY_EVENT` also read
+  `has("toolResult")`, so a `pre_tool_use` payload carrying the key at all
+  reached the post gates and skipped the commit gate.
+- Decision: on the Copilot route, a `pre_tool_use` call whose `toolArgs` does
+  not resolve to an object denies, whatever the tool is named. A payload
+  classifies as `post_tool_use` only when `toolResult` is non-null.
+- Consequences: a tool that genuinely takes no arguments is denied and the
+  reason names `toolArgs`. A `post_tool_use` reporting a null result runs the
+  commit gate instead of the post gates, which blocks rather than misses.
+
+## ADR-0039: The commit gate reads a grouped or option-prefixed git command
+
+- Date: 2026-09-27
+- Status: accepted, amends ADR-0004
+- Context: ADR-0004 anchored the gate on a segment starting `git <subcommand>`.
+  Four shapes slipped past on main: `git -C . commit` and
+  `git -c user.email=x commit` put a global option before the subcommand,
+  `(git commit)` and `{ git commit; }` put a grouping character before `git`,
+  and a first commit on an unborn branch read the branch as `HEAD`, because
+  `git rev-parse --abbrev-ref HEAD` prints that and exits 128.
+- Decision: a grouping character becomes a space before the split, the first
+  token of a segment must be `git`, and `-C` and `-c` are skipped with their
+  values. `git symbolic-ref --short -q HEAD` names the branch, with
+  `rev-parse` kept for a detached HEAD.
+- Consequences: the anchor still rejects prose quoting git, since the first
+  token decides. A subshell's contents now retarget the branch.

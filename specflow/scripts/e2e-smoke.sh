@@ -414,6 +414,43 @@ else
   fail "expected $EXPECTED_HOOK_COUNT hooks referencing speckit.specflow.*, got $HOOK_COUNT"
 fi
 
+# The events: block registers agent-event on pre_tool_use, post_tool_use, and
+# session_start. The Copilot leg checks the same block in speckit.json; here
+# spec-kit's Claude writer resolves it into .claude/settings.json
+# (docs/agent-event-mapping.md).
+assert_file "claude: .claude/settings.json written from the events: block" \
+            "$WORK/.claude/settings.json"
+SETTINGS_JSON_CHECK="$(python3 -c "
+import json, sys
+path = '$WORK/.claude/settings.json'
+try:
+    with open(path) as f:
+        doc = json.load(f)
+except (OSError, json.JSONDecodeError) as exc:
+    print(f'FAIL {exc}')
+    sys.exit(1)
+hooks = doc.get('hooks', {})
+for key in ('PreToolUse', 'PostToolUse', 'SessionStart'):
+    entries = hooks.get(key)
+    if not isinstance(entries, list) or not entries:
+        print(f'FAIL {key} is missing from settings.json')
+        sys.exit(1)
+    commands = [
+        hook.get('command', '')
+        for entry in entries
+        for hook in entry.get('hooks', [])
+    ]
+    if not any('speckit.specflow.agent-event' in cmd for cmd in commands):
+        print(f'FAIL {key} runs no speckit.specflow.agent-event command')
+        sys.exit(1)
+print('OK')
+")"
+if [ "$SETTINGS_JSON_CHECK" = "OK" ]; then
+  pass "claude: settings.json's PreToolUse, PostToolUse, SessionStart each run speckit.specflow.agent-event"
+else
+  fail "claude: settings.json's PreToolUse, PostToolUse, SessionStart each run speckit.specflow.agent-event ($SETTINGS_JSON_CHECK)"
+fi
+
 # Cross-check via `specify extension list`, the same assertion CI runs.
 LIST_LOG="$WORK/.list.log"
 run_specify extension list \

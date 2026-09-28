@@ -43,11 +43,3 @@ delete it, or promote it to an ADR in `decisions.md`.
   the `events:` route never denies on Copilot. Confirm against a live Copilot
   run, then align one route with the other.
 
-- **`block-main-commit.sh` still allows four commit shapes on main.** A
-  work-verifier pass on ADR-0036 found them, all present before that change:
-  `git -C . commit` and `(git commit)` fail the segment anchor; a first commit
-  on an unborn `main` reads the branch as `HEAD`; a Copilot shell tool under a
-  name other than `bash` or `powershell` with no `toolArgs` passes; and on the
-  `events:` route a `pre_tool_use` payload carrying `toolResult` classifies as
-  `post_tool_use`, so the commit gate never runs. Decide which to close and
-  whether the unborn-branch case reads `git symbolic-ref` instead.

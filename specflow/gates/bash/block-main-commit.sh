@@ -5,13 +5,41 @@
 set -euo pipefail
 input="$(cat)"
 cmd="$(printf '%s' "$input" | jq -r '.tool_input.command // ""')"
-branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '')"
+# symbolic-ref names an unborn branch, where rev-parse prints HEAD and exits
+# 128. rev-parse covers a detached HEAD, which symbolic-ref cannot name.
+branch="$(git symbolic-ref --short -q HEAD 2>/dev/null ||
+  git rev-parse --abbrev-ref HEAD 2>/dev/null ||
+  echo '')"
+set -f
 
-# True when the segment starts by running the named git subcommand. Anchoring
-# separates a command from prose about a command, so a commit message quoting
-# git does not steer the gate.
-runs_git() { # segment subcommand-pattern
-  printf '%s' "$1" | grep -Eq "^[[:space:]]*git[[:space:]]+$2([[:space:]]|\$)"
+# The git subcommand a segment runs, or nothing when the segment does not start
+# by running git. Anchoring on the first token separates a command from prose
+# about a command, so a commit message quoting git does not steer the gate. A
+# global option sits before the subcommand; -C and -c each take a separate
+# value, which is skipped with the option. A quoted value holding a space
+# splits into two tokens, so the second reads as the subcommand and the
+# segment is skipped.
+git_subcommand() { # segment
+  local tok first=1 skip=0
+  for tok in $1; do
+    if [ "$first" -eq 1 ]; then
+      first=0
+      [ "$tok" = "git" ] || return 0
+      continue
+    fi
+    if [ "$skip" -eq 1 ]; then
+      skip=0
+      continue
+    fi
+    case "$tok" in
+    -C | -c) skip=1 ;;
+    -*) ;;
+    *)
+      printf '%s' "$tok"
+      return 0
+      ;;
+    esac
+  done
 }
 
 # First non-flag argument after `switch` or `checkout`. Prints NONE when the
@@ -44,18 +72,21 @@ switch_target() { # segment
 
 # A compound command may move HEAD before it commits, so the branch at hook time
 # is not always the branch the commit lands on. Splitting on the operators that
-# sequence a shell command gives the segments in execution order.
-segments="$(printf '%s' "$cmd" | awk '{gsub(/&&|\|\||;|\|/, "\n"); print}')"
+# sequence a shell command gives the segments in execution order. A grouping
+# character becomes a space first, so a subshell's contents split the same way.
+segments="$(printf '%s' "$cmd" | tr '(){}' '    ' | awk '{gsub(/&&|\|\||;|\|/, "\n"); print}')"
 
 effective="$branch"
-set -f
 while IFS= read -r seg; do
-  if runs_git "$seg" '(switch|checkout)'; then
+  case "$(git_subcommand "$seg")" in
+  switch | checkout)
     target="$(switch_target "$seg")"
     [ "$target" = "NONE" ] || effective="$target"
     continue
-  fi
-  runs_git "$seg" 'commit' || continue
+    ;;
+  commit) ;;
+  *) continue ;;
+  esac
   case "$effective" in
   main | master)
     echo "BLOCKED: the commit would land on $effective; a commit belongs on a feature branch. Run git switch -c <name> before committing." >&2

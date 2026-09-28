@@ -1050,10 +1050,12 @@ move shrinks the diff the drift check in G-23 reports, and the fork's value is
 the `.claude/` toolkit, not five prompt files. Verify: the PR links are recorded
 beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
 
-**37. Assert the Claude leg's hooks in e2e-smoke.sh.** The smoke test asserts
-the Copilot hook file on the Copilot leg. The Claude leg should assert
-`.claude/settings.json` names the three event types from the extension. Verify:
-the Claude leg assertions pass on a fresh install. Effort: low. Depends on: G-26.
+**37. Assert the Claude leg's hooks in e2e-smoke.sh (merged: direct, 2026-09-27).**
+The smoke test asserted the Copilot hook file on the Copilot leg only. The
+Claude leg now asserts `.claude/settings.json` exists and that its
+`PreToolUse`, `PostToolUse`, and `SessionStart` entries each run
+`speckit.specflow.agent-event`. Verified: 102/102 assertions pass on a fresh
+install.
 
 ## Deferred
 
@@ -1072,15 +1074,23 @@ the Claude leg assertions pass on a fresh install. Effort: low. Depends on: G-26
 
 ## Suggested order
 
-D-01, D-05, G-19, G-20 through G-25, G-28 through G-42, G-43, G-44, G-45,
-G-46, G-48, G-49, G-50, G-51, G-52, G-53, G-54, G-55, G-56, and C-01 through
-C-09 are merged or closed. Backlog item 34 closed with G-19 (PR #81 added
-`examples/seeded-ambiguity/`). What is left, in order:
+D-01, D-05, G-19, G-20 through G-26, G-28 through G-56, and C-01 through C-09
+are merged or closed. Backlog item 34 closed with G-19 (PR #81 added
+`examples/seeded-ambiguity/`); item 37 closed on 2026-09-27. What is left, in
+order:
 
-1. G-26's pull request. T262 and T263 are done on branch `g26-events-hook`;
-   ADR-0034 records how one handler serves both `post_tool_use` gates.
-2. Backlog item 26, once a release exists to upgrade from.
+1. Cut the first release. No tag and no GitHub release exist, so `release.yml`
+   has never run and nothing downstream of a published archive can be checked.
+   `extension.yml` already carries `1.1.0` and `CHANGELOG.md` already has a
+   `[1.1.0]` heading, so the tag either folds the `[Unreleased]` set into
+   `1.1.0` or opens `1.2.0`.
+2. Backlog item 26, once that release exists to upgrade from.
 3. Backlog item 36, no code.
+
+Three questions in `open-questions.md` block the "Ready to release" line that
+requires an empty list: the constitution gate's single home, the trimmed
+Brainstorm Prompts against the shipped example, and `catalog.json`'s top-level
+keys. The fourth needs a live Copilot run.
 
 Pick the item whose `Verify:` line you can run before you start. An item whose
 check you cannot run today is a design task, not a roadmap task.
