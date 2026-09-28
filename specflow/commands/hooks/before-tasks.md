@@ -19,6 +19,6 @@ The hook fires before `/speckit.tasks` starts. It points the user at
    `references/workflow-guide.md`'s Stop codes table for the expected and
    found values this code reports.
 
-## Gate
+## Stop behavior
 
 If a precondition fails, the hook stops and names which command to run first.

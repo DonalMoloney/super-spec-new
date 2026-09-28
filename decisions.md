@@ -605,3 +605,38 @@ deleting them; prune anything older than a quarter that no longer guides work.
   later is checked against spec-kit's parser first, not assumed to configure
   anything. `validate-extension-metadata.py` now holds its command and hook
   counts to `extension.yml`, which caught both as stale.
+
+## ADR-0042: Copilot reads a deny on exit 2 and on exit 0; any other code fails open
+
+- Date: 2026-09-27
+- Status: accepted, closes the question ADR-0035 left open
+- Context: the `events:` route exits 2 with the deny JSON and
+  `.github/hooks/adapter.sh` exits 0 with the same JSON, and nothing said
+  whether both reach Copilot. The account's quota blocked a live `copilot -p`
+  run, so the dispatch code was read and executed out of the installed
+  `@github/copilot` 1.0.86 bundle. Its close handler rejects exit 2 with
+  `HookCommandWarningError`, which carries stdout, and any other nonzero with
+  `HookExitCodeError`, which does not. The runner recovers stdout from the
+  first class only.
+- Decision: both routes stand. Exit 2 and exit 0 each deny; neither needs
+  aligning to the other.
+- Consequences: exit 1 discards stdout and the tool call proceeds, matching
+  Claude Code, where exit 1 warns. A gate that cannot run without `jq` fails
+  open on both surfaces, which ADR-0027 already accepts.
+  `docs/agent-event-mapping.md` records the measurement and its method.
+
+## ADR-0043: A shared heading is renamed only when the new name reads better
+
+- Date: 2026-09-27
+- Status: accepted, scopes ADR-0018
+- Context: five templates and every command file still carry upstream's
+  headings, which caps the divergence measure. Renaming for the measure alone
+  would churn `## Usage`, `## Process`, and `## Output`, which are already the
+  clearest names available.
+- Decision: a heading moves only when the new name is better on its own.
+  Three qualified: `## Gate` in five hook prompts collided with the Gate
+  markers protocol in `workflow-guide.md` and became `## Stop behavior`;
+  `## Iteration` became `## Repeat runs`; and `## File Inference Fallback`,
+  three stacked nouns, became `## Phase without progress.yml`.
+- Consequences: the measure rose 1 to 6 points per file as a side effect, not
+  a target. G-57 applies the same bar to the remaining headings.

@@ -22,6 +22,6 @@ The hook fires before `/speckit.implement` starts. It points the user at
    and `test-driven-development` skills, then update `.specify/superpowers.yml`
 6. **Progress state**: Read `progress.yml` for a resume point, if one exists
 
-## Gate
+## Stop behavior
 
 If a prerequisite is missing, the hook stops and names which command to run first.

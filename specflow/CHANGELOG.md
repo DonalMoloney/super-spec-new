@@ -97,6 +97,15 @@ A release that carries more than one of these takes the highest part.
 - The catalog entry reports 7 commands and 6 hooks. It reported 6 and 5,
   written before the `agent-event` command and the `before_tasks` hook
   existed.
+- The Stop codes table in `references/workflow-guide.md` lists
+  `/speckit.specflow.brainstorm` and `/speckit.specflow.review` as printers of
+  `CONSTITUTION_REQUIRED`. Both gained the gate and the table missed them, so
+  a reader checking which commands stop got the wrong answer.
+- Three section headings read better. The `## Gate` section in five hook
+  prompts is `## Stop behavior`, which no longer collides with the Gate
+  markers protocol in `references/workflow-guide.md`. `## Iteration` in
+  `brainstorm.md` is `## Repeat runs`, and `## File Inference Fallback` in
+  `status.md` is `## Phase without progress.yml`.
 - `SKILL.md` no longer links `assets/workflow-overview-en.png` or the
   sample workflow walkthrough. `export-ignore` strips both directories from
   an install, so both links led nowhere.

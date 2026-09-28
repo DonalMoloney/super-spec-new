@@ -15,7 +15,7 @@ The hook fires once `/speckit.analyze` finishes. It writes the feature's
 3. **Write the marker**: With no CRITICAL row, write
    `specs/NNN-feature-name/.analyzed` and print its path.
 
-## Gate
+## Stop behavior
 
 The hook is not optional. An interrupted analysis and a report with a CRITICAL
 row both leave `.analyzed` absent, so `/speckit.specflow.execute` stops with

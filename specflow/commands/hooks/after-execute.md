@@ -17,7 +17,7 @@ rejects a completion claim that carries no evidence.
    its result. Each phase completion overwrites the file. The review
    command reads it as its default scope.
 
-## Gate
+## Stop behavior
 
 The hook blocks a task completion mark that carries no evidence. It blocks phase
 advancement until a human explicitly approves the checkpoint.

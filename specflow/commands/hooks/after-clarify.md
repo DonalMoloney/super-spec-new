@@ -15,7 +15,7 @@ infer that clarification ran.
 3. **Write the marker**: With no marker left, write
    `specs/NNN-feature-name/.clarified` and print its path.
 
-## Gate
+## Stop behavior
 
 The hook is not optional. A spec that still holds a `NEEDS CLARIFICATION` marker
 gets no marker file, so `/speckit.specflow.status` keeps naming

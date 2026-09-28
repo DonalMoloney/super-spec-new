@@ -59,7 +59,7 @@ The command also appends an ADR-lite entry to `decisions.md` for each resolved
 question that settled a choice, so a later run reads it at step 4 instead of
 asking again.
 
-## Iteration
+## Repeat runs
 
 Run this command any number of times on the same spec. Each session appends to
 the brainstorm log and skips previously explored categories.
