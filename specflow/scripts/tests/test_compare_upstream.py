@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Tests for compare-upstream.sh, the T592-T594 fork-vs-upstream probe runner.
 
-specflow/scripts/compare-upstream.sh does not exist yet. Its assumed
-interface, beyond the environment variables criteria-decisions.md's
-"Interface names" section already fixes (E2E_DRY_RUN, E2E_MODEL,
-E2E_MAX_BUDGET_USD, E2E_MAX_TURNS, COMPARE_PROBES, COMPARE_RUNS,
-COMPARE_UPSTREAM_CHECKOUT, COMPARE_RESULTS):
+compare-upstream.sh (see improvements/roadmap.md's G-59 group) is configured
+by the environment variables E2E_DRY_RUN, E2E_MODEL, E2E_MAX_BUDGET_USD,
+E2E_MAX_TURNS, COMPARE_PROBES, COMPARE_RUNS, COMPARE_UPSTREAM_CHECKOUT, and
+COMPARE_RESULTS. Two further behaviors these tests check directly:
 
   - Before each printed prompt, in a dry run, the script prints a bracket
     pipeline label, `[specflow]` or `[superspec]`, mirroring the `[Stage N]`
@@ -15,9 +14,6 @@ COMPARE_UPSTREAM_CHECKOUT, COMPARE_RESULTS):
     the spec-probe score-to-hit rule directly (T593's Scenario Outline),
     printing `true`, `false`, or `null` and exiting 0. `error` stands for a
     spec-probe entry with status error and no score.
-
-Every test here fails until compare-upstream.sh is written; writing it
-belongs to implementation-engineer.
 """
 
 import json
@@ -128,10 +124,7 @@ def pipeline_blocks(stdout, label):
 def test_dry_run_prints_the_forks_install_command():
     result = run_compare({"E2E_DRY_RUN": "1"})
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "specify extension add" in result.stdout
-    assert str(REPO_ROOT) in result.stdout
-    assert "--dev" in result.stdout
-    assert "specflow" in result.stdout
+    assert f"specify extension add {REPO_ROOT}/specflow --dev" in result.stdout
 
 
 def test_dry_run_prints_upstreams_install_command():

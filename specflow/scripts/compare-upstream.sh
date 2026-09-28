@@ -40,6 +40,7 @@
 set -uo pipefail
 
 FORK_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SPECFLOW_ROOT="$FORK_ROOT/specflow"
 DRY_RUN="${E2E_DRY_RUN:-0}"
 UPSTREAM_CHECKOUT="${COMPARE_UPSTREAM_CHECKOUT:-}"
 
@@ -103,11 +104,12 @@ print_pipeline_label() {
   printf '[%s]\n' "$1"
 }
 
-# Prints the fork's own install line. Names FORK_ROOT directly: the fork
-# never needs a clone, since compare-upstream.sh already runs inside it.
+# Prints the fork's own install line. Names SPECFLOW_ROOT, the extension
+# directory extension.yml lives in, not FORK_ROOT: the fork never needs a
+# clone, since compare-upstream.sh already runs inside it.
 print_fork_install_command() {
   print_pipeline_label "specflow"
-  printf 'specify extension add %s --dev\n' "$FORK_ROOT"
+  printf 'specify extension add %s --dev\n' "$SPECFLOW_ROOT"
 }
 
 # Prints the git clone and checkout lines for the pinned upstream commit.
@@ -500,7 +502,7 @@ run_probe_entry() {
 
   case "$pipeline" in
     specflow)
-      pipeline_path="$FORK_ROOT"
+      pipeline_path="$SPECFLOW_ROOT"
       ;;
     superspec)
       if [ -n "$UPSTREAM_CHECKOUT_ERROR" ]; then
