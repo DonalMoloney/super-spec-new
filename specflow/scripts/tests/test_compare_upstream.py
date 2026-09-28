@@ -1017,6 +1017,19 @@ def test_every_entry_names_pipeline_probe_run_index_and_hit(tmp_path):
         assert sorted(runs) == [1, 2, 3], f"{key} has run indexes {runs}"
 
 
+def test_every_dry_run_entry_carries_the_same_keys_an_ok_or_error_entry_carries(tmp_path):
+    results_path = tmp_path / "results.json"
+    result = run_compare({"E2E_DRY_RUN": "1", "COMPARE_RESULTS": str(results_path)})
+    assert result.returncode == 0, result.stdout + result.stderr
+    data = load_results(results_path)
+    expected_keys = {"pipeline", "probe", "run", "status", "hit", "score", "cost_usd", "error"}
+    for entry in data["entries"]:
+        assert entry.keys() == expected_keys, entry
+        assert entry["score"] is None
+        assert entry["cost_usd"] is None
+        assert entry["error"] is None
+
+
 COST_CASES = [('{"total_cost_usd": 0.12}', "0.12"), ("{}", "null")]
 
 

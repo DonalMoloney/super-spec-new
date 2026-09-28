@@ -222,16 +222,16 @@ validate_compare_runs() {
 }
 
 # Prints one compact-JSON dry-run entry per line: every pipeline and run
-# index of each probe in PROBES_TO_RUN. `hit` stays null because a dry run
-# never scores anything; a later, non-dry-run probe reuses
-# spec_hit_for_score once it has a real score to score.
+# index of each probe in PROBES_TO_RUN, carrying the same keys an "ok" or
+# "error" entry carries. hit, score, cost_usd, and error all stay null,
+# since a dry run never scores or calls anything.
 dry_run_entries() {
   local probe pipeline run
   for probe in "${PROBES_TO_RUN[@]}"; do
     for pipeline in specflow superspec; do
       for ((run = 1; run <= COMPARE_RUNS; run++)); do
         jq -nc --arg pipeline "$pipeline" --arg probe "$probe" --argjson run "$run" \
-          '{pipeline: $pipeline, probe: $probe, run: $run, status: "dry-run", hit: null}'
+          '{pipeline: $pipeline, probe: $probe, run: $run, status: "dry-run", hit: null, score: null, cost_usd: null, error: null}'
       done
     done
   done
