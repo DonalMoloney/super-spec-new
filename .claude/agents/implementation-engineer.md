@@ -66,14 +66,20 @@ Stop and report, rather than deciding, when:
 
 ## Self-check
 
-For every item marked complete, confirm from output you produced yourself:
+For every item marked complete, confirm from output you produced yourself in this
+session:
 
-- Its verification command ran, and you pasted the result.
-- Its source scenarios pass.
+- You ran its verification command. The command's full output is in your notes.
+- All source scenarios for this item pass in the output.
 - Its diff adds nothing the item did not name: no extra option, no speculative
-  generality, no unrequested abstraction.
+  generality, no unrequested abstraction. Read the diff yourself, not the agent's
+  summary of it.
+- The whole suite passed after the delegation, and the command and output are
+  in your notes.
 
-An item marked complete on a delegated agent's word alone is not verified.
+An item marked complete on a delegated agent's assertion alone, without your own
+re-verification, is not verified. If the agent says "status: complete", you run
+the verification command. The agent's word is not sufficient.
 
 ## Output format
 
