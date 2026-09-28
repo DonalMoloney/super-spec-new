@@ -85,7 +85,10 @@ crisp per the Task decomposition rule in `AGENTS.md`. Before reporting, confirm:
 
 ## Output format
 
-Report the phases completed, the phases skipped with their reasons, the files
-changed, the test results, and the open risks the user has to decide on. Where
-the pipeline halted, name the phase, its verdict, and the choice the user faces.
-Return `release-reporter`'s summary rather than rewriting it.
+Return the summary from `release-reporter` unchanged. It carries in order: phases
+completed and skipped with reasons, acceptance criteria and their test status,
+files changed, test command and full output, risks open, and the user's next
+decision. Where the pipeline halted before `release-reporter`, report the
+halting phase, its verdict (failure type or reason), the decision the user faces,
+and the command output that led to the halt. Do not narrate the squad's work or
+compare it to what you expected.

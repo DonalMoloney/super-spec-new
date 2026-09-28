@@ -147,7 +147,7 @@ A maintainer runs the link-audit CLI inside a git repository that also contains 
 - **FR-014**: The CLI MUST NOT treat any text inside a fenced code block (delimited by matching ``` or ~~~ lines) as a heading or as a link target; such content MUST be excluded from both heading extraction (FR-005) and link extraction (FR-002).
 - **FR-015**: For a link target beginning with `/` (a root-relative path), the CLI MUST resolve the target relative to the repository root (the directory from which `git ls-files` is run), not relative to the linking file's directory and not relative to the OS filesystem root.
 
-### Key Entities *(include if feature involves data)*
+### Entities
 
 - **Tracked Markdown File**: A file path reported by `git ls-files` ending in `.md`; the unit of scanning.
 - **Link**: An inline Markdown link extracted from a tracked file, with a source file, a target path, and an optional anchor fragment.

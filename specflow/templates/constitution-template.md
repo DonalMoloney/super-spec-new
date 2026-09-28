@@ -87,14 +87,17 @@ This project follows **specification-driven development** through the specflow p
 <!--
   Set which review stages this project runs and how strong a model each needs.
   Name a model class, never a specific model or agent: the class must resolve
-  on whichever agent CLI the project uses.
+  on whichever agent CLI the project uses. /speckit.specflow.review runs the
+  four stages below; the risk classifier decides whether Stage 2 and Stage 3
+  run.
 -->
 
 | Stage | When it runs | Model class |
 |-------|--------------|-------------|
-| Pre-mortem | Before implementation starts, against plan.md | fast |
-| Single reviewer | On every change | standard |
-| Panel | On a change the risk rules mark high | strongest |
+| Stage 0: spec red team and threat model | After /speckit.clarify, before any code exists | strongest |
+| Stage 1: conformance | On every change, against the acceptance scenarios in spec.md | standard |
+| Stage 2: panel (correctness, security, maintainability, performance) | On a change the risk classifier marks HIGH | standard |
+| Stage 3: critic | After the panel, over the panel's findings | strongest |
 
 ### Deployment Gates
 
@@ -106,11 +109,15 @@ This project follows **specification-driven development** through the specflow p
 ## Code Review Rules
 
 - **Error handling**: Follow [ERROR_HANDLING_CONVENTION].
-- **Test command**: Run [TEST_COMMAND] before accepting a change.
 - **Forbidden dependencies**: Reject [FORBIDDEN_DEPENDENCIES].
 - **Security rules**: Enforce [SECURITY_RULES].
 - **Spec approved**: Get human approval before implementation. Record [SPEC_APPROVAL_EVIDENCE].
 - **Merge approved**: Get human approval before merging. Record [MERGE_APPROVAL_EVIDENCE].
+
+<!--
+  The test gate runs the command on the line below before it lets a task be
+  ticked. Keep the line's "Test command:" prefix and put the command after it.
+-->
 
 Test command: [TEST_COMMAND]
 

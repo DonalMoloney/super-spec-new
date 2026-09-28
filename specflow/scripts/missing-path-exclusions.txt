@@ -15,3 +15,4 @@
 docs/superpowers: the obra/superpowers skill's own default output directory, named only to contrast with .specify/, where this repository writes instead
 tests/contract: tasks-template.md's example task line for a consuming project's own test tree
 tests/integration: tasks-template.md's example task line for a consuming project's own test tree
+tests/test_: spec-template.md's Traceability example rows for a consuming project's own test file, with the `[feature]` placeholder cut at the capture boundary

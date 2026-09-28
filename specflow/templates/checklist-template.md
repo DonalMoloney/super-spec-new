@@ -43,7 +43,7 @@
 - [ ] CHK010 The logic passes every acceptance scenario
 - [ ] CHK011 The implementation covers every edge case from brainstorming
 - [ ] CHK012 Error handling covers every failure path (no silent failures)
-- [ ] CHK013 The system validates data at every boundary
+- [ ] CHK013 The code validates input at the boundary it enters and trusts it after that
 
 ### Security
 
@@ -55,17 +55,19 @@
 
 ### Performance
 
-- [ ] CHK030 The code avoids N+1 queries and unnecessary database calls
-- [ ] CHK031 The code caches where caching pays off
+Fill this section only when spec.md states a latency, throughput, or memory limit.
+
+- [ ] CHK030 A request issues one query per collection it reads, never one per row
+- [ ] CHK031 The [endpoint] meets the limit spec.md states, per the test named in Traceability
 - [ ] CHK032 Critical paths run no blocking operation
 - [ ] CHK033 The code closes every connection and file handle it opens
 
 ### Code Quality
 
 - [ ] CHK040 The code follows the constitution's conventions
-- [ ] CHK041 Each function covers one responsibility and stays small
-- [ ] CHK042 Duplicate code stays under the project's limit
-- [ ] CHK043 Names stay clear and consistent
+- [ ] CHK041 Each function does one thing and fits on one screen
+- [ ] CHK042 No block is copied with one token changed
+- [ ] CHK043 Each name uses the term the constitution or the spec uses for that concept
 
 ## Constitution Compliance
 
@@ -105,6 +107,9 @@
 <!--
   Join a failed checklist item to the review finding that reported it.
   review-findings.json holds the R-NNN ids, and the review command writes that file.
+  Status takes one of the findings schema's values: open, accepted, rejected,
+  rebutted, fixed. Only fixed or rebutted clears the merge gate for a Critical
+  or Important finding.
 -->
 
 | CHK ID | R-NNN | Status |
