@@ -198,6 +198,22 @@ resolve_probes_to_run() {
   esac
 }
 
+# Exits 1 on a COMPARE_RUNS that is not a positive integer, the same
+# failure shape resolve_probes_to_run uses for COMPARE_PROBES. Runs before
+# dry_run_entries and the live per-pipeline loop build any output: an
+# invalid value there hits a bash arithmetic error mid-loop, and on the
+# producer side of dry_run_entries | assemble_results_json that error
+# never reaches the unconditional exit 0 that follows it (fix round 3,
+# F7).
+validate_compare_runs() {
+  case "$1" in
+    ''|0|*[!0-9]*)
+      printf 'COMPARE_RUNS is %s; expected a positive integer.\n' "$1" >&2
+      exit 1
+      ;;
+  esac
+}
+
 # Prints one compact-JSON dry-run entry per line: every pipeline and run
 # index of each probe in PROBES_TO_RUN. `hit` stays null because a dry run
 # never scores anything; a later, non-dry-run probe reuses
@@ -256,6 +272,7 @@ if [ "$DRY_RUN" = "1" ]; then
 
   COMPARE_PROBES="${COMPARE_PROBES:-all}"
   resolve_probes_to_run "$COMPARE_PROBES"
+  validate_compare_runs "$COMPARE_RUNS"
 
   resolve_compare_results_path
 
@@ -269,7 +286,10 @@ if [ "$DRY_RUN" = "1" ]; then
   print_claude_invocation "$ALLOWED_TOOLS_SUPERSPEC" "$(superspec_probe_prompt review)"
 
   mkdir -p "$(dirname "$COMPARE_RESULTS")"
-  dry_run_entries | assemble_results_json > "$COMPARE_RESULTS"
+  if ! dry_run_entries | assemble_results_json > "$COMPARE_RESULTS"; then
+    printf 'compare-upstream.sh: writing dry-run entries to %s failed.\n' "$COMPARE_RESULTS" >&2
+    exit 1
+  fi
 
   exit 0
 fi
@@ -281,6 +301,7 @@ fi
 
 COMPARE_PROBES="${COMPARE_PROBES:-all}"
 resolve_probes_to_run "$COMPARE_PROBES"
+validate_compare_runs "$COMPARE_RUNS"
 
 resolve_compare_results_path
 

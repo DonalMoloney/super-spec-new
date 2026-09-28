@@ -129,6 +129,44 @@ def test_compare_probes_invalid_value_exits_1_with_its_message():
     assert "spec, review, or all" in result.stderr
 
 
+# --- Rule: COMPARE_RUNS only accepts a positive integer (fix round 3, F7) ---
+
+
+def test_compare_runs_given_a_non_numeric_value_exits_nonzero_with_a_message(tmp_path):
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "E2E_DRY_RUN": "1",
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "abc",
+            "COMPARE_RESULTS": str(results_path),
+        }
+    )
+    assert result.returncode != 0, (
+        "compare-upstream.sh exited 0 for COMPARE_RUNS=abc instead of "
+        "rejecting it the way it rejects an invalid COMPARE_PROBES:\n"
+        f"stdout={result.stdout!r}\nstderr={result.stderr!r}"
+    )
+    assert "COMPARE_RUNS is abc; expected a positive integer." in result.stderr
+
+
+def test_compare_runs_given_a_negative_value_exits_nonzero_with_a_message(tmp_path):
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "E2E_DRY_RUN": "1",
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "-1",
+            "COMPARE_RESULTS": str(results_path),
+        }
+    )
+    assert result.returncode != 0, (
+        "compare-upstream.sh exited 0 for COMPARE_RUNS=-1 and silently wrote "
+        f"{json.loads(results_path.read_text())['entries'] if results_path.exists() else 'no file'}"
+    )
+    assert "COMPARE_RUNS is -1; expected a positive integer." in result.stderr
+
+
 # --- Rule: compare-upstream.sh installs both pipelines before probing them (T592) ---
 
 
