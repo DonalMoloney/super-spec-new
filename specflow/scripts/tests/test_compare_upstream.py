@@ -628,6 +628,47 @@ def test_dry_runs_review_probe_writes_six_dry_run_entries(tmp_path):
     assert all(entry["status"] == "dry-run" for entry in entries)
 
 
+def test_a_match_present_only_in_a_file_from_before_the_run_is_not_a_hit(tmp_path):
+    """A file present before claude runs, and untouched by it, never counts toward a hit.
+
+    The uvx stub writes docs/prior-notes.md, naming the planted fault, on
+    the specify init step, so the file exists in the project directory
+    before seed_review_probe_project and the before-run manifest capture
+    run. The claude stub changes nothing and prints no match, so the only
+    mention of the planted fault sits in a file the run never touched.
+    """
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(
+        bin_dir,
+        "uvx",
+        'if [[ "$*" == *"specify init"* ]]; then\n'
+        "  mkdir -p docs\n"
+        "  printf 'See src/link_audit/resolver.py:87 for prior context.\\n' > docs/prior-notes.md\n"
+        "fi\n"
+        "exit 0\n",
+    )
+    write_stub(bin_dir, "claude", "echo '{\"total_cost_usd\": 0.01}'\nexit 0\n")
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "review",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    data = load_results(results_path)
+    review_entries = [entry for entry in data["entries"] if entry["probe"] == "review"]
+    assert review_entries, "no review entries written"
+    for entry in review_entries:
+        assert entry["status"] == "ok"
+        assert entry["hit"] is False
+
+
 def test_review_probe_hit_script_error_is_recorded_as_an_error_entry(tmp_path):
     """review_probe_entry writes an error entry when review-probe-hit.py exits neither 0 nor 1.
 

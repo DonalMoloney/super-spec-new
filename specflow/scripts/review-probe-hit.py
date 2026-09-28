@@ -7,9 +7,9 @@ agent against it, and checks whether the agent's output names that location.
 <n>`` on the same text line, a ``<a>-<b>`` range overlapping the accepted
 window, a JSON object carrying ``file`` and ``line`` keys, and a path that
 merely ends in the planted file's relative path. ``judge`` counts a hit only
-from a changed file's contents or the agent's final text; a match sitting
-only in a baseline file, one the review run neither wrote nor touched,
-proves nothing about what the run found.
+from a changed file's contents or the agent's final text; a caller passes
+only the files the review run wrote or changed, since a match in a file the
+run never touched proves nothing about what the run found.
 
 The filename carries a hyphen so it cannot be imported with a normal
 ``import`` statement; a caller loads it with ``importlib.util`` instead, the
@@ -115,15 +115,8 @@ def judge(
     window: int = DEFAULT_WINDOW,
     changed_contents=(),
     final_text: str = "",
-    baseline_contents=(),
 ) -> bool:
-    """Return True when a changed file or the final text names the planted fault.
-
-    baseline_contents is accepted but never inspected: a baseline file
-    predates the review run and the run did not touch it, so a match there
-    shows nothing about what the run found.
-    """
-    del baseline_contents
+    """Return True when a changed file or the final text names the planted fault."""
     for content in changed_contents:
         if is_hit(content, planted_file, planted_line, window):
             return True
@@ -163,13 +156,6 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="PATH",
         help="Path to a file holding the review agent's final text.",
     )
-    parser.add_argument(
-        "--baseline-file",
-        action="append",
-        default=[],
-        metavar="PATH",
-        help="Path to a file present before the review run. Read but never matched. Repeatable.",
-    )
     return parser
 
 
@@ -180,14 +166,12 @@ def main(argv: list[str] | None = None) -> int:
     """
     args = build_parser().parse_args(argv)
     changed_contents = [read_text(path) for path in args.changed_file]
-    baseline_contents = [read_text(path) for path in args.baseline_file]
     final_text = read_text(args.final_text_file) if args.final_text_file else ""
     hit = judge(
         args.planted_file,
         args.planted_line,
         changed_contents=changed_contents,
         final_text=final_text,
-        baseline_contents=baseline_contents,
     )
     print("hit" if hit else "miss")
     return 0 if hit else 1

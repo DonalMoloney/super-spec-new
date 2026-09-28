@@ -561,12 +561,13 @@ score_probe_entry() {
 
 # Judges the review probe (T594) with review-probe-hit.py: every file the
 # run created or changed since before_manifest, plus claude's own final
-# text, against the planted fault; a file the run never touched is passed
-# as a baseline only, never as a hit source. Appends the entry.
+# text, against the planted fault. A file the run never touched is never
+# passed at all, since a match there would prove nothing about what the
+# run found. Appends the entry.
 review_probe_entry() {
   local pipeline="$1" probe="$2" run="$3" project_dir="$4" before_manifest="$5" stdout_file="$6" cost="$7"
   local after_manifest final_text_file path review_exit hit_val
-  local changed_args=() baseline_args=()
+  local changed_args=()
 
   after_manifest="$(mktemp -t compare-upstream-manifest-after.XXXXXX)"
   project_manifest "$project_dir" > "$after_manifest"
@@ -578,15 +579,10 @@ review_probe_entry() {
     [ -n "$path" ] && changed_args+=(--changed-file "$project_dir/$path")
   done < <(comm -13 <(sort "$before_manifest") <(sort "$after_manifest") | cut -f1)
 
-  while IFS= read -r path; do
-    [ -n "$path" ] && baseline_args+=(--baseline-file "$project_dir/$path")
-  done < <(comm -12 <(sort "$before_manifest") <(sort "$after_manifest") | cut -f1)
-
   python3 "$FORK_ROOT/specflow/scripts/review-probe-hit.py" \
     --planted-file "$REVIEW_PLANTED_FILE" --planted-line "$REVIEW_PLANTED_LINE" \
     "${changed_args[@]+"${changed_args[@]}"}" \
     --final-text-file "$final_text_file" \
-    "${baseline_args[@]+"${baseline_args[@]}"}" \
     >/dev/null 2>/dev/null
   review_exit=$?
 

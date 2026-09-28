@@ -11,10 +11,10 @@ loads lint-standards.py, then calls its importable functions directly:
       overlapping the window, a JSON object with "file" and "line" keys,
       or a path merely ending in planted_file's relative path.
   judge(planted_file, planted_line, window=3, changed_contents=(),
-      final_text="", baseline_contents=()) -> bool
+      final_text="") -> bool
       True only when a match in changed_contents or final_text passes
-      is_hit; a match found only in baseline_contents (a file the review
-      run did not create or change) never counts.
+      is_hit. A caller passes only the files the review run wrote or
+      changed; a file the run never touched is never passed at all.
 
 review-probe-hit.py also exposes a CLI, `python3 review-probe-hit.py`, that
 wires argv onto the same functions; this file exercises the importable
@@ -32,7 +32,7 @@ PLANTED_FILE = "src/link_audit/resolver.py"
 PLANTED_LINE = 42
 WINDOW = 3
 
-EXPECTED_CASE_COUNT = 21
+EXPECTED_CASE_COUNT = 20
 
 
 def load_module():
@@ -43,7 +43,7 @@ def load_module():
     return module
 
 
-def judge(changed_contents=(), final_text="", baseline_contents=()):
+def judge(changed_contents=(), final_text=""):
     """Call review_probe_hit.judge with the module's planted file, line, and window."""
     module = load_module()
     return module.judge(
@@ -52,7 +52,6 @@ def judge(changed_contents=(), final_text="", baseline_contents=()):
         window=WINDOW,
         changed_contents=changed_contents,
         final_text=final_text,
-        baseline_contents=baseline_contents,
     )
 
 
@@ -129,11 +128,6 @@ def test_hit_true_when_match_is_in_a_changed_file():
 def test_hit_true_when_match_is_in_the_agents_final_text():
     content = f"{PLANTED_FILE}:{PLANTED_LINE}: off-by-one in the loop bound"
     assert judge(final_text=content) is True
-
-
-def test_hit_false_when_match_is_only_in_a_baseline_file():
-    content = f"{PLANTED_FILE}:{PLANTED_LINE}: off-by-one in the loop bound"
-    assert judge(baseline_contents=[content]) is False
 
 
 def test_hit_false_for_a_reversed_range_that_would_span_the_window_if_sorted():
