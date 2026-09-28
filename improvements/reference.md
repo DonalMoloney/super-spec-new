@@ -461,3 +461,93 @@ two cited from more than one file, a direct `git mv` and edit for the third.
 | `.claude/hooks/diff-impl.sh` | Shortens "implementation" to "impl"; its own header comment spells out "differential implementation run" | `.claude/hooks/tests/run.sh`, `specflow/references/workflow-guide.md`, `specflow/references/copilot-cli.md` | `differential-implementation.sh` |
 | `.claude/review/scorecard.sh` | Shares the verb "score" with `specflow/scripts/score-artifacts.py`, which scores golden artifacts against upstream, not reviewer precision; the two names give no hint they measure different things | `improvements/roadmap.md` (item 31), `.claude/review/tests/test_scorecard.py`, `docs/review-research.md`, `presentation/marp-deck/deck.md` | `reviewer-precision.sh` |
 | `specflow/examples/link-audit/analyze-gate.md` | Reads like a script or command name; every sibling file in the directory (`spec.md`, `plan.md`, `tasks.md`, `progress.yml`) is a document the pipeline writes, but this one records seven sessions run after the pipeline ended | `specflow/examples/link-audit/README.md` | `analyze-gate-walkthrough.md` |
+
+## Diverging further, and how to tell a real move from churn
+
+The prose passes are done, so the remaining moves are structural. ADR-0043
+sets the bar: a heading moves only when the new name is better on its own
+merits, judged against `standards/documentation.md`. A rename that only moves
+the measure is churn, and a reviewer rejects it. Expect to reject most
+candidates.
+
+### The method
+
+1. Measure the file, so the before value is recorded:
+   `python3 .claude/divergence/measure-divergence.py --local specflow
+   --upstream <checkout> <path>`.
+2. List what upstream still owns:
+   `comm -12 <(grep -h '^#\{1,4\} ' specflow/<path> | sort -u)
+   <(grep -h '^#\{1,4\} ' <upstream>/<path> | sort -u)`.
+3. Sort each shared heading into the four classes below.
+4. Check the four contracts before touching a class 3 heading, then grep the
+   repository for prose that cites it and move that in the same change.
+5. Measure again and record both values.
+
+### Four classes of shared heading
+
+- **Frozen by a contract.** `constitution-template.md`'s `## Core Principles`
+  is grepped by `e2e-stages.sh`. `spec-template.md`'s three `*(mandatory)*`
+  headings and `tasks-template.md`'s `## Phase N:` lines feed
+  `score-artifacts.py`'s `spec_sections` dimension against both goldens. A
+  bracket placeholder such as `### [PRINCIPLE_1_NAME]` is substituted at run
+  time. None of these moves without moving its contract first.
+- **Already the right name.** `## Usage`, `## Process`, `## Output`,
+  `## Summary`, `## Notes`, `## Security`, `## Performance`,
+  `## Correctness`. A shorter or plainer name does not exist. Leave them.
+- **Improvable.** The table below.
+- **Moved.** `## Superpowers Adaptation` became `## Skill Mode Behavior`,
+  `## Checks` became `## Preconditions`, and ADR-0043 records three more.
+
+### What makes a rename real
+
+Each of these is a rule in `standards/documentation.md`, and each one found a
+rename that stood on its own:
+
+- **It collides with another term in the project.** `## Gate` in five hook
+  prompts collided with the Gate markers protocol in `workflow-guide.md`. One
+  term serves one concept, so it became `## Stop behavior`.
+- **It stacks nouns.** `## File Inference Fallback` is three nouns and names
+  no condition. It became `## Phase without progress.yml`.
+- **It is an abstract noun over a concrete section.** `## Iteration` sat over
+  two sentences about re-running, so it became `## Repeat runs`.
+- **It joins two ideas with an ampersand.** One idea per heading.
+- **It carries an instruction.** A parenthetical such as
+  `*(include if feature involves data)*` is guidance for the author, not a
+  section name.
+
+### Moves that are not renames
+
+A heading is the cheapest structural move, not the only one, and the others
+often improve the document more:
+
+- **Delete a heading that sits over one sentence.** A one-sentence section is
+  a bullet in disguise. Fold it into the section above and keep the sentence.
+  Check first that the sentence is not the only place a behavior is stated.
+- **Turn three or more parallel prose items into a table**, and a table of
+  two rows back into prose.
+- **Reorder so the action leads.** Background after the answer, never before.
+- **Drop a section this fork does not use.** Upstream's User Story 3
+  boilerplate is the worked example; ADR-0021 records why the templates carry
+  their own shape.
+
+### Candidate inventory
+
+Measured 2026-09-27 against `WangX0111/superspec`. Each row names the rule it
+breaks. A row is a candidate, not a decision: check its contracts first.
+
+| Heading | File | Rule it breaks | Candidate |
+|---------|------|----------------|-----------|
+| `## Dependencies & Execution Order` | `templates/tasks-template.md` | Two ideas joined by an ampersand | Split, or `## Task order` |
+| `## Phase N: Polish & Cross-Cutting Concerns` | `templates/tasks-template.md` | Ampersand, and "cross-cutting concerns" is jargon | Contract first: the scorer reads `## Phase` lines |
+| `## Superpowers Execution` | `templates/tasks-template.md` | Abstract pairing; the section is about what each marker does | `## What each marker runs` |
+| `## Complexity Tracking` | `templates/plan-template.md` | Names an activity, not what the section holds | `## Complexity exceptions` |
+| `## Technical Context` | `templates/plan-template.md` | "Context" is the vaguest available noun | `## Stack and constraints` |
+| `### Key Entities *(include if feature involves data)*` | `templates/spec-template.md` | Instruction inside a heading; "key" is a banned adjective | Move the parenthetical into the body |
+| `## [Custom Category]` | `templates/checklist-template.md` | Placeholder, frozen | None |
+| `## Path Conventions` | `templates/tasks-template.md` | Reads as policy; the section lists paths | `## Where files go` |
+
+`SKILL.md`'s four shared headings are the core command names
+(`/speckit.specify`, `/speckit.plan`, `/speckit.constitution`,
+`/speckit.checklist`). They are spec-kit's, not upstream's, and never move.
+
+G-57 in `roadmap.md` executes against this section.
