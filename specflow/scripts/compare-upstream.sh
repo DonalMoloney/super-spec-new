@@ -57,17 +57,17 @@ RECORDED_MODEL=""
 COMPARE_RUNS="${COMPARE_RUNS:-3}"
 COMMITTED_RESULTS="$FORK_ROOT/specflow/examples/upstream-comparison/results.json"
 
-# The spec probe's seeded feature: examples/seeded-ambiguity/'s spec.md and
-# its planted-phrase marker, plus the link-audit constitution every probe
-# project needs (item 24).
+# The spec probe's seeded feature (T593): examples/seeded-ambiguity/'s
+# spec.md and its planted-phrase marker, plus the link-audit constitution
+# every probe project needs.
 SEEDED_AMBIGUITY_DIR="$FORK_ROOT/specflow/examples/seeded-ambiguity"
 LINK_AUDIT_CONSTITUTION="$FORK_ROOT/specflow/examples/link-audit/.specify/memory/constitution.md"
 PROBE_FEATURE_DIR="specs/001-link-audit"
 
-# The review probe's seeded feature: a full copy of
+# The review probe's seeded feature (T594): a full copy of
 # examples/seeded-review-bug/, whose own .specify/memory/constitution.md
-# already matches link-audit's (item 25). The planted fault's location, from
-# that example's own README.md.
+# already matches link-audit's. The planted fault's location, from that
+# example's own README.md.
 SEEDED_REVIEW_BUG_DIR="$FORK_ROOT/specflow/examples/seeded-review-bug"
 REVIEW_PLANTED_FILE="src/link_audit/resolver.py"
 REVIEW_PLANTED_LINE=87
@@ -231,10 +231,10 @@ resolve_compare_results_path() {
 }
 
 # Reads compact-JSON entries from stdin and wraps them with the three keys
-# every results.json carries once per file: the model a run used, the
-# fork commit under test, and the pinned upstream commit. Argument 1, when
-# given, overrides MODEL: a live run passes the model any entry's claude
-# JSON reported (item 26), falling back to MODEL when no entry reported one.
+# every results.json carries once per file (T595): the model a run used,
+# the fork commit under test, and the pinned upstream commit. Argument 1,
+# when given, overrides MODEL: a live run passes the model any entry's
+# claude JSON reported, falling back to MODEL when no entry reported one.
 assemble_results_json() {
   local model_value="${1:-$MODEL}"
   local fork_commit
@@ -288,7 +288,7 @@ resolve_compare_results_path
 # checkout path was given, and sets UPSTREAM_CHECKOUT to it. On failure,
 # leaves UPSTREAM_CHECKOUT empty and UPSTREAM_CHECKOUT_ERROR set; every
 # superspec entry then records that error instead of attempting an install
-# against a checkout that does not exist (item 23).
+# against a checkout that does not exist.
 ensure_upstream_checkout() {
   if [ -n "$UPSTREAM_CHECKOUT" ]; then
     return 0
@@ -322,7 +322,7 @@ RESULTS_ENTRIES_FILE="$(mktemp -t compare-upstream-entries)"
 # Appends one compact-JSON error entry to RESULTS_ENTRIES_FILE: hit and
 # cost_usd stay null, and score stays null, so every failure path (a bad
 # checkout, a failed install, a failed claude call, or a scorer crash)
-# writes the same shape (item 14, extended by items 23-25).
+# writes the same shape.
 write_error_entry() {
   local pipeline="$1" probe="$2" run="$3" error="$4"
   jq -nc --arg pipeline "$pipeline" --arg probe "$probe" --argjson run "$run" --arg error "$error" \
@@ -332,7 +332,7 @@ write_error_entry() {
 
 # Creates one fresh spec-kit project and installs pipeline_path's checkout
 # into it, so no run carries over another run's specs/, findings, or
-# .specify/ state (item 23). On success, leaves the project directory in
+# .specify/ state. On success, leaves the project directory in
 # PROJECT_DIR. On failure, removes it, clears PROJECT_DIR, and reports the
 # failing step's stderr in PROJECT_DIR_ERROR.
 prepare_probe_project() {
@@ -367,9 +367,9 @@ prepare_probe_project() {
   return 0
 }
 
-# Seeds a fresh project for the spec probe: the seeded-ambiguity spec and
-# its planted-phrase marker under specs/001-link-audit/, plus the
-# link-audit constitution (item 24).
+# Seeds a fresh project for the spec probe (T593): the seeded-ambiguity spec
+# and its planted-phrase marker under specs/001-link-audit/, plus the
+# link-audit constitution.
 seed_spec_probe_project() {
   local project_dir="$1"
   local feature_dir="$project_dir/$PROBE_FEATURE_DIR"
@@ -379,9 +379,9 @@ seed_spec_probe_project() {
   cp "$LINK_AUDIT_CONSTITUTION" "$project_dir/.specify/memory/constitution.md"
 }
 
-# Seeds a fresh project for the review probe: a full copy of
+# Seeds a fresh project for the review probe (T594): a full copy of
 # examples/seeded-review-bug/, which already carries its own
-# .specify/memory/constitution.md (item 25).
+# .specify/memory/constitution.md.
 seed_review_probe_project() {
   local project_dir="$1"
   cp -R "$SEEDED_REVIEW_BUG_DIR/." "$project_dir/"
@@ -389,8 +389,8 @@ seed_review_probe_project() {
 
 # Prints one line per file under project_dir: its path relative to
 # project_dir, a tab, then a checksum. Two manifests taken before and after
-# a review probe run tell a changed-or-created file apart from one the run
-# never touched (item 25).
+# a review probe run (T594) tell a changed-or-created file apart from one
+# the run never touched.
 project_manifest() {
   local project_dir="$1" file rel
   (
@@ -403,9 +403,9 @@ project_manifest() {
 }
 
 # Reads the model field out of a claude --output-format json transcript and
-# records it in RECORDED_MODEL, the first time any entry reports one. A
-# later entry's model, or an entry that reports none, never overwrites it
-# (item 26).
+# records it in RECORDED_MODEL, the first time any entry reports one, for
+# T595's results.json. A later entry's model, or an entry that reports
+# none, never overwrites it.
 record_claude_model() {
   local stdout_file="$1" model_value
   model_value="$(jq -r 'if (type == "object") and has("model") then .model else empty end' "$stdout_file" 2>/dev/null)"
@@ -414,9 +414,9 @@ record_claude_model() {
   fi
 }
 
-# Scores the spec probe's feature directory with score-artifacts.py, derives
-# hit from its seeded_ambiguity.score via spec_hit_for_score, and appends
-# the entry (item 24). A scorer crash is recorded as an error entry instead
+# Scores the spec probe's feature directory (T593) with score-artifacts.py,
+# derives hit from its seeded_ambiguity.score via spec_hit_for_score, and
+# appends the entry. A scorer crash is recorded as an error entry instead
 # of stopping the run.
 score_probe_entry() {
   local pipeline="$1" probe="$2" run="$3" project_dir="$4" cost="$5"
@@ -445,10 +445,10 @@ score_probe_entry() {
   rm -f "$score_stdout" "$score_stderr"
 }
 
-# Judges the review probe with review-probe-hit.py: every file the run
-# created or changed since before_manifest, plus claude's own final text,
-# against the planted fault; a file the run never touched is passed as a
-# baseline only, never as a hit source (item 25). Appends the entry.
+# Judges the review probe (T594) with review-probe-hit.py: every file the
+# run created or changed since before_manifest, plus claude's own final
+# text, against the planted fault; a file the run never touched is passed
+# as a baseline only, never as a hit source. Appends the entry.
 review_probe_entry() {
   local pipeline="$1" probe="$2" run="$3" project_dir="$4" before_manifest="$5" stdout_file="$6" cost="$7"
   local after_manifest final_text_file path review_exit hit_val
