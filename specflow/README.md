@@ -10,6 +10,9 @@ implements those tasks with test-driven development and checkpoints, then reads
 the finished code back against the spec. The execute command refuses to start
 until `/speckit.analyze` reports zero critical inconsistencies. One set of
 command files runs on Claude Code and on the GitHub Copilot CLI.
+[`pipeline-overview.svg`](../presentation/marp-deck/pipeline-overview.svg) diagrams
+the phase pipeline: which command advances each document, and the marker each
+gate checks before the next one runs.
 
 ## Installation
 
@@ -53,8 +56,8 @@ specify extension add ./super-spec-new/specflow --dev
 
 Spec-kit's own documentation writes that as
 `specify extension add ./specflow --dev`, run from the parent of the extension
-directory. A `--dev` install copies the directory as it sits on disk, so it
-carries the 13 MiB under `assets/` that the release archive strips.
+directory. A `--dev` install copies the directory as it sits on disk, including the
+`examples/` and `scripts/` directories the release archive strips.
 
 Once the catalog lists specflow, this form works too:
 

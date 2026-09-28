@@ -80,7 +80,6 @@ there, so a workflow under `specflow/` never runs.
   `seeded-*/` directory copies that run's feature directory with one planted
   flaw the scorer must report, and `mutation-gate-sample/` feeds the mutation
   gate.
-- `specflow/assets/`: workflow diagrams (~12 MiB); documentation media, not runtime payload.
 - `presentation/`: the Marp deck (`marp-deck/`) with its Mermaid and SVG
   diagram sources, and `use-guide/` explaining how to render it.
 - **Namespace lock-step**: `extension.yml`'s `extension.id` must equal the prefix on

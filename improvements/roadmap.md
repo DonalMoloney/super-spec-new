@@ -1137,7 +1137,7 @@ column for each renamed file. Effort: high. Depends on: `v1.1.0` tagged.
 Pick the item whose `Verify:` line you can run before you start. An item whose
 check you cannot run today is a design task, not a roadmap task.
 
-## G-58 — Drop the two orphaned workflow PNGs, replace with checked-in diagram source (working on)
+## G-58 — Drop the two orphaned workflow PNGs, replace with checked-in diagram source (merged: PR #91)
 
 Executor: `documentation-scribe`. Model: sonnet. Effort: low. Depends on: none.
 
