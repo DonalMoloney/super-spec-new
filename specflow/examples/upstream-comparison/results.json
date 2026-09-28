@@ -1,0 +1,127 @@
+{
+  "model": "claude-sonnet-5",
+  "fork_commit": "bd7837486f1bd4c1271b84ee739b04bf10efc441",
+  "upstream_commit": "c20ac6c1ba069cc9a72dacb8044b7b193d3dde81",
+  "entries": [
+    {
+      "pipeline": "specflow",
+      "probe": "spec",
+      "run": 1,
+      "status": "ok",
+      "hit": true,
+      "error": null,
+      "cost_usd": 0.46477179999999996,
+      "score": 100
+    },
+    {
+      "pipeline": "specflow",
+      "probe": "spec",
+      "run": 2,
+      "status": "ok",
+      "hit": false,
+      "error": null,
+      "cost_usd": 0.6323636,
+      "score": 0
+    },
+    {
+      "pipeline": "specflow",
+      "probe": "spec",
+      "run": 3,
+      "status": "ok",
+      "hit": false,
+      "error": null,
+      "cost_usd": 0.5396696,
+      "score": 0
+    },
+    {
+      "pipeline": "specflow",
+      "probe": "review",
+      "run": 1,
+      "status": "ok",
+      "hit": true,
+      "error": null,
+      "cost_usd": 0.48297459999999987,
+      "score": null
+    },
+    {
+      "pipeline": "specflow",
+      "probe": "review",
+      "run": 2,
+      "status": "ok",
+      "hit": true,
+      "error": null,
+      "cost_usd": 0.5560978000000001,
+      "score": null
+    },
+    {
+      "pipeline": "specflow",
+      "probe": "review",
+      "run": 3,
+      "status": "ok",
+      "hit": false,
+      "error": null,
+      "cost_usd": 0.6754728,
+      "score": null
+    },
+    {
+      "pipeline": "superspec",
+      "probe": "spec",
+      "run": 1,
+      "status": "ok",
+      "hit": true,
+      "error": null,
+      "cost_usd": 0.35237339999999995,
+      "score": 100
+    },
+    {
+      "pipeline": "superspec",
+      "probe": "spec",
+      "run": 2,
+      "status": "ok",
+      "hit": false,
+      "error": null,
+      "cost_usd": 0.420435,
+      "score": 0
+    },
+    {
+      "pipeline": "superspec",
+      "probe": "spec",
+      "run": 3,
+      "status": "ok",
+      "hit": false,
+      "error": null,
+      "cost_usd": 0.33516039999999997,
+      "score": 0
+    },
+    {
+      "pipeline": "superspec",
+      "probe": "review",
+      "run": 1,
+      "status": "ok",
+      "hit": false,
+      "error": null,
+      "cost_usd": 0.500953,
+      "score": null
+    },
+    {
+      "pipeline": "superspec",
+      "probe": "review",
+      "run": 2,
+      "status": "ok",
+      "hit": true,
+      "error": null,
+      "cost_usd": 0.4420755,
+      "score": null
+    },
+    {
+      "pipeline": "superspec",
+      "probe": "review",
+      "run": 3,
+      "status": "ok",
+      "hit": false,
+      "error": null,
+      "cost_usd": 0.44544860000000003,
+      "score": null
+    }
+  ]
+}

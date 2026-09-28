@@ -1255,3 +1255,19 @@ def test_a_live_run_with_an_explicit_upstream_checkout_leaves_no_upstream_scratc
     assert result.returncode == 0, result.stdout + result.stderr
     after = set(tmp_root.glob("compare-upstream-upstream.*"))
     assert after - before == set(), after - before
+
+
+# --- Rule: specflow/README.md links to the comparison, and standards lint passes (T597) ---
+
+
+def test_specflow_readme_links_to_the_comparison_readme_and_it_resolves():
+    readme = (SPECFLOW_DIR / "README.md").read_text(encoding="utf-8")
+    comparison_url = (
+        "https://github.com/DonalMoloney/super-spec-new/blob/main/"
+        "specflow/examples/upstream-comparison/README.md"
+    )
+    assert f"]({comparison_url})" in readme, (
+        f"specflow/README.md has no Markdown link to {comparison_url}"
+    )
+    target = SPECFLOW_DIR / "examples" / "upstream-comparison" / "README.md"
+    assert target.exists(), f"{target} does not exist"
