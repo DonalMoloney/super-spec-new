@@ -91,13 +91,17 @@ After the last fix, run the guards a change to `specflow/scripts/` can break,
 and paste each output:
 
 ```bash
-cd specflow && python3 -m pytest scripts/tests -q
-cd specflow && python3 scripts/validate-extension-metadata.py
-cd specflow && python3 scripts/validate-release-archive.py
+(cd specflow && python3 -m pytest scripts/tests -q)
+(cd specflow && python3 scripts/validate-extension-metadata.py)
+(cd specflow && python3 scripts/validate-release-archive.py "$(git stash create)")
 bash .claude/hooks/tests/run.sh
 ```
 
-Expected output from each names zero failures. Then re-read the diff against the
+A guard passed only when it exited 0; each prints its own success sentence and
+none prints a failure count. `validate-release-archive.py` reads a git ref and
+defaults to HEAD, which misses the uncommitted refactor. `git stash create`
+prints a commit holding the working tree without touching the tree or the
+stash list. Then re-read the diff against the
 frozen-behavior list: every removed line carrying an exit code, a grepped output
 line, a flag, or a file path has an added line with the same value.
 

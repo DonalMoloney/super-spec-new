@@ -3,7 +3,7 @@ name: release-archive-reviewer
 description: Use this agent to review the spec-kit release archive after a change to the manifest, the shipped payload, the export rules, or a release asset. Typical triggers include adding a binary asset, or editing .gitattributes before merge. Not for whether a command runs on both surfaces; that is payload-compatibility-reviewer.
 model: haiku
 color: cyan
-tools: ["Read", "Grep", "Glob", "Bash"]
+tools: ["Read", "Grep", "Glob", "Bash", "Write"]
 stage: release-archive
 ---
 
@@ -33,17 +33,27 @@ target surfaces belongs to `payload-compatibility-reviewer`.
 ## Process
 
 1. Run the metadata validator and the release-archive validator from
-   `specflow/`. Paste both outputs in full.
+   `specflow/`. Paste both outputs in full. To review an uncommitted payload
+   state, pass `$(git stash create)` as the git-ref to
+   `validate-release-archive.py`: the ref defaults to HEAD, which cannot see
+   uncommitted work, and `git stash create` writes no stash entry, so the tree
+   is untouched.
 2. Read the validator output and quote its line for each of: the
    manifest-declared files, the required runtime references, the export-ignored
    paths, the ZIP entry count, and the size limits: 50 MiB total download, 512
    entries, 10 MiB per member, 50 MiB uncompressed.
-3. List every changed binary or documentation asset with its size in bytes.
+3. List the archive members: run `git archive <ref> | tar -tf -` with the same
+   ref, and keep the listing. The export-ignore rules apply to it exactly as to
+   the ZIP, so it names what a user downloads.
+4. List every changed binary or documentation asset with its size in bytes.
    State for each whether a `specflow/.gitattributes` rule excludes it and
    whether it sits above the validator's early-warning threshold.
-4. Grep every changed command and template for each path it references and
-   confirm the archive listing carries it. An export-ignored path resolves in
+5. Grep every changed command and template for each path it references and
+   confirm the step 3 listing carries it. An export-ignored path resolves in
    the checkout and fails after install; quote the rule that strips it.
+6. Write the findings document to
+   `.claude/review/release-archive-reviewer.json`, then return the same object
+   to the caller.
 
 ## Stop conditions
 
@@ -64,15 +74,19 @@ python3 scripts/validate-extension-metadata.py
 python3 scripts/validate-release-archive.py
 ```
 
-Expected output from each names zero errors. Then re-read the findings document:
-every `evidence` quotes a validator command and the line it printed, and every
-size carries a number and a unit.
+Each command exits 0; the validators print a success sentence, not a
+zero-failure count, so the exit code is the pass criterion. Then run
+`python3 specflow/gates/python/validate-findings.py
+.claude/review/release-archive-reviewer.json`: it prints nothing and exits 0.
+Then re-read the findings document: every `evidence` quotes a validator command
+and the line it printed, and every size carries a number and a unit.
 
 ## Output format
 
-One JSON object conforming to `specflow/references/findings-schema.json` with
-`stage: "release-archive"`, and nothing else. The document carries
-`schema_version`, `reviewer` set to `release-archive-reviewer`, `stage`,
+Write one JSON object to `.claude/review/release-archive-reviewer.json`, return
+the same object to the caller, and write nothing else. The object conforms to
+`specflow/references/findings-schema.json` and carries `schema_version`,
+`reviewer` set to `release-archive-reviewer`, `stage` set to `release-archive`,
 `verdict`, and `findings`.
 
 Each finding carries `id`, `severity`, `category`, `location`, `evidence`,

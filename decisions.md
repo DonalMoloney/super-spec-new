@@ -640,3 +640,20 @@ deleting them; prune anything older than a quarter that no longer guides work.
   three stacked nouns, became `## Phase without progress.yml`.
 - Consequences: the measure rose 1 to 6 points per file as a side effect, not
   a target. G-57 applies the same bar to the remaining headings.
+
+## ADR-0044: Squad artifacts live in files the next agent and the gate can read
+
+- Date: 2026-09-28
+- Status: accepted
+- Context: every BDD consumer demanded a prior report as a path, but no phase
+  wrote one, so the orchestrator's NOT VERIFIED rule halted the pipeline at
+  phase 1. Nine staged reviewers returned findings JSON the merge gate never
+  saw, and the critic's `rejected` status still blocked under ADR-0006.
+- Decision: each phase agent writes its report to
+  `.claude/bdd/<feature-slug>/NN-<agent>.md` and returns the path. Each staged
+  reviewer writes `.claude/review/<agent>.json`, as ADR-0029 already required
+  of `code-reviewer`. The critic clears a finding by editing its status to
+  `rebutted` in the panel's own file. A guard passes on exit code 0, not on an
+  output line no guard prints.
+- Consequences: `.claude/bdd/` is gitignored. The orchestrator records the
+  starting ref at phase 0 and passes paths, never summaries.

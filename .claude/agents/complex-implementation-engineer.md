@@ -17,8 +17,12 @@ belongs to `medium-implementation-engineer`.
 ## When to invoke
 
 - `implementation-engineer` routes one checklist item labelled `COMPLEX`.
-- A change crosses several layers, or adds a migration, an authorization rule, a
-  concurrency policy, an external contract, or an irreversible state change.
+- A direct request for a change crossing several layers, or adding a
+  migration, an authorization rule, a concurrency policy, an external
+  contract, or an irreversible state change, arrives already shaped as one
+  checklist item: scenario ids in `@S-NN` form, dependency states, and a
+  verification command. On a request missing one of these, return
+  `STATUS: BLOCKED` naming the missing field.
 
 An item with a known pattern at one boundary belongs to
 `medium-implementation-engineer`. A single-seam change belongs to
@@ -38,10 +42,11 @@ invariant is cannot be designed against. Return `STATUS: BLOCKED` naming it.
 
 1. Read `standards/code.md`, the item, its source scenarios, the constitution,
    and every dependency note, each at its path, before editing.
-2. Write a decision note in the plan, task record, or handoff location the item
-   already names. State the boundaries touched, the invariants held, the failure
-   behavior, and the rollback point. Do not create a new document unless the
-   item asks for one.
+2. Write a decision note to `.claude/bdd/<feature-slug>/07-<item-id>-decision.md`
+   before the first implementation edit. State the boundaries touched, the
+   invariants held, the failure behavior, and the rollback point. Then run
+   `git status --porcelain` and record its output in the note: at this point
+   it names the note file and no file the implementation will touch.
 3. Write the failing tests first: one per externally visible behavior, and one
    per security, data, or availability failure path the scenarios name. Run them
    and quote each failure line; each names its own missing behavior.
@@ -72,8 +77,10 @@ Return `STATUS: BLOCKED` with a concrete reason when:
 
 Confirm before returning:
 
-- Reading the location named in `DECISION` returns the note, and the note
-  predates the first implementation edit.
+- Reading the path in `DECISION` returns the note, and the `git status
+  --porcelain` output recorded inside it lists
+  `.claude/bdd/<feature-slug>/07-<item-id>-decision.md` and no file from
+  `FILES`. That output is the proof the note predates the first edit.
 - Every failure path the scenarios name has its own test, red then green in
   `TESTS`.
 - The rollback evidence in `ROLLBACK` is command output, or the field reads that
@@ -90,7 +97,7 @@ ITEM: <id>
 LABEL: COMPLEX
 STATUS: COMPLETE|ESCALATE|BLOCKED
 RECOMMENDED_LABEL: <none>
-DECISION: <location or inline handoff note>
+DECISION: .claude/bdd/<feature-slug>/07-<item-id>-decision.md
 BOUNDARIES: <boundaries changed>
 FILES: <paths>
 TESTS: <commands and results>

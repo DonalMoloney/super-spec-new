@@ -14,6 +14,9 @@ HEADING = re.compile(r"^## (.+)$", re.MULTILINE)
 
 REQUIRED_FIELDS = ["name", "description", "model", "color", "tools"]
 STAGE_FIELD = "stage"
+# ADR-0029 and ADR-0044 in decisions.md fix where the merge gate reads findings.
+FINDINGS_DIR = ".claude/review"
+CRITIC = "critic"
 MODEL_CLASSES = {"opus", "sonnet", "haiku"}
 SCHEMA = AGENTS_DIR.parents[1] / "specflow" / "references" / "findings-schema.json"
 REQUIRED_HEADINGS = [
@@ -121,6 +124,33 @@ def test_every_declared_schema_stage_has_a_reviewer():
     assert orphaned == set(), (
         f"findings-schema.json declares {sorted(orphaned)} with no agent writing "
         "them. Add the reviewer, or remove the stage from the schema enum."
+    )
+
+
+@pytest.mark.parametrize("agent_file", agent_files(), ids=lambda path: path.stem)
+def test_a_panel_reviewer_names_the_findings_file_it_writes(agent_file):
+    frontmatter, body = split_frontmatter(agent_file)
+    if STAGE_FIELD not in field_order(frontmatter):
+        pytest.skip(f"{agent_file.stem} writes no findings document")
+    if agent_file.stem == CRITIC:
+        pytest.skip("ADR-0044: the critic edits the panel's files and writes none of its own")
+    expected = f"{FINDINGS_DIR}/{agent_file.stem}.json"
+    assert expected in body, (
+        f"{agent_file.name} declares a stage but never names {expected}. The merge "
+        "gate reads that file, so a reviewer that writes none is a stage the gate "
+        "never sees. See ADR-0029 and ADR-0044 in decisions.md."
+    )
+
+
+def test_the_critic_edits_the_panel_findings_rather_than_writing_its_own():
+    _, body = split_frontmatter(AGENTS_DIR / f"{CRITIC}.md")
+    assert f"{FINDINGS_DIR}/<persona>.json" in body, (
+        f"{CRITIC} clears a finding by editing the panel's own file, so it names "
+        f"{FINDINGS_DIR}/<persona>.json. See ADR-0044 in decisions.md."
+    )
+    assert f"{FINDINGS_DIR}/{CRITIC}.json" not in body, (
+        f"{CRITIC} writes no findings file of its own; it edits each persona's. "
+        "See ADR-0044 in decisions.md."
     )
 
 

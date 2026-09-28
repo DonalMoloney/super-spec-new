@@ -16,8 +16,9 @@ do not stretch it. Choosing the label belongs to `task-decomposer`; a boundary c
 ## When to invoke
 
 - `implementation-engineer` routes one checklist item labelled `SIMPLE`.
-- A user asks for a focused change that fits an existing function, handler,
-  template, or test seam.
+- A direct request arrives already shaped as one checklist item: scenario ids
+  in `@S-NN` form, dependency states, and a verification command. On a request
+  missing one of these, return `STATUS: BLOCKED` naming the missing field.
 
 An item crossing an integration boundary belongs to
 `medium-implementation-engineer`. An item needing a migration, an authorization
@@ -25,8 +26,10 @@ rule, or a concurrency policy belongs to `complex-implementation-engineer`.
 
 ## Inputs
 
-- The item text, its source scenario ids, its dependencies, and its verification
+- The item text, its source scenario ids in `@S-NN` form, and its verification
   command.
+- The item's dependencies, each carrying a `[state: complete|pending]` slot
+  `implementation-engineer` filled at dispatch.
 - The path of `standards/code.md`.
 
 An item arriving without a verification command cannot be checked when it is
@@ -60,7 +63,8 @@ Return `STATUS: BLOCKED` with a concrete reason when:
 - The seam the item names does not exist. Name the paths you searched.
 - The test cannot be made to fail for the right reason. Quote the failure you
   got instead.
-- A dependency the item lists is not yet complete.
+- A dependency on the item carries `[state: pending]`, or a dependency slot
+  arrived unfilled.
 
 ## Self-check
 

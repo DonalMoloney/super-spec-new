@@ -93,24 +93,30 @@ grep -rn '<old-name>' . --include='*.md' --include='*.py' --include='*.yml' \
 ```
 
 Expected output is empty except the lines you classified as historical in
-step 3. Then run every guard a rename can break, and paste each output:
+step 3. Then run every guard a rename can break, and paste each output and
+exit code:
 
 ```bash
-cd specflow && python3 scripts/validate-extension-metadata.py
-cd specflow && python3 scripts/validate-release-archive.py
-cd specflow && python3 -m pytest scripts/tests -q
+(cd specflow && python3 scripts/validate-extension-metadata.py)
+(cd specflow && python3 scripts/validate-release-archive.py "$(git stash create)")
+(cd specflow && python3 -m pytest scripts/tests -q)
 bash .claude/hooks/tests/run.sh
-cd specflow && bash scripts/e2e-smoke.sh
+(cd specflow && bash scripts/e2e-smoke.sh)
 ```
 
-Expected output from each names zero failures. A guard that prints a failure
-means a citation was missed or a classification was wrong; fix it or report it.
+A guard passed only when it exited 0; each prints its own success sentence and
+none prints a failure count. A nonzero exit means a citation was missed or a
+classification was wrong; fix it or report it. `validate-release-archive.py`
+reads a git ref and defaults to HEAD, which misses the uncommitted rename.
+`git stash create` prints a commit holding the working tree without touching
+the tree or the stash list.
 
 ## Output format
 
 Report in this order: the old name and the new name, the step 2 occurrence
 count, one line per file changed with what changed on it, the files left
 untouched as historical record and why, the self-check grep output, and each
-guard's name with its last line. Paste each command and what it printed; never
-report that a guard passed without its output. Then hand off to
-`divergence-auditor` for the measurement.
+guard's name with its exit code and last line. Paste each command and what it
+printed; never report that a guard passed without its output. Then hand off to
+`divergence-auditor` for the measurement, passing the changed-file list as
+paths, one per line as `git status --short` prints them, not a summary.

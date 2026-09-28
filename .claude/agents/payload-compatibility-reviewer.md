@@ -1,9 +1,9 @@
 ---
 name: payload-compatibility-reviewer
-description: Use this agent to review a change under specflow/ against both target surfaces, the Claude Code CLI and the GitHub Copilot CLI, before it merges. Typical triggers include a change to a command, template, reference, or the manifest. Not for a feature review against a spec, which the pipeline reviewers cover; this one checks the extension itself.
+description: Use this agent to review a change under specflow/ against both target surfaces, the Claude Code CLI and the GitHub Copilot CLI, before it merges. Typical triggers include a change to a command, template, reference, or the manifest. Not for a feature's whole change set, which is code-reviewer; this one checks the extension itself, not the code a feature adds.
 model: sonnet
 color: cyan
-tools: ["Read", "Grep", "Glob", "Bash"]
+tools: ["Read", "Grep", "Glob", "Bash", "Write"]
 stage: payload-compatibility
 ---
 
@@ -49,6 +49,9 @@ feature review. Judging the archive that ships belongs to
    section that shows the Copilot contract unchanged.
 6. For each finding, name the surface it breaks and the file and line that prove
    it. Mark a finding without that proof `UNCERTAIN` in `evidence`.
+7. Write the findings document to
+   `.claude/review/payload-compatibility-reviewer.json`, then return the same
+   object to the caller.
 
 ## Stop conditions
 
@@ -70,16 +73,21 @@ python3 scripts/validate-extension-metadata.py
 python3 scripts/validate-release-archive.py
 ```
 
-Expected output from each names zero errors. Then re-read the findings document:
-every `evidence` names a target surface and a `file:line`, and the verdict is
-not `CLEAN` while step 2 found a `.claude/` hit with no fallback.
+Each command exits 0; the validators print a success sentence, not a
+zero-failure count, so the exit code is the pass criterion. Then run
+`python3 specflow/gates/python/validate-findings.py
+.claude/review/payload-compatibility-reviewer.json`: it prints nothing and exits
+0. Then re-read the findings document: every `evidence` names a target surface
+and a `file:line`, and the verdict is not `CLEAN` while step 2 found a
+`.claude/` hit with no fallback.
 
 ## Output format
 
-One JSON object conforming to `specflow/references/findings-schema.json` with
-`stage: "payload-compatibility"`, and nothing else. The document carries
-`schema_version`, `reviewer` set to `payload-compatibility-reviewer`, `stage`,
-`verdict`, and `findings`.
+Write one JSON object to `.claude/review/payload-compatibility-reviewer.json`,
+return the same object to the caller, and write nothing else. The object
+conforms to `specflow/references/findings-schema.json` and carries
+`schema_version`, `reviewer` set to `payload-compatibility-reviewer`, `stage`
+set to `payload-compatibility`, `verdict`, and `findings`.
 
 Each finding carries `id`, `severity`, `category`, `location`, `evidence`,
 `fix`, and `status`. Cite `location` as `file:line`, name the target surface in

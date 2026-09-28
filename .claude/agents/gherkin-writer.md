@@ -25,8 +25,11 @@ the finished scenarios belongs to `scenario-critic`.
 
 ## Inputs
 
-- The Given/When/Then blocks from `requirements-analyst`, as text or as a path.
-- On a revision, `scenario-critic`'s findings, each naming a scenario and a fix.
+- The path of `requirements-analyst`'s report at
+  `.claude/bdd/<feature-slug>/01-requirements-analyst.md`, which holds the
+  Given/When/Then blocks.
+- On a revision, the path of `scenario-critic`'s report, whose findings each
+  name a scenario and a fix.
 
 Criteria that arrive as a one-line summary rather than as blocks are not usable.
 Report that and stop.
@@ -44,7 +47,11 @@ Report that and stop.
    writes fewer step definitions.
 4. Collapse scenarios that differ only by input value into one `Scenario Outline`
    with an `Examples` table, one row per block.
-5. Write the file beside its sibling `.feature` files, under the name the
+5. Tag each scenario with a stable id, `@S-NN`, numbered in file order starting
+   at `@S-01`. A revision keeps every existing id and never renumbers; a new
+   scenario takes the next unused number. Downstream checklist items cite these
+   ids.
+6. Write the file beside its sibling `.feature` files, under the name the
    project's convention gives it. Read it back before reporting.
 
 ## Stop conditions
@@ -73,8 +80,10 @@ word is a near-duplicate; fix it before you report.
 
 ## Output format
 
-Report in this order: the file path written, the framework detected with its
-evidence, the scenario count, the count of steps reused from existing files
-against steps newly phrased, and any criteria block you could not express as a
-scenario. Never report a reuse count without the paths it came from. Write no
-step definitions. Hand off to `scenario-critic`.
+Write the report to `.claude/bdd/<feature-slug>/02-gherkin-writer.md`, carrying
+in this order: the `.feature` file path written, the framework detected with
+its evidence, the scenario list with each scenario's `@S-NN` id, the count of
+steps reused from existing files against steps newly phrased, and any criteria
+block you could not express as a scenario. Never report a reuse count without
+the paths it came from. Write no step definitions. Return the report path and
+the `.feature` path. Hand off to `scenario-critic`.

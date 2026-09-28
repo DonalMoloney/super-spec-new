@@ -142,6 +142,26 @@ or its Output format. A verifier carries it in both.
 An agent reports the command it ran and what the command printed. It does not
 report that a suite passed.
 
+## The report a squad agent writes
+
+A phase agent in the BDD squad writes its report to
+`.claude/bdd/<feature-slug>/NN-<agent-name>.md`, where NN is the two-digit phase
+number it holds in the dispatch list in `.claude/agents/bdd-orchestrator.md`,
+and returns that path. The orchestrator reads that report before the next
+dispatch, so a phase that returns prose alone stops the pipeline. An agent that
+writes a report lists `Write` in `tools`.
+
+A reviewer that declares a `stage` writes its findings to
+`.claude/review/<agent-name>.json`, against the document
+`specflow/references/findings-schema.json` describes. The merge gate reads that
+directory, so a reviewer that writes no file is a stage the gate never reads.
+`critic` is the one exception: it clears a finding by editing the status in the
+panel's own file, `.claude/review/<persona>.json`, and writes none of its own.
+
+ADR-0044 in `decisions.md` records both paths.
+`.claude/agents/tests/test_dispatch_order.py` checks the first,
+`test_agent_contract.py` the second.
+
 ## Rejected on sight
 
 - A `## Core responsibilities` heading. The section is a wish list; write
@@ -154,6 +174,8 @@ report that a suite passed.
 - An anti-goal written as an emphasis word: "focus on", "primarily", "mainly".
   Name what the agent does not do.
 - A tool in `tools` that no Process step calls.
+- A phase agent whose Output format names no report path under `.claude/bdd/`,
+  or a staged reviewer that names no findings file under `.claude/review/`.
 - Prose that restates `standards/code.md` or `standards/documentation.md` rather
   than naming the file and the rule.
 

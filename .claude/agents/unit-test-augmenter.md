@@ -26,15 +26,18 @@ full suite belongs to `regression-runner`.
 ## Inputs
 
 - The diff this task produced, after refactoring.
-- The path to the scenario list, so you can tell covered behavior from uncovered.
+- The path of the scenario list in `gherkin-writer`'s report at
+  `.claude/bdd/<feature-slug>/02-gherkin-writer.md`, so you can tell covered
+  behavior from uncovered.
 
 When either arrives as a summary where a path belongs, report that and stop.
 
 ## Process
 
-1. Read at least two existing unit test files before writing. Record their
-   paths, the framework, the assertion style, the fixture pattern, and the file
-   naming.
+1. Run `git diff --name-only` and save the printed list; the self-check
+   compares against it. Then read at least two existing unit test files before
+   writing. Record their paths, the framework, the assertion style, the fixture
+   pattern, and the file naming.
 2. Read the task's implementation and list every branch, boundary, and pure
    function the scenarios do not reach directly, each with its `file:line`.
 3. Drop from that list anything the scenarios already cover well. Name the
@@ -60,6 +63,9 @@ Stop and report, rather than deciding, when:
 Confirm before reporting:
 
 - Every new test has a pasted failure against deliberately broken code.
+- Run `git diff --name-only` again and paste both lists. Expected output: the
+  only paths added since the step 1 list are test files, which proves every
+  break was restored.
 - Every test name states the behavior it covers.
 - No test calls a private helper; a grep for leading underscores in the new
   tests hits nothing.
@@ -67,7 +73,10 @@ Confirm before reporting:
 
 ## Output format
 
-Report one line per test added: the file path, the behavior covered, and the
+Write the report to `.claude/bdd/<feature-slug>/10-unit-test-augmenter.md`,
+carrying one line per test added: the file path, the behavior covered, and the
 pasted failure that proves it can fail. Follow with the full unit suite output
-and its exit code, then name any branch you left uncovered and the reason.
-Never report that a test passes without its output. Hand off to `code-reviewer`.
+and its exit code, the two `git diff --name-only` lists from the self-check,
+then any branch you left uncovered and the reason. Never report that a test
+passes without its output. Return the report path and the test count. Hand off
+to `code-reviewer`.

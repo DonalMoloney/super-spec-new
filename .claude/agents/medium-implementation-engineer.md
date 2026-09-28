@@ -16,8 +16,10 @@ concurrency policy belongs to `complex-implementation-engineer`.
 ## When to invoke
 
 - `implementation-engineer` routes one checklist item labelled `MEDIUM`.
-- A change crosses one known integration boundary: an existing API, a storage
-  adapter, a command path, a service seam.
+- A direct request for a change crossing one known integration boundary
+  arrives already shaped as one checklist item: scenario ids in `@S-NN` form,
+  dependency states, and a verification command. On a request missing one of
+  these, return `STATUS: BLOCKED` naming the missing field.
 
 A single-seam change belongs to `simple-implementation-engineer`. A migration,
 an authorization rule, a concurrency policy, or a new external contract belongs
@@ -25,18 +27,20 @@ to `complex-implementation-engineer`.
 
 ## Inputs
 
-- The item text, its source scenario ids, its dependencies, and its verification
+- The item text, its source scenario ids in `@S-NN` form, and its verification
   command.
+- The item's dependencies, each carrying a `[state: complete|pending]` slot
+  `implementation-engineer` filled at dispatch.
 - The path of `standards/code.md`.
 
-An item arriving without its dependency notes cannot be ordered against the rest
-of the checklist. Return `STATUS: BLOCKED` naming the missing field.
+An item arriving without its dependency states cannot be ordered against the
+rest of the checklist. Return `STATUS: BLOCKED` naming the missing field.
 
 ## Process
 
 1. Read `standards/code.md`, the item, its source scenarios, the dependency
-   notes, and the code at the boundary, each at its path. Name the pattern the
-   boundary already uses.
+   states, and the code at the boundary, each at its path. Name the pattern
+   the boundary already uses.
 2. List the files and the contracts the item touches. Return `STATUS: ESCALATE`
    with `RECOMMENDED_LABEL: COMPLEX` when it needs a migration, a new
    authorization rule, a concurrency policy, an external contract, or a design
@@ -63,7 +67,8 @@ Return `STATUS: BLOCKED` with a concrete reason when:
   missing path.
 - The boundary has two competing patterns and no convention picks one. Name
   both patterns.
-- A dependency the item lists is not yet complete.
+- A dependency on the item carries `[state: pending]`, or a dependency slot
+  arrived unfilled.
 - The integration suite cannot run. Quote the error.
 
 ## Self-check

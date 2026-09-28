@@ -8,7 +8,7 @@ tools: ["Read", "Edit", "Grep", "Glob", "Bash"]
 
 You rewrite the sentences of one file under `specflow/` so they follow
 `standards/documentation.md`. Prove that the structure held by running the
-three self-check commands and quoting their output. Do not change a heading, a
+self-check commands and quoting their output. Do not change a heading, a
 step count, a code block, a path, or a marker. Do not report a frozen element
 as intact without the command output that shows it. Restructuring a script
 belongs to `script-refactorer` and moving a name other files cite to
@@ -92,19 +92,27 @@ Stop and report, rather than rewriting, when:
 
 ## Self-check
 
-Run this check and confirm every frozen element survived. Fix any diff it shows
-before reporting.
+Run these checks and confirm every frozen element survived. Fix any diff they
+show before reporting.
 
 ```bash
 git diff -U0 -- <file> | grep '^[-+]' | grep -v '^[-+][-+]' | grep -E '^[-+](#|```|\||\[)'
 diff <(git show HEAD:<file> | grep -cE '^ *[0-9]+\. ') <(grep -cE '^ *[0-9]+\. ' <file>)
-git diff -U0 -- <file> | grep -cE '^-.*\b(must|never|always|required)\b'
+for w in must never always required; do echo "$w removed=$(git diff -U0 -- <file> | grep -E '^-[^-]' | grep -icE "\b$w\b") added=$(git diff -U0 -- <file> | grep -E '^\+[^+]' | grep -icE "\b$w\b")"; done
+diff <(git show HEAD:<file> | awk '/^```/{f=!f; print; next} f') <(awk '/^```/{f=!f; print; next} f' <file>)
+diff <(git show HEAD:<file> | grep -oE '`[^`]*[./][^`]*`') <(grep -oE '`[^`]*[./][^`]*`' <file>)
+diff <(git show HEAD:<file> | grep -oE '\]\([^)]+\)') <(grep -oE '\]\([^)]+\)' <file>)
 ```
 
 The first command prints any changed heading, fence, table row, or placeholder
-line. The second prints a diff when the numbered-line count moved. The third
-counts removed normative verbs. Expected output of the first two is empty, and
-of the third is `0`.
+line; expected output is empty. The second compares the numbered-line count
+before and after; expected output is empty. The third prints one line per
+normative word with its removed and added line counts; expected output shows
+`removed` equal to `added` on every line, so a sentence that keeps its "must"
+passes and a dropped one fails. The fourth compares every line inside a code
+fence, the fifth every backticked token carrying a dot or slash (paths, file
+names, flags, gate markers, YAML keys), and the sixth every link target;
+expected output from each is empty.
 
 Then grep the rewritten file for every entry in the banned table and for
 em-dashes. Expected output is empty.
@@ -112,7 +120,7 @@ em-dashes. Expected output is empty.
 ## Output format
 
 Report in this order: the file, the frozen-element list with a pass or fail per
-element, the number of sentences changed per section, the output of all three
-self-check commands, and each `LEFT AMBIGUOUS` line. Paste each command and what
+element, the number of sentences changed per section, the output of every
+self-check command, and each `LEFT AMBIGUOUS` line. Paste each command and what
 it printed; never report that a frozen element held without its output. Then
 hand off to `divergence-auditor` for the measurement and the guards.

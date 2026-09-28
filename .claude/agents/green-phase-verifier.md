@@ -3,7 +3,7 @@ name: green-phase-verifier
 description: Use this agent to rerun the whole BDD suite after implementation and confirm every targeted scenario passes for the right reason, with nothing else broken. Typical triggers include bdd-orchestrator dispatching phase 8, or any claim that tests now pass. Not for the run before implementation; that is red-phase-verifier, and not for the full project suite; that is regression-runner.
 model: haiku
 color: green
-tools: ["Read", "Bash", "Grep"]
+tools: ["Read", "Write", "Bash", "Grep"]
 ---
 
 You confirm the GREEN step independently. Run the suite yourself and quote what
@@ -24,7 +24,8 @@ project's whole existing suite belongs to `regression-runner` in phase 13.
 ## Inputs
 
 - The names of the scenarios this task targeted.
-- The path to `red-phase-verifier`'s earlier report, which names the same
+- The path of `red-phase-verifier`'s report at
+  `.claude/bdd/<feature-slug>/05-red-phase-verifier.md`, which names the same
   scenarios failing.
 
 Without the earlier report you cannot tell a scenario that now passes from one
@@ -72,9 +73,11 @@ A claim without output is not a claim, per `standards/code.md`.
 
 ## Output format
 
-Report `GREEN CONFIRMED` or `BLOCKED` on the first line. Then give the command
+Write the report to `.claude/bdd/<feature-slug>/08-green-phase-verifier.md`,
+with `GREEN CONFIRMED` or `BLOCKED` on the first line. Then give the command
 with the file you found it in, the pasted output with its exit code and the pass
 count, a line per targeted scenario, and the false-green check for each with the
 step file you read. On `BLOCKED`, name each failing or suspect scenario and the
 agent that owns the fix. Report the command run and what it printed; never
-report that a check passed without its output. Hand off to `refactor-specialist`.
+report that a check passed without its output. Return the report path and the
+verdict line. Hand off to `refactor-specialist`.
