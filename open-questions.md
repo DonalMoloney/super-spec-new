@@ -14,16 +14,6 @@ delete it, or promote it to an ADR in `decisions.md`.
   statement, everything else points at it) and, if so, who owns rewriting the
   five command files and the guide to match.
 
-- **`spec-template.md`'s Brainstorm Prompts dropped two categories a shipped
-  example still uses.** T533 removed the "Data integrity" and "Backwards
-  compatibility" bullets to match the 5-category fallback protocol documented
-  elsewhere, but `specflow/examples/link-audit/specs/001-link-audit/spec.md:83-84`
-  still carries both bullets verbatim, so the shipped example now demonstrates
-  a template shape the current template no longer offers. Decide whether to
-  edit the example to match the trimmed template, or to treat examples as
-  point-in-time snapshots exempt from this kind of drift (and say so in
-  `reference.md` if it's the latter).
-
 - **`catalog.json`'s top-level `priority`/`install_allowed` fields have no
   counterpart in github/spec-kit's own catalog files.** T610 asked for these
   on the self-hosted `catalog.json`. A live fetch of `github/spec-kit`'s

@@ -1042,13 +1042,11 @@ ambiguity, and the spec phase is where upstream is thinnest. Verify:
 `score-artifacts.py` scores the new golden and `score-artifacts.yml` replays it.
 Effort: medium. Depends on: G-19.
 
-**36. Upstream the resync-safe moves.** Open pull requests against
-WangX0111/superspec for the Tighten moves tagged "breaks resync: rarely": the
-after-tasks progress read (D-01), the status marker column (D-07), the
-compound-task rule (D-06), and the Copilot fallback rows (D-03). Every accepted
-move shrinks the diff the drift check in G-23 reports, and the fork's value is
-the `.claude/` toolkit, not five prompt files. Verify: the PR links are recorded
-beside each bullet in `reference.md`. Effort: low. Depends on: none. No code.
+**36. Upstream the resync-safe moves. Dropped on 2026-09-27.** The item asked
+for pull requests against WangX0111/superspec carrying the four Tighten moves
+tagged "breaks resync: rarely". Work on this fork is not routed through a
+third-party repository, so the item is closed without being done. The drift
+check in G-23 still reports the diff.
 
 **37. Assert the Claude leg's hooks in e2e-smoke.sh (merged: direct, 2026-09-27).**
 The smoke test asserted the Copilot hook file on the Copilot leg only. The
@@ -1079,18 +1077,14 @@ are merged or closed. Backlog item 34 closed with G-19 (PR #81 added
 `examples/seeded-ambiguity/`); item 37 closed on 2026-09-27. What is left, in
 order:
 
-1. Cut the first release. No tag and no GitHub release exist, so `release.yml`
-   has never run and nothing downstream of a published archive can be checked.
-   `extension.yml` already carries `1.1.0` and `CHANGELOG.md` already has a
-   `[1.1.0]` heading, so the tag either folds the `[Unreleased]` set into
-   `1.1.0` or opens `1.2.0`.
+1. Cut the first release as `v1.1.0`. No tag and no GitHub release exist, so
+   `release.yml` has never run and nothing downstream of a published archive
+   can be checked. `extension.yml` already carries `1.1.0` and nothing was
+   ever published under it, so the `[Unreleased]` set folds under that
+   heading rather than opening `1.2.0`.
 2. Backlog item 26, once that release exists to upgrade from.
-3. Backlog item 36, no code.
 
-Three questions in `open-questions.md` block the "Ready to release" line that
-requires an empty list: the constitution gate's single home, the trimmed
-Brainstorm Prompts against the shipped example, and `catalog.json`'s top-level
-keys. The fourth needs a live Copilot run.
+Item 36 is dropped. Item 37 is done.
 
 Pick the item whose `Verify:` line you can run before you start. An item whose
 check you cannot run today is a design task, not a roadmap task.
