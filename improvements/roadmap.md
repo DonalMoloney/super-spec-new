@@ -1135,6 +1135,33 @@ column for each renamed file. Effort: high. Depends on: `v1.1.0` tagged.
 Pick the item whose `Verify:` line you can run before you start. An item whose
 check you cannot run today is a design task, not a roadmap task.
 
+## G-58 — Drop the two orphaned workflow PNGs, replace with checked-in diagram source (working on)
+
+Executor: `documentation-scribe`. Model: sonnet. Effort: low. Depends on: none.
+
+`specflow/assets/workflow-overview-en.png` (12 MiB) and
+`workflow-overview-zh.png` (1.9 MiB) are unreferenced by any shipped file.
+`SKILL.md` dropped its link to the English PNG in the 1.0.3 release (the PNG
+had already broken `specify extension add specflow` once, upstream issue #6,
+`CHANGELOG.md`'s 1.0.2 entry), and nothing links the Chinese one; ADR-0010
+dropped Chinese docs from this fork entirely. `assets/` is `export-ignore`d,
+so neither file reaches an installed extension; they are pure repository
+weight with a documented history of breaking install.
+
+Delete both PNGs. Add a Mermaid diagram of the same command/hook workflow
+under `presentation/marp-deck/` (the existing pattern: a `.mmd` source plus a
+rendered `.svg`, following `standards/presentations.md`), and link the `.svg`
+from `specflow/README.md` where the diagram belongs conceptually (the
+Architecture or Installation section), so the repository regains a workflow
+diagram instead of trading a dead one for nothing. Update `specflow/README.md`
+line 57, which still describes the checkout install as carrying "the 13 MiB
+under `assets/`"; state the real size after the deletion.
+
+Verify: `python3 scripts/validate-release-archive.py` passes from `specflow/`,
+`git log --follow` shows no remaining reference to either PNG path outside
+history, and the new SVG renders (open it or `npx @marp-team/marp-cli` if it
+is wired into the deck).
+
 ## Ready to release
 
 Run every line on `main` the day of the tag. One false line means the release
