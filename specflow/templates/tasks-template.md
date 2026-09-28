@@ -167,7 +167,7 @@ proves the task is done. A reader then checks it without asking the implementer.
   - Stories run in parallel with subagents, or in order by priority.
 - **Polish (Final Phase)**: Depends on every chosen user story finishing.
 
-### Within Each User Story
+### Order within a user story
 
 1. Under [TDD], write the tests and confirm they fail before implementation starts
 2. Models come before services
@@ -185,13 +185,13 @@ proves the task is done. A reader then checks it without asking the implementer.
 
 ---
 
-## Superpowers Execution
+## Execution rules
 
 <!--
   /speckit.specflow.execute reads this section to decide how it processes the task list.
 -->
 
-### Execution Discipline by Marker
+### What each marker requires
 
 - **[TDD]**: Follow RED-GREEN-REFACTOR. When the `test-driven-development` skill is
   available, read it and follow its process. Otherwise: write the test → run it

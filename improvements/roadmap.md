@@ -1087,7 +1087,32 @@ order:
 
 Item 36 is dropped. Item 37 is done.
 
-## G-57 — Move the shape, not the wording (after `v1.1.0`)
+## G-57 — Move the shape, not the wording (first pass merged 2026-09-27)
+
+The first pass took six renames and rejected the rest, including the
+strongest candidate on wording: `plan-template.md`'s `## Summary`, which
+`standards/documentation.md` bans outright but
+`specflow/gates/bash/artifact-lint.sh` requires as a literal section and
+`.claude/hooks/tests/run.sh` asserts by exact string. Taking it means moving a
+shipped gate's required section, which is a behavior change, not a heading
+pass.
+
+The pass missed its own Verify line, and the line was wrong rather than the
+work. Three of the four measured files did not move at whole-number
+precision: `plan-template.md` 22.56% to 23.31%, `workflow-guide.md` 70.51% to
+70.75%, and `SKILL.md` not at all, because the line touched there already
+differed from upstream. Only `tasks-template.md` moved a printed point, 51% to
+53%. A heading is one line, so a single rename cannot move a file of 133 or
+841 lines by a whole point. ADR-0043 already treats the measure as a side
+effect, so a future pass states its Verify line as the renames taken and the
+rules they cleared, not as a higher Real column.
+
+All four goldens score byte-identically to the pre-pass run, and the 14
+golden files carrying a renamed heading were updated in the same commit.
+
+The remaining candidate inventory is in `reference.md`.
+
+### Original statement
 
 Every file with an upstream counterpart has had its `prose-rephraser` pass, so
 the low numbers in `reference.md`'s Real column are a floor, not a gap. A
