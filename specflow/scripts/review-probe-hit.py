@@ -152,12 +152,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Line number of the planted fault.",
     )
     parser.add_argument(
-        "--window",
-        type=int,
-        default=DEFAULT_WINDOW,
-        help=f"Lines on each side of the planted line that still count as a hit (default {DEFAULT_WINDOW}).",
-    )
-    parser.add_argument(
         "--changed-file",
         action="append",
         default=[],
@@ -191,7 +185,6 @@ def main(argv: list[str] | None = None) -> int:
     hit = judge(
         args.planted_file,
         args.planted_line,
-        window=args.window,
         changed_contents=changed_contents,
         final_text=final_text,
         baseline_contents=baseline_contents,

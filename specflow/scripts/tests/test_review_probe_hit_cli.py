@@ -79,19 +79,10 @@ def test_a_miss_with_no_changed_or_final_text_file_still_prints_miss():
     assert result.stdout.strip() == "miss"
 
 
-def test_window_flag_widens_the_accepted_range(tmp_path):
+def test_window_is_not_a_recognized_argument(tmp_path):
     changed = tmp_path / "changed.txt"
     changed.write_text(f"{PLANTED_FILE}:50: off-by-one\n")
-    default_window = run_cli(
-        [
-            "--planted-file", PLANTED_FILE,
-            "--planted-line", PLANTED_LINE,
-            "--changed-file", str(changed),
-        ]
-    )
-    assert default_window.returncode == 1, default_window.stdout + default_window.stderr
-
-    widened = run_cli(
+    result = run_cli(
         [
             "--planted-file", PLANTED_FILE,
             "--planted-line", PLANTED_LINE,
@@ -99,8 +90,8 @@ def test_window_flag_widens_the_accepted_range(tmp_path):
             "--changed-file", str(changed),
         ]
     )
-    assert widened.returncode == 0, widened.stdout + widened.stderr
-    assert widened.stdout.strip() == "hit"
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert "--window" in result.stderr
 
 
 def test_final_text_file_alone_can_produce_a_hit(tmp_path):
