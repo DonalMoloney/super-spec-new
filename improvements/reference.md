@@ -149,8 +149,8 @@ Command names are asserted in `e2e-smoke.sh`, `e2e-agent-claude.sh`, and
   ADR-lite entries. G-17 covers the read. Claimed by: G-20.
 - **Replace** `execute.md` with a dispatcher over the `.claude/agents/` squad on
   Claude Code, keeping the sequential walk as the Copilot fallback. Verify: both
-  paths pass the agent e2e in dry run. Claimed by: none, deferred in
-  `roadmap.md` until G-19 lands a snapshot to assert against.
+  paths pass the agent e2e in dry run. Dropped on 2026-09-28: the install
+  archive strips `.claude/agents/`, so a shipped command cannot dispatch it.
 - Done: a sixth command, `gate.md` (`speckit.specflow.gate`), writes a
   feature's `.clarified` or `.analyzed` marker from the `after_clarify` and
   `after_analyze` hooks. `extension.yml` lists it under `provides.commands`;
@@ -576,4 +576,4 @@ breaks. A row is a candidate, not a decision: check its contracts first.
 (`/speckit.specify`, `/speckit.plan`, `/speckit.constitution`,
 `/speckit.checklist`). They are spec-kit's, not upstream's, and never move.
 
-G-57 in `roadmap.md` executes against this section.
+G-57's remaining renames were dropped on 2026-09-28; a rename here needs a reason of its own.
