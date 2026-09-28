@@ -2,8 +2,6 @@
   "schema_version": "1.0",
   "updated_at": "2026-09-25T00:00:00Z",
   "catalog_url": "https://raw.githubusercontent.com/DonalMoloney/super-spec-new/main/catalog.json",
-  "priority": 10,
-  "install_allowed": true,
   "extensions": {
     "specflow": {
       "id": "specflow",
