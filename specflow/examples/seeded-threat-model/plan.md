@@ -118,7 +118,7 @@ mocking.
 - [ ] `resolver.py` precedence logic (FR-009, FR-010, FR-013): review before it is wired into `cli.py`, since it is the module most likely to hide a false negative.
 - [ ] `discovery.py` exit-2 paths: review before merge, since Principle II treats exit-code semantics as a stability contract.
 
-## Complexity Tracking
+## Justified constitution violations
 
 > **Fill in this table only when the Constitution Check flags a violation to justify**
 

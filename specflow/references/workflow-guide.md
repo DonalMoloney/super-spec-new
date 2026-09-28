@@ -180,7 +180,7 @@ Ask about points of confusion, accessibility, and use the design did not intend.
 - "How does this work for users with [accessibility need]?"
 - "What happens if the user navigates away mid-[process]?"
 
-### Process
+### Steps
 
 1. **Read the spec** and find the sections with thin coverage or a placeholder edge case.
    Read `decisions.md` at the project root when it exists, and skip a question
@@ -214,7 +214,7 @@ Ask about points of confusion, accessibility, and use the design did not intend.
    - State the number of questions asked, the insights found, and the updates made to the spec
    - Suggest: "Run `/speckit.plan` to create the implementation plan."
 
-### Iteration
+### Repeat runs
 
 This phase may run more than once. Each session:
 - Reads the previous brainstorm log entries first, so it does not repeat a question
