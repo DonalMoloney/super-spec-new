@@ -1084,6 +1084,8 @@ order:
    heading rather than opening `1.2.0`.
 2. G-57, the structural divergence pass. It lands after the tag.
 3. Backlog item 26, once that release exists to upgrade from.
+4. G-59, the upstream comparison. Its result ranks every later divergence
+   item: a gap it finds outranks a heading rename.
 
 Item 36 is dropped. Item 37 is done.
 
@@ -1161,6 +1163,48 @@ Verify: `python3 scripts/validate-release-archive.py` passes from `specflow/`,
 `git log --follow` shows no remaining reference to either PNG path outside
 history, and the new SVG renders (open it or `npx @marp-team/marp-cli` if it
 is wired into the deck).
+
+## G-59 — Run upstream and this fork on the same seeded input, and record which catches the flaw
+
+Executor: `bdd-orchestrator`. Effort: medium. Depends on: none.
+
+No recorded run compares this fork with upstream. Every golden under
+`specflow/examples/` scores this fork's output against itself, so the claim
+that the fork is better rests on the divergence percentage, which counts
+changed lines and says nothing about outcomes. G-57 showed the percentage has
+stopped moving. This group replaces it with a measure of results: give both
+pipelines the same flawed input and record which one reports the flaw.
+
+Two probes, one per phase where the fork claims to add the most:
+
+- **Spec probe.** Both brainstorm commands run on
+  `examples/seeded-ambiguity/spec.md`, whose duplicate-heading suffix order is
+  unstated. `score-artifacts.py`'s `seeded_ambiguity` dimension scores the
+  resulting spec: 100 if an Open Questions row raises the order, 0 if not.
+- **Review probe.** Both review commands run on a copy of
+  `examples/link-audit/src/link_audit/` carrying one planted off-by-one bug.
+  A run catches the bug when a finding names the planted file and line.
+
+Upstream installs as `superspec` (`extension.id` at `c20ac6c`), so its
+commands are `/speckit.superspec.*`. The e2e stages hardcode
+`/speckit.specflow.*` and assert this fork's artifacts, so the probes live in
+their own script instead of the e2e stages. LLM output varies, so each probe
+runs 3 times per pipeline and the result records the hit count, not one
+verdict.
+
+- [ ] T591 Add `examples/seeded-review-bug/`, a copy of `link-audit/src/` with one planted off-by-one. Verify: `pytest` in the copy fails exactly one test, and its README names the file, line, and fault.
+- [ ] T592 Add `scripts/compare-upstream.sh`, which installs one extension into a fresh `specify init` project given a checkout path plus a command namespace. Verify: `E2E_DRY_RUN=1` prints both install commands with no agent call.
+- [ ] T593 Run the spec probe through `compare-upstream.sh`, writing each run's `seeded_ambiguity` score to a JSON result file. Verify: the dry run writes a result file with 6 entries marked `dry-run`.
+- [ ] T594 Run the review probe through `compare-upstream.sh`, writing whether each run's findings name the planted file and line. Verify: the dry run writes 6 entries marked `dry-run`.
+- [ ] T595 Record one live run as `examples/upstream-comparison/results.json`. Verify: the file holds 12 entries with no `dry-run` value.
+- [ ] T596 Add `examples/upstream-comparison/README.md` stating the hit counts, the model, and both commits compared. Verify: every number in it matches `results.json`.
+- [ ] T597 Link the comparison from `specflow/README.md`. Verify: `lint-standards.py` passes on the changed README.
+
+Verify for the group: `bash verify.sh` reports 0 failed, and
+`examples/upstream-comparison/results.json` exists from a live run. Either
+outcome counts as done: a probe where upstream matches the fork is a finding,
+and it goes into `reference.md` as a gap to close before any further
+divergence pass.
 
 ## Ready to release
 
