@@ -570,3 +570,73 @@ deleting them; prune anything older than a quarter that no longer guides work.
   `rev-parse` kept for a detached HEAD.
 - Consequences: the anchor still rejects prose quoting git, since the first
   token decides. A subshell's contents now retarget the branch.
+
+## ADR-0040: The constitution gate is stated in full at every site, not pointed at
+
+- Date: 2026-09-27
+- Status: accepted
+- Context: nine files state the gate: five commands, four hooks, and four
+  phase steps in `workflow-guide.md`. T530 replaced an equivalent duplication
+  in `tasks-template.md` with a pointer, which raised the question here.
+- Decision: keep every copy and hold them word for word. A command file is a
+  prompt an LLM reads at run time on two surfaces, and a pointer fires only
+  when the agent follows it. T530's Checkpoint Protocol runs mid-phase with
+  the guide already read; this gate is step 1. The Stop codes table in
+  `workflow-guide.md` stays canonical for the expected value, the found
+  value, and the next command.
+- Consequences: a wording change costs nine edits. Each site names the path,
+  the code, and `/speckit.constitution`. `status` and `agent-event` remain the
+  two commands that do not stop, and each says so.
+
+## ADR-0041: `catalog.json` carries no top-level `priority` or `install_allowed`
+
+- Date: 2026-09-27
+- Status: accepted
+- Context: T610 added both keys at `catalog.json`'s top level. Neither of
+  spec-kit's own catalog files declares either key about itself; both live in
+  the installing project's `.specify/extension-catalogs.yml` per-source entry.
+  A live `specify extension search` against a local copy returned identical
+  output with the keys present, absent, and replaced by an arbitrary key:
+  `_validate_catalog_payload` checks `schema_version` and `extensions` and
+  ignores every other top-level key.
+- Decision: drop both keys. A user wanting `install_allowed: false` sets it on
+  their own catalog source entry, as `README.md` documents.
+- Consequences: `catalog.json` carries no dead field. A top-level field added
+  later is checked against spec-kit's parser first, not assumed to configure
+  anything. `validate-extension-metadata.py` now holds its command and hook
+  counts to `extension.yml`, which caught both as stale.
+
+## ADR-0042: Copilot reads a deny on exit 2 and on exit 0; any other code fails open
+
+- Date: 2026-09-27
+- Status: accepted, closes the question ADR-0035 left open
+- Context: the `events:` route exits 2 with the deny JSON and
+  `.github/hooks/adapter.sh` exits 0 with the same JSON, and nothing said
+  whether both reach Copilot. The account's quota blocked a live `copilot -p`
+  run, so the dispatch code was read and executed out of the installed
+  `@github/copilot` 1.0.86 bundle. Its close handler rejects exit 2 with
+  `HookCommandWarningError`, which carries stdout, and any other nonzero with
+  `HookExitCodeError`, which does not. The runner recovers stdout from the
+  first class only.
+- Decision: both routes stand. Exit 2 and exit 0 each deny; neither needs
+  aligning to the other.
+- Consequences: exit 1 discards stdout and the tool call proceeds, matching
+  Claude Code, where exit 1 warns. A gate that cannot run without `jq` fails
+  open on both surfaces, which ADR-0027 already accepts.
+  `docs/agent-event-mapping.md` records the measurement and its method.
+
+## ADR-0043: A shared heading is renamed only when the new name reads better
+
+- Date: 2026-09-27
+- Status: accepted, scopes ADR-0018
+- Context: five templates and every command file still carry upstream's
+  headings, which caps the divergence measure. Renaming for the measure alone
+  would churn `## Usage`, `## Process`, and `## Output`, which are already the
+  clearest names available.
+- Decision: a heading moves only when the new name is better on its own.
+  Three qualified: `## Gate` in five hook prompts collided with the Gate
+  markers protocol in `workflow-guide.md` and became `## Stop behavior`;
+  `## Iteration` became `## Repeat runs`; and `## File Inference Fallback`,
+  three stacked nouns, became `## Phase without progress.yml`.
+- Consequences: the measure rose 1 to 6 points per file as a side effect, not
+  a target. G-57 applies the same bar to the remaining headings.

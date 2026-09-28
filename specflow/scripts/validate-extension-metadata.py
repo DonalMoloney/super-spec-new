@@ -9,6 +9,7 @@ before a user fails to install from the catalog.
 
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -209,6 +210,36 @@ def check_readme_catalog_slug_matches(readme: str, ext_id: str) -> None:
             )
 
 
+def count_declared_hooks(manifest: str) -> int:
+    """Return how many hook names the top-level hooks: block declares."""
+    block = re.search(r"^hooks:\n(.*?)(?=^\S|\Z)", manifest, re.S | re.M)
+    if not block:
+        return 0
+    return len(re.findall(r"^  ([a-z_]+):", block.group(1), re.M))
+
+
+def check_catalog_counts_match(ext_id: str, commands: int, hooks: int) -> None:
+    """Raise when catalog.json's provides counts differ from the manifest's.
+
+    catalog.json sits at the repository root, outside the extension payload, so
+    an absent file is not an error.
+
+    Raises `MetadataValidationError` when either count differs.
+    """
+    catalog_path = ROOT.parent / "catalog.json"
+    if not catalog_path.exists():
+        return
+    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    provides = catalog.get("extensions", {}).get(ext_id, {}).get("provides", {})
+    for key, declared in (("commands", commands), ("hooks", hooks)):
+        listed = provides.get(key)
+        if listed != declared:
+            raise MetadataValidationError(
+                f"catalog.json provides.{key} is {listed}; extension.yml "
+                f"declares {declared}. Edit catalog.json to match."
+            )
+
+
 def main() -> None:
     """Validate extension.yml and public docs against the spec-kit namespace rule.
 
@@ -223,6 +254,9 @@ def main() -> None:
     command_names = extract_command_names(manifest)
     check_commands_use_namespace(command_names, namespace_prefix, ext_id)
     check_hooks_use_namespace(manifest, namespace_prefix, ext_id)
+    check_catalog_counts_match(
+        ext_id, len(command_names), count_declared_hooks(manifest)
+    )
 
     stale_refs = find_stale_command_refs(PUBLIC_DOCS)
     if stale_refs:

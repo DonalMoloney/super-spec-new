@@ -25,7 +25,7 @@ the value it found, then the command that clears the stop.
 |------|------------|----------|-------|--------------|
 | `ANALYZE_REQUIRED` | `/speckit.specflow.execute` and the `before_implement` hook | `specs/NNN-feature-name/.analyzed` | the marker absent | `/speckit.analyze NNN` |
 | `OPEN_QUESTIONS` | `/speckit.specflow.tasks` and the `before_tasks` hook | 0 rows outside `Resolved` | the unresolved row count | `/speckit.specflow.brainstorm NNN` |
-| `CONSTITUTION_REQUIRED` | `/speckit.specflow.execute`, `/speckit.specflow.tasks`, `/speckit.specflow.gate`, and the `before_implement`, `before_tasks`, `after_clarify`, `after_analyze` hooks | `.specify/memory/constitution.md` | the file absent | `/speckit.constitution` |
+| `CONSTITUTION_REQUIRED` | `/speckit.specflow.brainstorm`, `/speckit.specflow.tasks`, `/speckit.specflow.execute`, `/speckit.specflow.review`, `/speckit.specflow.gate`, and the `before_implement`, `before_tasks`, `after_clarify`, `after_analyze` hooks | `.specify/memory/constitution.md` | the file absent | `/speckit.constitution` |
 | `RESOLVER_REQUIRED` | `/speckit.specflow.tasks`, and the five resolver steps in `SKILL.md` | a resolver under `.specify/scripts/` | the variant that failed | reinstall spec-kit 0.16.2 or newer |
 
 `/speckit.specflow.gate` and the `after_clarify` and `after_analyze` hooks print
@@ -186,8 +186,9 @@ Ask about points of confusion, accessibility, and use the design did not intend.
    Read `decisions.md` at the project root when it exists, and skip a question
    its entries already settle.
 
-2. **Confirm the gate**: Require `.specify/memory/constitution.md`. Stop with
-   `CONSTITUTION_REQUIRED` when it is absent.
+2. **Confirm the gate**: Check that `.specify/memory/constitution.md` exists.
+   If it is missing, stop with `CONSTITUTION_REQUIRED`, name the missing path,
+   and tell the user to run `/speckit.constitution`.
 
 3. **Ask one question at a time**. Wait for the user's answer before the next question.
    Prefer multiple-choice form when possible, for faster exploration.
@@ -282,9 +283,11 @@ This phase may run more than once. Each session:
 
 ### Steps
 
-1. **Confirm the gates**: Require `.specify/memory/constitution.md` first. Stop
-   with `CONSTITUTION_REQUIRED` when it is absent. Then count the rows of the
-   `## Open Questions` table in `spec.md` whose Status cell is not `Resolved`.
+1. **Confirm the gates**: Check that `.specify/memory/constitution.md` exists
+   first. If it is missing, stop with `CONSTITUTION_REQUIRED`, name the missing
+   path, and tell the user to run `/speckit.constitution`. Then count the rows
+   of the `## Open Questions` table in `spec.md` whose Status cell is not
+   `Resolved`.
    Stop with `OPEN_QUESTIONS` and the count when the count is above zero. A
    spec carrying no such table counts zero rows.
 
@@ -385,8 +388,10 @@ when Superpowers skills are unavailable.
 
 ### Steps
 
-1. **Confirm the gates**: Require `.specify/memory/constitution.md` first, then
-   the target feature's `.analyzed` marker. Stop with `ANALYZE_REQUIRED` when the marker
+1. **Confirm the gates**: Check that `.specify/memory/constitution.md` exists
+   first. If it is missing, stop with `CONSTITUTION_REQUIRED`, name the missing
+   path, and tell the user to run `/speckit.constitution`. Then check the target
+   feature's `.analyzed` marker. Stop with `ANALYZE_REQUIRED` when the marker
    is absent. Read tasks, plan, spec, and constitution once both checks pass.
 
 2. **Detect superpowers**: Check whether the `executing-plans`,
@@ -467,8 +472,9 @@ The agent MUST:
 
 ### Steps
 
-1. **Confirm the gate**: Require `.specify/memory/constitution.md`. Stop with
-   `CONSTITUTION_REQUIRED` when it is absent.
+1. **Confirm the gate**: Check that `.specify/memory/constitution.md` exists.
+   If it is missing, stop with `CONSTITUTION_REQUIRED`, name the missing path,
+   and tell the user to run `/speckit.constitution`.
 
 2. **Read inputs**: Pull the acceptance scenarios from the spec, the
    constitution check from the plan, the principles from the constitution,

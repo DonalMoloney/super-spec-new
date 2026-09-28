@@ -65,7 +65,7 @@ Suggested next step: /speckit.specflow.execute 001
 The command prints the status summary to the terminal and writes nothing. It
 refreshes `.specify/superpowers.yml` as a side effect of superpowers detection.
 
-## File Inference Fallback
+## Phase without progress.yml
 
 If `progress.yml` is missing, infer the phase from the files present:
 - If `spec.md` exists, specify is done.

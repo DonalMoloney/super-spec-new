@@ -16,7 +16,7 @@ The extension ships prompts, not code. Pick the version part from the change:
 
 A release that carries more than one of these takes the highest part.
 
-## [Unreleased]
+## [1.1.0] - 2026-09-27
 
 ### Added
 
@@ -55,28 +55,6 @@ A release that carries more than one of these takes the highest part.
 - `spec-template.md`'s Brainstorm Prompts cover five categories (boundary,
   error, scale, security, user confusion), matching the documented fallback
   protocol. The template carried seven.
-
-### Fixed
-
-- `test-gate.sh` reads the project's test command from the `Test command:`
-  line in `.specify/memory/constitution.md`. It defaulted to a path that only
-  existed inside this repository, so an installed extension blocked every
-  ticked task in a consuming project instead of testing it.
-- The commit gate blocks four shapes it allowed on main: a global option
-  before the subcommand (`git -C . commit`, `git -c user.email=x commit`), a
-  grouped command (`(git commit)`, `{ git commit; }`), and the first commit on
-  a branch that carries none yet.
-- On the Copilot CLI, a tool call whose `toolArgs` the handler cannot read as
-  an object is denied under any tool name, not only `bash` and `powershell`. A
-  shell under an unrecorded name ran with no command and the commit gate
-  allowed it.
-- On the Copilot CLI, a tool call carrying a null `toolResult` runs the commit
-  gate. It was read as a completed call, so the gate never ran.
-
-## [1.1.0] - 2026-09-20
-
-### Changed
-
 - The extension needs spec-kit 0.16.2 or later. On an older spec-kit,
   `specify extension add specflow` refuses the install.
 - A `/speckit.specflow.tasks` artifact now carries this extension's sections.
@@ -95,6 +73,39 @@ A release that carries more than one of these takes the highest part.
 
 ### Fixed
 
+- `test-gate.sh` reads the project's test command from the `Test command:`
+  line in `.specify/memory/constitution.md`. It defaulted to a path that only
+  existed inside this repository, so an installed extension blocked every
+  ticked task in a consuming project instead of testing it.
+- The commit gate blocks four shapes it allowed on main: a global option
+  before the subcommand (`git -C . commit`, `git -c user.email=x commit`), a
+  grouped command (`(git commit)`, `{ git commit; }`), and the first commit on
+  a branch that carries none yet.
+- On the Copilot CLI, a tool call whose `toolArgs` the handler cannot read as
+  an object is denied under any tool name, not only `bash` and `powershell`. A
+  shell under an unrecorded name ran with no command and the commit gate
+  allowed it.
+- On the Copilot CLI, a tool call carrying a null `toolResult` runs the commit
+  gate. It was read as a completed call, so the gate never ran.
+- The `CONSTITUTION_REQUIRED` stop names the missing path at all nine sites
+  that raise it. The `after_clarify`, `after_analyze`, and `before_tasks`
+  hooks and the four phase steps in `workflow-guide.md` omitted it, and the
+  guide's execute phase named no constitution stop code at all.
+- `README.md` no longer claims every command stops on a missing constitution.
+  `status` reports the missing file and continues, and `agent-event` reads
+  nothing under `.specify/memory/`.
+- The catalog entry reports 7 commands and 6 hooks. It reported 6 and 5,
+  written before the `agent-event` command and the `before_tasks` hook
+  existed.
+- The Stop codes table in `references/workflow-guide.md` lists
+  `/speckit.specflow.brainstorm` and `/speckit.specflow.review` as printers of
+  `CONSTITUTION_REQUIRED`. Both gained the gate and the table missed them, so
+  a reader checking which commands stop got the wrong answer.
+- Three section headings read better. The `## Gate` section in five hook
+  prompts is `## Stop behavior`, which no longer collides with the Gate
+  markers protocol in `references/workflow-guide.md`. `## Iteration` in
+  `brainstorm.md` is `## Repeat runs`, and `## File Inference Fallback` in
+  `status.md` is `## Phase without progress.yml`.
 - `SKILL.md` no longer links `assets/workflow-overview-en.png` or the
   sample workflow walkthrough. `export-ignore` strips both directories from
   an install, so both links led nowhere.
