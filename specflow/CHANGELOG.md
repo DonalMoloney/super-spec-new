@@ -87,6 +87,16 @@ A release that carries more than one of these takes the highest part.
   allowed it.
 - On the Copilot CLI, a tool call carrying a null `toolResult` runs the commit
   gate. It was read as a completed call, so the gate never ran.
+- The `CONSTITUTION_REQUIRED` stop names the missing path at all nine sites
+  that raise it. The `after_clarify`, `after_analyze`, and `before_tasks`
+  hooks and the four phase steps in `workflow-guide.md` omitted it, and the
+  guide's execute phase named no constitution stop code at all.
+- `README.md` no longer claims every command stops on a missing constitution.
+  `status` reports the missing file and continues, and `agent-event` reads
+  nothing under `.specify/memory/`.
+- The catalog entry reports 7 commands and 6 hooks. It reported 6 and 5,
+  written before the `agent-event` command and the `before_tasks` hook
+  existed.
 - `SKILL.md` no longer links `assets/workflow-overview-en.png` or the
   sample workflow walkthrough. `export-ignore` strips both directories from
   an install, so both links led nowhere.

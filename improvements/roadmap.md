@@ -1082,9 +1082,30 @@ order:
    can be checked. `extension.yml` already carries `1.1.0` and nothing was
    ever published under it, so the `[Unreleased]` set folds under that
    heading rather than opening `1.2.0`.
-2. Backlog item 26, once that release exists to upgrade from.
+2. G-57, the structural divergence pass. It lands after the tag.
+3. Backlog item 26, once that release exists to upgrade from.
 
 Item 36 is dropped. Item 37 is done.
+
+## G-57 — Move the shape, not the wording (after `v1.1.0`)
+
+Every file with an upstream counterpart has had its `prose-rephraser` pass, so
+the low numbers in `reference.md`'s Real column are a floor, not a gap. A
+template's scaffolding is frozen by ADR-0013, and scaffolding is most of what
+is left: `constitution-template.md` has 3 free prose lines among the 65 it
+still shares with upstream, and `tasks-template.md` carries 64 blank lines
+among its 115. Only `divergence-renamer` (ADR-0018) moves a heading.
+
+The headroom is in the Named units shared column: `plan-template.md` keeps 12
+of 13 headings, `tasks-template.md` 19 of 20, and every command file keeps
+upstream's `## Usage`, `## Process`, `## Output`, and `## Human Checkpoints`.
+
+Four contracts name these headings and move in the same change:
+`e2e-smoke.sh`'s `EXPECTED_PROCESS_STEPS` and `MIRRORED_PHASES`,
+`score-artifacts.py`'s `spec_sections` dimension against both goldens, and
+`validate-extension-metadata.py`. Verify: `bash verify.sh` reports 0 failed,
+both goldens score no lower, and `measure-divergence.py` reports a higher Real
+column for each renamed file. Effort: high. Depends on: `v1.1.0` tagged.
 
 Pick the item whose `Verify:` line you can run before you start. An item whose
 check you cannot run today is a design task, not a roadmap task.

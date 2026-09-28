@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Tests for validate-extension-metadata.py."""
 
+import json
 import re
 import shutil
 import subprocess
@@ -185,3 +186,62 @@ def test_readme_without_dev_install_line_fails():
         result = validate(root)
     assert result.returncode == 1
     assert "FAIL: README.md must document local --dev install command" in result.stdout
+
+
+def write_catalog(root: Path, commands: int, hooks: int) -> Path:
+    """Write a catalog.json beside the extension copy and return its path."""
+    catalog = root.parent / "catalog.json"
+    catalog.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "extensions": {
+                    "specflow": {
+                        "id": "specflow",
+                        "provides": {"commands": commands, "hooks": hooks},
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    return catalog
+
+
+def test_catalog_counts_matching_the_manifest_pass():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = copy_extension(tmp)
+        write_catalog(root, commands=7, hooks=6)
+        result = validate(root)
+        assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_catalog_command_count_drift_fails_naming_both_numbers():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = copy_extension(tmp)
+        write_catalog(root, commands=6, hooks=6)
+        result = validate(root)
+    assert result.returncode == 1
+    assert (
+        "FAIL: catalog.json provides.commands is 6; extension.yml declares 7."
+        in result.stdout
+    )
+
+
+def test_catalog_hook_count_drift_fails_naming_both_numbers():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = copy_extension(tmp)
+        write_catalog(root, commands=7, hooks=5)
+        result = validate(root)
+    assert result.returncode == 1
+    assert (
+        "FAIL: catalog.json provides.hooks is 5; extension.yml declares 6."
+        in result.stdout
+    )
+
+
+def test_absent_catalog_is_not_an_error():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = copy_extension(tmp)
+        result = validate(root)
+        assert result.returncode == 0, result.stdout + result.stderr
