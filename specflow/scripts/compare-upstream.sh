@@ -203,11 +203,9 @@ resolve_probes_to_run() {
 
 # Exits 1 on a COMPARE_RUNS that is not a positive integer, the same
 # failure shape resolve_probes_to_run uses for COMPARE_PROBES. Runs before
-# dry_run_entries and the live per-pipeline loop build any output: an
-# invalid value there hits a bash arithmetic error mid-loop, and on the
-# producer side of dry_run_entries | assemble_results_json that error
-# never reaches the unconditional exit 0 that follows it (fix round 3,
-# F7).
+# dry_run_entries and the live per-pipeline loop build any output, since an
+# invalid value there hits a bash arithmetic error mid-loop instead of a
+# clean message.
 validate_compare_runs() {
   case "$1" in
     ''|0|*[!0-9]*)
@@ -487,7 +485,7 @@ claude_reports_error() {
 # errors when it carries them, since a budget or turn-cap exit reports its
 # cause there and leaves stderr empty; stderr when the transcript carries
 # neither; "claude exited <exit_code>" when both are empty, so an entry's
-# error field is never empty (fix round 2, found by a live smoke run).
+# error field is never empty.
 claude_error_text() {
   local stdout_file="$1" stderr_file="$2" exit_code="$3"
   local subtype errors_text stderr_text
