@@ -1,0 +1,97 @@
+spec: 001-link-audit
+status: complete
+current_phase: 7
+brainstorm:
+  sessions: 1
+  last_session: 2026-09-27
+phases:
+  - phase: 1
+    name: Setup
+    status: complete
+    tasks:
+      T001: complete
+      T002: complete
+      T003: complete
+  - phase: 2
+    name: Foundational
+    status: complete
+    tasks:
+      T004: complete
+      T005: complete
+      T006: complete
+      T007: complete
+  - phase: 3
+    name: "User Story 1 - Catch broken relative links (P1)"
+    status: complete
+    tasks:
+      T008: complete
+      T009: complete
+      T010: complete
+      T011: complete
+      T012: complete
+      T013: complete
+      T014: complete
+      T015: complete
+      T016: complete
+  - phase: 4
+    name: "User Story 2 - Catch broken heading anchors (P2)"
+    status: complete
+    tasks:
+      T017: complete
+      T018: complete
+      T019: complete
+      T020: complete
+      T021: complete
+      T022: complete
+      T023: complete
+      T024: complete
+      T025: complete
+      T026: complete
+      T027: complete
+      T028: complete
+  - phase: 5
+    name: "User Story 3 - Scan exactly tracked Markdown files (P3)"
+    status: complete
+    tasks:
+      T029: complete
+      T030: complete
+      T031: complete
+      T032: complete
+      T033: complete
+      T034: complete
+      T035: complete
+      T036: complete
+      T037: complete
+  - phase: 6
+    name: Polish & Cross-Cutting Concerns
+    status: complete
+    tasks:
+      T038: complete
+      T039: complete
+      T040: complete
+      T041: complete
+      T042: complete
+  - phase: 7
+    name: "Remediation - Fenced Code Blocks & Root-Relative Links (FR-014, FR-015, Findings R-001-R-004)"
+    status: complete
+    tasks:
+      T043: complete
+      T044: complete
+      T045: complete
+      T046: complete
+      T047: complete
+      T048: complete
+      T049: complete
+      T050: complete
+      T051: complete
+      T052: complete
+      T053: complete
+      T054: complete
+      T055: complete
+      T056: complete
+      T057: complete
+      T058: complete
+      T059: complete
+gates:
+  analyzed: 2026-09-27
+  analyze_attempts: 1
