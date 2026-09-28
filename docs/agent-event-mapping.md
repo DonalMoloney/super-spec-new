@@ -136,6 +136,32 @@ Post block:
 }
 ```
 
+### What Copilot does with each exit code
+
+Measured on 2026-09-27 against `@github/copilot` 1.0.86, by running the hook
+dispatcher lifted out of its `app.js`: `vwe` spawns the hook, `qR` reads the
+result, and `runUserPreToolUseHooks` applies it. Three repetitions returned the
+same result each time.
+
+| Hook exit | Copilot reads stdout | Result on `preToolUse` |
+|---|---|---|
+| 0 | yes | denies on `permissionDecision: deny` |
+| 2 | yes | denies on `permissionDecision: deny` |
+| 1, or any other nonzero | no | the hook errors and the tool call runs |
+
+Exit 0 and exit 2 both deny, so the two routes agree. `agent-event.sh` exits 2
+on the `events:` route, `.github/hooks/adapter.sh` exits 0 on the native route
+(ADR-0035), and Copilot reads the deny either way. Exit 2 also prints the
+hook's stderr as a warning.
+
+Any other nonzero exit drops stdout. Copilot raises `HookExitCodeError`,
+`runUserPreToolUseHooks` catches it, logs `Error in preToolUse hook`, and runs
+the tool. A gate that exits 1 because `jq` is missing blocks nothing on
+Copilot.
+
+A `permissionDecision` of `ask` denies as well, because a headless run has no
+prompt to show.
+
 ## Timeout rules
 
 Spec-kit declares `timeout: 30` (pre_tool_use), `timeout: 120` (post_tool_use),
