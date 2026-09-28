@@ -494,11 +494,39 @@ review_probe_entry() {
   rm -f "$after_manifest" "$final_text_file"
 }
 
-# Runs one pipeline/probe/run entry end to end: a fresh project (item 23),
-# the probe's seed (items 24-25), the claude call, and the probe's own
-# judge. Appends exactly one entry to RESULTS_ENTRIES_FILE.
+# Builds ALLOWED_TOOLS_RUN, the array claude's --allowedTools reads for one
+# probe run: every path form e2e-agent-claude.sh's own ALLOWED_TOOLS array
+# lists against project_dir, so claude parses each Bash(...) entry as its
+# own allow pattern instead of one string with embedded spaces (ADR-0033).
+# extension_id names the pipeline's own gates path (specflow or superspec).
+build_allowed_tools() {
+  local project_dir="$1" extension_id="$2" project_dir_real
+  project_dir_real="$(cd "$project_dir" && pwd -P)"
+  ALLOWED_TOOLS_RUN=(
+    "Bash(.specify/scripts/bash/*)"
+    "Bash($project_dir/.specify/scripts/bash/*)"
+    "Bash($project_dir_real/.specify/scripts/bash/*)"
+    "Bash(bash .specify/scripts/bash/*)"
+    "Bash(.specify/extensions/$extension_id/gates/bash/*)"
+    "Bash($project_dir/.specify/extensions/$extension_id/gates/bash/*)"
+    "Bash($project_dir_real/.specify/extensions/$extension_id/gates/bash/*)"
+    "Bash(bash .specify/extensions/$extension_id/gates/bash/*)"
+    "Bash(cd *)"
+    "Bash(git *)"
+    "Bash(mkdir *)"
+    "Bash(touch *)"
+    "Bash(rm -f specs/*)"
+    "Bash(python3 *)"
+    "Bash(python *)"
+    "Bash(pytest *)"
+  )
+}
+
+# Runs one pipeline/probe/run entry end to end: a fresh project, the
+# probe's seed, the claude call, and the probe's own judge. Appends exactly
+# one entry to RESULTS_ENTRIES_FILE.
 run_probe_entry() {
-  local pipeline="$1" probe="$2" run="$3" allowed_tools="$4" prompt="$5"
+  local pipeline="$1" probe="$2" run="$3" prompt="$4"
   local pipeline_path project_dir before_manifest=""
 
   case "$pipeline" in
@@ -529,10 +557,12 @@ run_probe_entry() {
       ;;
   esac
 
+  build_allowed_tools "$project_dir" "$pipeline"
+
   local stdout_file stderr_file exit_code claude_args
   stdout_file="$(mktemp -t compare-upstream-probe-out)"
   stderr_file="$(mktemp -t compare-upstream-probe-err)"
-  claude_args=(-p --permission-mode acceptEdits --allowedTools "$allowed_tools"
+  claude_args=(-p --permission-mode acceptEdits --allowedTools "${ALLOWED_TOOLS_RUN[@]}"
     --max-budget-usd "$MAX_BUDGET" --max-turns "$MAX_TURNS" --output-format json)
   if [ -n "$MODEL" ]; then
     claude_args+=(--model "$MODEL")
@@ -569,17 +599,13 @@ run_probe_entry() {
 }
 
 for pipeline in specflow superspec; do
-  case "$pipeline" in
-    specflow) allowed_tools="$ALLOWED_TOOLS_SPECFLOW" ;;
-    superspec) allowed_tools="$ALLOWED_TOOLS_SUPERSPEC" ;;
-  esac
   for probe in "${PROBES_TO_RUN[@]}"; do
     case "$pipeline" in
       specflow) prompt="$(specflow_probe_prompt "$probe")" ;;
       superspec) prompt="$(superspec_probe_prompt "$probe")" ;;
     esac
     for ((run = 1; run <= COMPARE_RUNS; run++)); do
-      run_probe_entry "$pipeline" "$probe" "$run" "$allowed_tools" "$prompt"
+      run_probe_entry "$pipeline" "$probe" "$run" "$prompt"
     done
   done
 done

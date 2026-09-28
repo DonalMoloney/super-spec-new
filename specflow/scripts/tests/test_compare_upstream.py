@@ -418,6 +418,39 @@ def test_upstreams_checkout_is_never_modified_after_a_failure(tmp_path):
     assert status.stdout == ""
 
 
+# --- Rule: the allowlist covers each project's own scripts by absolute path (ADR-0033) ---
+
+
+def test_live_run_allowlist_names_the_projects_own_absolute_paths(tmp_path):
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    claude_log = recording_stub(bin_dir, "claude")
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    calls = claude_log.read_text().splitlines()
+    assert calls, "claude was never invoked"
+    joined = "\n".join(calls)
+    assert re.search(r"Bash\(/\S+/\.specify/scripts/bash/\*\)", joined), joined
+    assert re.search(
+        r"Bash\(/\S+/\.specify/extensions/specflow/gates/bash/\*\)", joined
+    ), joined
+    assert re.search(
+        r"Bash\(/\S+/\.specify/extensions/superspec/gates/bash/\*\)", joined
+    ), joined
+    assert "bypassPermissions" not in joined
+
+
 # --- Rule: a live `specify init` runs non-interactively ---
 
 
