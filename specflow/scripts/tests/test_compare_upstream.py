@@ -111,6 +111,39 @@ def load_results(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
+def build_fork_copy(tmp_path):
+    """Copy compare-upstream.sh into a throwaway git repo at tmp_path/fork.
+
+    The copy sits at the same specflow/scripts/ path the real script lives
+    at, so FORK_ROOT resolves inside the copy and a live run's default
+    write lands on a copy of examples/upstream-comparison/results.json,
+    never the file this repository actually tracks. Returns
+    (fork_root, script_copy).
+    """
+    fork_root = git_checkout(tmp_path / "fork")
+    script_copy = fork_root / "specflow" / "scripts" / "compare-upstream.sh"
+    script_copy.parent.mkdir(parents=True, exist_ok=True)
+    script_copy.write_bytes(SCRIPT.read_bytes())
+    script_copy.chmod(script_copy.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+    return fork_root, script_copy
+
+
+def run_script_copy(script_copy, env_overrides, bin_dir):
+    """Run a build_fork_copy() script_copy the way run_compare() runs the real one."""
+    environment = dict(os.environ)
+    for key in OPTIONAL_ENV_VARS:
+        environment.pop(key, None)
+    environment["PATH"] = f"{bin_dir}:{environment['PATH']}"
+    environment.update({key: str(value) for key, value in env_overrides.items()})
+    return subprocess.run(
+        ["bash", str(script_copy)],
+        capture_output=True,
+        text=True,
+        cwd=str(script_copy.parent.parent),
+        env=environment,
+    )
+
+
 def pipeline_blocks(stdout, label):
     """Return every stdout slice from label up to the next pipeline label or end of string."""
     other_labels = [value for value in PIPELINE_LABELS.values() if value != label]
@@ -289,6 +322,57 @@ def test_dry_run_pointed_at_the_committed_results_json_refuses_to_run():
         assert committed.read_bytes() == snapshot
     else:
         assert not committed.exists()
+
+
+# --- Rule: a live run writes the committed results file by default (CR-002) ---
+
+
+def test_a_live_run_with_compare_results_unset_writes_the_committed_path_under_fork_root(tmp_path):
+    fork_root, script_copy = build_fork_copy(tmp_path)
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    write_stub(bin_dir, "claude", "exit 1\n")
+
+    result = run_script_copy(
+        script_copy,
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    committed = fork_root / "specflow" / "examples" / "upstream-comparison" / "results.json"
+    assert committed.exists(), f"{committed} was not written"
+    data = json.loads(committed.read_text())
+    assert data["entries"], "no entries written"
+    assert str(committed) in result.stderr
+
+
+def test_a_live_run_with_compare_results_set_to_the_committed_path_is_not_refused(tmp_path):
+    fork_root, script_copy = build_fork_copy(tmp_path)
+    committed = fork_root / "specflow" / "examples" / "upstream-comparison" / "results.json"
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    write_stub(bin_dir, "claude", "exit 1\n")
+
+    result = run_script_copy(
+        script_copy,
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+            "COMPARE_RESULTS": str(committed),
+        },
+        bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert committed.exists()
 
 
 # --- Rule: the spec probe scores brainstorm output for seeded ambiguity (T593) ---

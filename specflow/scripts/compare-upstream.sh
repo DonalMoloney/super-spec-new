@@ -21,10 +21,12 @@
 #   E2E_MAX_TURNS                per-invocation turn cap, default 30
 #   COMPARE_PROBES               spec, review, or all (default: all)
 #   COMPARE_RUNS                 runs per probe per pipeline (default: 3)
-#   COMPARE_RESULTS              results file path (default: a temp file in
-#                                a dry run; refuses to write to the committed
+#   COMPARE_RESULTS              results file path (default: the committed
 #                                examples/upstream-comparison/results.json
-#                                during a dry run)
+#                                for a live run, a temp file for a dry run;
+#                                a dry run refuses to write to the
+#                                committed path). Printed to stderr at the
+#                                end of every run.
 #
 # Usage
 #   E2E_DRY_RUN=1 bash scripts/compare-upstream.sh   # logic test only
@@ -230,18 +232,25 @@ dry_run_entries() {
   done
 }
 
-# Defaults COMPARE_RESULTS to a scratch path when unset, and exits 1 when it
-# resolves to the committed examples/upstream-comparison/results.json, so
-# neither run mode overwrites the checked-in file by accident.
+# Defaults COMPARE_RESULTS when unset: a dry run gets a scratch path, since
+# it produces no real probe output; a live run defaults to the committed
+# examples/upstream-comparison/results.json, the file T595 names, since a
+# live run is what produces it. Exits 1 only when a dry run resolves to
+# that committed path, so a dry run can never overwrite it by accident and
+# a live run can write it on purpose.
 resolve_compare_results_path() {
   if [ -z "${COMPARE_RESULTS:-}" ]; then
-    local results_dir
-    results_dir="$(mktemp -d -t compare-upstream-results)"
-    COMPARE_RESULTS="$results_dir/results.json"
+    if [ "$DRY_RUN" = "1" ]; then
+      local results_dir
+      results_dir="$(mktemp -d -t compare-upstream-results)"
+      COMPARE_RESULTS="$results_dir/results.json"
+    else
+      COMPARE_RESULTS="$COMMITTED_RESULTS"
+    fi
   fi
 
-  if [ "$(normalize_path "$COMPARE_RESULTS")" = "$(normalize_path "$COMMITTED_RESULTS")" ]; then
-    printf 'COMPARE_RESULTS resolves to the committed %s; refusing to write there. Point COMPARE_RESULTS elsewhere.\n' "$COMMITTED_RESULTS" >&2
+  if [ "$DRY_RUN" = "1" ] && [ "$(normalize_path "$COMPARE_RESULTS")" = "$(normalize_path "$COMMITTED_RESULTS")" ]; then
+    printf 'COMPARE_RESULTS resolves to the committed %s; refusing to write there during a dry run. Point COMPARE_RESULTS elsewhere.\n' "$COMMITTED_RESULTS" >&2
     exit 1
   fi
 }
@@ -276,8 +285,6 @@ if [ "$DRY_RUN" = "1" ]; then
 
   resolve_compare_results_path
 
-  printf 'Dry run results file: %s\n' "$COMPARE_RESULTS" >&2
-
   print_fork_install_command
   print_claude_invocation "$ALLOWED_TOOLS_SPECFLOW" "$(specflow_probe_prompt spec)"
   print_claude_invocation "$ALLOWED_TOOLS_SPECFLOW" "$(specflow_probe_prompt review)"
@@ -290,6 +297,8 @@ if [ "$DRY_RUN" = "1" ]; then
     printf 'compare-upstream.sh: writing dry-run entries to %s failed.\n' "$COMPARE_RESULTS" >&2
     exit 1
   fi
+
+  printf 'Results file: %s\n' "$COMPARE_RESULTS" >&2
 
   exit 0
 fi
@@ -700,5 +709,7 @@ FINAL_MODEL="$MODEL"
 mkdir -p "$(dirname "$COMPARE_RESULTS")"
 assemble_results_json "$FINAL_MODEL" < "$RESULTS_ENTRIES_FILE" > "$COMPARE_RESULTS"
 rm -f "$RESULTS_ENTRIES_FILE"
+
+printf 'Results file: %s\n' "$COMPARE_RESULTS" >&2
 
 exit 0
