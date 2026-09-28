@@ -28,6 +28,11 @@ fresh_repo() { # branch
   git -C "$d" -c user.email=t@t -c user.name=t commit -q --allow-empty -m init
   echo "$d"
 }
+unborn_repo() { # branch -> a repository on an unborn branch, carrying no commit
+  local d; d="$(mktemp -d)"
+  git -C "$d" init -q -b "$1"
+  echo "$d"
+}
 
 # --- block-main-commit.sh (PreToolUse: Bash) ---
 r="$(fresh_repo main)"; cd "$r" || exit 1
@@ -39,9 +44,18 @@ check "checkout of a path does not retarget" 2 "$(run_hook block-main-commit.sh 
 check "commit on master is blocked"      2 "$(cd "$(fresh_repo master)" && run_hook block-main-commit.sh '{"tool_input":{"command":"git add -A && git commit -m x"}}')"
 check "non-commit git on main allowed"   0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git status"}}')"
 check "empty command allowed"            0 "$(run_hook block-main-commit.sh '{"tool_input":{}}')"
+check "a -C option before the subcommand is still a commit" 2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git -C . commit -m x"}}')"
+check "a -c option before the subcommand is still a commit" 2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git -c user.email=t@t commit -m x"}}')"
+check "a parenthesised commit is blocked" 2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"(git commit -m x)"}}')"
+check "a braced commit is blocked"       2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"{ git commit -m x; }"}}')"
+check "a parenthesised switch retargets the commit" 0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"(git switch -c feat) && git commit -m x"}}')"
+check "the first commit on an unborn main is blocked" 2 "$(cd "$(unborn_repo main)" && run_hook block-main-commit.sh '{"tool_input":{"command":"git commit -m x"}}')"
+check "a commit on an unborn feature branch is allowed" 0 "$(cd "$(unborn_repo feature)" && run_hook block-main-commit.sh '{"tool_input":{"command":"git commit -m x"}}')"
 git switch -q -c feature
 check "commit on feature branch allowed" 0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git commit -m x"}}')"
 check "switch to main then commit blocked" 2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git switch main && git commit -m x"}}')"
+check "a -C option before switch to main still retargets" 2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git -C . switch main && git commit -m x"}}')"
+check "a parenthesised switch to main then commit blocked" 2 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"(git switch main) && git commit -m x"}}')"
 check "prose naming a switch does not retarget" 0 "$(run_hook block-main-commit.sh '{"tool_input":{"command":"git commit -m msg-mentioning git switch main && git commit inline"}}')"
 cd /
 
@@ -548,7 +562,9 @@ check_out "the string-toolArgs deny JSON's permissionDecision is deny" "deny" "$
 
 check "a non-shell Copilot tool call with a path is allowed"      0 "$(ae_exit '{"toolName":"view","toolArgs":{"path":"README.md"}}')"
 check "the allowed view call leaves stdout empty" 0 "$(status_of [ -z "$(ae_out '{"toolName":"view","toolArgs":{"path":"README.md"}}')" ])"
-check "a non-shell Copilot tool call with no toolArgs is allowed" 0 "$(ae_exit '{"toolName":"view"}')"
+check "Copilot preToolUse denies any tool call with no toolArgs" 2 "$(ae_exit '{"toolName":"view"}')"
+check "Copilot preToolUse denies a shell tool under an unrecorded name" 2 "$(ae_exit '{"toolName":"shell"}')"
+check "Copilot preToolUse denies a run_command tool with no toolArgs" 2 "$(ae_exit '{"toolName":"run_command"}')"
 check "Copilot preToolUse denies toolArgs that is not valid JSON" 2 "$(ae_exit '{"toolName":"bash","toolArgs":"not json"}')"
 check_out "the invalid-toolArgs deny JSON's permissionDecision is deny" "deny" "$(json_field "$(ae_out '{"toolName":"bash","toolArgs":"not json"}')" permissionDecision)"
 check_has "the invalid-toolArgs deny names toolArgs on stderr" "$(ae_err '{"toolName":"bash","toolArgs":"not json"}')" "BLOCKED: toolArgs"
@@ -561,8 +577,9 @@ check "Copilot preToolUse matches a shell toolName in any case" 2 "$(ae_exit '{"
 check "Copilot preToolUse denies a non-string toolName with no toolArgs" 2 "$(ae_exit '{"toolName":5}')"
 check "Copilot preToolUse denies a call naming no tool with no toolArgs" 2 "$(ae_exit '{"toolName":""}')"
 check "Copilot preToolUse denies a non-shell tool call whose toolArgs is not valid JSON" 2 "$(ae_exit '{"toolName":"view","toolArgs":"not json"}')"
-check "a non-shell Copilot tool call with null toolArgs is allowed" 0 "$(ae_exit '{"toolName":"view","toolArgs":null}')"
+check "Copilot preToolUse denies a non-shell tool call with null toolArgs" 2 "$(ae_exit '{"toolName":"view","toolArgs":null}')"
 check "a bash call whose toolArgs object carries no command is allowed" 0 "$(ae_exit '{"toolName":"bash","toolArgs":{}}')"
+check "a pre_tool_use payload carrying a null toolResult still runs the commit gate" 2 "$(ae_exit '{"toolName":"bash","toolArgs":{"command":"git commit -m x"},"toolResult":null}')"
 
 mkdir -p "$r/gates/bash" "$r/specflow/gates/bash"
 printf '#!/usr/bin/env bash\nexit 0\n' > "$r/gates/bash/block-main-commit.sh"

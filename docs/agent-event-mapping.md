@@ -103,11 +103,15 @@ where Copilot's lack of a matcher would otherwise trigger it on a read of
 tasks.md.
 
 `agent-event.sh` denies a Copilot `preToolUse` call before any gate runs
-when `toolArgs` is present but does not parse as a JSON object. It also
-denies the call when `toolArgs` is absent or null and the tool name is `bash`
-or `powershell` in any case, empty, or not a string. Normalization would
-otherwise leave the command empty, and the commit gate allows an empty
-command (ADR-0036).
+whenever `toolArgs` does not resolve to a JSON object, whatever the tool is
+named: absent, null, a string that does not parse, and a string parsing to an
+array all deny. Normalization would otherwise leave the command empty, and the
+commit gate allows an empty command. Only `bash` is recorded above, so a shell
+under another name cannot be told from a tool that runs nothing (ADR-0038).
+
+A payload with no `hook_event_name` classifies as `postToolUse` only when
+`toolResult` is non-null. A `preToolUse` payload that carries the key with a
+null value runs the commit gate, because the alternative skips it (ADR-0038).
 
 ## Exit code contract
 

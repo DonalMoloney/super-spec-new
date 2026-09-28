@@ -62,6 +62,16 @@ A release that carries more than one of these takes the highest part.
   line in `.specify/memory/constitution.md`. It defaulted to a path that only
   existed inside this repository, so an installed extension blocked every
   ticked task in a consuming project instead of testing it.
+- The commit gate blocks four shapes it allowed on main: a global option
+  before the subcommand (`git -C . commit`, `git -c user.email=x commit`), a
+  grouped command (`(git commit)`, `{ git commit; }`), and the first commit on
+  a branch that carries none yet.
+- On the Copilot CLI, a tool call whose `toolArgs` the handler cannot read as
+  an object is denied under any tool name, not only `bash` and `powershell`. A
+  shell under an unrecorded name ran with no command and the commit gate
+  allowed it.
+- On the Copilot CLI, a tool call carrying a null `toolResult` runs the commit
+  gate. It was read as a completed call, so the gate never ran.
 
 ## [1.1.0] - 2026-09-20
 
