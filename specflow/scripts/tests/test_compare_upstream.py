@@ -418,6 +418,32 @@ def test_upstreams_checkout_is_never_modified_after_a_failure(tmp_path):
     assert status.stdout == ""
 
 
+# --- Rule: a live `specify init` runs non-interactively ---
+
+
+def test_live_runs_init_call_carries_non_interactive(tmp_path):
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    uvx_log = recording_stub(bin_dir, "uvx")
+    write_stub(bin_dir, "claude", "exit 0\n")
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    calls = uvx_log.read_text().splitlines()
+    init_calls = [call for call in calls if "specify init" in call]
+    assert init_calls, "uvx was never called with specify init"
+    assert all("--non-interactive" in call for call in init_calls)
+
+
 # --- Rule: results.json carries a fixed shape ---
 
 

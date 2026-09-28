@@ -343,8 +343,9 @@ prepare_probe_project() {
   step_stderr="$(mktemp -t compare-upstream-project-step)"
 
   if ! (cd "$PROJECT_DIR" && uvx --from git+https://github.com/github/spec-kit.git \
-        specify init --here --integration claude --ignore-agent-tools --force) \
-      >/dev/null 2>"$step_stderr"; then
+        specify init --here --integration claude --ignore-agent-tools --force \
+        --non-interactive) \
+      </dev/null >/dev/null 2>"$step_stderr"; then
     PROJECT_DIR_ERROR="$(cat "$step_stderr")"
     rm -f "$step_stderr"
     rm -rf "$PROJECT_DIR"
@@ -354,7 +355,7 @@ prepare_probe_project() {
 
   if ! (cd "$PROJECT_DIR" && uvx --from git+https://github.com/github/spec-kit.git \
         specify extension add "$pipeline_path" --dev) \
-      >/dev/null 2>"$step_stderr"; then
+      </dev/null >/dev/null 2>"$step_stderr"; then
     PROJECT_DIR_ERROR="$(cat "$step_stderr")"
     rm -f "$step_stderr"
     rm -rf "$PROJECT_DIR"
