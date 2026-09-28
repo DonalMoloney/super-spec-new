@@ -55,7 +55,7 @@ Keep each Mermaid source beside its SVG export. Rebuild changed diagrams
 before exporting the deck; Marp reads the SVG, not the Mermaid source.
 
 ```bash
-npx --yes @mermaid-js/mermaid-cli \
+npx --yes @mermaid-js/mermaid-cli@11.17.0 \
   -i presentation/marp-deck/commands.mmd \
   -o presentation/marp-deck/commands.svg -b transparent
 python3 specflow/scripts/lint-standards.py presentation

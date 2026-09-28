@@ -42,10 +42,12 @@ edges, a neutral scale, and one blue emphasis. The custom Specflow theme lives i
 It sets typography, spacing, diagram panels, and the print layout. Slides carry the
 claim; notes carry the explanation, limitations, and sources.
 
-Render a changed diagram from its matching Mermaid source:
+Render a changed diagram from its matching Mermaid source. The version is
+pinned: Mermaid 12 lays the same source out differently, so an unpinned
+re-render restyles one diagram out of step with the other fifteen.
 
 ```bash
-npx @mermaid-js/mermaid-cli -i presentation/marp-deck/workflow.mmd -o presentation/marp-deck/workflow.svg -b transparent
+npx --yes @mermaid-js/mermaid-cli@11.17.0 -i presentation/marp-deck/workflow.mmd -o presentation/marp-deck/workflow.svg -b transparent
 ```
 
 Render the deck with local SVG access and presenter notes:
