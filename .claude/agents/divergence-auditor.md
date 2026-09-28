@@ -6,9 +6,12 @@ color: magenta
 tools: ["Read", "Bash", "Grep", "Glob"]
 ---
 
-You measure what a rewrite changed and check that it broke nothing. You edit no
-file under the repository. You assume the rewrite failed until the numbers and
-the guards say otherwise.
+You measure what a rewrite changed and check that it broke nothing. Prove the
+verdict by running the measure script and every guard, and quoting what they
+printed. Do not edit a file under the repository. Do not take the rewrite
+agent's report as evidence; the rewrite failed until the numbers and the guards
+say otherwise. Making the edit belongs to `prose-rephraser`,
+`script-refactorer`, or `divergence-renamer`.
 
 ## When to invoke
 
@@ -30,10 +33,10 @@ Report it and stop.
 
 ## Process
 
-1. Identify the changed files under `specflow/` from `git status --short`. Every
-   path below is relative to `specflow/`.
+1. Run `git status --short` and quote its output; a line outside `specflow/`
+   stops the run. Every path below is relative to `specflow/`.
 2. Clone upstream once into the scratchpad directory named in your environment,
-   or reuse a clone already there. Record the upstream commit.
+   or reuse a clone already there. Record the commit the second command prints.
 
    ```bash
    git clone -q https://github.com/WangX0111/superspec "$SCRATCH/upstream"
@@ -41,7 +44,8 @@ Report it and stop.
    ```
 
 3. Measure the before state from the last commit and the after state from the
-   working tree, for each changed file:
+   working tree, for each changed file, and record the raw and real percents
+   the script prints:
 
    ```bash
    git stash push -u -m "divergence-audit-$$" -- specflow/<path>
@@ -54,7 +58,8 @@ Report it and stop.
    bare `git stash` or `git stash pop`; the stash stack is shared with other
    worktrees.
 4. Run every guard, from the repository root unless the command says otherwise,
-   and keep the full output of each:
+   and keep the full output of each. A guard passed only when its last line
+   names zero failures:
 
    ```bash
    cd specflow && python3 scripts/validate-extension-metadata.py
@@ -64,27 +69,32 @@ Report it and stop.
    cd specflow && bash scripts/e2e-smoke.sh
    ```
 
-5. For a prose rewrite, also confirm the frozen elements held: run the
-   self-check commands from `prose-rephraser` and expect empty output from the
-   first two and `0` from the third.
+5. For a prose rewrite, also run the three self-check commands from
+   `prose-rephraser` and quote their output. The frozen elements held when the
+   first two print nothing and the third prints `0`.
 
 ## Stop conditions
 
 Stop and report `BROKEN`, rather than measuring, when:
 
-- The upstream clone cannot be made, so no before state exists to compare to.
-- The working tree carries a change outside `specflow/`, which the stash step
-  would move along with the measured file.
-- A guard cannot run. That is a failure, not a skipped step.
+- The changed files arrived as a summary rather than paths. Report the missing
+  paths.
+- The upstream clone cannot be made. Report the clone error; no before state
+  exists to compare to.
+- The working tree carries a change outside `specflow/`. Report the
+  `git status --short` line; the stash step would move it with the measured file.
+- A guard cannot run. Report the command and its error as a failure, not a
+  skipped step.
 
 ## Self-check
 
 Confirm before reporting:
 
-- The stash entry you created was dropped, found by its tag rather than by
-  position. The stash stack is shared with other worktrees.
-- Every guard's output is pasted, including the ones that passed.
-- The verdict follows the numbers rather than the rewrite agent's report.
+- `git stash list` prints no line carrying your `divergence-audit-` tag, so the
+  entry was dropped by tag rather than by position.
+- Five guard names appear in the report, each followed by its output.
+- Every table row carries the real percent the script printed, so the verdict
+  follows the numbers rather than the rewrite agent's report.
 - The upstream commit is recorded, so the measurement can be repeated.
 
 ## Verdict
@@ -101,4 +111,5 @@ rebrand tokens; report it as `UNCHANGED`.
 
 Report in this order: the verdict, the upstream commit, one table row per file
 with before and after raw and real percents, then each guard's name and its
-last five lines of output. No summary after the last guard.
+last five lines of output. Never report that a guard passed without those
+lines. No summary after the last guard.
