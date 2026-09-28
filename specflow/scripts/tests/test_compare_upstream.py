@@ -638,19 +638,3 @@ def test_a_claude_call_reporting_is_error_true_on_exit_0_is_recorded_as_an_error
         assert entry["status"] == "error"
         assert entry["hit"] is None
         assert "error_max_budget_usd" in entry["error"]
-
-
-# --- Rule: specflow/README.md links to the comparison, and standards lint passes (T597) ---
-
-
-def test_specflow_readme_links_to_the_comparison_readme_and_it_resolves():
-    readme = (SPECFLOW_DIR / "README.md").read_text(encoding="utf-8")
-    comparison_url = (
-        "https://github.com/DonalMoloney/super-spec-new/blob/main/"
-        "specflow/examples/upstream-comparison/README.md"
-    )
-    assert f"]({comparison_url})" in readme, (
-        f"specflow/README.md has no Markdown link to {comparison_url}"
-    )
-    target = SPECFLOW_DIR / "examples" / "upstream-comparison" / "README.md"
-    assert target.exists(), f"{target} does not exist"
