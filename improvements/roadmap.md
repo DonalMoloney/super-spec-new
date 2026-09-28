@@ -8,7 +8,10 @@ evidence behind the review stack.
 
 A group leaves this file the day its PR merges; git history holds its statement
 and its ticked tasks. G-01 to G-18 merged between PR #8 and PR #53, the Q-01 to
-Q-28 cleanup wave in PR #53, and G-19 to G-56, G-58, and G-60 by 2026-09-28.
+Q-28 cleanup wave in PR #53, and G-19 to G-58 and G-60 by 2026-09-28. G-57's
+second pass closed with no PR of its own: G-60's own change took its last
+worthwhile candidates, and `reference.md`'s candidate inventory records the
+rest as dropped.
 
 ## How to use this file
 
@@ -53,55 +56,9 @@ Q-28 cleanup wave in PR #53, and G-19 to G-56, G-58, and G-60 by 2026-09-28.
 
 ## Order of work
 
-1. G-57's second structural pass. `v1.1.0` is tagged, so its dependency is met.
-2. Backlog item 26, the upgrade path, now that a release exists to upgrade from.
-3. G-59, the upstream comparison. Its result ranks every later divergence item:
+1. Backlog item 26, the upgrade path, now that a release exists to upgrade from.
+2. G-59, the upstream comparison. Its result ranks every later divergence item:
    a gap it finds outranks a heading rename.
-
-## G-57 — Move the shape, not the wording (first pass merged 2026-09-27)
-
-The first pass took six renames and rejected the rest, including the
-strongest candidate on wording: `plan-template.md`'s `## Summary`, which
-`standards/documentation.md` bans outright but
-`specflow/gates/bash/artifact-lint.sh` requires as a literal section and
-`.claude/hooks/tests/run.sh` asserts by exact string. Taking it means moving a
-shipped gate's required section, which is a behavior change, not a heading
-pass.
-
-The pass missed its own Verify line, and the line was wrong rather than the
-work. Three of the four measured files did not move at whole-number
-precision: `plan-template.md` 22.56% to 23.31%, `workflow-guide.md` 70.51% to
-70.75%, and `SKILL.md` not at all, because the line touched there already
-differed from upstream. Only `tasks-template.md` moved a printed point, 51% to
-53%. A heading is one line, so a single rename cannot move a file of 133 or
-841 lines by a whole point. ADR-0043 already treats the measure as a side
-effect, so a future pass states its Verify line as the renames taken and the
-rules they cleared, not as a higher Real column.
-
-All four goldens score byte-identically to the pre-pass run, and the 14
-golden files carrying a renamed heading were updated in the same commit.
-
-The remaining candidate inventory is in `reference.md`.
-
-### Original statement
-
-Every file with an upstream counterpart has had its `prose-rephraser` pass, so
-the low numbers in `reference.md`'s Real column are a floor, not a gap. A
-template's scaffolding is frozen by ADR-0013, and scaffolding is most of what
-is left: `constitution-template.md` has 3 free prose lines among the 65 it
-still shares with upstream, and `tasks-template.md` carries 64 blank lines
-among its 115. Only `divergence-renamer` (ADR-0018) moves a heading.
-
-The headroom is in the Named units shared column: `plan-template.md` keeps 12
-of 13 headings, `tasks-template.md` 19 of 20, and every command file keeps
-upstream's `## Usage`, `## Process`, `## Output`, and `## Human Checkpoints`.
-
-Four contracts name these headings and move in the same change:
-`e2e-smoke.sh`'s `EXPECTED_PROCESS_STEPS` and `MIRRORED_PHASES`,
-`score-artifacts.py`'s `spec_sections` dimension against both goldens, and
-`validate-extension-metadata.py`. Verify: `bash verify.sh` reports 0 failed,
-both goldens score no lower, and `measure-divergence.py` reports a higher Real
-column for each renamed file. Effort: high. Depends on: none. `v1.1.0` is tagged.
 
 ## Backlog item 26 — An upgrade path the smoke test walks
 
