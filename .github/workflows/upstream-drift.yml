@@ -3,7 +3,7 @@ name: Upstream drift
 # Asks once a week whether upstream superspec has moved past the commit
 # specflow/ was vendored from, and files one issue when it has. Divergence
 # percentages are measured against that commit, so a silent upstream move makes
-# every number in improvements/reference.md stale.
+# every number in improvements/roadmap.md stale.
 on:
   schedule:
     # Monday 06:00 UTC, before the working week reads the roadmap.

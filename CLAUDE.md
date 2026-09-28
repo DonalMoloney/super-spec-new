@@ -27,7 +27,8 @@ adversarial verification (`work-verifier`).
 **Related squad:**
 - `prose-rephraser`, `script-refactorer`, `divergence-renamer`, and `divergence-auditor`
   rewrite one shipped file under `specflow/` to `standards/` and measure the result
-  against upstream. The file table and dispatch order live in `improvements/reference.md`.
+  against upstream. The open option and the measured divergence per file live in
+  `improvements/roadmap.md`.
 
 ### Before editing command or template files
 
