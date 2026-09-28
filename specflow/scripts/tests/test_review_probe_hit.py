@@ -32,7 +32,7 @@ PLANTED_FILE = "src/link_audit/resolver.py"
 PLANTED_LINE = 42
 WINDOW = 3
 
-EXPECTED_CASE_COUNT = 16
+EXPECTED_CASE_COUNT = 21
 
 
 def load_module():
@@ -134,6 +134,37 @@ def test_hit_true_when_match_is_in_the_agents_final_text():
 def test_hit_false_when_match_is_only_in_a_baseline_file():
     content = f"{PLANTED_FILE}:{PLANTED_LINE}: off-by-one in the loop bound"
     assert judge(baseline_contents=[content]) is False
+
+
+def test_hit_false_for_a_reversed_range_that_would_span_the_window_if_sorted():
+    content = f"{PLANTED_FILE}:{PLANTED_LINE + 8}-{PLANTED_LINE - 2}: off-by-one"
+    assert judge(changed_contents=[content]) is False
+
+
+def test_hit_false_for_a_json_line_value_given_as_a_string():
+    content = f'{{"file": "{PLANTED_FILE}", "line": "{PLANTED_LINE}"}}'
+    assert judge(changed_contents=[content]) is False
+
+
+def test_hit_false_for_a_json_line_value_given_as_a_float():
+    content = f'{{"file": "{PLANTED_FILE}", "line": {float(PLANTED_LINE)}}}'
+    assert judge(changed_contents=[content]) is False
+
+
+def test_hit_true_when_only_the_second_of_two_mentions_on_separate_lines_is_in_window():
+    content = (
+        f"{PLANTED_FILE}:{PLANTED_LINE - 10}: unrelated bug\n"
+        f"{PLANTED_FILE}:{PLANTED_LINE + 2}: off-by-one in the loop bound"
+    )
+    assert judge(changed_contents=[content]) is True
+
+
+def test_hit_true_when_only_the_second_of_two_mentions_on_the_same_line_is_in_window():
+    content = (
+        f"{PLANTED_FILE}:{PLANTED_LINE - 10} and "
+        f"{PLANTED_FILE}:{PLANTED_LINE + 2}: off-by-one in the loop bound"
+    )
+    assert judge(changed_contents=[content]) is True
 
 
 def test_every_hit_check_case_has_a_passing_test():
