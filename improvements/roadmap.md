@@ -1116,10 +1116,17 @@ Run every line on `main` the day of the tag. One false line means the release
 is not ready, whatever the order above says.
 
 - A tag exists, `release.yml` ran green for it, and the release carries the ZIP
-  and the validator report.
+  and the validator report. Done for `v1.1.0` on 2026-09-27: the run published
+  `specflow-v1.1.0.zip` at 88869 bytes and its validator report.
 - `specify extension add specflow --from <release zip>` installs in a fresh
   project on both surfaces, and `specify extension list` prints the command and
-  hook counts `extension.yml` declares.
+  hook counts `extension.yml` declares. Checked for `v1.1.0` against the
+  published asset, fetched with `gh` and served over localhost: both surfaces
+  install and print `Commands: 7 | Hooks: 6`. Over the network the same command
+  answers 404, because the repository is private and spec-kit downloads an
+  asset anonymously. `catalog.json`'s `download_url` and `catalog_url` are
+  unreachable for the same reason. Both clear when the repository goes public;
+  neither is a payload defect.
 - The root `README.md` exists, and every command in `specflow/README.md` ran in
   CI on this commit.
 - `examples/` holds one recorded run of this fork's pipeline, and the README

@@ -37,6 +37,12 @@ Next, add specflow from a release asset. Copy the URL from the
 specify extension add specflow --from <release asset URL>
 ```
 
+The repository is private today, and spec-kit downloads an asset without
+sending your credentials, so that URL answers 404 and this form fails. Use the
+checkout install below until the repository is public. The same applies to the
+catalog forms further down, which read `catalog.json` over the same anonymous
+path.
+
 To install from a checkout instead, clone the repository and hand spec-kit the
 `specflow/` directory:
 
