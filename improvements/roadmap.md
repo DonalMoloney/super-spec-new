@@ -379,7 +379,7 @@ rename lands, so the cost is known before the move.
 | `commands/*.md` file names | `status`, `brainstorm`, `tasks`, `execute`, `review`, `gate`, `agent-event` | The `file:` field in `extension.yml` | Cheap, and no reason | none |
 | Extension id `specflow` | | 27 files | Not an option | |
 | `templates/*.md` file names | | Spec-kit reads `.specify/templates/<name>`; `e2e-smoke.sh` | Not an option | |
-| `superpowers.yml` cache name | | Every command and the smoke test | Not an option | |
+| `superpowers.yml` cache name | | `commands/status.md`, `commands/hooks/before-execute.md`, `SKILL.md`, `references/workflow-guide.md`, and the README; no script reads it | Not an option: every installed project carries one under `.specify/` | |
 | `LICENSE` "Superspec Contributors" | | MIT requires the original notice | Not an option | |
 
 ## Rewrite status
@@ -449,8 +449,8 @@ shape; only `divergence-renamer` moves the shape.
 | `references/workflow-guide.md` | 71% | 22 of 47 headings |
 | `commands/*.md` | 61 to 80% | 3 to 4 of 6 to 7 headings |
 | `scripts/validate-release-archive.py` | 87% | 3 of 13 functions |
-| `scripts/validate-extension-metadata.py` | 91% | 2 of 4 functions |
-| `scripts/e2e-agent-claude.sh` | 95% | 0 of 11 functions |
+| `scripts/validate-extension-metadata.py` | 91% | 2 of 13 functions |
+| `scripts/e2e-agent-claude.sh` | 95% | 0 of 1 function; 9 of the 26 in `scripts/e2e-stages.sh` keep upstream's names |
 
 A template's Real column cannot move much, because most of its lines are not
 prose. Of the lines each template still shares with upstream:
@@ -477,40 +477,42 @@ reached.
 
 A heading counts here when it is still spelled as upstream spells it and no
 script, workflow, or test in this repository greps it. A heading that is free
-but already moved buys nothing, so the count excludes it; earlier revisions of
-this table counted every free heading and so overstated what a pass could
-reach. Measured 2026-09-11, re-verified 2026-09-25 for
-`references/workflow-guide.md` and `SKILL.md`, by searching every heading
-against `*.sh`, `*.py`, and `*.yml` outside `examples/`. A coincidental
-substring match counts as frozen, so each number is a floor.
+but already moved buys nothing, so the count excludes it. Measured 2026-09-28
+against `c20ac6c1` over unique shared headings, the set the `comm` step of
+the method below prints, by searching each heading's text, backticks
+stripped, against `*.sh`, `*.py`, `*.yml`, and `*.json` outside `examples/`.
+A coincidental substring match counts as frozen, so each number is a floor.
+The counts here are unique headings, so they sit below the heading-line
+counts in the table above.
 
 | File | Free and still upstream's | Risk | Yield |
 |------|---------------------------|------|-------|
-| `templates/tasks-template.md` | 16 of 20 | Medium. Renaming strands the recorded goldens | Highest |
-| `templates/constitution-template.md` | 14 of 17 | Medium. Same | High |
-| `templates/checklist-template.md` | 10 of 12 | Medium. Same | Medium |
-| `references/workflow-guide.md` | 9 of 46 (re-verified 2026-09-27: `Human Checkpoint Protocol`, `` Writing `progress.yml` ``, `Phase 1: Specification`, `Phase 3: Planning`, and the five brainstorm categories are free; `Phase 2/4/5/6` and the four `Steps` headings under them are grepped in `e2e-smoke.sh`'s `MIRRORED_PHASES`, and the other four `Steps` headings share that name) | Low. A reference; content is cheap to diverge, the file name is not | Medium, most of the pre-G-50 yield is taken |
-| `templates/plan-template.md` | 8 of 13 | Medium. Same | Medium |
-| `templates/spec-template.md` | 8 of 19 | Medium. Same | Low |
-| `commands/*.md` | 1 or 2 of 5 to 7 | High. `e2e-smoke.sh` counts each file's Process steps | Low |
-| `commands/hooks/*.md` | 1 of 3 each | Low | Low; one heading each |
-| `SKILL.md` | 1 of 21 (re-verified 2026-09-25: only `` `/speckit.checklist` `` is both shared and ungrepped; the other 3 shared headings are cited in `e2e-stages.sh`/`e2e-smoke.sh`/`write-marker.sh`) | Low. Spec-kit 0.16.2 never reads the extension-root `SKILL.md`; it renders one skill per `commands/*.md`. An external `~/.agents/skills/` loader's section expectations are unverified. | Low, G-50 took the rest |
+| `templates/tasks-template.md` | 13 of 14; only `## Notes` is grepped | Medium. Renaming strands the recorded goldens | Highest |
+| `templates/constitution-template.md` | 13 of 15; `## Core Principles` and `## Governance` are grepped | Medium. Same | High |
+| `references/workflow-guide.md` | 10 of 15: `Phase 1: Specification`, `Phase 3: Planning`, `Human Checkpoint Protocol`, `` Writing `progress.yml` ``, `.specify/superpowers.yml`, and the five brainstorm categories. `Phase 2/4/5/6` and `Steps` are grepped in `e2e-smoke.sh`'s `MIRRORED_PHASES` | Low. A reference; content is cheap to diverge, the file name is not | Medium |
+| `templates/plan-template.md` | 8 of 11 | Medium. Same | Medium |
+| `templates/checklist-template.md` | 7 of 11; `## Code Review`, `## Notes`, `## Performance`, and `## Security` are grepped | Medium. Same | Medium |
+| `templates/spec-template.md` | 6 of 13 | Medium. Same | Low |
+| `SKILL.md` | 2 of 5: `specs/NNN-feature-name/progress.yml` and `` `/speckit.checklist` ``; the other three are cited in `e2e-stages.sh`, `e2e-smoke.sh`, and `write-marker.sh` | Low. Spec-kit 0.16.2 never reads the extension-root `SKILL.md`; it renders one skill per `commands/*.md`. An external `~/.agents/skills/` loader's section expectations are unverified. | Low, G-50 took the rest |
+| `commands/*.md` | 0 or 1 of 3 to 4; `## Usage`, `## Process`, and `## Output` are grepped | High. `e2e-smoke.sh` counts each file's Process steps | Low |
+| `commands/hooks/*.md` | 1 of 1 or 2; the `# Hook:` title line | Low | Low; one heading each |
 
-Order of attack: `templates/tasks-template.md` first (16 reachable headings,
+Order of attack: `templates/tasks-template.md` first (13 reachable headings,
 Medium risk: regenerate the recorded goldens in the same change, because a
 template and its recorded output drift the moment either moves), then
-`templates/constitution-template.md` (14), `templates/checklist-template.md`
-(10), `references/workflow-guide.md` (9, Low risk against the templates'
-Medium; one exception: `### Gate markers` is frozen at `###` depth, not free.
+`templates/constitution-template.md` (13), `references/workflow-guide.md`
+(10, Low risk against the templates' Medium; one exception: `### Gate
+markers` is frozen at `###` depth, not free.
 `specflow/gates/python/validate-progress.py` pins the literal `### Gate
 markers` in `GATE_SECTION` and raises `ContractUnavailable` without it, proven
 by renaming it in a scratch copy and watching the shipped gate exit 2;
 `e2e-smoke.sh` separately greps the table's rows, unscoped to the heading, and
-the heading check is the stricter one), then `templates/plan-template.md` and
-`templates/spec-template.md` (8 each).
+the heading check is the stricter one), then `templates/plan-template.md`
+(8), `templates/checklist-template.md` (7), and `templates/spec-template.md`
+(6).
 
-Not worth taking: `SKILL.md` (1 reachable heading, dropped below the command
-and hook files) and the command files (two or three free headings each,
+Not worth taking: `SKILL.md` (2 reachable headings, dropped below the command
+and hook files) and the command files (at most one free heading each,
 against a smoke test that counts Process steps per file and a workflow guide
 that names every artifact each command writes; the cost is three assertions
 updated per heading moved, for the smallest share of the remaining
