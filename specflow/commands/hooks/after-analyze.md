@@ -7,8 +7,8 @@ The hook fires once `/speckit.analyze` finishes. It writes the feature's
 ## Preconditions
 
 1. **Constitution gate**: Check that `.specify/memory/constitution.md` exists. If
-   it is missing, the hook stops with `CONSTITUTION_REQUIRED` and tells the user
-   to run `/speckit.constitution`.
+   it is missing, the hook stops with `CONSTITUTION_REQUIRED`, names the missing
+   path, and tells the user to run `/speckit.constitution`.
 2. **Critical findings**: Pass the analysis report to the gate on standard
    input. A report holding a CRITICAL row stops the hook with
    `ANALYZE_CRITICAL` and the count.
