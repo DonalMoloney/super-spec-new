@@ -124,7 +124,7 @@ tests/
 - [ ] [Security-sensitive code]: Review before integration
 - [ ] [Data model changes]: Review before migration
 
-## Complexity Tracking
+## Justified constitution violations
 
 > **Fill in this table only when the Constitution Check flags a violation to justify**
 

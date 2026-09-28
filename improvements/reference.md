@@ -379,11 +379,11 @@ number is a floor.
 
 | File | Free and still upstream's | Risk | Yield |
 |------|---------------------------|------|-------|
-| `templates/tasks-template.md` | 19 of 20 | Medium. Renaming strands the recorded goldens | Highest |
+| `templates/tasks-template.md` | 16 of 20 | Medium. Renaming strands the recorded goldens | Highest |
 | `templates/constitution-template.md` | 14 of 17 | Medium. Same | High |
 | `templates/checklist-template.md` | 10 of 12 | Medium. Same | Medium |
-| `references/workflow-guide.md` | 10 of 46 (re-verified 2026-09-25: `Iteration`, `Human Checkpoint Protocol`, `` Writing `progress.yml` ``, `Phase 1: Specification`, `Phase 3: Planning`, and the five brainstorm categories are free; `Process`, all six `Steps` headings, and `Phase 2/4/5/6` are grepped in `e2e-stages.sh`) | Low. A reference; content is cheap to diverge, the file name is not | Medium, most of the pre-G-50 yield is taken |
-| `templates/plan-template.md` | 9 of 13 | Medium. Same | Medium |
+| `references/workflow-guide.md` | 9 of 46 (re-verified 2026-09-27: `Human Checkpoint Protocol`, `` Writing `progress.yml` ``, `Phase 1: Specification`, `Phase 3: Planning`, and the five brainstorm categories are free; `Phase 2/4/5/6` and the four `Steps` headings under them are grepped in `e2e-smoke.sh`'s `MIRRORED_PHASES`, and the other four `Steps` headings share that name) | Low. A reference; content is cheap to diverge, the file name is not | Medium, most of the pre-G-50 yield is taken |
+| `templates/plan-template.md` | 8 of 13 | Medium. Same | Medium |
 | `templates/spec-template.md` | 8 of 19 | Medium. Same | Low |
 | `commands/*.md` | 1 or 2 of 5 to 7 | High. `e2e-smoke.sh` counts each file's Process steps | Low |
 | `commands/hooks/*.md` | 1 of 3 each | Low | Low; one heading each |
@@ -399,6 +399,18 @@ merging.
 - `## Checks` opened all five hook prompts, not three as first sampled; the
   sample missed `after-clarify.md` and `after-analyze.md`. All five are now
   `## Preconditions`.
+
+G-57 moved six more, each against the ADR-0043 bar:
+
+- `references/workflow-guide.md`: Phase 2's `### Process` is now `### Steps`,
+  the name every other phase gives its numbered list, and `### Iteration` is
+  now `### Repeat runs`.
+- `templates/tasks-template.md`: `## Superpowers Execution` is now
+  `## Execution rules`, `### Execution Discipline by Marker` is now
+  `### What each marker requires`, and `### Within Each User Story` is now
+  `### Order within a user story`.
+- `templates/plan-template.md`: `## Complexity Tracking` is now
+  `## Justified constitution violations`.
 
 Order of attack, by yield per unit of risk, before G-50:
 
@@ -422,11 +434,12 @@ Order of attack, by yield per unit of risk, before G-50:
 G-50 executed items 2 and 3 (`templates/tasks-template.md`'s reachable prose
 untouched, so it still leads at 19; `SKILL.md` down to 1 of 21) and most of
 item 1 (`references/workflow-guide.md` down to 10 of 46, re-verified above).
-Order of attack now: `templates/tasks-template.md` first (19, Medium risk,
-untouched by G-50), then `templates/constitution-template.md` (14),
-`templates/checklist-template.md` and `references/workflow-guide.md` tied
-(10 each, though the guide's risk is Low against the templates' Medium), then
-`templates/plan-template.md` (9) and `templates/spec-template.md` (8).
+G-57 then took six headings across three of those files. Order of attack now:
+`templates/tasks-template.md` first (16, Medium risk), then
+`templates/constitution-template.md` (14), `templates/checklist-template.md`
+(10), `references/workflow-guide.md` (9, Low risk against the templates'
+Medium), then `templates/plan-template.md` and `templates/spec-template.md`
+(8 each).
 `SKILL.md` (1) has dropped below the command and hook files and is no longer
 worth a dedicated pass on its own.
 

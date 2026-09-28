@@ -351,7 +351,7 @@ and new brainstorm log entries.
 6. Once the user confirms the spec is ready, add a dated summary of the session's
    insights to the "Brainstorm Log"
 
-**Iteration**: This command can run against the same spec more than once. Each
+**Repeat runs**: This command can run against the same spec more than once. Each
 session adds its own entry to the brainstorm log.
 
 ---

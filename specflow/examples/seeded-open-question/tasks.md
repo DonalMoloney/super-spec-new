@@ -234,7 +234,7 @@ tests/
 - **Polish (Phase 6)**: Depends on every prior phase.
 - **Remediation (Phase 7)**: Depends on Phase 6 (all modules already exist and are implemented). R-001/R-002 tasks (T043–T048) touch `anchors.py`/`links.py` and are independent of R-004's `resolver.py` tasks (T049–T053) and R-003's `resolver.py` tasks (T054–T057); the latter two share a file but touch different functions (`resolve_file()`'s root-relative branch vs. `_check_anchor()`'s read-error handling) and should land as separate commits to keep review scoped.
 
-### Within Each User Story
+### Order within a user story
 
 1. Write the tests for that story and confirm they fail.
 2. Implement the resolver/report changes the story needs.

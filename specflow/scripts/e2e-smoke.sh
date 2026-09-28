@@ -64,7 +64,7 @@ EXPECTED_PROCESS_STEPS=(
 # fewer artifacts than its command does tells that agent to write less. The
 # names do not line up on their own, so each pair is declared here.
 MIRRORED_PHASES=(
-  "brainstorm|## Phase 2: Brainstorming|### Process"
+  "brainstorm|## Phase 2: Brainstorming|### Steps"
   "tasks|## Phase 4: Task Decomposition|### Steps"
   "execute|## Phase 5: Execution|### Steps"
   "review|## Phase 6: Review|### Steps"
