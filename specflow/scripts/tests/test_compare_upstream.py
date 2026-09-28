@@ -566,7 +566,7 @@ def test_review_probe_hit_script_error_is_recorded_as_an_error_entry(tmp_path):
 # --- Rule: the review probe project excludes the planted fault's answer (CR-001) ---
 
 
-def test_review_probe_project_excludes_the_readme_and_analyze_gate_but_keeps_the_code_and_spec(
+def test_review_probe_project_excludes_the_readme_analyze_gate_and_prior_review_output(
     tmp_path,
 ):
     upstream = git_checkout(tmp_path / "superspec")
@@ -596,8 +596,18 @@ def test_review_probe_project_excludes_the_readme_and_analyze_gate_but_keeps_the
     manifest = manifest_path.read_text().splitlines()
     assert not any(entry.endswith("/README.md") for entry in manifest), manifest
     assert not any(entry.endswith("/analyze-gate.md") for entry in manifest), manifest
+    assert not any(
+        entry.endswith("/specs/001-link-audit/review-findings.json") for entry in manifest
+    ), manifest
+    assert not any(
+        entry.endswith("/specs/001-link-audit/checklists/review.md") for entry in manifest
+    ), manifest
+    assert not any(
+        entry.endswith("/specs/001-link-audit/handoff.md") for entry in manifest
+    ), manifest
     assert any(entry.endswith("/src/link_audit/resolver.py") for entry in manifest), manifest
     assert any(entry.endswith("/specs/001-link-audit/spec.md") for entry in manifest), manifest
+    assert any(entry.endswith("/specs/001-link-audit/tasks.md") for entry in manifest), manifest
 
 
 # --- Rule: an upstream failure is recorded, never patched around ---

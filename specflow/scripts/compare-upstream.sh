@@ -427,13 +427,20 @@ seed_spec_probe_project() {
 # examples/seeded-review-bug/'s code and feature artifacts, which already
 # carry the example's own .specify/memory/constitution.md. Excludes
 # README.md and analyze-gate.md, which name the planted fault's file and
-# line directly (CR-001), and the working copy's untracked __pycache__ and
-# .pytest_cache directories, so the project under review cannot read the
-# answer instead of finding it.
+# line directly, and review-findings.json, checklists/review.md, and
+# handoff.md, which are an earlier review's output rather than a review
+# input and quote the pre-planted code at its original line numbers, so a
+# reviewer diffing that prose against the code finds the planted narrowing
+# without reviewing. Also drops the working copy's untracked __pycache__
+# and .pytest_cache directories, so the project under review cannot read
+# the answer instead of finding it.
 seed_review_probe_project() {
   local project_dir="$1"
   cp -R "$SEEDED_REVIEW_BUG_DIR/." "$project_dir/"
-  rm -f "$project_dir/README.md" "$project_dir/analyze-gate.md"
+  rm -f "$project_dir/README.md" "$project_dir/analyze-gate.md" \
+    "$project_dir/specs/001-link-audit/review-findings.json" \
+    "$project_dir/specs/001-link-audit/checklists/review.md" \
+    "$project_dir/specs/001-link-audit/handoff.md"
   find "$project_dir" -type d \( -name '__pycache__' -o -name '.pytest_cache' \) -exec rm -rf {} +
 }
 
