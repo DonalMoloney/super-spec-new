@@ -13,8 +13,8 @@
 #   E2E_DRY_RUN=1               print the install and probe commands, skip
 #                                every claude/uvx/git call (free)
 #   COMPARE_UPSTREAM_CHECKOUT    path to an existing upstream checkout; when
-#                                unset, the script names the pinned commit it
-#                                would clone into a scratch directory instead
+#                                unset, the script clones the pinned commit
+#                                into a scratch directory instead
 #   E2E_MODEL                   model passed to claude --model (default: the
 #                                CLI's own)
 #   E2E_MAX_BUDGET_USD           per-invocation budget cap, default 0.50
@@ -46,13 +46,30 @@ UPSTREAM_CHECKOUT="${COMPARE_UPSTREAM_CHECKOUT:-}"
 UPSTREAM_URL="https://github.com/WangX0111/superspec"
 UPSTREAM_COMMIT="c20ac6c1ba069cc9a72dacb8044b7b193d3dde81"
 UPSTREAM_SCRATCH_DIR="$(mktemp -u -d -t compare-upstream)/superspec"
+UPSTREAM_CHECKOUT_ERROR=""
 
 MAX_BUDGET="${E2E_MAX_BUDGET_USD:-0.50}"
 MAX_TURNS="${E2E_MAX_TURNS:-30}"
 MODEL="${E2E_MODEL:-}"
+RECORDED_MODEL=""
 
 COMPARE_RUNS="${COMPARE_RUNS:-3}"
 COMMITTED_RESULTS="$FORK_ROOT/specflow/examples/upstream-comparison/results.json"
+
+# The spec probe's seeded feature: examples/seeded-ambiguity/'s spec.md and
+# its planted-phrase marker, plus the link-audit constitution every probe
+# project needs (item 24).
+SEEDED_AMBIGUITY_DIR="$FORK_ROOT/specflow/examples/seeded-ambiguity"
+LINK_AUDIT_CONSTITUTION="$FORK_ROOT/specflow/examples/link-audit/.specify/memory/constitution.md"
+PROBE_FEATURE_DIR="specs/001-link-audit"
+
+# The review probe's seeded feature: a full copy of
+# examples/seeded-review-bug/, whose own .specify/memory/constitution.md
+# already matches link-audit's (item 25). The planted fault's location, from
+# that example's own README.md.
+SEEDED_REVIEW_BUG_DIR="$FORK_ROOT/specflow/examples/seeded-review-bug"
+REVIEW_PLANTED_FILE="src/link_audit/resolver.py"
+REVIEW_PLANTED_LINE=87
 
 # Prints true, false, or null for a spec-probe score: 100 is a hit, `error`
 # stands for an entry with status error and no score, anything else is a miss.
@@ -94,8 +111,6 @@ print_fork_install_command() {
 }
 
 # Prints the git clone and checkout lines for the pinned upstream commit.
-# Live cloning into UPSTREAM_SCRATCH_DIR is wired by a later item; this dry
-# run only names the command it would run.
 print_upstream_clone_commands() {
   printf 'git clone %s %s\n' "$UPSTREAM_URL" "$UPSTREAM_SCRATCH_DIR"
   printf 'git -C %s checkout %s\n' "$UPSTREAM_SCRATCH_DIR" "$UPSTREAM_COMMIT"
@@ -129,16 +144,31 @@ print_claude_invocation() {
     "$allowed_tools" "$MAX_BUDGET" "$MAX_TURNS" "$model_flag" "$prompt"
 }
 
-# Placeholder prompt for the specflow pipeline's probe. Items 7 and 9
-# replace this with the real spec and review probe prompts.
+# Prints the specflow pipeline's probe prompt: spec runs brainstorm on the
+# seeded ambiguity, review runs review on the seeded review bug. Neither
+# probe has a user to answer a question, so each prompt says so.
 specflow_probe_prompt() {
-  printf 'Run /speckit.specflow.brainstorm against the seeded feature. No user will answer, so answer every question the command would otherwise ask.'
+  case "$1" in
+    spec)
+      printf 'Run /speckit.specflow.brainstorm against the seeded feature. No user will answer, so answer every question the command would otherwise ask.'
+      ;;
+    review)
+      printf 'Run /speckit.specflow.review against the seeded feature. No user will answer, so decide every judgment call the command would otherwise raise.'
+      ;;
+  esac
 }
 
-# Placeholder prompt for the superspec pipeline's probe, naming only
-# upstream's own command namespace.
+# Prints the superspec pipeline's probe prompt, naming only upstream's own
+# command namespace. Same two probes as specflow_probe_prompt.
 superspec_probe_prompt() {
-  printf 'Run /speckit.superspec.brainstorm against the seeded feature. No user will answer, so answer every question the command would otherwise ask.'
+  case "$1" in
+    spec)
+      printf 'Run /speckit.superspec.brainstorm against the seeded feature. No user will answer, so answer every question the command would otherwise ask.'
+      ;;
+    review)
+      printf 'Run /speckit.superspec.review against the seeded feature. No user will answer, so decide every judgment call the command would otherwise raise.'
+      ;;
+  esac
 }
 
 # Prints the lexically normalized form of a path, without touching the
@@ -200,12 +230,15 @@ resolve_compare_results_path() {
 
 # Reads compact-JSON entries from stdin and wraps them with the three keys
 # every results.json carries once per file: the model a run used, the
-# fork commit under test, and the pinned upstream commit.
+# fork commit under test, and the pinned upstream commit. Argument 1, when
+# given, overrides MODEL: a live run passes the model any entry's claude
+# JSON reported (item 26), falling back to MODEL when no entry reported one.
 assemble_results_json() {
+  local model_value="${1:-$MODEL}"
   local fork_commit
   fork_commit="$(git -C "$FORK_ROOT" rev-parse HEAD)"
-  if [ -n "$MODEL" ]; then
-    jq -s --arg model "$MODEL" --arg fork_commit "$fork_commit" --arg upstream_commit "$UPSTREAM_COMMIT" \
+  if [ -n "$model_value" ]; then
+    jq -s --arg model "$model_value" --arg fork_commit "$fork_commit" --arg upstream_commit "$UPSTREAM_COMMIT" \
       '{model: $model, fork_commit: $fork_commit, upstream_commit: $upstream_commit, entries: .}'
   else
     jq -s --arg fork_commit "$fork_commit" --arg upstream_commit "$UPSTREAM_COMMIT" \
@@ -227,9 +260,11 @@ if [ "$DRY_RUN" = "1" ]; then
   printf 'Dry run results file: %s\n' "$COMPARE_RESULTS" >&2
 
   print_fork_install_command
-  print_claude_invocation "$ALLOWED_TOOLS_SPECFLOW" "$(specflow_probe_prompt)"
+  print_claude_invocation "$ALLOWED_TOOLS_SPECFLOW" "$(specflow_probe_prompt spec)"
+  print_claude_invocation "$ALLOWED_TOOLS_SPECFLOW" "$(specflow_probe_prompt review)"
   print_upstream_install_command
-  print_claude_invocation "$ALLOWED_TOOLS_SUPERSPEC" "$(superspec_probe_prompt)"
+  print_claude_invocation "$ALLOWED_TOOLS_SUPERSPEC" "$(superspec_probe_prompt spec)"
+  print_claude_invocation "$ALLOWED_TOOLS_SUPERSPEC" "$(superspec_probe_prompt review)"
 
   mkdir -p "$(dirname "$COMPARE_RESULTS")"
   dry_run_entries | assemble_results_json > "$COMPARE_RESULTS"
@@ -247,63 +282,249 @@ resolve_probes_to_run "$COMPARE_PROBES"
 
 resolve_compare_results_path
 
-if [ -z "$UPSTREAM_CHECKOUT" ]; then
-  printf 'compare-upstream.sh: COMPARE_UPSTREAM_CHECKOUT is unset. Live cloning of the pinned upstream commit is not wired yet; set COMPARE_UPSTREAM_CHECKOUT to an existing checkout.\n' >&2
-  exit 1
-fi
-
-SPECFLOW_INSTALL_OK=0
-SPECFLOW_INSTALL_ERROR=""
-SUPERSPEC_INSTALL_OK=0
-SUPERSPEC_INSTALL_ERROR=""
-
-# Installs one pipeline via uvx, once per script run, and records the
-# outcome in that pipeline's SPECFLOW_/SUPERSPEC_-prefixed globals. A
-# pipeline whose install fails never reaches a claude call (item 14).
-install_pipeline() {
-  local pipeline="$1" path="$2" stderr_file
-  stderr_file="$(mktemp -t compare-upstream-install)"
-  if uvx --from git+https://github.com/github/spec-kit.git specify extension add "$path" --dev >/dev/null 2>"$stderr_file"; then
-    case "$pipeline" in
-      specflow) SPECFLOW_INSTALL_OK=1 ;;
-      superspec) SUPERSPEC_INSTALL_OK=1 ;;
-    esac
-  else
-    case "$pipeline" in
-      specflow) SPECFLOW_INSTALL_ERROR="$(cat "$stderr_file")" ;;
-      superspec) SUPERSPEC_INSTALL_ERROR="$(cat "$stderr_file")" ;;
-    esac
+# Clones the pinned upstream commit into UPSTREAM_SCRATCH_DIR when no
+# checkout path was given, and sets UPSTREAM_CHECKOUT to it. On failure,
+# leaves UPSTREAM_CHECKOUT empty and UPSTREAM_CHECKOUT_ERROR set; every
+# superspec entry then records that error instead of attempting an install
+# against a checkout that does not exist (item 23).
+ensure_upstream_checkout() {
+  if [ -n "$UPSTREAM_CHECKOUT" ]; then
+    return 0
   fi
-  rm -f "$stderr_file"
+
+  local step_stderr
+  step_stderr="$(mktemp -t compare-upstream-clone)"
+  mkdir -p "$(dirname "$UPSTREAM_SCRATCH_DIR")"
+
+  if ! git clone "$UPSTREAM_URL" "$UPSTREAM_SCRATCH_DIR" >/dev/null 2>"$step_stderr"; then
+    UPSTREAM_CHECKOUT_ERROR="git clone $UPSTREAM_URL failed: $(cat "$step_stderr")"
+    rm -f "$step_stderr"
+    return 1
+  fi
+
+  if ! git -C "$UPSTREAM_SCRATCH_DIR" checkout "$UPSTREAM_COMMIT" >/dev/null 2>"$step_stderr"; then
+    UPSTREAM_CHECKOUT_ERROR="git -C $UPSTREAM_SCRATCH_DIR checkout $UPSTREAM_COMMIT failed: $(cat "$step_stderr")"
+    rm -f "$step_stderr"
+    return 1
+  fi
+
+  rm -f "$step_stderr"
+  UPSTREAM_CHECKOUT="$UPSTREAM_SCRATCH_DIR"
+  return 0
 }
 
-# UPSTREAM_CHECKOUT is only ever read here, passed through as an argument to
-# uvx; the script never cds into it or runs a mutating command against it
-# (item 16).
-install_pipeline specflow "$FORK_ROOT"
-install_pipeline superspec "$UPSTREAM_CHECKOUT"
+ensure_upstream_checkout || true
 
 RESULTS_ENTRIES_FILE="$(mktemp -t compare-upstream-entries)"
 
-# Appends one compact-JSON entry to RESULTS_ENTRIES_FILE for one pipeline,
-# probe, and run index: an error entry when that pipeline's install failed
-# (item 14) or claude exited nonzero (item 15), otherwise an ok entry
-# carrying claude's reported cost (item 19).
-run_probe_entry() {
-  local pipeline="$1" probe="$2" run="$3" allowed_tools="$4" prompt="$5"
-  local install_ok install_error
-  case "$pipeline" in
-    specflow) install_ok="$SPECFLOW_INSTALL_OK"; install_error="$SPECFLOW_INSTALL_ERROR" ;;
-    superspec) install_ok="$SUPERSPEC_INSTALL_OK"; install_error="$SUPERSPEC_INSTALL_ERROR" ;;
-  esac
+# Appends one compact-JSON error entry to RESULTS_ENTRIES_FILE: hit and
+# cost_usd stay null, and score stays null, so every failure path (a bad
+# checkout, a failed install, a failed claude call, or a scorer crash)
+# writes the same shape (item 14, extended by items 23-25).
+write_error_entry() {
+  local pipeline="$1" probe="$2" run="$3" error="$4"
+  jq -nc --arg pipeline "$pipeline" --arg probe "$probe" --argjson run "$run" --arg error "$error" \
+    '{pipeline: $pipeline, probe: $probe, run: $run, status: "error", hit: null, error: $error, cost_usd: null, score: null}' \
+    >> "$RESULTS_ENTRIES_FILE"
+}
 
-  if [ "$install_ok" != "1" ]; then
-    jq -nc --arg pipeline "$pipeline" --arg probe "$probe" --argjson run "$run" \
-      --arg error "$install_error" \
-      '{pipeline: $pipeline, probe: $probe, run: $run, status: "error", hit: null, error: $error, cost_usd: null}' \
-      >> "$RESULTS_ENTRIES_FILE"
+# Creates one fresh spec-kit project and installs pipeline_path's checkout
+# into it, so no run carries over another run's specs/, findings, or
+# .specify/ state (item 23). On success, leaves the project directory in
+# PROJECT_DIR. On failure, removes it, clears PROJECT_DIR, and reports the
+# failing step's stderr in PROJECT_DIR_ERROR.
+prepare_probe_project() {
+  local pipeline_path="$1"
+  local step_stderr
+  PROJECT_DIR="$(mktemp -d -t compare-upstream-project)"
+  PROJECT_DIR_ERROR=""
+  step_stderr="$(mktemp -t compare-upstream-project-step)"
+
+  if ! (cd "$PROJECT_DIR" && uvx --from git+https://github.com/github/spec-kit.git \
+        specify init --here --integration claude --ignore-agent-tools --force) \
+      >/dev/null 2>"$step_stderr"; then
+    PROJECT_DIR_ERROR="$(cat "$step_stderr")"
+    rm -f "$step_stderr"
+    rm -rf "$PROJECT_DIR"
+    PROJECT_DIR=""
+    return 1
+  fi
+
+  if ! (cd "$PROJECT_DIR" && uvx --from git+https://github.com/github/spec-kit.git \
+        specify extension add "$pipeline_path" --dev) \
+      >/dev/null 2>"$step_stderr"; then
+    PROJECT_DIR_ERROR="$(cat "$step_stderr")"
+    rm -f "$step_stderr"
+    rm -rf "$PROJECT_DIR"
+    PROJECT_DIR=""
+    return 1
+  fi
+
+  rm -f "$step_stderr"
+  return 0
+}
+
+# Seeds a fresh project for the spec probe: the seeded-ambiguity spec and
+# its planted-phrase marker under specs/001-link-audit/, plus the
+# link-audit constitution (item 24).
+seed_spec_probe_project() {
+  local project_dir="$1"
+  local feature_dir="$project_dir/$PROBE_FEATURE_DIR"
+  mkdir -p "$feature_dir" "$project_dir/.specify/memory"
+  cp "$SEEDED_AMBIGUITY_DIR/spec.md" "$feature_dir/spec.md"
+  cp "$SEEDED_AMBIGUITY_DIR/.seeded-ambiguity" "$feature_dir/.seeded-ambiguity"
+  cp "$LINK_AUDIT_CONSTITUTION" "$project_dir/.specify/memory/constitution.md"
+}
+
+# Seeds a fresh project for the review probe: a full copy of
+# examples/seeded-review-bug/, which already carries its own
+# .specify/memory/constitution.md (item 25).
+seed_review_probe_project() {
+  local project_dir="$1"
+  cp -R "$SEEDED_REVIEW_BUG_DIR/." "$project_dir/"
+}
+
+# Prints one line per file under project_dir: its path relative to
+# project_dir, a tab, then a checksum. Two manifests taken before and after
+# a review probe run tell a changed-or-created file apart from one the run
+# never touched (item 25).
+project_manifest() {
+  local project_dir="$1" file rel
+  (
+    cd "$project_dir" || exit 1
+    find . -type f | sort | while IFS= read -r file; do
+      rel="${file#./}"
+      printf '%s\t%s\n' "$rel" "$(cksum "$file" 2>/dev/null | awk '{print $1"-"$2}')"
+    done
+  )
+}
+
+# Reads the model field out of a claude --output-format json transcript and
+# records it in RECORDED_MODEL, the first time any entry reports one. A
+# later entry's model, or an entry that reports none, never overwrites it
+# (item 26).
+record_claude_model() {
+  local stdout_file="$1" model_value
+  model_value="$(jq -r 'if (type == "object") and has("model") then .model else empty end' "$stdout_file" 2>/dev/null)"
+  if [ -n "$model_value" ] && [ -z "$RECORDED_MODEL" ]; then
+    RECORDED_MODEL="$model_value"
+  fi
+}
+
+# Scores the spec probe's feature directory with score-artifacts.py, derives
+# hit from its seeded_ambiguity.score via spec_hit_for_score, and appends
+# the entry (item 24). A scorer crash is recorded as an error entry instead
+# of stopping the run.
+score_probe_entry() {
+  local pipeline="$1" probe="$2" run="$3" project_dir="$4" cost="$5"
+  local feature_dir="$project_dir/$PROBE_FEATURE_DIR"
+  local score_stdout score_stderr score_val hit_val
+
+  score_stdout="$(mktemp -t compare-upstream-score-out)"
+  score_stderr="$(mktemp -t compare-upstream-score-err)"
+
+  if ! python3 "$FORK_ROOT/specflow/scripts/score-artifacts.py" "$feature_dir" \
+      >"$score_stdout" 2>"$score_stderr"; then
+    write_error_entry "$pipeline" "$probe" "$run" "$(cat "$score_stderr")"
+    rm -f "$score_stdout" "$score_stderr"
     return
   fi
+
+  score_val="$(jq -r '.seeded_ambiguity.score | floor' "$score_stdout" 2>/dev/null)"
+  [ -z "$score_val" ] && score_val="null"
+  hit_val="$(spec_hit_for_score "$score_val")"
+
+  jq -nc --arg pipeline "$pipeline" --arg probe "$probe" --argjson run "$run" \
+    --argjson cost "$cost" --argjson score "$score_val" --argjson hit "$hit_val" \
+    '{pipeline: $pipeline, probe: $probe, run: $run, status: "ok", hit: $hit, error: null, cost_usd: $cost, score: $score}' \
+    >> "$RESULTS_ENTRIES_FILE"
+
+  rm -f "$score_stdout" "$score_stderr"
+}
+
+# Judges the review probe with review-probe-hit.py: every file the run
+# created or changed since before_manifest, plus claude's own final text,
+# against the planted fault; a file the run never touched is passed as a
+# baseline only, never as a hit source (item 25). Appends the entry.
+review_probe_entry() {
+  local pipeline="$1" probe="$2" run="$3" project_dir="$4" before_manifest="$5" stdout_file="$6" cost="$7"
+  local after_manifest final_text_file path review_exit hit_val
+  local changed_args=() baseline_args=()
+
+  after_manifest="$(mktemp -t compare-upstream-manifest-after)"
+  project_manifest "$project_dir" > "$after_manifest"
+
+  final_text_file="$(mktemp -t compare-upstream-final-text)"
+  jq -r 'if (type == "object") then (.result // "") else "" end' "$stdout_file" 2>/dev/null > "$final_text_file"
+
+  while IFS= read -r path; do
+    [ -n "$path" ] && changed_args+=(--changed-file "$project_dir/$path")
+  done < <(comm -13 <(sort "$before_manifest") <(sort "$after_manifest") | cut -f1)
+
+  while IFS= read -r path; do
+    [ -n "$path" ] && baseline_args+=(--baseline-file "$project_dir/$path")
+  done < <(comm -12 <(sort "$before_manifest") <(sort "$after_manifest") | cut -f1)
+
+  python3 "$FORK_ROOT/specflow/scripts/review-probe-hit.py" \
+    --planted-file "$REVIEW_PLANTED_FILE" --planted-line "$REVIEW_PLANTED_LINE" \
+    "${changed_args[@]+"${changed_args[@]}"}" \
+    --final-text-file "$final_text_file" \
+    "${baseline_args[@]+"${baseline_args[@]}"}" \
+    >/dev/null 2>/dev/null
+  review_exit=$?
+
+  case "$review_exit" in
+    0) hit_val="true" ;;
+    1) hit_val="false" ;;
+    *)
+      write_error_entry "$pipeline" "$probe" "$run" "review-probe-hit.py exited $review_exit"
+      rm -f "$after_manifest" "$final_text_file"
+      return
+      ;;
+  esac
+
+  jq -nc --arg pipeline "$pipeline" --arg probe "$probe" --argjson run "$run" \
+    --argjson cost "$cost" --argjson hit "$hit_val" \
+    '{pipeline: $pipeline, probe: $probe, run: $run, status: "ok", hit: $hit, error: null, cost_usd: $cost, score: null}' \
+    >> "$RESULTS_ENTRIES_FILE"
+
+  rm -f "$after_manifest" "$final_text_file"
+}
+
+# Runs one pipeline/probe/run entry end to end: a fresh project (item 23),
+# the probe's seed (items 24-25), the claude call, and the probe's own
+# judge. Appends exactly one entry to RESULTS_ENTRIES_FILE.
+run_probe_entry() {
+  local pipeline="$1" probe="$2" run="$3" allowed_tools="$4" prompt="$5"
+  local pipeline_path project_dir before_manifest=""
+
+  case "$pipeline" in
+    specflow)
+      pipeline_path="$FORK_ROOT"
+      ;;
+    superspec)
+      if [ -n "$UPSTREAM_CHECKOUT_ERROR" ]; then
+        write_error_entry "$pipeline" "$probe" "$run" "$UPSTREAM_CHECKOUT_ERROR"
+        return
+      fi
+      pipeline_path="$UPSTREAM_CHECKOUT"
+      ;;
+  esac
+
+  if ! prepare_probe_project "$pipeline_path"; then
+    write_error_entry "$pipeline" "$probe" "$run" "$PROJECT_DIR_ERROR"
+    return
+  fi
+  project_dir="$PROJECT_DIR"
+
+  case "$probe" in
+    spec) seed_spec_probe_project "$project_dir" ;;
+    review)
+      seed_review_probe_project "$project_dir"
+      before_manifest="$(mktemp -t compare-upstream-manifest-before)"
+      project_manifest "$project_dir" > "$before_manifest"
+      ;;
+  esac
 
   local stdout_file stderr_file exit_code claude_args
   stdout_file="$(mktemp -t compare-upstream-probe-out)"
@@ -315,42 +536,56 @@ run_probe_entry() {
   fi
   claude_args+=(-- "$prompt")
 
-  claude "${claude_args[@]}" >"$stdout_file" 2>"$stderr_file"
+  (cd "$project_dir" && claude "${claude_args[@]}") >"$stdout_file" 2>"$stderr_file"
   exit_code=$?
 
   if [ "$exit_code" -ne 0 ]; then
-    jq -nc --arg pipeline "$pipeline" --arg probe "$probe" --argjson run "$run" \
-      --arg error "$(cat "$stderr_file")" \
-      '{pipeline: $pipeline, probe: $probe, run: $run, status: "error", hit: null, error: $error, cost_usd: null}' \
-      >> "$RESULTS_ENTRIES_FILE"
-  else
-    local cost
-    cost="$(jq -r 'if (type == "object") and has("total_cost_usd") then (.total_cost_usd | tostring) else "null" end' "$stdout_file" 2>/dev/null)"
-    if [ -z "$cost" ]; then
-      cost="null"
-    fi
-    jq -nc --arg pipeline "$pipeline" --arg probe "$probe" --argjson run "$run" --argjson cost "$cost" \
-      '{pipeline: $pipeline, probe: $probe, run: $run, status: "ok", hit: null, error: null, cost_usd: $cost}' \
-      >> "$RESULTS_ENTRIES_FILE"
+    write_error_entry "$pipeline" "$probe" "$run" "$(cat "$stderr_file")"
+    rm -f "$stdout_file" "$stderr_file"
+    [ -n "$before_manifest" ] && rm -f "$before_manifest"
+    rm -rf "$project_dir"
+    return
   fi
 
+  record_claude_model "$stdout_file"
+
+  local cost
+  cost="$(jq -r 'if (type == "object") and has("total_cost_usd") then (.total_cost_usd | tostring) else "null" end' "$stdout_file" 2>/dev/null)"
+  if [ -z "$cost" ]; then
+    cost="null"
+  fi
+
+  case "$probe" in
+    spec) score_probe_entry "$pipeline" "$probe" "$run" "$project_dir" "$cost" ;;
+    review) review_probe_entry "$pipeline" "$probe" "$run" "$project_dir" "$before_manifest" "$stdout_file" "$cost" ;;
+  esac
+
+  [ -n "$before_manifest" ] && rm -f "$before_manifest"
   rm -f "$stdout_file" "$stderr_file"
+  rm -rf "$project_dir"
 }
 
 for pipeline in specflow superspec; do
   case "$pipeline" in
-    specflow) allowed_tools="$ALLOWED_TOOLS_SPECFLOW"; prompt="$(specflow_probe_prompt)" ;;
-    superspec) allowed_tools="$ALLOWED_TOOLS_SUPERSPEC"; prompt="$(superspec_probe_prompt)" ;;
+    specflow) allowed_tools="$ALLOWED_TOOLS_SPECFLOW" ;;
+    superspec) allowed_tools="$ALLOWED_TOOLS_SUPERSPEC" ;;
   esac
   for probe in "${PROBES_TO_RUN[@]}"; do
+    case "$pipeline" in
+      specflow) prompt="$(specflow_probe_prompt "$probe")" ;;
+      superspec) prompt="$(superspec_probe_prompt "$probe")" ;;
+    esac
     for ((run = 1; run <= COMPARE_RUNS; run++)); do
       run_probe_entry "$pipeline" "$probe" "$run" "$allowed_tools" "$prompt"
     done
   done
 done
 
+FINAL_MODEL="$MODEL"
+[ -n "$RECORDED_MODEL" ] && FINAL_MODEL="$RECORDED_MODEL"
+
 mkdir -p "$(dirname "$COMPARE_RESULTS")"
-assemble_results_json < "$RESULTS_ENTRIES_FILE" > "$COMPARE_RESULTS"
+assemble_results_json "$FINAL_MODEL" < "$RESULTS_ENTRIES_FILE" > "$COMPARE_RESULTS"
 rm -f "$RESULTS_ENTRIES_FILE"
 
 exit 0
