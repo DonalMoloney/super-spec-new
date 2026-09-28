@@ -92,11 +92,11 @@
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability]
-- **FR-002**: System MUST [specific capability]
+- **FR-001**: System MUST [core capability, e.g., "accept a CSV upload up to 10 MiB"]
+- **FR-002**: System MUST [error behavior, e.g., "reject a malformed row with a line-numbered message"]
 - **FR-003**: Users MUST be able to [key interaction]
-- **FR-004**: System MUST [data requirement]
-- **FR-005**: System MUST [behavior]
+- **FR-004**: System MUST [data requirement, e.g., "keep the upload history for 90 days"]
+- **FR-005**: System MUST [observable behavior a test can check]
 
 *Mark unclear requirements explicitly:*
 

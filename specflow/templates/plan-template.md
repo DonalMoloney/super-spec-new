@@ -26,7 +26,7 @@
 
 ## Constitution Check
 
-*GATE: The plan must pass this check before work starts. Re-run the check after the design phase.*
+*GATE: The plan must pass this check before work starts. Re-run the check once the Project Structure and Execution Strategy sections are filled.*
 
 <!--
   Weigh the plan against every principle in the constitution.
@@ -94,7 +94,8 @@ tests/
 
 <!--
   Name each work stream that carries no dependency on another.
-  The task breakdown flags its tasks with [SUBAGENT].
+  The task breakdown flags its tasks with [SUBAGENT], and marks tasks
+  inside one stream [P] when they touch different files.
   Claude Code dispatches them as parallel subagents.
   The Copilot CLI keeps one session, so it runs them in order.
 -->
