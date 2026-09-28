@@ -320,13 +320,14 @@ ensure_upstream_checkout || true
 RESULTS_ENTRIES_FILE="$(mktemp -t compare-upstream-entries)"
 
 # Appends one compact-JSON error entry to RESULTS_ENTRIES_FILE: hit and
-# cost_usd stay null, and score stays null, so every failure path (a bad
-# checkout, a failed install, a failed claude call, or a scorer crash)
-# writes the same shape.
+# score stay null, so every failure path (a bad checkout, a failed install,
+# a failed claude call, or a scorer crash) writes the same shape. cost
+# defaults to null; a failed claude call passes its own cost_usd, since
+# claude reports total_cost_usd even on a budget or turn-cap exit.
 write_error_entry() {
-  local pipeline="$1" probe="$2" run="$3" error="$4"
-  jq -nc --arg pipeline "$pipeline" --arg probe "$probe" --argjson run "$run" --arg error "$error" \
-    '{pipeline: $pipeline, probe: $probe, run: $run, status: "error", hit: null, error: $error, cost_usd: null, score: null}' \
+  local pipeline="$1" probe="$2" run="$3" error="$4" cost="${5:-null}"
+  jq -nc --arg pipeline "$pipeline" --arg probe "$probe" --argjson run "$run" --arg error "$error" --argjson cost "$cost" \
+    '{pipeline: $pipeline, probe: $probe, run: $run, status: "error", hit: null, error: $error, cost_usd: $cost, score: null}' \
     >> "$RESULTS_ENTRIES_FILE"
 }
 
@@ -404,14 +405,71 @@ project_manifest() {
 
 # Reads the model field out of a claude --output-format json transcript and
 # records it in RECORDED_MODEL, the first time any entry reports one, for
-# T595's results.json. A later entry's model, or an entry that reports
-# none, never overwrites it.
+# T595's results.json. Falls back to the first modelUsage key when the
+# transcript carries no top-level model field, since a budget or turn-cap
+# exit reports usage per model there instead. A later entry's model, or an
+# entry that reports none, never overwrites it.
 record_claude_model() {
   local stdout_file="$1" model_value
   model_value="$(jq -r 'if (type == "object") and has("model") then .model else empty end' "$stdout_file" 2>/dev/null)"
+  if [ -z "$model_value" ]; then
+    model_value="$(jq -r 'if (type == "object") and has("modelUsage") then (.modelUsage | keys[0] // empty) else empty end' "$stdout_file" 2>/dev/null)"
+  fi
   if [ -n "$model_value" ] && [ -z "$RECORDED_MODEL" ]; then
     RECORDED_MODEL="$model_value"
   fi
+}
+
+# Reads total_cost_usd out of a claude --output-format json transcript,
+# printing "null" when the field is absent or the transcript is not JSON.
+claude_cost_usd() {
+  local stdout_file="$1" cost
+  cost="$(jq -r 'if (type == "object") and has("total_cost_usd") then (.total_cost_usd | tostring) else "null" end' "$stdout_file" 2>/dev/null)"
+  [ -z "$cost" ] && cost="null"
+  printf '%s' "$cost"
+}
+
+# True when a claude --output-format json transcript carries is_error true,
+# the shape a budget or turn-cap exit reports even when claude itself
+# exits 0.
+claude_reports_error() {
+  local stdout_file="$1" value
+  value="$(jq -r 'if (type == "object") and has("is_error") then (.is_error | tostring) else "false" end' "$stdout_file" 2>/dev/null)"
+  [ "$value" = "true" ]
+}
+
+# Builds a failed claude call's error text: the transcript's subtype and
+# errors when it carries them, since a budget or turn-cap exit reports its
+# cause there and leaves stderr empty; stderr when the transcript carries
+# neither; "claude exited <exit_code>" when both are empty, so an entry's
+# error field is never empty (fix round 2, found by a live smoke run).
+claude_error_text() {
+  local stdout_file="$1" stderr_file="$2" exit_code="$3"
+  local subtype errors_text stderr_text
+
+  subtype="$(jq -r 'if (type == "object") and has("subtype") then .subtype else empty end' "$stdout_file" 2>/dev/null)"
+  errors_text="$(jq -r 'if (type == "object") and has("errors") then (.errors | join("; ")) else empty end' "$stdout_file" 2>/dev/null)"
+
+  if [ -n "$subtype" ] && [ -n "$errors_text" ]; then
+    printf '%s: %s' "$subtype" "$errors_text"
+    return
+  fi
+  if [ -n "$subtype" ]; then
+    printf '%s' "$subtype"
+    return
+  fi
+  if [ -n "$errors_text" ]; then
+    printf '%s' "$errors_text"
+    return
+  fi
+
+  stderr_text="$(cat "$stderr_file" 2>/dev/null)"
+  if [ -n "$stderr_text" ]; then
+    printf '%s' "$stderr_text"
+    return
+  fi
+
+  printf 'claude exited %s' "$exit_code"
 }
 
 # Scores the spec probe's feature directory (T593) with score-artifacts.py,
@@ -572,20 +630,19 @@ run_probe_entry() {
   (cd "$project_dir" && claude "${claude_args[@]}") >"$stdout_file" 2>"$stderr_file"
   exit_code=$?
 
-  if [ "$exit_code" -ne 0 ]; then
-    write_error_entry "$pipeline" "$probe" "$run" "$(cat "$stderr_file")"
+  record_claude_model "$stdout_file"
+
+  local cost
+  cost="$(claude_cost_usd "$stdout_file")"
+
+  if [ "$exit_code" -ne 0 ] || claude_reports_error "$stdout_file"; then
+    local error_text
+    error_text="$(claude_error_text "$stdout_file" "$stderr_file" "$exit_code")"
+    write_error_entry "$pipeline" "$probe" "$run" "$error_text" "$cost"
     rm -f "$stdout_file" "$stderr_file"
     [ -n "$before_manifest" ] && rm -f "$before_manifest"
     rm -rf "$project_dir"
     return
-  fi
-
-  record_claude_model "$stdout_file"
-
-  local cost
-  cost="$(jq -r 'if (type == "object") and has("total_cost_usd") then (.total_cost_usd | tostring) else "null" end' "$stdout_file" 2>/dev/null)"
-  if [ -z "$cost" ]; then
-    cost="null"
   fi
 
   case "$probe" in

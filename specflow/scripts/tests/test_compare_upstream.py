@@ -553,6 +553,93 @@ def test_entrys_cost_reflects_claudes_reported_json(tmp_path, claude_json, expec
         assert any(entry["cost_usd"] == float(expected_cost) for entry in data["entries"])
 
 
+# --- Rule: a failed claude call records its cause and its cost (fix round 2) ---
+
+CLAUDE_BUDGET_ERROR_JSON = (
+    '{"type":"result","subtype":"error_max_budget_usd","is_error":true,'
+    '"errors":["Reached maximum budget ($0.05)"],'
+    '"terminal_reason":"budget_exhausted","total_cost_usd":0.592,'
+    '"modelUsage":{"claude-fable-5":{}}}'
+)
+
+
+def test_a_failed_claude_call_records_its_json_error_and_cost(tmp_path):
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    write_stub(bin_dir, "claude", f"echo '{CLAUDE_BUDGET_ERROR_JSON}'\nexit 1\n")
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    data = load_results(results_path)
+    assert data["entries"], "no entries written"
+    for entry in data["entries"]:
+        assert entry["status"] == "error"
+        assert entry["hit"] is None
+        assert "error_max_budget_usd" in entry["error"]
+        assert "Reached maximum budget" in entry["error"]
+        assert entry["cost_usd"] == 0.592
+
+
+def test_a_failed_claude_call_with_no_json_or_stderr_names_the_exit_code(tmp_path):
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    write_stub(bin_dir, "claude", "exit 1\n")
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    data = load_results(results_path)
+    assert data["entries"], "no entries written"
+    for entry in data["entries"]:
+        assert entry["status"] == "error"
+        assert entry["error"] != ""
+        assert "claude exited 1" in entry["error"]
+
+
+def test_a_claude_call_reporting_is_error_true_on_exit_0_is_recorded_as_an_error(tmp_path):
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    write_stub(bin_dir, "claude", f"echo '{CLAUDE_BUDGET_ERROR_JSON}'\nexit 0\n")
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    data = load_results(results_path)
+    assert data["entries"], "no entries written"
+    for entry in data["entries"]:
+        assert entry["status"] == "error"
+        assert entry["hit"] is None
+        assert "error_max_budget_usd" in entry["error"]
+
+
 # --- Rule: specflow/README.md links to the comparison, and standards lint passes (T597) ---
 
 
