@@ -29,3 +29,6 @@
   ADR when you make it; add a question when you find one you can't resolve.
   Keep both files short: context is a finite attention budget, and recall
   degrades as it grows. Prefer deleting resolved items over archiving them.
+- Ignore `presentation/` when researching whether the project is ready to be
+  used or shipped. It holds slide decks and diagrams, not runtime payload or
+  its tests; its state says nothing about the extension's readiness.
