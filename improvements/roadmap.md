@@ -1192,7 +1192,7 @@ their own script instead of the e2e stages. LLM output varies, so each probe
 runs 3 times per pipeline and the result records the hit count, not one
 verdict.
 
-- [ ] T591 Add `examples/seeded-review-bug/`, a copy of `link-audit/src/` with one planted off-by-one. Verify: `pytest` in the copy fails exactly one test, and its README names the file, line, and fault.
+- [ ] T591 Add `examples/seeded-review-bug/`, a copy of `link-audit/` with one planted spec violation the shipped tests miss. A bug a failing test exposes finds itself, so it cannot separate two reviewers. Verify: the copy's own `pytest` passes, one test kept outside the copy fails against it, and its README names the file, line, fault, plus the FR it breaks.
 - [ ] T592 Add `scripts/compare-upstream.sh`, which installs one extension into a fresh `specify init` project given a checkout path plus a command namespace. Verify: `E2E_DRY_RUN=1` prints both install commands with no agent call.
 - [ ] T593 Run the spec probe through `compare-upstream.sh`, writing each run's `seeded_ambiguity` score to a JSON result file. Verify: the dry run writes a result file with 6 entries marked `dry-run`.
 - [ ] T594 Run the review probe through `compare-upstream.sh`, writing whether each run's findings name the planted file and line. Verify: the dry run writes 6 entries marked `dry-run`.
