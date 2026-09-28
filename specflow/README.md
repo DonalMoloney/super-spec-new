@@ -287,6 +287,11 @@ states how the run was recorded and how to reproduce it with
 [scripts/e2e-agent-claude.sh](https://github.com/DonalMoloney/super-spec-new/blob/main/specflow/scripts/e2e-agent-claude.sh).
 Neither the snapshot nor the scripts ship in the installed extension.
 
+The repository also records an upstream comparison run, where specflow and superspec process the same seeded input, at
+[examples/upstream-comparison](https://github.com/DonalMoloney/super-spec-new/tree/main/specflow/examples/upstream-comparison).
+Its [README](https://github.com/DonalMoloney/super-spec-new/blob/main/specflow/examples/upstream-comparison/README.md)
+documents the comparison probes and how to reproduce the run.
+
 ## Project structure
 
 Spec-kit creates two directories at init: `.specify/` for tool state and

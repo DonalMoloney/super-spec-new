@@ -13,5 +13,6 @@
 .github/skills: describes a consuming project's spec-kit-registered command directory, not this repository's
 .github/skills/speckit-specflow-: the Copilot CLI skill path a consuming project installs, with the `<name>` placeholder cut at the capture boundary
 docs/superpowers: the obra/superpowers skill's own default output directory, named only to contrast with .specify/, where this repository writes instead
+examples/upstream-comparison: upstream comparison example recorded after a live run (T596, G-59)
 tests/contract: tasks-template.md's example task line for a consuming project's own test tree
 tests/integration: tasks-template.md's example task line for a consuming project's own test tree
