@@ -19,12 +19,23 @@
 #                                CLI's own)
 #   E2E_MAX_BUDGET_USD           per-invocation budget cap, default 0.50
 #   E2E_MAX_TURNS                per-invocation turn cap, default 30
+#   COMPARE_PROBES               spec, review, or all (default: all)
+#   COMPARE_RUNS                 runs per probe per pipeline (default: 3)
+#   COMPARE_RESULTS              results file path (default: a temp file in
+#                                a dry run; refuses to write to the committed
+#                                examples/upstream-comparison/results.json
+#                                during a dry run)
 #
 # Usage
 #   E2E_DRY_RUN=1 bash scripts/compare-upstream.sh   # logic test only
+#   bash scripts/compare-upstream.sh --spec-hit-for-score <score|error>
+#                                     # prints true, false, or null for the
+#                                     # spec-probe score-to-hit rule and exits
 #
 # Exit code
 #   0 on a clean dry run.
+#   1 when COMPARE_RESULTS points a dry run at the committed results.json, or
+#     when COMPARE_PROBES names anything other than spec, review, or all.
 
 set -uo pipefail
 
@@ -39,6 +50,28 @@ UPSTREAM_SCRATCH_DIR="$(mktemp -u -d -t compare-upstream)/superspec"
 MAX_BUDGET="${E2E_MAX_BUDGET_USD:-0.50}"
 MAX_TURNS="${E2E_MAX_TURNS:-30}"
 MODEL="${E2E_MODEL:-}"
+
+COMPARE_RUNS="${COMPARE_RUNS:-3}"
+COMMITTED_RESULTS="$FORK_ROOT/specflow/examples/upstream-comparison/results.json"
+
+# Prints true, false, or null for a spec-probe score: 100 is a hit, `error`
+# stands for an entry with status error and no score, anything else is a miss.
+spec_hit_for_score() {
+  local score="$1"
+  if [ "$score" = "error" ]; then
+    printf 'null'
+  elif [ "$score" = "100" ]; then
+    printf 'true'
+  else
+    printf 'false'
+  fi
+}
+
+if [ "${1:-}" = "--spec-hit-for-score" ]; then
+  spec_hit_for_score "${2:-}"
+  printf '\n'
+  exit 0
+fi
 
 # ADR-0033's allowlist, one shell command per line a probe runs without
 # approval. Each pipeline's own gate path names that pipeline's own
@@ -108,11 +141,76 @@ superspec_probe_prompt() {
   printf 'Run /speckit.superspec.brainstorm against the seeded feature. No user will answer, so answer every question the command would otherwise ask.'
 }
 
+# Prints the lexically normalized form of a path, without touching the
+# filesystem, so a path that does not exist yet still normalizes.
+normalize_path() {
+  local candidate="$1"
+  case "$candidate" in
+    /*) : ;;
+    *) candidate="$PWD/$candidate" ;;
+  esac
+  python3 -c 'import os, sys; print(os.path.normpath(sys.argv[1]))' "$candidate"
+}
+
+# Resolves COMPARE_PROBES into PROBES_TO_RUN, the probe names this run
+# covers. Exits 1 on anything other than the fixed spec/review/all enum.
+resolve_probes_to_run() {
+  case "$1" in
+    spec) PROBES_TO_RUN=(spec) ;;
+    review) PROBES_TO_RUN=(review) ;;
+    all) PROBES_TO_RUN=(spec review) ;;
+    *)
+      printf 'COMPARE_PROBES is %s; expected spec, review, or all.\n' "$1" >&2
+      exit 1
+      ;;
+  esac
+}
+
+# Prints one compact-JSON dry-run entry per line: every pipeline and run
+# index of each probe in PROBES_TO_RUN. `hit` stays null because a dry run
+# never scores anything; a later, non-dry-run probe reuses
+# spec_hit_for_score once it has a real score to score.
+dry_run_entries() {
+  local probe pipeline run
+  for probe in "${PROBES_TO_RUN[@]}"; do
+    for pipeline in specflow superspec; do
+      for ((run = 1; run <= COMPARE_RUNS; run++)); do
+        jq -nc --arg pipeline "$pipeline" --arg probe "$probe" --argjson run "$run" \
+          '{pipeline: $pipeline, probe: $probe, run: $run, status: "dry-run", hit: null}'
+      done
+    done
+  done
+}
+
 if [ "$DRY_RUN" = "1" ]; then
+  if ! command -v jq >/dev/null 2>&1; then
+    printf 'compare-upstream.sh: jq is not installed; a dry run writes results.json with it. Install jq (brew install jq, apt-get install jq), then rerun.\n' >&2
+    exit 1
+  fi
+
+  COMPARE_PROBES="${COMPARE_PROBES:-all}"
+  resolve_probes_to_run "$COMPARE_PROBES"
+
+  if [ -z "${COMPARE_RESULTS:-}" ]; then
+    DRY_RUN_RESULTS_DIR="$(mktemp -d -t compare-upstream-results)"
+    COMPARE_RESULTS="$DRY_RUN_RESULTS_DIR/results.json"
+  fi
+
+  if [ "$(normalize_path "$COMPARE_RESULTS")" = "$(normalize_path "$COMMITTED_RESULTS")" ]; then
+    printf 'COMPARE_RESULTS resolves to the committed %s; a dry run refuses to write there. Point COMPARE_RESULTS elsewhere.\n' "$COMMITTED_RESULTS" >&2
+    exit 1
+  fi
+
+  printf 'Dry run results file: %s\n' "$COMPARE_RESULTS" >&2
+
   print_fork_install_command
   print_claude_invocation "$ALLOWED_TOOLS_SPECFLOW" "$(specflow_probe_prompt)"
   print_upstream_install_command
   print_claude_invocation "$ALLOWED_TOOLS_SUPERSPEC" "$(superspec_probe_prompt)"
+
+  mkdir -p "$(dirname "$COMPARE_RESULTS")"
+  dry_run_entries | jq -s '{entries: .}' > "$COMPARE_RESULTS"
+
   exit 0
 fi
 
