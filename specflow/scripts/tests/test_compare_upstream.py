@@ -21,6 +21,7 @@ import os
 import re
 import stat
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -116,6 +117,16 @@ def pipeline_blocks(stdout, label):
     boundary = "|".join(re.escape(other) for other in other_labels)
     pattern = re.escape(label) + r"(.*?)(?=" + boundary + r"|\Z)"
     return re.findall(pattern, stdout, re.DOTALL)
+
+
+# --- Rule: COMPARE_PROBES only accepts spec, review, or all ---
+
+
+def test_compare_probes_invalid_value_exits_1_with_its_message():
+    result = run_compare({"E2E_DRY_RUN": "1", "COMPARE_PROBES": "bogus"})
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "COMPARE_PROBES is bogus" in result.stderr
+    assert "spec, review, or all" in result.stderr
 
 
 # --- Rule: compare-upstream.sh installs both pipelines before probing them (T592) ---
@@ -303,6 +314,49 @@ def test_spec_probe_entry_with_status_error_and_no_score_has_hit_null():
     assert result.stdout.strip() == "null"
 
 
+def test_spec_probe_scorer_crash_is_recorded_as_an_error_entry(tmp_path):
+    """score_probe_entry writes an error entry when score-artifacts.py exits nonzero.
+
+    Stubs python3 itself, since compare-upstream.sh calls score-artifacts.py
+    by an absolute path resolved through PATH's python3, not by a
+    stubbable command name of its own. Any other python3 call (such as
+    normalize_path's `python3 -c`) delegates to the real interpreter
+    running this test.
+    """
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    write_stub(bin_dir, "claude", "echo '{\"total_cost_usd\": 0.01}'\nexit 0\n")
+    write_stub(
+        bin_dir,
+        "python3",
+        f'if [[ "$1" == *"score-artifacts.py" ]]; then\n'
+        f'  echo "stub scorer crashed" >&2\n'
+        f"  exit 1\n"
+        f"fi\n"
+        f'exec "{sys.executable}" "$@"\n',
+    )
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    data = load_results(results_path)
+    spec_entries = [entry for entry in data["entries"] if entry["probe"] == "spec"]
+    assert spec_entries, "no spec entries written"
+    for entry in spec_entries:
+        assert entry["status"] == "error"
+        assert entry["hit"] is None
+        assert "stub scorer crashed" in entry["error"]
+
+
 # --- Rule: the review probe checks whether review output names the planted fault (T594) ---
 
 
@@ -316,6 +370,47 @@ def test_dry_runs_review_probe_writes_six_dry_run_entries(tmp_path):
     entries = [entry for entry in data["entries"] if entry["probe"] == "review"]
     assert len(entries) == 6
     assert all(entry["status"] == "dry-run" for entry in entries)
+
+
+def test_review_probe_hit_script_error_is_recorded_as_an_error_entry(tmp_path):
+    """review_probe_entry writes an error entry when review-probe-hit.py exits neither 0 nor 1.
+
+    Stubs python3 to force that exit code on the review-probe-hit.py call
+    only; every other python3 call delegates to the real interpreter
+    running this test, the same technique
+    test_spec_probe_scorer_crash_is_recorded_as_an_error_entry uses.
+    """
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    write_stub(bin_dir, "claude", "echo '{\"total_cost_usd\": 0.01}'\nexit 0\n")
+    write_stub(
+        bin_dir,
+        "python3",
+        f'if [[ "$1" == *"review-probe-hit.py"* ]]; then\n'
+        f"  exit 2\n"
+        f"fi\n"
+        f'exec "{sys.executable}" "$@"\n',
+    )
+    results_path = tmp_path / "results.json"
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(results_path),
+            "COMPARE_PROBES": "review",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    data = load_results(results_path)
+    review_entries = [entry for entry in data["entries"] if entry["probe"] == "review"]
+    assert review_entries, "no review entries written"
+    for entry in review_entries:
+        assert entry["status"] == "error"
+        assert entry["hit"] is None
+        assert "review-probe-hit.py exited 2" in entry["error"]
 
 
 # --- Rule: an upstream failure is recorded, never patched around ---
