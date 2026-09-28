@@ -39,7 +39,7 @@ or `templates/`. CI runs the same checks.
 - `specflow/templates/*.md`: document templates spec-kit resolves at command time
   from `.specify/extensions/specflow/templates/`, above core and below presets.
 - `specflow/references/`: fallback protocols and superpowers skill mapping.
-- `specflow/examples/`, `specflow/assets/`: teaching material and doc media, not runtime payload.
+- `specflow/examples/`: teaching material, not runtime payload.
 
 ## Gotchas
 
