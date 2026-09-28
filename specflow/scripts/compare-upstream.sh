@@ -52,6 +52,12 @@ UPSTREAM_SCRATCH_ROOT="$(mktemp -d -t compare-upstream-upstream.XXXXXX)"
 UPSTREAM_SCRATCH_DIR="$UPSTREAM_SCRATCH_ROOT/superspec"
 UPSTREAM_CHECKOUT_ERROR=""
 
+# UPSTREAM_SCRATCH_ROOT is this script's own scratch directory, never a
+# path COMPARE_UPSTREAM_CHECKOUT names, so removing it on exit never
+# touches a checkout the caller gave. Fires whether or not the script ever
+# clones into it.
+trap 'rm -rf "$UPSTREAM_SCRATCH_ROOT"' EXIT
+
 MAX_BUDGET="${E2E_MAX_BUDGET_USD:-0.50}"
 MAX_TURNS="${E2E_MAX_TURNS:-30}"
 MODEL="${E2E_MODEL:-}"

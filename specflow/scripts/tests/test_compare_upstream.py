@@ -23,6 +23,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -958,3 +959,39 @@ def test_a_live_run_succeeds_with_a_gnu_style_mktemp_on_path(tmp_path):
     assert "too few X" not in result.stderr
     data = load_results(results_path)
     assert data["entries"], "no entries written"
+
+
+# --- Rule: the upstream scratch clone is removed at exit (CR-006) ---
+
+
+def test_a_dry_run_leaves_no_upstream_scratch_directory_behind(tmp_path):
+    tmp_root = Path(tempfile.gettempdir())
+    before = set(tmp_root.glob("compare-upstream-upstream.*"))
+    result = run_compare({"E2E_DRY_RUN": "1", "COMPARE_RESULTS": str(tmp_path / "results.json")})
+    assert result.returncode == 0, result.stdout + result.stderr
+    after = set(tmp_root.glob("compare-upstream-upstream.*"))
+    assert after - before == set(), after - before
+
+
+def test_a_live_run_with_an_explicit_upstream_checkout_leaves_no_upstream_scratch_directory_behind(
+    tmp_path,
+):
+    upstream = git_checkout(tmp_path / "superspec")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    write_stub(bin_dir, "uvx", "exit 0\n")
+    write_stub(bin_dir, "claude", "echo '{\"total_cost_usd\": 0.01}'\nexit 0\n")
+    tmp_root = Path(tempfile.gettempdir())
+    before = set(tmp_root.glob("compare-upstream-upstream.*"))
+    result = run_compare(
+        {
+            "COMPARE_UPSTREAM_CHECKOUT": str(upstream),
+            "COMPARE_RESULTS": str(tmp_path / "results.json"),
+            "COMPARE_PROBES": "spec",
+            "COMPARE_RUNS": "1",
+        },
+        bin_dir=bin_dir,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    after = set(tmp_root.glob("compare-upstream-upstream.*"))
+    assert after - before == set(), after - before
