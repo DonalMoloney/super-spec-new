@@ -108,8 +108,8 @@ there, so a workflow under `specflow/` never runs.
 Four agents rewrite shipped files without changing their contracts: `prose-rephraser`
 for prose, `script-refactorer` for scripts, `divergence-renamer` for a name cited in
 more than one file, and `divergence-auditor` to measure the change against upstream
-and run the guards. The file table and dispatch order live in
-`improvements/reference.md` under "Rewrite status".
+and run the guards. The open option and the measured divergence per file live
+in `improvements/roadmap.md` under "Rewrite status".
 
 ## Task decomposition
 

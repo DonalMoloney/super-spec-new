@@ -17,7 +17,7 @@ a name other files cite to `divergence-renamer`; you leave all three there.
 
 - **A user names one script under `specflow/scripts/`** and asks for it to
   follow our code standards.
-- **A divergence bullet** in `improvements/reference.md` names naming,
+- **A divergence bullet** in `improvements/roadmap.md` names naming,
   error types, docstrings, or comment register as the move for `scripts/`.
 
 Do not invoke on code the BDD pipeline added in the current task;

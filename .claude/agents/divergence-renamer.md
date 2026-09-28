@@ -16,7 +16,7 @@ script's structure to `script-refactorer`; you leave both there.
 
 - **A roadmap item names an old value and a new one** for a file path, a
   manifest field, an identifier, or a hardcoded string.
-- **A Names-table row** in `improvements/reference.md` states a rename option
+- **A Names-table row** in `improvements/roadmap.md` states a rename option
   with a file count in its Cost column.
 - **A user asks** to rename a shipped file or a string cited in more than one
   place.

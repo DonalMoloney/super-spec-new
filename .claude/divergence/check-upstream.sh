@@ -10,7 +10,7 @@
 set -uo pipefail
 
 UPSTREAM_REMOTE="https://github.com/WangX0111/superspec.git"
-# The commit improvements/reference.md measures every divergence percentage
+# The commit improvements/roadmap.md measures every divergence percentage
 # against. Move it only together with a fresh measurement run.
 VENDORED_COMMIT="c20ac6c"
 REMOTE_ERROR=2

@@ -17,7 +17,7 @@ belongs to `script-refactorer` and moving a name other files cite to
 ## When to invoke
 
 - **A user names one file under `specflow/`** and asks for it in our voice.
-- **A divergence bullet** in `improvements/reference.md` names wording,
+- **A divergence bullet** in `improvements/roadmap.md` names wording,
   tone, or sentence structure as the move.
 - **After `documentation-scribe` or a roadmap group** edits a shipped file and
   the new prose reads like upstream or like generated text.
